@@ -4,7 +4,8 @@
                 "test/cljs"
                 "test/cljc"]
 
- :dependencies [[cljs-http "0.1.46"]
+ :dependencies [[camel-snake-kebab/camel-snake-kebab "0.4.1"]
+                [cljs-http "0.1.46"]
                 [com.ben-allred/collaj "0.8.0"]
                 [com.ben-allred/formation "0.6.2" :exclusions [[nrepl/nrepl]]]
                 [com.cognitect/transit-cljs "0.8.256"]
