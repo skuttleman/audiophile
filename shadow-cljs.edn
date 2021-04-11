@@ -8,8 +8,8 @@
                 [com.ben-allred/collaj "0.8.0"]
                 [com.ben-allred/formation "0.6.2" :exclusions [[nrepl/nrepl]]]
                 [com.cognitect/transit-cljs "0.8.256"]
-                [reagent/reagent "1.0.0"]
-                [com.taoensso/timbre "4.10.0"]]
+                [com.taoensso/timbre "4.10.0"]
+                [reagent/reagent "1.0.0"]]
 
  :nrepl        {:port #shadow/env ["UI_NREPL_PORT" :as :int :default 7100]}
 
