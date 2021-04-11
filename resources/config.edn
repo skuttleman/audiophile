@@ -10,4 +10,39 @@
    :server-port #duct/env ["SERVER_PORT" Int :or 3000]}
 
   :com.ben-allred.audiophile.api.handlers.core/app
+  {:router     #ig/ref :com.ben-allred.audiophile.api.handlers.core/router
+   :middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route]}
+
+  :com.ben-allred.audiophile.api.handlers.core/router
+  #ig/ref :routes/table
+
+  [:duct/const :routes/table]
+  {[:get :resources/health] #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
+   [:get :resources/css]    #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+   [:get :resources/js]     #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+   [:get :ui/home]          #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
+   [:get :ui/not-found]     #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
+
+  :com.ben-allred.audiophile.api.handlers.resources/health
+  {}
+
+  :com.ben-allred.audiophile.api.handlers.resources/assets
+  {}
+
+  :com.ben-allred.audiophile.api.handlers.resources/ui
+  {}
+
+  :com.ben-allred.audiophile.api.handlers.middleware/vector-response
+  {}
+
+  :com.ben-allred.audiophile.api.handlers.middleware/serde
+  {}
+
+  :com.ben-allred.audiophile.api.handlers.middleware/with-route
+  {}
+
+  :com.ben-allred.audiophile.api.handlers.middleware/with-logging
   {}}}

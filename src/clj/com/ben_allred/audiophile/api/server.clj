@@ -11,9 +11,9 @@
                    duct/resource
                    duct/read-config
                    (duct/prep-config [:duct.profile/prod])
-                   (ig/init [:com.ben-allred.audiophile.api.core/server])
-                   (doto duct/await-daemons))]
+                   (ig/init [:com.ben-allred.audiophile.api.core/server]))]
     (.addShutdownHook (Runtime/getRuntime)
                       (Thread. ^Runnable
                                (fn []
-                                 (ig/halt! system))))))
+                                 (ig/halt! system))))
+    (duct/await-daemons system)))
