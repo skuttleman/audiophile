@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.api.handlers.core
   (:require
-    [integrant.core :as ig]))
+    [integrant.core :as ig]
+    [ring.middleware.cookies :refer [wrap-cookies]]))
 
 (defmethod ig/init-key ::router [_ route-table]
   (fn [request]
@@ -13,4 +14,5 @@
   (reduce (fn [handler mw]
             (mw handler))
           router
-          middleware))
+          (concat middleware
+                  [wrap-cookies])))

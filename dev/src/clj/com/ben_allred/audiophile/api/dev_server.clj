@@ -33,4 +33,4 @@
     (duct/await-daemons system)))
 
 (comment
-  (reset-sys!))
+  (alter-var-root #'system reset-sys!))

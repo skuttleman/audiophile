@@ -37,10 +37,13 @@
           (seq qp) (assoc :query-params qp)
           query-string (assoc :query-string query-string)))))
 
-(defn path-for [handler {:keys [query-params route-params]}]
-  (let [qp (some-> query-params qp/encode)]
-    (-> (apply bidi/path-for routes handler (mapcat (fn [[k v]]
+(defn path-for
+  ([handler]
+   (path-for handler nil))
+  ([handler {:keys [query-params route-params]}]
+   (let [qp (some-> query-params qp/encode)]
+     (-> (apply bidi/path-for routes handler (mapcat (fn [[k v]]
                                                        [k (str (cond-> v
                                                                  (keyword? v) name))])
                                                      route-params))
-        (cond-> (seq qp) (str "?" qp)))))
+         (cond-> (seq qp) (str "?" qp))))))

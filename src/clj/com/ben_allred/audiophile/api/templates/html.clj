@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.api.templates.html
-  (:require [hiccup.core :as hiccup]))
+  (:require
+    [hiccup.core :as hiccup]))
 
 (defn layout [app]
   [:html {:lang "en"}

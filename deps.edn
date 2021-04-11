@@ -12,6 +12,7 @@
            com.cognitect/transit-clj     {:mvn/version "0.8.313"}
            com.taoensso/timbre           {:mvn/version "4.10.0"}
            duct/core                     {:mvn/version "0.8.0"}
+           hiccup/hiccup                 {:mvn/version "1.0.5"}
            org.clojure/clojure           {:mvn/version "1.10.1"}
            org.clojure/clojurescript     {:mvn/version "1.10.597"
                                           :exclusions  [com.google.javascript/closure-compiler-unshaded
@@ -33,6 +34,5 @@
                                "dev/src/clj"
                                "dev/src/cljc"
                                "dev/scr/cljs"]
-                 :extra-deps  {hiccup/hiccup   {:mvn/version "1.0.5"}
-                               nrepl/nrepl     {:mvn/version "0.4.0"}
+                 :extra-deps  {nrepl/nrepl     {:mvn/version "0.4.0"}
                                ring/ring-devel {:mvn/version "1.6.3" :exclusions [ring/ring-core]}}}}}

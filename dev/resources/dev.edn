@@ -1,2 +1,21 @@
-{:com.ben-allred.audiophile.api.core/server ^:promote {:handler #ig/ref :com.ben-allred.audiophile.api.dev.handler/app}
- :com.ben-allred.audiophile.api.dev.handler/app {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}}
+{:com.ben-allred.audiophile.api.core/server
+ ^:promote {:handler #ig/ref :com.ben-allred.audiophile.api.dev.handler/app}
+
+ :com.ben-allred.audiophile.api.dev.handler/app
+ {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}
+
+ [:duct/const :routes/table]
+ ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
+            [:get :auth/logout]   #ig/ref :com.ben-allred.audiophile.api.dev.handler/logout
+            [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
+
+ ;; components
+ :com.ben-allred.audiophile.api.dev.handler/login
+ {:base-url #ig/ref :env/base-url}
+
+ :com.ben-allred.audiophile.api.dev.handler/logout
+ {:base-url #ig/ref :env/base-url}
+
+ :com.ben-allred.audiophile.api.dev.handler/callback
+ {:base-url  #ig/ref :env/base-url
+  :jwt-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/jwt}}

@@ -1,14 +1,14 @@
 (ns com.ben-allred.audiophile.api.handlers.middleware
   (:require
+    [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.services.http :as http]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [integrant.core :as ig]
     [com.ben-allred.audiophile.common.services.navigation :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [camel-snake-kebab.core :as csk])
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
+    [integrant.core :as ig])
   (:import
     (java.io File)))
 
@@ -22,20 +22,22 @@
         [status body headers] {:status (http/status->code status) :body body :headers headers}
         response response))))
 
-(defmethod ig/init-key ::serde [_ _]
+(defmethod ig/init-key ::serde [_ {:keys [edn-serde transit-serde]}]
   (fn [handler]
     (fn [request]
       (let [serde (condp string/starts-with? (or (get-in request [:headers "accept"])
                                                  (get-in request [:headers "content-type"])
                                                  "")
-                    serdes/edn)
+                    (serdes/mime-type transit-serde) transit-serde
+                    edn-serde)
             {resp :body :as response} (-> request
                                           (maps/update-maybe :body (partial serdes/deserialize serde))
                                           handler)
             serde' (condp string/starts-with? (or (get-in response [:headers "Accept"])
                                                   (get-in response [:headers "Content-Type"])
                                                   "")
-                     "application/edn" serdes/edn
+                     (serdes/mime-type edn-serde) edn-serde
+                     (serdes/mime-type transit-serde) transit-serde
                      serde)]
         (cond-> response
           (and (some? resp)

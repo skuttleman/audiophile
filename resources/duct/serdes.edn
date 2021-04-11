@@ -1,0 +1,11 @@
+{:com.ben-allred.audiophile.api.services.serdes.core/edn
+ {}
+
+ :com.ben-allred.audiophile.api.services.serdes.core/transit
+ {}
+
+ :com.ben-allred.audiophile.api.services.serdes.core/jwt
+ {:algo       :HS256
+  :data-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/transit
+  :expiration #ig/ref :env/jwt-expiration
+  :secret     #ig/ref :env/jwt-secret}}
