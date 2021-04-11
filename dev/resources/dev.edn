@@ -1,0 +1,3 @@
+{:com.ben-allred.audiophile.api.dev.core/server {:nrepl-port #duct/env ["NREPL_PORT" Int :or 7000]}
+ :com.ben-allred.audiophile.api.core/server ^:promote {:handler #ig/ref :com.ben-allred.audiophile.api.dev.handler/app}
+ :com.ben-allred.audiophile.api.dev.handler/app {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}}

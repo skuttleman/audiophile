@@ -1,0 +1,13 @@
+{:duct.profile/dev
+ #duct/include "dev.edn"
+
+ :duct.profile/base
+ {:duct.core/project-ns
+  com.ben-allred/audiophile
+
+  :com.ben-allred.audiophile.api.core/server
+  {:handler     #ig/ref :com.ben-allred.audiophile.api.handlers.core/app
+   :server-port #duct/env ["SERVER_PORT" Int :or 3000]}
+
+  :com.ben-allred.audiophile.api.handlers.core/app
+  {}}}

@@ -10,6 +10,7 @@
                                                                                      org.clojure/core.async]}
            com.cognitect/transit-clj     {:mvn/version "0.8.313"}
            com.taoensso/timbre           {:mvn/version "4.10.0"}
+           duct/core                     {:mvn/version "0.8.0"}
            org.clojure/clojure           {:mvn/version "1.10.1"}
            org.clojure/clojurescript     {:mvn/version "1.10.597"
                                           :exclusions  [com.google.javascript/closure-compiler-unshaded

@@ -1,21 +1,19 @@
 (ns com.ben-allred.audiophile.api.server
   (:require
-    [com.ben-allred.audiophile.api.services.env :as env]
-    [immutant.web :as web]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [duct.core :as duct]
+    [integrant.core :as ig]
+    [clojure.java.io :as io]))
 
-(defn app [request]
-  (println request)
-  {:status 200 :body "{\"some\":\"json\"}"})
-
-(defn run-server! [app]
-  (let [server-port (env/get :server-port)]
-    (web/run app {:port server-port :host "0.0.0.0"})
-    (println (str "[SERVER] is listening "
-                  (when (:wrap-reload (meta app))
-                    "with dev reloading enabled ")
-                  "on port "
-                  server-port))))
-
-(defn -main [& {:as env}]
-  (env/load-env! env ".env-prod")
-  (run-server! #'app))
+(defn -main [& _]
+  (duct/load-hierarchy)
+  (let [system (-> "config.edn"
+                   duct/resource
+                   duct/read-config
+                   (duct/prep-config [:duct.profile/prod])
+                   (ig/init [:com.ben-allred.audiophile.api.core/server])
+                   (doto duct/await-daemons))]
+    (.addShutdownHook (Runtime/getRuntime)
+                      (Thread. ^Runnable
+                               (fn []
+                                 (ig/halt! system))))))
