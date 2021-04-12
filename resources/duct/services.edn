@@ -1,0 +1,12 @@
+{:com.ben-allred.audiophile.api.services.repositories.core/cfg
+ {:db-name  #ig/ref :env/db-name
+  :host     #ig/ref :env/db-host
+  :password #ig/ref :env/db-password
+  :port     #ig/ref :env/db-port
+  :user     #ig/ref :env/db-user}
+
+ :com.ben-allred.audiophile.api.services.repositories.core/datasource
+ {:spec #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/cfg}
+
+ :com.ben-allred.audiophile.api.services.repositories.core/transactor
+ {:datasource #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource}}

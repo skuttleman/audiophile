@@ -5,12 +5,13 @@
     [clojure.java.io :as io]
     [cognitect.transit :as trans]
     [com.ben-allred.audiophile.api.services.serdes.protocol :as pserdes]
+    [com.ben-allred.audiophile.common.utils.macros :as macros]
     [integrant.core :as ig])
   (:import
     (java.io ByteArrayInputStream ByteArrayOutputStream InputStream PushbackReader)
+    (java.time.temporal ChronoUnit)
     (java.util Date)
-    (org.joda.time DateTime)
-    (java.time.temporal ChronoUnit)))
+    (org.joda.time DateTime)))
 
 (defmethod ig/init-key ::edn [_ _]
   (reify
@@ -20,13 +21,12 @@
     (serialize [_ value _]
       (pr-str value))
     (deserialize [_ value opts]
-      (cond
-        (nil? value) nil
-        (string? value) (edn/read-string opts value)
-        (instance? InputStream value) (try (some->> value io/reader PushbackReader. (edn/read opts))
-                                           (catch Throwable _
-                                             nil))
-        :else (edn/read opts value)))))
+      (macros/ignore!
+        (cond
+          (nil? value) nil
+          (string? value) (edn/read-string opts value)
+          (instance? InputStream value) (some->> value io/reader PushbackReader. (edn/read opts))
+          :else (edn/read opts value))))))
 
 (defmethod ig/init-key ::transit [_ _]
   (reify
@@ -40,10 +40,13 @@
             (trans/write value))
         (.toString out)))
     (deserialize [_ value _]
-      (-> value
-          (cond-> (not (instance? InputStream value)) (-> .getBytes ByteArrayInputStream.))
-          (trans/reader :json)
-          trans/read))))
+      (macros/ignore!
+        (-> value
+            (cond->
+              (not (instance? InputStream value))
+              (-> .getBytes ByteArrayInputStream.))
+            (trans/reader :json)
+            trans/read)))))
 
 (defmethod ig/init-key ::jwt [_ {:keys [algo data-serde expiration secret]}]
   (reify
@@ -62,14 +65,12 @@
             (clj-jwt/sign algo secret)
             clj-jwt/to-str)))
     (deserialize [_ token opts]
-      (some-> (try
-                (let [jwt (clj-jwt/str->jwt token)]
+      (macros/ignore!
+        (some-> (let [jwt (clj-jwt/str->jwt token)]
                   (when (clj-jwt/verify jwt algo secret)
                     jwt))
-                (catch Throwable _
-                  nil))
-              :claims
-              (update :data (partial pserdes/deserialize data-serde) opts)))))
+                :claims
+                (update :data (partial pserdes/deserialize data-serde) opts))))))
 
 (defn serialize
   ([serde value]

@@ -1,18 +1,19 @@
-{:duct.profile/env    #duct/include "duct/env.edn"
- :duct.profile/routes #duct/include "duct/routes.edn"
- :duct.profile/serdes #duct/include "duct/serdes.edn"
+{:duct.profile/services #duct/include "duct/services.edn"
+ :duct.profile/env      #duct/include "duct/env.edn"
+ :duct.profile/routes   #duct/include "duct/routes.edn"
+ :duct.profile/serdes   #duct/include "duct/serdes.edn"
 
- :duct.profile/dev    #duct/include "dev.edn"
- :duct.profile/base   {:duct.core/project-ns
-                       com.ben-allred/audiophile
+ :duct.profile/dev      #duct/include "dev.edn"
+ :duct.profile/base     {:duct.core/project-ns
+                         com.ben-allred/audiophile
 
-                       :com.ben-allred.audiophile.api.core/server
-                       {:handler     #ig/ref :com.ben-allred.audiophile.api.handlers.core/app
-                        :server-port #ig/ref :env/server-port}
+                         :com.ben-allred.audiophile.api.core/server
+                         {:handler     #ig/ref :com.ben-allred.audiophile.api.handlers.core/app
+                          :server-port #ig/ref :env/server-port}
 
-                       :com.ben-allred.audiophile.api.handlers.core/app
-                       {:router     #ig/ref :com.ben-allred.audiophile.api.handlers.core/router
-                        :middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                                     #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
-                                     #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
-                                     #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route]}}}
+                         :com.ben-allred.audiophile.api.handlers.core/app
+                         {:router     #ig/ref :com.ben-allred.audiophile.api.handlers.core/router
+                          :middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
+                                       #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
+                                       #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
+                                       #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route]}}}

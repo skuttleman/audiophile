@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "dev": "LOG_LEVEL=debug ENV=development npm start",
     "start": "nf --procfile Procfile-dev start"
   },
   "devDependencies": {

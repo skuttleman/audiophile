@@ -18,7 +18,7 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 $ git clone git@github.com:skuttleman/audiophile.git
 $ cd audiophile
 $ npm install
-$ npm start
+$ npm run dev
 ```
 
 You can override which ports the servers listen on.

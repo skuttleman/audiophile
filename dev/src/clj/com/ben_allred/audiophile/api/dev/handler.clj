@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.api.dev.handler
   (:require
+    [com.ben-allred.audiophile.api.services.repositories.users :as users]
     [com.ben-allred.audiophile.api.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.services.navigation :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -50,10 +51,13 @@
   (fn [_]
     (logout! base-url)))
 
-(defmethod ig/init-key ::callback [_ {:keys [jwt-serde base-url]}]
+(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde tx]}]
   (fn [request]
     (let [{:keys [email redirect-uri]} (get-in request [:nav/route :query-params])]
-      (login* {:email email} jwt-serde base-url redirect-uri))))
+      (login* (users/query-by-email tx email)
+              jwt-serde
+              base-url
+              redirect-uri))))
 
 (defmethod ig/init-key ::app [_ {:keys [app]}]
   app)

@@ -1,0 +1,16 @@
+{:duct.profile/services
+ #duct/include "duct/services.edn"
+
+ :duct.profile/env
+ #duct/include "duct/env.edn"
+
+ :duct.profile/migrations
+ {:duct.core/project-ns
+  com.ben-allred/audiophile.migrations
+
+  [:duct/const :migrations/res-path]
+  "db/migrations"
+
+  :com.ben-allred.audiophile.api.dev.migrations/migrator
+  {:datasource          #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource
+   :migrations-res-path #ig/ref :migrations/res-path}}}

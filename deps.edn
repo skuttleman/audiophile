@@ -2,17 +2,24 @@
            "src/clj"
            "src/cljc"
            "src/cljs"]
- :deps    {bidi/bidi                     {:mvn/version "2.1.3" :exclusions [ring/ring-core]}
+ :deps    {bidi/bidi                     {:mvn/version "2.1.3"
+                                          :exclusions  [ring/ring-core]}
            camel-snake-kebab             {:mvn/version "0.4.1"}
            clj-http                      {:mvn/version "3.9.1"}
            clj-jwt                       {:mvn/version "0.1.1"}
            com.ben-allred/vow            {:mvn/version "0.1.0"}
-           com.ben-allred/ws-client-cljc {:mvn/version "0.1.0-SNAPSHOT" :exclusions [nrepl/nrepl
-                                                                                     org.clojure/core.async]}
+           com.ben-allred/ws-client-cljc {:mvn/version "0.1.0-SNAPSHOT"
+                                          :exclusions  [nrepl/nrepl
+                                                        org.clojure/core.async]}
            com.cognitect/transit-clj     {:mvn/version "0.8.313"}
            com.taoensso/timbre           {:mvn/version "4.10.0"}
            duct/core                     {:mvn/version "0.8.0"}
            hiccup/hiccup                 {:mvn/version "1.0.5"}
+           hikari-cp/hikari-cp           {:mvn/version "2.13.0"}
+           honeysql/honeysql             {:mvn/version "0.9.2"}
+           nilenso/honeysql-postgres     {:mvn/version "0.2.5"
+                                          :exclusions  [net.cgrand/macrovich]}
+           migratus/migratus             {:mvn/version "1.3.5"}
            org.clojure/clojure           {:mvn/version "1.10.1"}
            org.clojure/clojurescript     {:mvn/version "1.10.597"
                                           :exclusions  [com.google.javascript/closure-compiler-unshaded
@@ -20,16 +27,21 @@
                                                         org.clojure/google-closure-library-third-party]}
            org.clojure/core.async        {:mvn/version "0.4.490"}
            org.clojure/core.match        {:mvn/version "0.3.0-alpha5"}
-           org.immutant/immutant         {:mvn/version "2.1.10" :exclusions [ring/ring-core
-                                                                             org.jboss.naming/jnpserver]}
+           org.immutant/immutant         {:mvn/version "2.1.10"
+                                          :exclusions  [ring/ring-core
+                                                        org.jboss.naming/jnpserver]}
+           org.postgresql/postgresql     {:mvn/version "42.2.19.jre7"
+                                          :exclusions  [org.clojure/java.jdbc]}
            ring/ring-core                {:mvn/version "1.3.2"}
 
            ;; UI deps
            cljs-http                     {:mvn/version "0.1.46"}
            com.ben-allred/collaj         {:mvn/version "0.8.0"}
-           com.ben-allred/formation      {:mvn/version "0.6.2" :exclusions [nrepl/nrepl]}
+           com.ben-allred/formation      {:mvn/version "0.6.2"
+                                          :exclusions  [nrepl/nrepl]}
            com.cognitect/transit-cljs    {:mvn/version "0.8.256"}
-           reagent/reagent               {:mvn/version "1.0.0"}}
+           reagent/reagent               {:mvn/version "1.0.0"}
+           seancorfield/next.jdbc        {:mvn/version "1.0.5"}}
  :aliases {:dev {:extra-paths ["dev/resources"
                                "dev/src/clj"
                                "dev/src/cljc"

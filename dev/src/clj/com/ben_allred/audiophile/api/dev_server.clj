@@ -1,7 +1,9 @@
 (ns com.ben-allred.audiophile.api.dev-server
   (:require
+    [com.ben-allred.audiophile.api.services.env :as env]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [duct.core :as duct]
+    [duct.core.env :as env*]
     [integrant.core :as ig]
     [nrepl.server :as nrepl]))
 
@@ -12,11 +14,12 @@
    (reset-sys! system))
   ([sys]
    (some-> sys ig/halt!)
-   (-> "config.edn"
-       duct/resource
-       duct/read-config
-       (duct/prep-config [:duct.profile/prod :duct.profile/dev])
-       (ig/init [:com.ben-allred.audiophile.api.core/server]))))
+   (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev"]))]
+     (-> "config.edn"
+         duct/resource
+         duct/read-config
+         (duct/prep-config [:duct.profile/prod :duct.profile/dev])
+         (ig/init [:com.ben-allred.audiophile.api.core/server])))))
 
 (defn -main [& _]
   (duct/load-hierarchy)

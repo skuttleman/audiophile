@@ -1,4 +1,6 @@
 {:com.ben-allred.audiophile.api.core/server [:duct/daemon]
  :duct.profile/env                          [:duct.profile/base]
+ :duct.profile/migrations                   [:duct.profile/base]
  :duct.profile/routes                       [:duct.profile/base]
- :duct.profile/serdes                       [:duct.profile/base]}
+ :duct.profile/serdes                       [:duct.profile/base]
+ :duct.profile/services                     [:duct.profile/base]}

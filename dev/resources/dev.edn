@@ -18,4 +18,5 @@
 
  :com.ben-allred.audiophile.api.dev.handler/callback
  {:base-url  #ig/ref :env/base-url
-  :jwt-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/jwt}}
+  :jwt-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/jwt
+  :tx        #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor}}
