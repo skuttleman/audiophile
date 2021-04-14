@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.api.services.serdes.protocol)
+(ns com.ben-allred.audiophile.common.services.serdes.protocols)
 
 (defprotocol ISerde
   (mime-type [_])

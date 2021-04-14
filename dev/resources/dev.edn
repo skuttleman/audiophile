@@ -11,12 +11,15 @@
 
  ;; components
  :com.ben-allred.audiophile.api.dev.handler/login
- {:base-url #ig/ref :env/base-url}
+ {:base-url #ig/ref :env/base-url
+  :nav      #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.api.dev.handler/logout
- {:base-url #ig/ref :env/base-url}
+ {:base-url #ig/ref :env/base-url
+  :nav      #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.api.dev.handler/callback
  {:base-url  #ig/ref :env/base-url
-  :jwt-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/jwt
+  :jwt-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt
+  :nav       #ig/ref :services/nav
   :tx        #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor}}

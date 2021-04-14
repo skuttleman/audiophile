@@ -2,7 +2,7 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.templates.core :as templates]
-    [com.ben-allred.audiophile.common.views.core :as views]
+    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [integrant.core :as ig]
     [ring.middleware.resource :as res]))
 
@@ -19,7 +19,8 @@
 (defmethod ig/init-key ::health [_ _]
   (constantly [:http.status/ok {:a :ok}]))
 
-(defmethod ig/init-key ::ui [_ _]
-  (constantly [:http.status/ok
-               (templates/html [views/app {}])
-               {"Content-Type" "text/html"}]))
+(defmethod ig/init-key ::ui [_ {:keys [store app]}]
+  (fn [_]
+    [:http.status/ok
+     (templates/html [app (ui-store/get-state store)])
+     {"Content-Type" "text/html"}]))

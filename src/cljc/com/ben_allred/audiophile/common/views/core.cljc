@@ -1,10 +1,20 @@
-(ns com.ben-allred.audiophile.common.views.core)
+(ns com.ben-allred.audiophile.common.views.core
+  (:require
+    [com.ben-allred.audiophile.common.services.resources.core :as res]
+    [com.ben-allred.audiophile.common.views.components.core :as comp]
+    [integrant.core :as ig]))
 
-(defn app [state]
-  [:div
-   [:div.main.layout--inset
-    {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
-    [:div.layout--inset
-     (if-let [text (:text state)]
-       [:div text]
-       [:div.loader.large])]]])
+(defn root [auth-user state components-table]
+  (let [handler (get-in state [:page :handler])
+        component (get components-table handler comp/not-found)]
+    [component (assoc state :auth/user auth-user)]))
+
+(defmethod ig/init-key ::app [_ {:keys [components-table user-resource]}]
+  (fn [_state]
+    (res/request! user-resource)
+    (fn [state]
+      [:div
+       [:div.main.layout--inset
+        {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
+        [:div.layout--inset
+         [comp/with-resource user-resource root state components-table]]]])))

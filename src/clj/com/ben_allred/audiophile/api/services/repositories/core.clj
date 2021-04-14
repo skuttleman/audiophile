@@ -1,17 +1,55 @@
 (ns com.ben-allred.audiophile.api.services.repositories.core
   (:require
+    [camel-snake-kebab.core :as csk]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [hikari-cp.core :as hikari]
+    [next.jdbc.result-set :as result-set]
     [honeysql.core :as sql]
     [integrant.core :as ig]
-    [next.jdbc :as jdbc]))
+    [next.jdbc :as jdbc])
+  (:import
+    (java.sql Date ResultSet)))
+
+(defn ->builder-fn [xform ->row!]
+  (fn [^ResultSet rs _opts]
+    (let [meta (.getMetaData rs)
+          collect! (xform conj!)
+          cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
+                     (range (.getColumnCount meta)))
+          col-count (count cols)]
+      (reify
+        result-set/RowBuilder
+        (->row [_] (transient {}))
+        (column-count [_] col-count)
+        (with-column [_ row i]
+          (let [k (nth cols (dec i))
+                v (result-set/read-column-by-index (.getObject rs ^Integer i) meta i)]
+            (->row! row k (cond-> v (instance? Date v) .toLocalDate))))
+        (row! [_ row] (persistent! row))
+
+        result-set/ResultSetBuilder
+        (->rs [_] (transient []))
+        (with-row [_ mrs row] (collect! mrs row))
+        (rs! [_ mrs] (persistent! mrs))))))
+
+(defn ^:private exec* [conn psql opts]
+  (let [result-xform (or (:result-xform opts) identity)
+        entity-fn (comp (or (:entity-fn opts) identity)
+                        (fn [[k v]]
+                          [(keyword k) v]))]
+    (sequence
+      (jdbc/execute! conn psql (assoc (:sql/opts opts)
+                                      :builder-fn (->builder-fn result-xform
+                                                                (fn [t k v]
+                                                                  (conj! t (entity-fn [k v])))))))))
 
 (deftype Executor [transactor conn]
   prepos/IExecute
   (execute! [_ query opts]
-    (jdbc/execute! conn (sql/format query) opts))
+    (exec* conn (sql/format query :quoting :ansi) opts))
   (exec-raw! [_ sql opts]
-    (jdbc/execute! conn [sql] opts)))
+    (exec* conn (cond-> sql (not (vector? sql)) vector) opts)))
 
 (deftype Transactor [datasource opts]
   prepos/ITransact

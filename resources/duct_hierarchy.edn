@@ -3,4 +3,6 @@
  :duct.profile/migrations                   [:duct.profile/base]
  :duct.profile/routes                       [:duct.profile/base]
  :duct.profile/serdes                       [:duct.profile/base]
- :duct.profile/services                     [:duct.profile/base]}
+ :duct.profile/services                     [:duct.profile/base]
+ :duct.profile/ui-components                [:duct.profile/base]
+ :duct.profile/ui-stubs                     [:duct.profile/base]}

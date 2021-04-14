@@ -9,7 +9,8 @@
   [:get :ui/not-found]     #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
   [:get :auth/login]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
   [:get :auth/logout]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
-  [:get :auth/callback]    #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback}
+  [:get :auth/callback]    #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
+  [:get :auth/details]     #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details}
 
  :com.ben-allred.audiophile.api.handlers.resources/health
  {}
@@ -18,17 +19,21 @@
  {}
 
  :com.ben-allred.audiophile.api.handlers.resources/ui
- {}
+ {:store #ig/ref :services/store
+  :app   #ig/ref :com.ben-allred.audiophile.common.views.core/app}
+
+ :com.ben-allred.audiophile.api.handlers.middleware/with-auth
+ {:jwt-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt}
 
  :com.ben-allred.audiophile.api.handlers.middleware/vector-response
  {}
 
  :com.ben-allred.audiophile.api.handlers.middleware/serde
- {:edn-serde     #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/edn
-  :transit-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/transit}
+ {:edn-serde     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
+  :transit-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}
 
  :com.ben-allred.audiophile.api.handlers.middleware/with-route
- {}
+ {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.api.handlers.middleware/with-logging
  {}
@@ -41,4 +46,7 @@
 
  :com.ben-allred.audiophile.api.handlers.auth/callback
  {:base-url  #ig/ref :env/base-url
-  :jwt-serde #ig/ref :com.ben-allred.audiophile.api.services.serdes.core/jwt}}
+  :jwt-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt}
+
+ :com.ben-allred.audiophile.api.handlers.auth/details
+ {}}

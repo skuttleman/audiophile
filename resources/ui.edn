@@ -1,0 +1,31 @@
+{:duct.profile/serdes        #duct/include "duct/serdes.edn"
+ :duct.profile/ui-components #duct/include "duct/ui-components.edn"
+
+ :duct.profile/base          {:duct.core/project-ns
+                              :com.ben-allred/audiophile
+
+                              [:duct/const :services/nav]
+                              #ig/ref :com.ben-allred.audiophile.common.services.navigation/nav
+
+                              [:duct/const :services/http]
+                              #ig/ref :com.ben-allred.audiophile.common.services.http/client
+
+                              :com.ben-allred.audiophile.common.services.http/client
+                              {:serdes {:edn     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
+                                        :transit #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}}
+
+                              :com.ben-allred.audiophile.common.services.navigation/nav
+                              {:routes #ig/ref :nav/routes
+                               :store  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store}
+
+                              [:duct/const :env/base-url]
+                              ""
+
+                              ;[:duct/const :env/server-port]
+                              ;0
+
+                              [:duct/const :env/jwt-expiration]
+                              0
+
+                              [:duct/const :env/jwt-secret]
+                              ""}}

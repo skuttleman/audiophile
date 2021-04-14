@@ -1,18 +1,18 @@
 (ns com.ben-allred.audiophile.api.services.env
   (:require
     [clojure.java.io :as io]
-    [com.ben-allred.audiophile.api.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.macros :as macros]
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [integrant.core :as ig])
   (:import
     (java.net InetAddress)))
 
 (defn ^:private file->env [file]
-  (macros/ignore!
+  (try
     (some->> file
              io/file
              slurp
-             (serdes/deserialize (ig/init-key ::serdes/edn nil)))))
+             (serdes/deserialize (ig/init-key ::serdes/edn nil)))
+    (catch Throwable _ nil)))
 
 (defn load-env [files]
   (transduce (map file->env)

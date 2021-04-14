@@ -3,7 +3,7 @@
     [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.api.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.services.http :as http]
     [com.ben-allred.audiophile.common.services.navigation :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -19,7 +19,13 @@
         nil {:status (http/status->code :http.status/not-found)}
         [status] {:status (http/status->code status)}
         [status body] {:status (http/status->code status) :body body}
-        [status body headers] {:status (http/status->code status) :body body :headers headers}
+        [status body headers] {:status  (http/status->code status)
+                               :body    body
+                               :headers headers}
+        [status body headers resp] (maps/assoc-maybe resp
+                                                     :status (http/status->code status)
+                                                     :body body
+                                                     :headers headers)
         response response))))
 
 (defmethod ig/init-key ::serde [_ {:keys [edn-serde transit-serde]}]
@@ -46,11 +52,12 @@
           (-> (update :body (partial serdes/serialize serde'))
               (update-in [:headers "Content-Type"] #(or % (serdes/mime-type serde')))))))))
 
-(defmethod ig/init-key ::with-route [_ _]
+(defmethod ig/init-key ::with-route [_ {:keys [nav]}]
   (fn [handler]
     (fn [{:keys [query-string uri] :as request}]
       (-> request
-          (assoc :nav/route (nav/match-route (cond-> uri
+          (assoc :nav/route (nav/match-route nav
+                                             (cond-> uri
                                                query-string (str "?" query-string))))
           handler))))
 
@@ -75,6 +82,15 @@
                             time
                             unit
                             (:status response)))
-          (log/spy :debug (:body response))
+          (log/spy :debug (identity #_:body response))
           response)
         (handler request)))))
+
+(defmethod ig/init-key ::with-auth [_ {:keys [jwt-serde]}]
+  (fn [handler]
+    (fn [request]
+      (let [jwt (get-in request [:cookies "auth-token" :value])
+            user (serdes/deserialize jwt-serde jwt)]
+        (-> request
+            (maps/assoc-maybe :auth/user user)
+            handler)))))
