@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.views.roots.home
   (:require
-    [com.ben-allred.audiophile.common.services.navigation :as nav]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.dom :as dom]
     [integrant.core :as ig]
     [com.ben-allred.audiophile.common.utils.logger :as log]))

@@ -5,7 +5,7 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.services.http :as http]
-    [com.ben-allred.audiophile.common.services.navigation :as nav]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [integrant.core :as ig])

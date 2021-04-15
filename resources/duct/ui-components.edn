@@ -1,6 +1,7 @@
 {:com.ben-allred.audiophile.common.views.core/app
  {:components-table #ig/ref :ui.components/table
-  :user-resource    #ig/ref :resources/user-details}
+  :user-resource    #ig/ref :resources/user-details
+  :toasts           #ig/ref :com.ben-allred.audiophile.common.views.components.toast/toasts}
 
  [:duct/const :ui.components/table]
  {:ui/home  #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
@@ -39,6 +40,9 @@
    ["/css" [[true :resources/css]]]
    [true :ui/not-found]]]
 
+ [:duct/const :ui/err-codes]
+ {:user-not-found "Authentication failed.User not found."}
+
  [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
  {:store     #ig/ref :services/store
   :opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/details}
@@ -63,4 +67,8 @@
 
  :com.ben-allred.audiophile.common.views.roots.login/root
  {:nav            #ig/ref :services/nav
-  :login-resource #ig/ref :resources/user-login}}
+  :login-resource #ig/ref :resources/user-login}
+
+ :com.ben-allred.audiophile.common.views.components.toast/toasts
+ {:store     #ig/ref :services/store
+  :err-codes #ig/ref :ui/err-codes}}

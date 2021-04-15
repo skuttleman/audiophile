@@ -2,7 +2,8 @@
   (:require
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [immutant.web :as web]
-    [integrant.core :as ig]))
+    [integrant.core :as ig]
+    com.ben-allred.audiophile.common.services.navigation.parsers))
 
 (defmethod ig/init-key ::server [_ {:keys [handler server-port]}]
   (let [server (web/run handler {:port server-port :host "0.0.0.0"})]

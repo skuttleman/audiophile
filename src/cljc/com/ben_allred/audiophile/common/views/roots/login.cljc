@@ -3,7 +3,7 @@
     #?(:cljs    [com.ben-allred.audiophile.ui.services.forms.standard :as forms.std]
        :default [com.ben-allred.audiophile.common.services.forms.noop :as forms.noop])
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
-    [com.ben-allred.audiophile.common.services.navigation :as nav]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]

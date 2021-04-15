@@ -8,11 +8,15 @@
     [integrant.core :as ig]
     [reagent.dom :as rdom]
     com.ben-allred.audiophile.common.services.http
-    com.ben-allred.audiophile.common.services.navigation
+    com.ben-allred.audiophile.common.services.navigation.core
+    com.ben-allred.audiophile.common.services.navigation.parsers
+    com.ben-allred.audiophile.common.services.resources.core
+    com.ben-allred.audiophile.common.services.resources.users
+    com.ben-allred.audiophile.common.views.components.toast
     com.ben-allred.audiophile.common.views.roots.home
     com.ben-allred.audiophile.common.views.roots.login
-    com.ben-allred.audiophile.common.services.resources.core
-    com.ben-allred.audiophile.common.services.resources.users))
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
 
 (defn ^:private app [app* store]
   [app* (-> store
@@ -32,9 +36,7 @@
   (let [{store ::ui-store/store
          app*  ::views/app} (swap! sys (fn [sys]
                                          (some-> sys ig/halt!)
-                                         (-> "ui.edn"
-                                             cfg/load-config
-                                             ig/init)))]
+                                         (ig/init (cfg/load-config "ui.edn"))))]
     (rdom/render
       [app app* store]
       (.getElementById dom/document "root")

@@ -35,11 +35,8 @@
                           seq))]
     (-> [:form.form.layout--stack-between
          {:on-submit (comp (fn [_]
-                             (log/warn "submitto")
                              (when (satisfies? pres/IResource form)
-                               (res/request! form attrs)
-                               (log/warn (res/status form)))
-                             )
+                               (res/request! form attrs)))
                            dom/prevent-default)}]
         (into fields)
         (conj (cond-> [:div.buttons

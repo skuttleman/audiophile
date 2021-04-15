@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.common.services.resources.users
   (:require
     [com.ben-allred.audiophile.common.services.http :as http]
-    [com.ben-allred.audiophile.common.services.navigation :as nav]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.dom :as dom]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [integrant.core :as ig]))

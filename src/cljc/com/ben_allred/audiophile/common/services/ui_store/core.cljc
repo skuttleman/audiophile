@@ -12,15 +12,16 @@
   pui-store/IStore
   (get-state [_]
     (get-state))
-  (dispatch! [_ action]
-    (dispatch action)))
+  (dispatch! [this action]
+    (if (fn? action)
+      (action this)
+      (dispatch action))))
 
 (defn create-store [reducer]
   (let [{:keys [get-state dispatch]}
         (collaj/create-custom-store
           st/atom
           reducer
-          ecollaj/with-fn-dispatch
           #?(:cljs (ecollaj/with-log-middleware
                      #(log/info "Action dispatched:" %)
                      #(log/info "New state:" %))))]

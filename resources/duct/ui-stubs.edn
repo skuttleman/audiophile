@@ -1,7 +1,7 @@
 {[:duct/const :services/nav]
- ^:promote #ig/ref :com.ben-allred.audiophile.common.services.navigation/stub
+ ^:promote #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/stub
 
- :com.ben-allred.audiophile.common.services.navigation/stub
+ :com.ben-allred.audiophile.common.services.navigation.core/stub
  {:routes #ig/ref :nav/routes}
 
  ;; UI Resources

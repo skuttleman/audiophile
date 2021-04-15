@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.common.services.ui-store.reducers
   (:require
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.collaj.reducers :as rcollaj]))
 
 (defn ^:private resource-state
@@ -37,6 +38,17 @@
      :router/updated route
      state)))
 
+(defn ^:private toasts
+  ([] {})
+  ([state [type {:keys [id level body]}]]
+   (case type
+     :toasts/add! (assoc state id {:state :init :level level :body body})
+     :toasts/display! (maps/update-maybe state id assoc :state :showing)
+     :toasts/hide! (maps/update-maybe state id assoc :state :removing)
+     :toasts/remove! (dissoc state id)
+     state)))
+
 (def reducer
   (rcollaj/combine {:internal/resource-state resource-state
-                    :page                    page}))
+                    :page                    page
+                    :toasts                  toasts}))
