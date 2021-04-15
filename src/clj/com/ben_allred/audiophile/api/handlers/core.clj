@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.api.handlers.core
   (:require
+    [clojure.string :as string]
     [integrant.core :as ig]
-    [ring.middleware.cookies :refer [wrap-cookies]]
-    [clojure.string :as string]))
+    [ring.middleware.cookies :refer [wrap-cookies]]))
 
 (defmethod ig/init-key ::router [_ route-table]
   (fn [{:keys [request-method uri] :as request}]

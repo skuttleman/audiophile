@@ -14,9 +14,7 @@
     com.ben-allred.audiophile.common.services.resources.users
     com.ben-allred.audiophile.common.views.components.toast
     com.ben-allred.audiophile.common.views.roots.home
-    com.ben-allred.audiophile.common.views.roots.login
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
+    com.ben-allred.audiophile.common.views.roots.login))
 
 (defn ^:private app [app* store]
   [app* (-> store

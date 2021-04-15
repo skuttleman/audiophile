@@ -1,8 +1,13 @@
 {:com.ben-allred.audiophile.api.core/server [:duct/daemon]
+ :duct.core/project-ns                      [:duct/const]
+ :duct.profile/base                         [:duct/profile]
+ :duct.profile/dev                          [:duct/profile]
  :duct.profile/env                          [:duct.profile/base]
  :duct.profile/migrations                   [:duct.profile/base]
+ :duct.profile/prod                         [:duct/profile]
  :duct.profile/routes                       [:duct.profile/base]
  :duct.profile/serdes                       [:duct.profile/base]
  :duct.profile/services                     [:duct.profile/base]
+ :duct.profile/test                         [:duct/profile]
  :duct.profile/ui-components                [:duct.profile/base]
  :duct.profile/ui-stubs                     [:duct.profile/base]}

@@ -1,4 +1,5 @@
 (ns com.ben-allred.audiophile.api.server
+  (:gen-class)
   (:require
     [com.ben-allred.audiophile.api.services.env :as env]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]

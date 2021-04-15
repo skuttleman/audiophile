@@ -24,10 +24,10 @@ $ npm run dev
 You can override which ports the servers listen on.
 
 ```bash
-$ SERVER_PORT=3000 NREPL_PORT=7000 UI_NREPL_PORT=7100 npm start
+$ PORT=3000 NREPL_PORT=7000 UI_NREPL_PORT=7100 npm start
 ```
 
-Visit `http://localhost:{SERVER_PORT:-3000}` in your browser to use app.
+Visit `http://localhost:{PORT:-3000}` in your browser to use app.
 
 api nREPL listens at `localhost {NREPL_PORT:-7000}` (can be overridden with NREPL_PORT env var)
 ui nREPL listens at `localhost {UI_NREPL_PORT:-7100}` (can be overridden with UI_NREPL_PORT env var)

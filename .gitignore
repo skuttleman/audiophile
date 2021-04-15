@@ -3,6 +3,7 @@ resources/public/js
 resources/public/css
 
 /target
+/classes
 /checkouts
 /src/gen
 

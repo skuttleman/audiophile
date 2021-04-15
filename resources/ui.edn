@@ -18,14 +18,5 @@
                               {:routes #ig/ref :nav/routes
                                :store  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store}
 
-                              [:duct/const :env/base-url]
-                              ""
-
-                              ;[:duct/const :env/server-port]
-                              ;0
-
-                              [:duct/const :env/jwt-expiration]
-                              0
-
-                              [:duct/const :env/jwt-secret]
-                              ""}}
+                              :com.ben-allred.audiophile.common.services.serdes.core/jwt
+                              ^:replace {}}}

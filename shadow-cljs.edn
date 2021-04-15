@@ -7,7 +7,7 @@
 
  :dependencies [[bidi/bidi "2.1.6" :exclusions [[ring/ring-core]]]
                 [camel-snake-kebab/camel-snake-kebab "0.4.1"]
-                [cljs-http "0.1.46"]
+                [cljs-http/cljs-http "0.1.46"]
                 [com.ben-allred/collaj "0.8.0"]
                 [com.ben-allred/formation "0.6.2" :exclusions [[nrepl/nrepl]]]
                 [com.ben-allred/vow "0.6.1"]
@@ -23,15 +23,15 @@
                 [org.clojure/core.match "0.3.0-alpha5"]
                 [reagent/reagent "1.0.0"]
 
-                ;; needed for macros to expand
-                [clj-jwt "0.1.1"]
-                [clj-http "3.9.1"]]
+                ;; needed for macro expansion
+                [clj-jwt/clj-jwt "0.1.1"]
+                [clj-http/clj-http "3.9.1"]]
 
  :nrepl        {:port #shadow/env ["UI_NREPL_PORT" :as :int :default 7100]}
 
  :builds       {:ui
                 {:target     :browser
                  :output-dir "resources/public/js"
-                 :devtools   {:watch-dir  "public/css"
+                 :devtools   {:watch-dir  "resources/public"
                               :after-load com.ben-allred.audiophile.ui.app/init}
                  :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}}}

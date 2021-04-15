@@ -1,12 +1,13 @@
 {:paths   ["resources"
            "src/clj"
            "src/cljc"
-           "src/cljs"]
+           "src/cljs"
+           "classes"]
  :deps    {bidi/bidi                     {:mvn/version "2.1.6"
                                           :exclusions  [ring/ring-core]}
            camel-snake-kebab             {:mvn/version "0.4.1"}
-           clj-http                      {:mvn/version "3.9.1"}
-           clj-jwt                       {:mvn/version "0.1.1"}
+           clj-http/clj-http             {:mvn/version "3.9.1"}
+           clj-jwt/clj-jwt               {:mvn/version "0.1.1"}
            com.ben-allred/collaj         {:mvn/version "0.8.0"}
            com.ben-allred/formation      {:mvn/version "0.6.2"
                                           :exclusions  [nrepl/nrepl]}
@@ -41,13 +42,14 @@
            seancorfield/next.jdbc        {:mvn/version "1.0.5"}
 
            ;; UI deps
-           cljs-http                     {:mvn/version "0.1.46"}
+           cljs-http/cljs-http           {:mvn/version "0.1.46"}
            com.cognitect/transit-cljs    {:mvn/version "0.8.256"}
            kibu/pushy                    {:mvn/version "0.3.8"}
            reagent/reagent               {:mvn/version "1.0.0"}}
- :aliases {:dev {:extra-paths ["dev/resources"
-                               "dev/src/clj"
-                               "dev/src/cljc"
-                               "dev/scr/cljs"]
-                 :extra-deps  {nrepl/nrepl     {:mvn/version "0.4.0"}
-                               ring/ring-devel {:mvn/version "1.6.3" :exclusions [ring/ring-core]}}}}}
+ :aliases {:dev     {:extra-paths ["dev/resources"
+                                   "dev/src/clj"
+                                   "dev/src/cljc"
+                                   "dev/scr/cljs"]
+                     :extra-deps  {nrepl/nrepl     {:mvn/version "0.4.0"}
+                                   ring/ring-devel {:mvn/version "1.6.3" :exclusions [ring/ring-core]}}}
+           :uberjar {:extra-deps {uberdeps/uberdeps {:mvn/version "1.0.4"}}}}}

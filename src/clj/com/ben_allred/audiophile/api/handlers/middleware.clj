@@ -10,7 +10,7 @@
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [integrant.core :as ig])
   (:import
-    (java.io File)))
+    (java.io File InputStream)))
 
 (defmethod ig/init-key ::vector-response [_ _]
   (fn [handler]
@@ -48,6 +48,7 @@
         (cond-> response
           (and (some? resp)
                (not (instance? File resp))
+               (not (instance? InputStream resp))
                (not (string? resp)))
           (-> (update :body (partial serdes/serialize serde'))
               (update-in [:headers "Content-Type"] #(or % (serdes/mime-type serde')))))))))
