@@ -7,7 +7,6 @@
     [com.ben-allred.audiophile.ui.services.config :as cfg]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
-    [cljs.pprint :as pp]
     com.ben-allred.audiophile.common.services.http
     com.ben-allred.audiophile.common.services.navigation
     com.ben-allred.audiophile.common.views.roots.home
@@ -23,13 +22,11 @@
 (defonce ^:private sys
   (atom nil))
 
-
 (defmethod ig/init-key :duct/const [_ component]
   component)
 
 (defmethod ig/init-key :duct.core/project-ns [_ ns]
   ns)
-
 
 (defn init []
   (let [{store ::ui-store/store

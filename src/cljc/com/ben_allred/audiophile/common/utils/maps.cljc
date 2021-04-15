@@ -1,4 +1,5 @@
-(ns com.ben-allred.audiophile.common.utils.maps)
+(ns com.ben-allred.audiophile.common.utils.maps
+  (:refer-clojure :exclude [flatten]))
 
 (defn update-maybe [m k f & f-args]
   (if (some? (get m k))
@@ -33,3 +34,16 @@
               m)
         (with-meta (meta m)))))
 
+(defn ^:private flatten* [m path]
+  (mapcat (fn [[k v]]
+            (let [path' (conj path k)]
+              (if (map? v)
+                (flatten* v path')
+                [[path' v]])))
+          m))
+
+(defn flatten [m]
+  (into {} (flatten* m [])))
+
+(defn nest [m]
+  (reduce-kv assoc-in {} m))

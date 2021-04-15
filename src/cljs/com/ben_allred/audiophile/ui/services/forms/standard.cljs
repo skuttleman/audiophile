@@ -1,0 +1,63 @@
+(ns com.ben-allred.audiophile.ui.services.forms.standard
+  (:require
+    [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.utils.stubs :as st]
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
+
+(deftype StandardForm [id state errors-fn]
+  pforms/IChange
+  (init! [_ value]
+    (let [rep (maps/flatten value)]
+      (swap! state assoc
+             :init rep
+             :current rep
+             :visited #{}
+             :form/visited false)
+      nil))
+  (update! [_ path value]
+    (swap! state (fn [val]
+                   (-> val
+                       (update :current assoc path value)
+                       (update :visited conj path))))
+    nil)
+
+  pforms/ITrack
+  (visit! [_]
+    (swap! state assoc :form/visited true)
+    nil)
+  (visit! [_ path]
+    (swap! state update :visited conj path)
+    nil)
+  (visited? [_]
+    (let [val @state]
+      (or (:form/visited val)
+          (boolean? (seq (:visited val))))))
+  (visited? [_ path]
+    (let [val @state]
+      (or (:form/visited val)
+          (contains? (:visited val) path))))
+  (changed? [_ path]
+    (let [val @state]
+      (= (get-in val [:init path])
+         (get-in val [:current path]))))
+
+  pforms/IValidate
+  (errors [this]
+    (errors-fn @this))
+
+  IDeref
+  (-deref [_]
+    (maps/nest (:current @state))))
+
+(defn create
+  ([]
+   (create nil))
+  ([init-value]
+   (create init-value (constantly nil)))
+  ([init-value errors-fn]
+   (create :default init-value errors-fn))
+  ([id init-value errors-fn]
+   (let [state (st/atom nil)]
+     (doto (->StandardForm id state errors-fn)
+       (pforms/init! init-value)))))

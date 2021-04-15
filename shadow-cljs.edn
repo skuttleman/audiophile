@@ -10,7 +10,7 @@
                 [cljs-http "0.1.46"]
                 [com.ben-allred/collaj "0.8.0"]
                 [com.ben-allred/formation "0.6.2" :exclusions [[nrepl/nrepl]]]
-                [com.ben-allred/vow "0.1.0"]
+                [com.ben-allred/vow "0.6.1"]
                 [com.ben-allred/ws-client-cljc "0.1.0-SNAPSHOT" :exclusions [[nrepl/nrepl]
                                                                              [org.clojure/core.async]]]
                 [com.cognitect/transit-cljs "0.8.256"]
@@ -32,4 +32,6 @@
  :builds       {:ui
                 {:target     :browser
                  :output-dir "resources/public/js"
+                 :devtools   {:watch-dir  "public/css"
+                              :after-load com.ben-allred.audiophile.ui.app/init}
                  :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}}}

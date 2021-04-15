@@ -18,9 +18,11 @@
         (v/then :data (comp v/reject :errors))
         (v/peek #(dispatch! [:resource/success id %])
                 #(dispatch! [:resource/failure id %]))))
+  (status [_]
+    (:status @state))
 
   pv/IPromise
-  (then [_ on-success on-error]
+  (then [this on-success on-error]
     (let [{:keys [status value error]} @state]
       (case status
         :success (on-success value)
@@ -31,14 +33,15 @@
                                                :success [(on-success value)]
                                                :error [(on-error error)]
                                                nil)
-                                         (remove-watch state watch-key))))))))
+                                         (remove-watch state watch-key))))))
+      this))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
     (let [{:keys [status value error]} @state]
       (case status
-        :error [status error]
-        [status value]))))
+        :error error
+        value))))
 
 (defmethod ig/init-key ::resource [_ {:keys [store opts->vow]}]
   (let [dispatch! (partial ui-store/dispatch! store)
@@ -52,3 +55,9 @@
    (request! resource nil))
   ([resource opts]
    (pres/request! resource opts)))
+
+(defn status [resource]
+  (pres/status resource))
+
+(defn ready? [resource]
+  (not= :requesting (status resource)))

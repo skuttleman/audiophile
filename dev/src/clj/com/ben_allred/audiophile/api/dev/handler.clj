@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.common.services.navigation :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]
-    [ring.util.response :as res])
+    [ring.util.response :as resp])
   (:import
     (java.net URI)))
 
@@ -20,7 +20,7 @@
                 :else route)]
      (-> base-url
          (str path)
-         res/redirect
+         resp/redirect
          (auth/token->cookie value cookie)))))
 
 (defn ^:private logout! [nav base-url]
@@ -41,7 +41,7 @@
           (str (nav/path-for nav
                              :auth/callback
                              {:query-params (select-keys params #{:email :redirect-uri})}))
-          res/redirect))))
+          resp/redirect))))
 
 (defmethod ig/init-key ::logout [_ {:keys [base-url nav]}]
   (fn [_]

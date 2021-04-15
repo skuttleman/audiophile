@@ -38,7 +38,7 @@
          :reagent-render
          (fn [attrs & args]
            (into [component (cond-> (dissoc attrs :auto-focus?)
-                              auto-focus? (assoc :ref ref))]
+                              auto-focus? (assoc :ref ref :auto-focus true))]
                  args))}))))
 
 (defn ^:private with-id [component]
@@ -53,7 +53,7 @@
         (update :on-blur (fn [on-blur]
                            (fn [e]
                              (when-let [on-change (:on-change attrs)]
-                               (on-change (not-empty (string/trim (:value attrs)))))
+                               (on-change (some-> attrs :value string/trim not-empty)))
                              (when on-blur
                                (on-blur e)))))
         (->> (conj [component]))
@@ -110,7 +110,7 @@
             (-> {:type     (or type :text)
                  :disabled #?(:clj true :cljs disabled)
                  #?@(:cljs [:on-change (comp on-change dom/target-value)])}
-                (merge (select-keys attrs #{:class :id :on-blur :ref :value})))]])))))
+                (merge (select-keys attrs #{:class :id :on-blur :ref :value :on-focus :auto-focus})))]])))))
 
 (def ^{:arglists '([attrs])} checkbox
   (with-auto-focus

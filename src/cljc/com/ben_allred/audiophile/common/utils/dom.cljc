@@ -19,12 +19,14 @@
 (defn stop-propagation [event]
   #?(:cljs
      (when (.-stopPropagation event)
-       (.stopPropagation event))))
+       (.stopPropagation event)))
+  event)
 
 (defn prevent-default [event]
   #?(:cljs
      (when (.-preventDefault event)
-       (.preventDefault event))))
+       (.preventDefault event)))
+  event)
 
 (defn target-value [event]
   #?(:cljs

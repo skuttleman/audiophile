@@ -7,7 +7,10 @@
   :ui/login #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root}
 
  [:duct/const :resources/user-details]
- #ig/ref :com.ben-allred.audiophile.common.services.resources.core/resource
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
+
+ [:duct/const :resources/user-login]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
 
  [:duct/const :services/store]
  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
@@ -36,13 +39,20 @@
    ["/css" [[true :resources/css]]]
    [true :ui/not-found]]]
 
- :com.ben-allred.audiophile.common.services.resources.core/resource
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
  {:store     #ig/ref :services/store
   :opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/details}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
+ {:store     #ig/ref :services/store
+  :opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/login}
 
  :com.ben-allred.audiophile.common.services.resources.users/details
  {:nav         #ig/ref :services/nav
   :http-client #ig/ref :services/http}
+
+ :com.ben-allred.audiophile.common.services.resources.users/login
+ {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.services.ui-store.core/store
  {}
@@ -52,5 +62,5 @@
  {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.views.roots.login/root
- {:nav   #ig/ref :services/nav
-  :store #ig/ref :services/store}}
+ {:nav            #ig/ref :services/nav
+  :login-resource #ig/ref :resources/user-login}}
