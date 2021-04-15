@@ -1,6 +1,5 @@
 (ns com.ben-allred.audiophile.common.views.core
   (:require
-    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [integrant.core :as ig]))
 
@@ -9,9 +8,10 @@
         component (get components-table handler comp/not-found)]
     [component (assoc state :auth/user auth-user)]))
 
-(defmethod ig/init-key ::app [_ {:keys [components-table toasts user-resource]}]
+(defmethod ig/init-key ::app [_ {:keys [components-table header toasts user-resource]}]
   (fn [state]
     [:div
+     [header (assoc state :auth/user @user-resource)]
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
       [:div.layout--inset

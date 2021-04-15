@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.utils.stubs
+(ns com.ben-allred.audiophile.common.services.stubs.reagent
   (:refer-clojure :exclude [atom])
   #?(:cljs
      (:require

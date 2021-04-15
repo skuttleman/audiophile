@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
-    [com.ben-allred.audiophile.common.utils.dom :as dom]
+    [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.utils.logger :as log]))
 
@@ -22,6 +22,12 @@
 
 (defn not-found [_]
   [:div "not found"])
+
+(defn icon
+  ([icon-class]
+   (icon {} icon-class))
+  ([attrs icon-class]
+   [:i.fas (update attrs :class conj (str "fa-" (name icon-class)))]))
 
 (defn form [{:keys [buttons disabled form] :as attrs} & fields]
   (let [ready? (when (satisfies? pres/IResource form)

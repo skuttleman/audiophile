@@ -1,9 +1,8 @@
 (ns com.ben-allred.audiophile.ui.services.forms.standard
   (:require
     [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.utils.stubs :as st]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
+    [com.ben-allred.audiophile.common.utils.maps :as maps]))
 
 (deftype StandardForm [id state errors-fn]
   pforms/IChange
@@ -58,6 +57,6 @@
   ([init-value errors-fn]
    (create :default init-value errors-fn))
   ([id init-value errors-fn]
-   (let [state (st/atom nil)]
+   (let [state (r/atom nil)]
      (doto (->StandardForm id state errors-fn)
        (pforms/init! init-value)))))

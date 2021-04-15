@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.ui.app
   (:require
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
-    [com.ben-allred.audiophile.common.utils.dom :as dom]
+    [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.core :as views]
     [com.ben-allred.audiophile.ui.services.config :as cfg]

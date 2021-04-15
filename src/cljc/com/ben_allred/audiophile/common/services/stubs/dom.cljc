@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.utils.dom
+(ns com.ben-allred.audiophile.common.services.stubs.dom
   (:require
     [clojure.set :as set]))
 
@@ -72,3 +72,8 @@
      (when-let [[node event id] (get @listeners key)]
        (swap! listeners dissoc key)
        (.removeEventListener node (name event) id))))
+
+(defn assign! [path]
+  #?(:cljs
+     (.assign (.-location window)
+              path)))

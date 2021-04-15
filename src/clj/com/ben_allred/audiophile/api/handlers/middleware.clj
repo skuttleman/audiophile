@@ -82,7 +82,7 @@
                             time
                             unit
                             (:status response)))
-          (log/spy :debug (identity #_:body response))
+          (log/spy :debug (:body response))
           response)
         (handler request)))))
 

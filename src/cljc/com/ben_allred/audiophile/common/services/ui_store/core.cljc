@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.common.services.ui-store.core
   (:require
+    [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.services.ui-store.protocols :as pui-store]
     [com.ben-allred.audiophile.common.services.ui-store.reducers :as reducers]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.stubs :as st]
     [com.ben-allred.collaj.core :as collaj]
     [com.ben-allred.collaj.enhancers :as ecollaj]
     [integrant.core :as ig]))
@@ -20,7 +20,7 @@
 (defn create-store [reducer]
   (let [{:keys [get-state dispatch]}
         (collaj/create-custom-store
-          st/atom
+          r/atom
           reducer
           #?(:cljs (ecollaj/with-log-middleware
                      #(log/info "Action dispatched:" %)

@@ -1,16 +1,14 @@
 (ns com.ben-allred.audiophile.common.services.forms.core
   (:require
     [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.services.resources.core :as res]
-    [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
-    [com.ben-allred.audiophile.common.utils.logger :as log])
+    [com.ben-allred.audiophile.common.services.resources.protocols :as pres])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
 
 (defn ^:private derefable? [x]
-  #?(:cljs    (satisfies? IDeref x)
-     :default (instance? IDeref x)))
+  #?(:clj  (instance? IDeref x)
+     :cljs (satisfies? IDeref x)))
 
 (defn init! [form value]
   (pforms/init! form value))

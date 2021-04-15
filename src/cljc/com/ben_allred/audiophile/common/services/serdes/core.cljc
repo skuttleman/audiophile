@@ -27,7 +27,7 @@
           (string? value) (edn/read-string opts value)
           #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn/read opts))])
           :else (edn/read opts value))
-        (catch #?(:clj Throwable :default :default) _ nil)))))
+        (catch #?(:cljs :default :default Throwable) _ nil)))))
 
 (defmethod ig/init-key ::transit [_ _]
   (reify
@@ -35,26 +35,26 @@
     (mime-type [_]
       "application/json+transit")
     (serialize [_ value _]
-      #?(:cljs (-> :json
+      #?(:clj (let [out (ByteArrayOutputStream. 4096)]
+                (-> out
+                    (trans/writer :json)
+                    (trans/write value))
+                (.toString out))
+         :cljs (-> :json
                    trans/writer
-                   (trans/write value))
-         :default (let [out (ByteArrayOutputStream. 4096)]
-                    (-> out
-                        (trans/writer :json)
-                        (trans/write value))
-                    (.toString out))))
+                   (trans/write value))))
     (deserialize [_ value _]
       (try
-        #?(:cljs    (-> :json
-                        trans/reader
-                        (trans/read value))
-           :default (-> value
-                        (cond->
-                          (not (instance? InputStream value))
-                          (-> .getBytes ByteArrayInputStream.))
-                        (trans/reader :json)
-                        trans/read))
-        (catch #?(:clj Throwable :default :default) _ nil)))))
+        #?(:clj  (-> value
+                     (cond->
+                       (not (instance? InputStream value))
+                       (-> .getBytes ByteArrayInputStream.))
+                     (trans/reader :json)
+                     trans/read)
+           :cljs (-> :json
+                     trans/reader
+                     (trans/read value)))
+        (catch #?(:cljs :default :default Throwable) _ nil)))))
 
 (defmethod ig/init-key ::jwt [_ {:keys [algo data-serde expiration secret]}]
   (reify

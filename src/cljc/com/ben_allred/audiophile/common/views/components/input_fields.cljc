@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.common.views.components.input-fields
   (:require
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.utils.dom :as dom]
-    [com.ben-allred.audiophile.common.utils.stubs :as st]))
+    [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
+    [com.ben-allred.audiophile.common.services.stubs.reagent :as r]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small? visited?]} & body]
   (let [errors (seq (remove nil? errors))
@@ -28,11 +28,11 @@
   (fn [{:keys [auto-focus?]} & _]
     (let [vnode (volatile! nil)
           ref (fn [node] (some->> node (vreset! vnode)))]
-      (st/create-class
+      (r/create-class
         {:component-did-update
          (fn [this _]
            (when-let [node @vnode]
-             (when (and auto-focus? (not (:disabled (second (st/argv this)))))
+             (when (and auto-focus? (not (:disabled (second (r/argv this)))))
                (vreset! vnode nil)
                (dom/focus node))))
          :reagent-render
@@ -125,7 +125,7 @@
                #?@(:cljs [:on-change #(on-change (not value))])}
               (merge (select-keys attrs #{:class :id :on-blur :ref})))]]))))
 
-(def ^{:arglists '([attrs])} button
+(def ^{:arglists '([attrs true-display false-display])} button
   (with-auto-focus
     (with-id
       (fn [{:keys [disabled on-change value] :as attrs} true-display false-display]

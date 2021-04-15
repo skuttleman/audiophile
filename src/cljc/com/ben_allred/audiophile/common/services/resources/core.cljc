@@ -1,13 +1,14 @@
 (ns com.ben-allred.audiophile.common.services.resources.core
   (:require
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
-    [com.ben-allred.audiophile.common.utils.stubs :as st]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [integrant.core :as ig])
-  #?(:clj (:import
-            (clojure.lang IDeref))))
+  #?(:clj
+     (:import
+       (clojure.lang IDeref))))
 
 (deftype Resource [id state dispatch! opts->vow]
   pres/IResource
@@ -45,7 +46,7 @@
 
 (defmethod ig/init-key ::resource [_ {:keys [store opts->vow]}]
   (let [dispatch! (partial ui-store/dispatch! store)
-        state (st/atom nil)
+        state (r/atom nil)
         id (gensym "RESOURCE__")]
     (dispatch! [:resource/register id (partial reset! state)])
     (->Resource id state dispatch! opts->vow)))

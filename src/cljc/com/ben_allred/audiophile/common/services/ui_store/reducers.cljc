@@ -4,8 +4,7 @@
     [com.ben-allred.collaj.reducers :as rcollaj]))
 
 (defn ^:private resource-state
-  ([]
-   nil)
+  ([] nil)
   ([state [action k data]]
    (case action
      :resource/register
@@ -31,8 +30,7 @@
      state)))
 
 (defn ^:private page
-  ([]
-   nil)
+  ([] nil)
   ([state [type route]]
    (case type
      :router/updated route
