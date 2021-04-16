@@ -22,10 +22,7 @@
         [status body headers] {:status  (http/status->code status)
                                :body    body
                                :headers headers}
-        [status body headers resp] (maps/assoc-maybe resp
-                                                     :status (http/status->code status)
-                                                     :body body
-                                                     :headers headers)
+        ({:status (_ :guard keyword?)} :as response) (update response :status http/status->code)
         response response))))
 
 (defmethod ig/init-key ::serde [_ {:keys [edn-serde transit-serde]}]

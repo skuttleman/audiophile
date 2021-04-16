@@ -5,12 +5,13 @@
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [#?(:clj clj-http.core :cljs cljs-http.core) :as http*]
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [clojure.set :as set]
-    [medley.core :as medley]
-    [com.ben-allred.vow.core :as v]
+    [clojure.string :as string]
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [integrant.core :as ig]))
+    [com.ben-allred.vow.core :as v]
+    [integrant.core :as ig]
+    [medley.core :as medley]))
 
 (defprotocol IHttpClient
   (request! [this opts]))
@@ -100,16 +101,16 @@
                                client/wrap-unknown-host]
                         :cljs [client/wrap-multipart-params
                                client/wrap-channel-from-request-map]))]
-    #?(:clj  (let [cs (cook/cookie-store)
-                   ch (async/chan)]
-               (-> opts
-                   (update :headers (partial medley/map-keys name))
-                   (merge {:async? true :cookie-store cs})
-                   (client* (fn [response]
-                              (async/put! ch (assoc response :cookies (cook/get-cookies cs))))
-                            (fn [exception]
-                              (async/put! ch (assoc (ex-data exception) :cookies (cook/get-cookies cs))))))
-               ch)
+    #?(:clj  (let [cs (cook/cookie-store)]
+               (async/go
+                 (try
+                   (-> opts
+                       (update :headers (partial medley/map-keys name))
+                       (merge {:cookie-store cs})
+                       client*
+                       (assoc :cookies (cook/get-cookies cs)))
+                   (catch Throwable ex
+                     (assoc (ex-data ex) :cookies (cook/get-cookies cs))))))
        :cljs (-> opts
                  (update :headers (partial medley/map-keys name))
                  client*))))
@@ -118,21 +119,24 @@
   (loop [[[_ serde] :as serdes] (seq serdes)]
     (cond
       (empty? serdes) default-serde
-      (= content-type (serdes/mime-type serde)) serde
+      (string/starts-with? content-type (serdes/mime-type serde)) serde
       :else (recur (rest serdes)))))
 
 (defn ^:private request* [ch serdes]
   (async/go
     (let [ch-response (async/<! ch)
-          {:keys [headers] :as response} (-> (if-let [data (ex-data ch-response)]
-                                               data
-                                               ch-response)
-                                             (update :headers (partial medley/map-keys keyword)))
-          serde (->serde (:content-type headers) serdes (:edn serdes))]
+          {:keys [headers]
+           :as   response} (-> (ex-data ch-response)
+                               (or ch-response)
+                               (update :headers (partial medley/map-keys keyword)))
+          default-serde (:edn serdes)
+          serde (->serde (:content-type headers (serdes/mime-type default-serde))
+                         serdes
+                         default-serde)]
       (-> response
           (update :status #(code->status % %))
           (update :body #(cond->> %
-                                  (and serde (string? %)) (serdes/deserialize serde)))
+                           (and serde (string? %)) (serdes/deserialize serde)))
           (->> (conj [(if (success? response) :success :error)]))))))
 
 (defn ^:private response*
@@ -151,9 +155,10 @@
             headers (merge {:content-type content-type
                             :accept       content-type}
                            (:headers opts))
-            serde (->serde (:content-type headers) serdes (:edn serdes))]
+            serde (when-not (string? (:body opts))
+                    (->serde (:content-type headers) serdes (:edn serdes)))]
         (-> opts
-            (maps/update-maybe :body (partial serdes/serialize serde))
+            (cond-> serde (maps/update-maybe :body (partial serdes/serialize serde)))
             (update :headers merge headers)
             client*
             (request* serdes)

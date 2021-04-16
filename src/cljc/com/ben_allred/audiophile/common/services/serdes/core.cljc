@@ -1,10 +1,12 @@
 (ns com.ben-allred.audiophile.common.services.serdes.core
   (:require
     #?@(:clj [[clj-jwt.core :as clj-jwt]
-              [clojure.java.io :as io]])
-    [#?(:clj clojure.edn :cljs cljs.reader) :as edn]
+              [clojure.java.io :as io]
+              [jsonista.core :as jsonista]])
+    [#?(:clj clojure.edn :cljs cljs.reader) :as edn*]
     [cognitect.transit :as trans]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.utils.keywords :as keywords]
     [integrant.core :as ig])
   #?(:clj
      (:import
@@ -24,9 +26,9 @@
       (try
         (cond
           (nil? value) nil
-          (string? value) (edn/read-string opts value)
-          #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn/read opts))])
-          :else (edn/read opts value))
+          (string? value) (edn*/read-string opts value)
+          #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn*/read opts))])
+          :else (edn*/read opts value))
         (catch #?(:cljs :default :default Throwable) _ nil)))))
 
 (defmethod ig/init-key ::transit [_ _]
@@ -56,6 +58,18 @@
                      (trans/read value)))
         (catch #?(:cljs :default :default Throwable) _ nil)))))
 
+(defmethod ig/init-key ::json [_ {:keys [object-mapper]}]
+  (reify
+    pserdes/ISerde
+    (mime-type [_]
+      "application/json")
+    (serialize [_ value _]
+      #?(:clj  (jsonista/write-value-as-string value object-mapper)
+         :cljs (js/JSON.stringify value)))
+    (deserialize [_ value _]
+      #?(:clj (jsonista/read-value value object-mapper)
+         :cljs (js/JSON.parse value)))))
+
 (defmethod ig/init-key ::jwt [_ {:keys [algo data-serde expiration secret]}]
   (reify
     pserdes/ISerde
@@ -82,6 +96,11 @@
                     :claims
                     (update :data (partial pserdes/deserialize data-serde) opts))
             (catch Throwable _ nil))))))
+
+(defmethod ig/init-key ::object-mapper [_ _]
+  #?(:clj (jsonista/object-mapper
+            {:encode-key-fn keywords/str
+             :decode-key-fn keyword})))
 
 (defn serialize
   ([serde value]

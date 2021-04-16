@@ -16,9 +16,9 @@
 
 (defmethod ig/init-key ::root [_ {:keys [nav]}]
   (fn [state]
-    (if-not (:auth/user state)
-      (nav/navigate! nav :ui/login)
-      [:p "Welcome"])))
+    (if-let [{:user/keys [first-name]} (:auth/user state)]
+      [:p "Welcome, " first-name]
+      (nav/navigate! nav :ui/login))))
 
 (defmethod ig/init-key ::header [_ {:keys [nav]}]
   (fn [_state]
