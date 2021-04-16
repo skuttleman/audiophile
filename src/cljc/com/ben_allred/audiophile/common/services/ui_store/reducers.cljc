@@ -46,7 +46,16 @@
      :toasts/remove! (dissoc state id)
      state)))
 
+(defn ^:private banners
+  ([] {})
+  ([state [type {:keys [id level body]}]]
+   (case type
+     :banners/add! (assoc state id {:level level :body body})
+     :banners/remove! (dissoc state id)
+     state)))
+
 (def reducer
-  (rcollaj/combine {:internal/resource-state resource-state
+  (rcollaj/combine {:banners                 banners
+                    :internal/resource-state resource-state
                     :page                    page
                     :toasts                  toasts}))

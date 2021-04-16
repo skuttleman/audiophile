@@ -13,7 +13,7 @@
       (async/<! (async/timeout 1000))
       (ui-store/dispatch! store [:toasts/remove! {:id id}]))))
 
-(defn toast! [level msg]
+(defn toast! [level body]
   (fn [store]
     (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))]
       (ui-store/dispatch! store
@@ -24,7 +24,18 @@
                                                     (ui-store/dispatch! store [:toasts/display! {:id id}])
                                                     (async/<! (async/timeout 6000))
                                                     (ui-store/dispatch! store (remove-toast! id)))
-                                                  msg)}]))))
+                                                  body)}]))))
+
+(defn remove-banner! [id]
+  [:banners/remove! {:id id}])
+
+(defn banner! [level body]
+  (fn [store]
+    (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))]
+      (ui-store/dispatch! store
+                          [:banners/add! {:id    id
+                                          :level level
+                                          :body  body}]))))
 
 (defn server-err! [err-code]
-  (toast! :error (keyword err-code)))
+  (banner! :error (keyword err-code)))

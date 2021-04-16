@@ -11,6 +11,7 @@
     com.ben-allred.audiophile.common.services.navigation.core
     com.ben-allred.audiophile.common.services.navigation.parsers
     com.ben-allred.audiophile.common.services.resources.core
+    com.ben-allred.audiophile.common.services.resources.toaster
     com.ben-allred.audiophile.common.services.resources.users
     com.ben-allred.audiophile.common.views.components.toast
     com.ben-allred.audiophile.common.views.roots.home

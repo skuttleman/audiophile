@@ -2,6 +2,7 @@
  {:components-table #ig/ref :ui.components/table
   :header           #ig/ref :com.ben-allred.audiophile.common.views.roots.home/header
   :toasts           #ig/ref :com.ben-allred.audiophile.common.views.components.toast/toasts
+  :banners          #ig/ref :com.ben-allred.audiophile.common.views.components.toast/banners
   :user-resource    #ig/ref :resources/user-details}
 
  [:duct/const :ui.components/table]
@@ -9,7 +10,7 @@
   :ui/login #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root}
 
  [:duct/const :resources/user-details]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
 
  [:duct/const :resources/user-login]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
@@ -44,6 +45,13 @@
  [:duct/const :ui/err-codes]
  {:user-not-found "Authentication failed.User not found."}
 
+ ;; Resources
+ [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
+ {:store      #ig/ref :services/store
+  :resource   #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
+  :success-fn #ig/ref :toaster/success-fn
+  :error-fn   #ig/ref :toaster/error-fn}
+
  [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
  {:store     #ig/ref :services/store
   :opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/details}
@@ -56,6 +64,13 @@
  {:nav         #ig/ref :services/nav
   :http-client #ig/ref :services/http}
 
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success-fn]
+ {:msg "Success"}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error-fn]
+ {:msg "An error has occurred."}
+
+ ;; Services
  :com.ben-allred.audiophile.common.services.resources.users/login
  {:nav #ig/ref :services/nav}
 
@@ -74,5 +89,8 @@
  {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.views.components.toast/toasts
+ {:store #ig/ref :services/store}
+
+ :com.ben-allred.audiophile.common.views.components.toast/banners
  {:store     #ig/ref :services/store
   :err-codes #ig/ref :ui/err-codes}}
