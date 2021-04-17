@@ -2,10 +2,6 @@
   "name": "audiophile",
   "version": "0.0.1",
   "private": true,
-  "scripts": {
-    "dev": "LOG_LEVEL=debug ENV=development nf --procfile Procfile-dev start",
-    "start": "clj -m com.ben-allred.audiophile.api.server"
-  },
   "devDependencies": {
     "shadow-cljs": "2.12.4"
   },
