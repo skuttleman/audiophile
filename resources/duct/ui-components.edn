@@ -15,9 +15,6 @@
  [:duct/const :resources/user-details]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
 
- [:duct/const :resources/user-login]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
-
  [:duct/const :nav/routes]
  [""
   [;; AUTH
@@ -51,9 +48,9 @@
  ;; Resources
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]
  {:http-client #ig/ref :services/http
-  :method :get
-  :nav #ig/ref :services/nav
-  :route :auth/details}
+  :method      :get
+  :nav         #ig/ref :services/nav
+  :route       :auth/details}
 
  [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
  {:store      #ig/ref :services/store
@@ -63,9 +60,6 @@
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]}
-
- [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
- {:opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/login}
 
  [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success-fn]
  {:msg "Success"}
@@ -81,8 +75,11 @@
  {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.views.roots.login/root
- {:nav            #ig/ref :services/nav
-  :login-resource #ig/ref :resources/user-login}
+ {:nav        #ig/ref :services/nav
+  :login-form #ig/ref :views/login-form}
+
+ [:com.ben-allred.audiophile.common.views.roots.login/login-form :views/login-form]
+ {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.views.roots.home/header
  {:nav #ig/ref :services/nav}

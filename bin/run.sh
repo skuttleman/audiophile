@@ -2,16 +2,14 @@
 
 PROFILE="${1:-prod}"
 
-echo "running with profile: ${PROFILE}"
-
 case "${PROFILE}" in
 prod)
+  echo "running with profile: prod"
   $(dirname ${BASH_SOURCE[0]})/build-ui.sh
-  clj -m com.ben-allred.audiophile.api.server
+  clj -m com.ben-allred.audiophile.api.server | grep -v com.zaxxer.hikari
   ;;
 dev)
-  rm -rf node_modules
-  npm install
+  echo "running with profile: dev"
   LOG_LEVEL=debug ENV=development nf --procfile Procfile-dev start
   ;;
 *)

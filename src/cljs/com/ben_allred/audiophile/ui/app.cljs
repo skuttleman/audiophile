@@ -22,9 +22,6 @@
             ui-store/get-state
             (dissoc :internal/resource-state))])
 
-(defonce ^:private sys
-  (atom nil))
-
 (defmethod ig/init-key :duct/const [_ component]
   component)
 
@@ -34,12 +31,16 @@
 (defmethod ig/init-key :duct.core/environment [_ env]
   env)
 
-(defn init []
-  (let [{store ::ui-store/store
-         app*  ::views/app} (swap! sys (fn [sys]
-                                         (some-> sys ig/halt!)
-                                         (ig/init (cfg/load-config "ui.edn"))))]
-    (rdom/render
-      [app app* store]
-      (.getElementById dom/document "root")
-      #(log/info [:app/initialized]))))
+(def ^:private config
+  (cfg/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
+
+(defn ^:export init
+  ([]
+   (init (ig/init config)))
+  ([system]
+   (let [{store ::ui-store/store
+          app*  ::views/app} system]
+     (rdom/render
+       [app app* store]
+       (.getElementById dom/document "root")
+       #(log/info [:app/initialized])))))

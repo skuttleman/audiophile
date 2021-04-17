@@ -2,4 +2,17 @@
 [#duct/include "duct/base.edn"
  #duct/include "duct/serdes.edn"
  #duct/include "duct/services.edn"
- #duct/include "duct/ui-components.edn"]
+ #duct/include "duct/ui-components.edn"
+ {[:duct/const :services/nav]
+  #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
+
+  [:duct/const :services/http]
+  #ig/ref :com.ben-allred.audiophile.common.services.http/client
+
+  :com.ben-allred.audiophile.common.services.http/client
+  {:serdes {:edn     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
+            :transit #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}}
+
+  :com.ben-allred.audiophile.common.services.navigation.core/nav
+  {:routes #ig/ref :nav/routes
+   :store  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store}}]

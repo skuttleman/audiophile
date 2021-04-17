@@ -1,9 +1,14 @@
-;; shadow-cljs configuration
-{:deps   {:aliases [:cljs]}
+{:deps   true
  :nrepl  {:port #shadow/env ["UI_NREPL_PORT" :as :int :default 7100]}
- :builds {:ui
+ :builds {:dev
           {:target     :browser
            :output-dir "resources/public/js"
-           :devtools   {:watch-dir  "resources/public"
-                        :after-load com.ben-allred.audiophile.ui.app/init}
+           :compiler   {:optimizations :none}
+           :devtools   {:watch-dir  "resources/public/css"
+                        :after-load com.ben-allred.audiophile.ui.dev.core/init}
+           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
+          :ui
+          {:target     :browser
+           :output-dir "resources/public/js"
+           :compiler   {:optimizations :advanced}
            :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}}}
