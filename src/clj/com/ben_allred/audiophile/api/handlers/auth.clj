@@ -54,11 +54,11 @@
 
 (defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav oauth tx]}]
   (fn [request]
-    (let [code (log/spy :info (get-in request [:nav/route :query-params :code]))
-          {:keys [access_token]} (log/spy :info (auth/token oauth {:code code}))
-          profile (log/spy :info (auth/profile oauth {:token access_token}))]
+    (let [code (get-in request [:nav/route :query-params :code])
+          {:keys [access_token]} (auth/token oauth {:code code})
+          profile (auth/profile oauth {:token access_token})]
       (login* nav
-              (log/spy :info (users/query-by-email tx (:email profile)))
+              (users/query-by-email tx (:email profile))
               jwt-serde
               base-url
               "/"))))

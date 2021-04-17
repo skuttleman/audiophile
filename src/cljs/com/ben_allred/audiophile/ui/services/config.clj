@@ -8,4 +8,4 @@
   (-> file
       duct/resource
       (duct/read-config uduct/readers)
-      (duct/prep-config [:duct.profile/prod])))
+      (duct/prep-config [:duct.profile/base :duct.profile/prod])))

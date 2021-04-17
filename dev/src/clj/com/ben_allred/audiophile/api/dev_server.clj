@@ -16,10 +16,10 @@
   ([sys]
    (some-> sys ig/halt!)
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev"]))]
-     (-> "config.edn"
+     (-> "dev.edn"
          duct/resource
          (duct/read-config uduct/readers)
-         (duct/prep-config [:duct.profile/prod :duct.profile/dev])
+         (duct/prep-config [:duct.profile/base :duct.profile/dev])
          (ig/init [:com.ben-allred.audiophile.api.core/server])))))
 
 (defn -main [& _]

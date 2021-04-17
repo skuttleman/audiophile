@@ -31,6 +31,9 @@
 (defmethod ig/init-key :duct.core/project-ns [_ ns]
   ns)
 
+(defmethod ig/init-key :duct.core/environment [_ env]
+  env)
+
 (defn init []
   (let [{store ::ui-store/store
          app*  ::views/app} (swap! sys (fn [sys]

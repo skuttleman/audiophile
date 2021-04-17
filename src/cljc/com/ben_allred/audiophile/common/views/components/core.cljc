@@ -4,15 +4,14 @@
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.utils.maps :as maps]))
 
 (defn spinner [{:keys [size]}]
   [(keyword (str "div.loader." (name (or size :large))))])
 
-(defn with-resource [resource opts _component & _args]
+(defn with-resource [[resource opts] _component & _args]
   (res/request! resource opts)
-  (fn [_resource _opts component & args]
+  (fn [_resource component & args]
     (let [status (res/status resource)
           data @resource]
       (case status

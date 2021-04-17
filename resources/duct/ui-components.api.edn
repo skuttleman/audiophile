@@ -1,0 +1,14 @@
+#audiophile/merge
+[#duct/include "duct/ui-components.edn"
+ {[:duct/const :services/nav]
+  #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/stub
+
+  :com.ben-allred.audiophile.common.services.navigation.core/stub
+  {:routes #ig/ref :nav/routes}
+
+  ;; UI Resources
+  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]
+  ^:promotes {:http-client #ig/ref :http.stub/user-details}
+
+  [:com.ben-allred.audiophile.common.services.http/stub :http.stub/user-details]
+  {}}]

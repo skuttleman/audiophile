@@ -1,9 +1,10 @@
 (ns com.ben-allred.audiophile.common.views.core
   (:require
     [com.ben-allred.audiophile.common.views.components.core :as comp]
-    [integrant.core :as ig]))
+    [integrant.core :as ig]
+    [com.ben-allred.audiophile.common.services.resources.core :as res]))
 
-(defn root [auth-user state components-table]
+(defn root [auth-user components-table state]
   (let [handler (get-in state [:page :handler])
         component (get components-table handler comp/not-found)]
     [component (assoc state :auth/user auth-user)]))
@@ -12,9 +13,10 @@
   (fn [state]
     [:div
      [banners (:banners state)]
-     [header (assoc state :auth/user @user-resource)]
+     [header (cond-> state
+               (res/success? user-resource) (assoc :auth/user @user-resource))]
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
       [:div.layout--inset
-       [comp/with-resource user-resource nil root state components-table]]]
+       [comp/with-resource [user-resource] root components-table state]]]
      [toasts (:toasts state)]]))

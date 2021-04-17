@@ -1,22 +1,20 @@
-{:duct.profile/serdes        #duct/include "duct/serdes.edn"
- :duct.profile/ui-components #duct/include "duct/ui-components.edn"
+{:duct.profile/base
+ #duct/include "duct/base.ui.edn"
 
- :duct.profile/base          {:duct.core/project-ns
-                              :com.ben-allred/audiophile
+ :duct.profile/prod
+ {:duct.core/project-ns
+  :com.ben-allred/audiophile
 
-                              [:duct/const :services/nav]
-                              #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
+  [:duct/const :services/nav]
+  #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
 
-                              [:duct/const :services/http]
-                              #ig/ref :com.ben-allred.audiophile.common.services.http/client
+  [:duct/const :services/http]
+  #ig/ref :com.ben-allred.audiophile.common.services.http/client
 
-                              :com.ben-allred.audiophile.common.services.http/client
-                              {:serdes {:edn     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
-                                        :transit #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}}
+  :com.ben-allred.audiophile.common.services.http/client
+  {:serdes {:edn     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
+            :transit #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}}
 
-                              :com.ben-allred.audiophile.common.services.navigation.core/nav
-                              {:routes #ig/ref :nav/routes
-                               :store  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store}
-
-                              :com.ben-allred.audiophile.common.services.serdes.core/jwt
-                              ^:replace {}}}
+  :com.ben-allred.audiophile.common.services.navigation.core/nav
+  {:routes #ig/ref :nav/routes
+   :store  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store}}}

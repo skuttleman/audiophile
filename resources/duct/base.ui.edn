@@ -1,0 +1,5 @@
+#audiophile/merge
+[#duct/include "duct/base.edn"
+ #duct/include "duct/serdes.edn"
+ #duct/include "duct/services.edn"
+ #duct/include "duct/ui-components.edn"]

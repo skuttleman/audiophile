@@ -27,7 +27,6 @@
                                                  :client_id client-id
                                                  :client_secret client-secret
                                                  :redirect_uri redirect-uri))}]
-    (clojure.pprint/pprint request)
     (v/deref! (http/post http-client token-uri request))))
 
 (defn ^:private profile* [http-client {:keys [profile-uri]} opts]

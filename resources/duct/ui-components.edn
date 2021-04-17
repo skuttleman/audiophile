@@ -9,14 +9,14 @@
  {:ui/home  #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
   :ui/login #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root}
 
+ [:duct/const :services/store]
+ #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
+
  [:duct/const :resources/user-details]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
 
  [:duct/const :resources/user-login]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
-
- [:duct/const :services/store]
- #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
 
  [:duct/const :nav/routes]
  [""
@@ -45,7 +45,16 @@
  [:duct/const :ui/err-codes]
  {:user-not-found "Authentication failed.User not found."}
 
+ :com.ben-allred.audiophile.common.services.ui-store.core/store
+ {}
+
  ;; Resources
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]
+ {:http-client #ig/ref :services/http
+  :method :get
+  :nav #ig/ref :services/nav
+  :route :auth/details}
+
  [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
  {:store      #ig/ref :services/store
   :resource   #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
@@ -53,16 +62,10 @@
   :error-fn   #ig/ref :toaster/error-fn}
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
- {:store     #ig/ref :services/store
-  :opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/details}
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]}
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :user/login]
- {:store     #ig/ref :services/store
-  :opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/login}
-
- :com.ben-allred.audiophile.common.services.resources.users/details
- {:nav         #ig/ref :services/nav
-  :http-client #ig/ref :services/http}
+ {:opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/login}
 
  [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success-fn]
  {:msg "Success"}
@@ -70,12 +73,8 @@
  [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error-fn]
  {:msg "An error has occurred."}
 
- ;; Services
  :com.ben-allred.audiophile.common.services.resources.users/login
  {:nav #ig/ref :services/nav}
-
- :com.ben-allred.audiophile.common.services.ui-store.core/store
- {}
 
  ;; Reagent Components
  :com.ben-allred.audiophile.common.views.roots.home/root

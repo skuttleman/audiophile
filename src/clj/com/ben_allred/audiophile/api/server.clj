@@ -13,7 +13,7 @@
                  (-> "config.edn"
                      duct/resource
                      (duct/read-config uduct/readers)
-                     (duct/prep-config [:duct.profile/prod])
+                     (duct/prep-config [:duct.profile/base :duct.profile/prod])
                      (ig/init [:com.ben-allred.audiophile.api.core/server])))]
     (.addShutdownHook (Runtime/getRuntime)
                       (Thread. ^Runnable

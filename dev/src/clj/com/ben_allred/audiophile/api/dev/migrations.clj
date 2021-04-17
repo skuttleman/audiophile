@@ -63,11 +63,11 @@
   (duct/load-hierarchy)
   (let [{migrator   ::migrator
          transactor ::repos/transactor
-         :as        system} (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev"]))]
+         :as        system} (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-migrations"]))]
                               (-> "migrations.edn"
                                   duct/resource
                                   (duct/read-config uduct/readers)
-                                  (duct/prep-config [:duct.profile/migrations])
+                                  (duct/prep-config [:duct.profile/base :duct.profile/migrations])
                                   (ig/init [::migrator ::repos/transactor])))]
     (try
       (case command

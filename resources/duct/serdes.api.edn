@@ -1,0 +1,7 @@
+#audiophile/merge
+[#duct/include "duct/serdes.edn"
+ {:com.ben-allred.audiophile.common.services.serdes.core/jwt
+  {:algo       :HS256
+   :data-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit
+   :expiration #ig/ref :env/jwt-expiration
+   :secret     #ig/ref :env/jwt-secret}}]

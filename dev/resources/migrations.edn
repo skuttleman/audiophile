@@ -1,12 +1,9 @@
-{:duct.profile/services
- #duct/include "duct/services.edn"
-
- :duct.profile/env
- #duct/include "duct/env.edn"
+{:duct.profile/base
+ #duct/include "duct/base.api.edn"
 
  :duct.profile/migrations
  {:duct.core/project-ns
-  com.ben-allred/audiophile.migrations
+  :com.ben-allred/audiophile.migrations
 
   [:duct/const :migrations/res-path]
   "db/migrations"

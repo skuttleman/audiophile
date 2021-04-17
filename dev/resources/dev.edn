@@ -1,20 +1,24 @@
-{:com.ben-allred.audiophile.api.core/server
- ^:promote {:handler #ig/ref :com.ben-allred.audiophile.api.dev.handler/app}
+{:duct.profile/base
+ #duct/include "duct/base.api.edn"
 
- :com.ben-allred.audiophile.api.dev.handler/app
- {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}
+ :duct.profile/dev
+ {:com.ben-allred.audiophile.api.core/server
+  ^:promote {:handler #ig/ref :com.ben-allred.audiophile.api.dev.handler/app}
 
- [:duct/const :routes/table]
- ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
-            [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
+  :com.ben-allred.audiophile.api.dev.handler/app
+  {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}
 
- ;; components
- :com.ben-allred.audiophile.api.dev.handler/login
- {:base-url #ig/ref :env/base-url
-  :nav      #ig/ref :services/nav}
+  [:duct/const :routes/table]
+  ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
+             [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
 
- :com.ben-allred.audiophile.api.dev.handler/callback
- {:base-url  #ig/ref :env/base-url
-  :jwt-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt
-  :nav       #ig/ref :services/nav
-  :tx        #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor}}
+  ;; components
+  :com.ben-allred.audiophile.api.dev.handler/login
+  {:base-url #ig/ref :env/base-url
+   :nav      #ig/ref :services/nav}
+
+  :com.ben-allred.audiophile.api.dev.handler/callback
+  {:base-url  #ig/ref :env/base-url
+   :jwt-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt
+   :nav       #ig/ref :services/nav
+   :tx        #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor}}}

@@ -1,5 +1,7 @@
 (ns com.ben-allred.audiophile.common.services.resources.core
   (:require
+    [com.ben-allred.audiophile.common.services.http :as http]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
@@ -10,20 +12,20 @@
      (:import
        (clojure.lang IDeref))))
 
-(deftype Resource [id state dispatch! opts->vow]
+(deftype Resource [state opts->vow]
   pres/IResource
   (request! [_ opts]
-    (dispatch! [:resource/request id])
+    (swap! state assoc :status :requesting)
     (-> opts
         opts->vow
         (v/then :data (comp v/reject :errors))
-        (v/peek #(dispatch! [:resource/success id %])
-                #(dispatch! [:resource/failure id %]))))
+        (v/peek (partial swap! state assoc :status :success :value)
+                (partial swap! state assoc :status :error :error))))
   (status [_]
     (:status @state))
 
   pv/IPromise
-  (then [this on-success on-error]
+  (then [_ on-success on-error]
     (let [{:keys [status value error]} @state]
       (case status
         :success (on-success value)
@@ -34,8 +36,7 @@
                                                :success [(on-success value)]
                                                :error [(on-error error)]
                                                nil)
-                                         (remove-watch state watch-key))))))
-      this))
+                                         (remove-watch state watch-key))))))))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
@@ -44,12 +45,18 @@
         :error error
         value))))
 
-(defmethod ig/init-key ::resource [_ {:keys [store opts->vow]}]
-  (let [dispatch! (partial ui-store/dispatch! store)
-        state (r/atom nil)
-        id (gensym "RESOURCE__")]
-    (dispatch! [:resource/register id (partial reset! state)])
-    (->Resource id state dispatch! opts->vow)))
+(defmethod ig/init-key ::resource [_ {:keys [opts->vow]}]
+  (let [state (r/atom {:status :init})]
+    (->Resource state opts->vow)))
+
+(defmethod ig/init-key ::http-handler [k {:keys [http-client method nav opts->params opts->request route] :as cfg}]
+  (let [opts->params (or opts->params (constantly nil))
+        opts->request (or opts->request identity)]
+    (fn [opts]
+      (http/go http-client
+               method
+               (nav/path-for nav route (opts->params opts))
+               (opts->request opts)))))
 
 (defn request!
   ([resource]
@@ -62,3 +69,6 @@
 
 (defn ready? [resource]
   (not= :requesting (status resource)))
+
+(defn success? [resource]
+  (= :success (status resource)))

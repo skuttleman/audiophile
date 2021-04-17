@@ -177,23 +177,29 @@
                    (result-fn opts)
                    result)))))
 
+(defn go
+  ([client method url]
+   (go client method url nil))
+  ([client method url request]
+   (request! client (assoc request :method method :url url))))
+
 (defn get
   ([client url]
    (get client url nil))
   ([client url request]
-   (request! client (assoc request :method :get :url url))))
+   (go client :get url request)))
 
 (defn post [client url request]
-  (request! client (assoc request :method :post :url url)))
+  (go client :post url request))
 
 (defn patch [client url request]
-  (request! client (assoc request :method :patch :url url)))
+  (go client :patch url request))
 
 (defn put [client url request]
-  (request! client (assoc request :method :put :url url)))
+  (go client :put url request))
 
 (defn delete
   ([client url]
    (delete client url nil))
   ([client url request]
-   (request! client (assoc request :method :delete :url url))))
+   (go client :delete url request)))
