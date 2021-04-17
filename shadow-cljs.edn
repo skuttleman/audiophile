@@ -7,8 +7,15 @@
            :devtools   {:watch-dir  "resources/public/css"
                         :after-load com.ben-allred.audiophile.ui.dev.core/init}
            :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
+
           :ui
           {:target     :browser
            :output-dir "resources/public/js"
            :compiler   {:optimizations :advanced}
-           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}}}
+           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}
+
+          :test
+          {:target    :node-test
+           :output-to "target/node-tests.js"
+           :ns-regexp "-test$"
+           :autorun   true}}}

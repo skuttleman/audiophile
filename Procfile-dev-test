@@ -1,3 +1,5 @@
 api: PORT=3000 clj -A:dev -m com.ben-allred.audiophile.api.dev-server | grep -v com.zaxxer.hikari
+api-test: clj -A:test -M:test --watch --reporter kaocha.report/documentation
 sass: sass --watch src/scss/main.scss resources/public/css/main.css
 ui: clj -A:cljs-dev:shadow-cljs watch dev | grep -v DEBUG
+ui-test: clj -A:test:cljs-test:shadow-cljs watch test
