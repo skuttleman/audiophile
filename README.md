@@ -31,3 +31,15 @@ Visit `http://localhost:{PORT:-3000}` in your browser to use app.
 
 api nREPL listens at `localhost {NREPL_PORT:-7000}` (can be overridden with NREPL_PORT env var)
 ui nREPL listens at `localhost {UI_NREPL_PORT:-7100}` (can be overridden with UI_NREPL_PORT env var)
+
+## Tests
+
+### Dependencies
+- Install [firefox](https://www.mozilla.org/en-US/firefox/mac/)
+- Install [gecko](https://www.kenst.com/2016/12/installing-marionette-firefoxdriver-on-mac-osx/)
+
+### Run tests
+
+```bash
+$ bin/test.sh
+```
