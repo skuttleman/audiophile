@@ -2,8 +2,9 @@
  #duct/include "duct/base.api.edn"
 
  :duct.profile/dev
- {:com.ben-allred.audiophile.api.core/server
-  ^:promote {:handler #ig/ref :com.ben-allred.audiophile.api.dev.handler/app}
+ {[:com.ben-allred.audiophile.api.core/server :duct/daemon]
+  {:handler     #ig/ref :api/handler
+   :server-port #ig/ref :env/server-port}
 
   :com.ben-allred.audiophile.api.dev.handler/app
   {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}

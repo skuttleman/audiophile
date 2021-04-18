@@ -1,30 +1,28 @@
-#audiophile/merge
-[#duct/include "duct/services.edn"
- {[:duct/const :services/transactor]
-  #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor
+{[:duct/const :services/transactor]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor
 
-  [:duct/const :services/oauth]
-  #ig/ref :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
+ [:duct/const :services/oauth]
+ #ig/ref :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
 
-  :com.ben-allred.audiophile.api.services.repositories.core/cfg
-  {:db-name  #ig/ref :env/db-name
-   :host     #ig/ref :env/db-host
-   :password #ig/ref :env/db-password
-   :port     #ig/ref :env/db-port
-   :user     #ig/ref :env/db-user}
+ :com.ben-allred.audiophile.api.services.repositories.core/cfg
+ {:db-name  #ig/ref :env/db-name
+  :host     #ig/ref :env/db-host
+  :password #ig/ref :env/db-password
+  :port     #ig/ref :env/db-port
+  :user     #ig/ref :env/db-user}
 
-  :com.ben-allred.audiophile.api.services.repositories.core/datasource
-  {:spec #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/cfg}
+ :com.ben-allred.audiophile.api.services.repositories.core/datasource
+ {:spec #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/cfg}
 
-  :com.ben-allred.audiophile.api.services.repositories.core/transactor
-  {:datasource #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource}
+ :com.ben-allred.audiophile.api.services.repositories.core/transactor
+ {:datasource #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource}
 
-  :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
-  {:cfg         {:client-id     #ig/ref :env.goauth/client-id
-                 :client-secret #ig/ref :env.goauth/client-secret
-                 :scopes        #ig/ref :env.goauth/scopes
-                 :auth-uri      #ig/ref :env.goauth/auth-uri
-                 :redirect-uri  #ig/ref :env.goauth/redirect-uri
-                 :token-uri     #ig/ref :env.goauth/token-uri
-                 :profile-uri   #ig/ref :env.goauth/profile-uri}
-   :http-client #ig/ref :services/http}}]
+ :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
+ {:cfg         {:client-id     #ig/ref :env.goauth/client-id
+                :client-secret #ig/ref :env.goauth/client-secret
+                :scopes        #ig/ref :env.goauth/scopes
+                :auth-uri      #ig/ref :env.goauth/auth-uri
+                :redirect-uri  #ig/ref :env.goauth/redirect-uri
+                :token-uri     #ig/ref :env.goauth/token-uri
+                :profile-uri   #ig/ref :env.goauth/profile-uri}
+  :http-client #ig/ref :services/http}}

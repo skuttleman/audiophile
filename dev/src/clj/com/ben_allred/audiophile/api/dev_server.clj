@@ -6,15 +6,24 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    [nrepl.server :as nrepl]))
+    [nrepl.server :as nrepl]
+    [ring.middleware.reload :as rel]))
 
 (defonce system nil)
+
+(def reload!
+  (rel/wrap-reload identity {:dirs ["src/clj"
+                                    "src/cljc"
+                                    "test/clj"
+                                    "test/cljc"
+                                    "dev/src/clj"]}))
 
 (defn reset-sys!
   ([]
    (reset-sys! system))
   ([sys]
    (some-> sys ig/halt!)
+   (reload! nil)
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev"]))]
      (-> "dev.edn"
          duct/resource

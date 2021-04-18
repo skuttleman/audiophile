@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-./build-ui.sh
+$(dirname ${BASH_SOURCE[0]})/build-ui.sh
 
 echo "[building uberjar ...]"
 rm -rf classes

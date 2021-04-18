@@ -7,11 +7,7 @@
 
 (defmethod ig/init-key ::server [_ {:keys [handler server-port]}]
   (let [server (web/run handler {:port server-port :host "0.0.0.0"})]
-    (log/info (str "[SERVER] is listening "
-                   (when (:wrap-reload (meta handler))
-                     "with dev reloading enabled ")
-                   "on port "
-                   server-port))
+    (log/info (str "[SERVER] is listening on port " server-port))
     server))
 
 (defmethod ig/halt-key! ::server [_ server]
