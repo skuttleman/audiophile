@@ -10,7 +10,7 @@
   (fn [{:keys [uri] :as request}]
     (some-> request
             (ring.res/resource-request "public")
-            (assoc-in [:headers "Content-Type"]
+            (assoc-in [:headers "content-type"]
                       (cond
                         (string/ends-with? uri ".js") "application/javascript"
                         (string/ends-with? uri ".css") "text/css"
@@ -23,4 +23,4 @@
   (fn [_]
     [:http.status/ok
      (templates/html [app (ui-store/get-state store)])
-     {"Content-Type" "text/html"}]))
+     {"content-type" "text/html"}]))

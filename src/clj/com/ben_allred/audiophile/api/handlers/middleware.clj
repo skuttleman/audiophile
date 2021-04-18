@@ -10,34 +10,38 @@
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [integrant.core :as ig])
   (:import
+    (clojure.lang ExceptionInfo)
     (java.io File InputStream)))
+
+(defn ->response [response]
+  (match/match response
+    nil {:status (http/status->code :http.status/not-found)}
+    [status] {:status (http/status->code status)}
+    [status body] {:status (http/status->code status) :body body}
+    [status body headers] {:status  (http/status->code status)
+                           :body    body
+                           :headers headers}
+    ({:status (_ :guard keyword?)} :as response) (update response :status http/status->code)
+    response response))
 
 (defmethod ig/init-key ::vector-response [_ _]
   (fn [handler]
     (fn [request]
-      (match/match (handler request)
-        nil {:status (http/status->code :http.status/not-found)}
-        [status] {:status (http/status->code status)}
-        [status body] {:status (http/status->code status) :body body}
-        [status body headers] {:status  (http/status->code status)
-                               :body    body
-                               :headers headers}
-        ({:status (_ :guard keyword?)} :as response) (update response :status http/status->code)
-        response response))))
+      (-> request handler ->response))))
 
 (defmethod ig/init-key ::serde [_ {:keys [edn-serde transit-serde]}]
   (fn [handler]
     (fn [request]
       (let [serde (condp string/starts-with? (or (get-in request [:headers "accept"])
                                                  (get-in request [:headers "content-type"])
-                                                 "")
+                                                 "unknown/mime-type")
                     (serdes/mime-type transit-serde) transit-serde
                     edn-serde)
             {resp :body :as response} (-> request
                                           (maps/update-maybe :body (partial serdes/deserialize serde))
                                           handler)
-            serde' (condp string/starts-with? (or (get-in response [:headers "Accept"])
-                                                  (get-in response [:headers "Content-Type"])
+            serde' (condp string/starts-with? (or (get-in response [:headers "accept"])
+                                                  (get-in response [:headers "content-type"])
                                                   "")
                      (serdes/mime-type edn-serde) edn-serde
                      (serdes/mime-type transit-serde) transit-serde
@@ -48,7 +52,7 @@
                (not (instance? InputStream resp))
                (not (string? resp)))
           (-> (update :body (partial serdes/serialize serde'))
-              (update-in [:headers "Content-Type"] #(or % (serdes/mime-type serde')))))))))
+              (update-in [:headers "content-type"] #(or % (serdes/mime-type serde')))))))))
 
 (defmethod ig/init-key ::with-route [_ {:keys [nav]}]
   (fn [handler]
@@ -92,3 +96,15 @@
         (-> request
             (maps/assoc-maybe :auth/user user)
             handler)))))
+
+(defmethod ig/init-key ::with-ex [_ {:keys [err-msg]}]
+  (let [err-response {:status 500 :body {:errors [{:message (or err-msg "an unexpected error occurred")}]}}]
+    (fn [handler]
+      (fn [request]
+        (try (handler request)
+             (catch ExceptionInfo ex
+               (if-let [response (:response ex)]
+                 (->response response)
+                 err-response))
+             (catch Throwable _
+               err-response))))))

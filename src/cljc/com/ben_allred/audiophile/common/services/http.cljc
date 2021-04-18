@@ -72,6 +72,9 @@
 (def ^{:arglists '([response])} success?
   (partial check-status 200 299))
 
+(def ^{:arglists '([response])} redirect?
+  (partial check-status 300 399))
+
 (def ^{:arglists '([response])} client-error?
   (partial check-status 400 499))
 

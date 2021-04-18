@@ -21,8 +21,6 @@
     false)
   (visited? [_ _]
     false)
-  (changed? [_ _]
-    false)
 
   pforms/IValidate
   (errors [_]

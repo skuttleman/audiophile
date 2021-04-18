@@ -1,4 +1,13 @@
-{:com.ben-allred.audiophile.common.services.serdes.core/edn
+{[:duct/const :serdes/edn]
+ #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
+
+ [:duct/const :serdes/transit]
+ #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit
+
+ [:duct/const :serdes/json]
+ #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/json
+
+ :com.ben-allred.audiophile.common.services.serdes.core/edn
  {}
 
  :com.ben-allred.audiophile.common.services.serdes.core/transit

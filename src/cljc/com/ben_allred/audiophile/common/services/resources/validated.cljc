@@ -70,8 +70,6 @@
     (forms/visited? form))
   (visited? [_ path]
     (forms/visited? form path))
-  (changed? [_ path]
-    (forms/changed? form path))
 
   pforms/IValidate
   (errors [_]

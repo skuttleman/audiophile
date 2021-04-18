@@ -1,8 +1,5 @@
 #audiophile/merge
-[#duct/include "duct/base.edn"
- #duct/include "duct/serdes.edn"
- #duct/include "duct/services.edn"
- #duct/include "duct/ui-components.edn"
+[#duct/include "duct/ui-components.edn"
  {[:duct/const :services/nav]
   #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
 
@@ -10,8 +7,8 @@
   #ig/ref :com.ben-allred.audiophile.common.services.http/client
 
   :com.ben-allred.audiophile.common.services.http/client
-  {:serdes {:edn     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
-            :transit #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}}
+  {:serdes {:edn     #ig/ref :serdes/edn
+            :transit #ig/ref :serdes/transit}}
 
   :com.ben-allred.audiophile.common.services.navigation.core/nav
   {:routes #ig/ref :nav/routes

@@ -4,7 +4,6 @@
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
-    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [integrant.core :as ig])
@@ -49,7 +48,7 @@
   (let [state (r/atom {:status :init})]
     (->Resource state opts->vow)))
 
-(defmethod ig/init-key ::http-handler [k {:keys [http-client method nav opts->params opts->request route] :as cfg}]
+(defmethod ig/init-key ::http-handler [_ {:keys [http-client method nav opts->params opts->request route]}]
   (let [opts->params (or opts->params (constantly nil))
         opts->request (or opts->request identity)]
     (fn [opts]
@@ -67,8 +66,17 @@
 (defn status [resource]
   (pres/status resource))
 
+(defn requested? [resource]
+  (not= :init (status resource)))
+
 (defn ready? [resource]
   (not= :requesting (status resource)))
 
 (defn success? [resource]
   (= :success (status resource)))
+
+(defn error? [resource]
+  (= :error (status resource)))
+
+(defn requesting? [resource]
+  (= :requesting (status resource)))

@@ -1,2 +1,5 @@
-{:duct.core/project-ns
- :com.ben-allred/audiophile}
+#audiophile/merge
+[#duct/include "duct/serdes.edn"
+ #duct/include "duct/services.edn"
+ {:duct.core/project-ns
+  :com.ben-allred/audiophile}]

@@ -27,8 +27,7 @@
      (-> base-url
          (str path)
          resp/redirect
-         (token->cookie value cookie)
-         log/spy))))
+         (token->cookie value cookie)))))
 
 (defn logout!
   ([nav base-url]

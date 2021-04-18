@@ -6,8 +6,7 @@
 
 (defprotocol ITrack
   (visit! [this] [this path])
-  (visited? [this] [this path])
-  (changed? [this path]))
+  (visited? [this] [this path]))
 
 (defprotocol IValidate
   (errors [this]))

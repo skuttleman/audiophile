@@ -15,7 +15,9 @@
            :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}
 
           :test
-          {:target    :node-test
-           :output-to "target/node-tests.js"
+          {:target    :browser-test
+           ;:output-to "target/node-tests.js"
+           :test-dir "resources/private"
            :ns-regexp "-test$"
+           :devtools {:http-root "resources/private"}
            :autorun   true}}}

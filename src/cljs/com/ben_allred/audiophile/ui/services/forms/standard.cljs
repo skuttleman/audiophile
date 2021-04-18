@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.utils.maps :as maps]))
 
-(deftype StandardForm [id state errors-fn]
+(deftype StandardForm [state errors-fn]
   pforms/IChange
   (init! [_ value]
     (let [rep (maps/flatten value)]
@@ -17,7 +17,7 @@
   (update! [_ path value]
     (swap! state (fn [val]
                    (-> val
-                       (update :current assoc path value)
+                       (update :current (if (some? value) assoc dissoc) path value)
                        (update :visited conj path))))
     nil)
 
@@ -31,15 +31,11 @@
   (visited? [_]
     (let [val @state]
       (or (:form/visited val)
-          (boolean? (seq (:visited val))))))
+          (boolean (seq (:visited val))))))
   (visited? [_ path]
     (let [val @state]
       (or (:form/visited val)
           (contains? (:visited val) path))))
-  (changed? [_ path]
-    (let [val @state]
-      (= (get-in val [:init path])
-         (get-in val [:current path]))))
 
   pforms/IValidate
   (errors [this]
@@ -55,8 +51,6 @@
   ([init-value]
    (create init-value (constantly nil)))
   ([init-value errors-fn]
-   (create :default init-value errors-fn))
-  ([id init-value errors-fn]
    (let [state (r/atom nil)]
-     (doto (->StandardForm id state errors-fn)
+     (doto (->StandardForm state errors-fn)
        (pforms/init! init-value)))))

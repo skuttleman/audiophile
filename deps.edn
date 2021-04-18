@@ -33,10 +33,19 @@
                                           :exclusions  [org.clojure/java.jdbc]}
            ring/ring-core                {:mvn/version "1.3.2"}
            seancorfield/next.jdbc        {:mvn/version "1.0.5"}}
- :aliases {:dev         {:extra-paths ["dev/resources" "dev/src/clj" "dev/src/cljc"]
-                         :extra-deps  {nrepl/nrepl     {:mvn/version "0.4.0"}
-                                       ring/ring-devel {:mvn/version "1.6.3" :exclusions [ring/ring-core]}}}
-           :cljs-dev    {:extra-paths ["dev/resources" "dev/src/cljc" "dev/src/cljs"]}
+ :aliases {:dev         {:extra-paths ["dev/resources" "dev/src/clj" "dev/src/cljc"
+                                       "test/resources" "test/clj" "test/cljc"]
+                         :extra-deps  {nrepl/nrepl
+                                       {:mvn/version "0.4.0"}
+
+                                       ring/ring-devel
+                                       {:mvn/version "1.6.3"
+                                        :exclusions  [ring/ring-core]}
+
+                                       org.seleniumhq.selenium/selenium-firefox-driver
+                                       {:mvn/version "4.0.0-beta-3"}}}
+           :cljs-dev    {:extra-paths ["dev/resources" "dev/src/cljc" "dev/src/cljs"
+                                       "test/resources" "test/cljc" "test/cljs"]}
            :shadow-cljs {:extra-paths ["src/cljs"]
                          :extra-deps  {cljs-http/cljs-http        {:mvn/version "0.1.46"}
                                        com.cognitect/transit-cljs {:mvn/version "0.8.256"}
@@ -45,10 +54,5 @@
                                        thheller/shadow-cljs       {:mvn/version "2.12.5"}}
                          :main-opts   ["-m" "shadow.cljs.devtools.cli"]}
            :uberjar     {:extra-deps {uberdeps/uberdeps {:mvn/version "1.0.4"}}}
-           :test        {:extra-paths ["test/resources" "test/clj" "test/cljc"]
-                         :extra-deps  {#_#_com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
-                                                                  :sha     "209b64504cb3bd3b99ecfec7937b358a879f55c1"}
-                                       lambdaisland/kaocha {:mvn/version "1.0.829"}}
-                         :main-opts   #_["-m" "cognitect.test-runner"]
-                         ["-m" "kaocha.runner"]}
-           :cljs-test   {:extra-paths ["test/resources" "test/cljc" "test/cljs"]}}}
+           :test        {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.829"}}
+                         :main-opts  ["-m" "kaocha.runner"]}}}

@@ -2,6 +2,6 @@
  #ig/ref :com.ben-allred.audiophile.common.services.http/client
 
  :com.ben-allred.audiophile.common.services.http/client
- {:serdes {:edn     #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
-           :json    #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/json
-           :transit #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit}}}
+ {:serdes {:edn     #ig/ref :serdes/edn
+           :json    #ig/ref :serdes/json
+           :transit #ig/ref :serdes/transit}}}

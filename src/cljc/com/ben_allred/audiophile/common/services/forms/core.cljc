@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.common.services.forms.core
   (:require
     [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres])
   #?(:clj
      (:import
@@ -28,9 +29,6 @@
   ([form path]
    (pforms/visited? form path)))
 
-(defn changed? [form path]
-  (pforms/changed? form path))
-
 (defn errors [form]
   (pforms/errors form))
 
@@ -44,12 +42,11 @@
    (let [visited? (when (satisfies? pforms/ITrack form)
                     (visited? form path))
          errors (when (satisfies? pforms/IValidate form)
-                  (get-in (errors form) path))
-         status (when (satisfies? pres/IResource form)
-                  (pres/status form))]
+                  (get-in (errors form) path))]
      (-> attrs
          (assoc :visited? visited?)
-         (update :disabled #(or % (= :requesting status)))
+         (update :disabled #(or % (when (satisfies? pres/IResource form)
+                                    (res/requesting? form))))
          (update :on-blur (fn [on-blur]
                             (fn [e]
                               (visit! form path)

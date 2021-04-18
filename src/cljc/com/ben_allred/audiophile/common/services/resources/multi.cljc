@@ -19,7 +19,7 @@
         (contains? statuses :init) :init
         (contains? statuses :error) :error
         (contains? statuses :requesting) :requesting
-        :success)))
+        :else :success)))
 
   pv/IPromise
   (then [_ on-success on-error]
@@ -30,11 +30,12 @@
   IDeref
   (#?(:cljs -deref :default deref) [_]
     (loop [vals {} [[k res] :as resources] (seq resources)]
-      (let [{:keys [status value error]} @res]
-        (if (empty? resources)
-          vals
+      (if (empty? resources)
+        vals
+        (let [status (pres/status res)
+              value @res]
           (case status
-            :error error
+            :error value
             :success (recur (assoc vals k value) (rest resources))
             nil))))))
 

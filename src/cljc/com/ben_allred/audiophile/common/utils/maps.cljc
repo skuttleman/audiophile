@@ -13,7 +13,7 @@
     :else m))
 
 (defn assoc-maybe [m & kvs]
-  (into m (comp (partition-all 2) (filter (comp some? second))) kvs))
+  (into (or m {}) (comp (partition-all 2) (filter (comp some? second))) kvs))
 
 (defn assoc-in-maybe [m ks v]
   (cond-> m
@@ -47,3 +47,8 @@
 
 (defn nest [m]
   (reduce-kv assoc-in {} m))
+
+(defn deep-merge [m & ms]
+  (if (map? m)
+    (apply merge-with deep-merge m ms)
+    (last ms)))

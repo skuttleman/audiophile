@@ -19,6 +19,6 @@
 
   :com.ben-allred.audiophile.api.dev.handler/callback
   {:base-url  #ig/ref :env/base-url
-   :jwt-serde #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt
+   :jwt-serde #ig/ref :serdes/jwt
    :nav       #ig/ref :services/nav
-   :tx        #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor}}}
+   :tx        #ig/ref :services/transactor}}}
