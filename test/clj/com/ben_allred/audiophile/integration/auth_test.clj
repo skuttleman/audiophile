@@ -2,10 +2,11 @@
   (:require
     [clojure.test :refer [are deftest is testing use-fixtures]]
     [com.ben-allred.audiophile.api.handlers.core :as handlers]
+    [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.http :as http]
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.integration.common.mocks :as mocks]))
 
 (deftest auth-details-test
@@ -27,9 +28,8 @@
     (let [user {:user/id :foo :user/email "email"}]
       (int/with-config [system [::handlers/app] int/setup-mocks
                         :services/transactor :execute! [user]
-                        :services/oauth :-token {:access_token "access-token"}
                         :services/oauth :-profile (fn [opts]
-                                                    (if (= "access-token" (:token opts))
+                                                    (if (= "secret-pin-12345" (:code opts))
                                                       {:email (:user/email user)}
                                                       (throw (ex-info "fail" {}))))]
         (let [handler (-> (::handlers/app system)
@@ -42,7 +42,7 @@
                                handler)
                   base-url (get system [:duct/const :env/base-url])
                   jwt-serde (get system [:duct/const :serdes/jwt])
-                  cookies (int/decode-cookies response)]
+                  cookies (ring/decode-cookies response)]
               (testing "redirects with token cookie"
                 (is (http/redirect? response))
                 (is (= (str base-url "/")
@@ -55,5 +55,5 @@
                 (get [:duct/const :services/oauth])
                 (mocks/set-mock! :-token nil))
             (is (http/server-error? (-> {}
-                                        (ihttp/get system :auth/callback {:query-params {:code "secret-pin-12345"}})
+                                        (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
                                         handler)))))))))

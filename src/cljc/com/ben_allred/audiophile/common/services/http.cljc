@@ -7,14 +7,11 @@
     [clojure.core.async :as async]
     [clojure.set :as set]
     [clojure.string :as string]
+    [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.vow.core :as v]
-    [integrant.core :as ig]
-    [medley.core :as medley]))
-
-(defprotocol IHttpClient
-  (request! [this opts]))
+    [integrant.core :as ig]))
 
 (def code->status
   {200 :http.status/ok
@@ -108,14 +105,14 @@
                (async/go
                  (try
                    (-> opts
-                       (update :headers (partial medley/map-keys name))
+                       (update :headers (partial maps/map-keys name))
                        (merge {:cookie-store cs})
                        client*
                        (assoc :cookies (cook/get-cookies cs)))
                    (catch Throwable ex
                      (assoc (ex-data ex) :cookies (cook/get-cookies cs))))))
        :cljs (-> opts
-                 (update :headers (partial medley/map-keys name))
+                 (update :headers (partial maps/map-keys name))
                  client*))))
 
 (defn ->serde [content-type serdes default-serde]
@@ -131,7 +128,7 @@
           {:keys [headers]
            :as   response} (-> (ex-data ch-response)
                                (or ch-response)
-                               (update :headers (partial medley/map-keys keyword)))
+                               (update :headers (partial maps/map-keys keyword)))
           default-serde (:edn serdes)
           serde (->serde (:content-type headers (serdes/mime-type default-serde))
                          serdes
@@ -150,7 +147,7 @@
    (cond-> value (not response?) :body)))
 
 (defmethod ig/init-key ::client [_ {:keys [serdes]}]
-  (reify IHttpClient
+  (reify pres/IResource
     (request! [_ opts]
       (let [content-type (if (:dev? opts)
                            (serdes/mime-type (:edn serdes))
@@ -174,7 +171,7 @@
 
 (defmethod ig/init-key ::stub [_ {:keys [result result-fn]}]
   (reify
-    IHttpClient
+    pres/IResource
     (request! [_ opts]
       (v/resolve (if result-fn
                    (result-fn opts)
@@ -184,7 +181,7 @@
   ([client method url]
    (go client method url nil))
   ([client method url request]
-   (request! client (assoc request :method method :url url))))
+   (pres/request! client (assoc request :method method :url url))))
 
 (defn get
   ([client url]

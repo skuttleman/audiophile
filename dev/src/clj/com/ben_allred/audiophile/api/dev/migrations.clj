@@ -11,9 +11,9 @@
     [migratus.core :as migratus]))
 
 (defprotocol IMigrate
-  (-migrate [this])
-  (-rollback [this n])
-  (-create [this name]))
+  (-migrate [this] "run migrations")
+  (-rollback [this n] "rollback n migrations")
+  (-create [this name] "create a new migration"))
 
 (deftype Migrator [cfg]
   IMigrate

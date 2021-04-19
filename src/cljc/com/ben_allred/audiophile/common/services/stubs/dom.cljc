@@ -12,9 +12,9 @@
 (def ^:private code->key
   (set/map-invert key->code))
 
-(def window #?(:cljs js/window))
+(def ^:const window #?(:cljs js/window))
 
-(def document #?(:cljs js/document))
+(def ^:const document #?(:cljs js/document))
 
 (defn stop-propagation [event]
   #?(:cljs
@@ -76,4 +76,5 @@
 (defn assign! [path]
   #?(:cljs
      (.assign (.-location window)
-              path)))
+              path))
+  nil)

@@ -13,23 +13,27 @@
     (clojure.lang ExceptionInfo)
     (java.io File InputStream)))
 
-(defn ->response [response]
-  (match/match response
-    nil {:status (http/status->code :http.status/not-found)}
-    [status] {:status (http/status->code status)}
-    [status body] {:status (http/status->code status) :body body}
-    [status body headers] {:status  (http/status->code status)
-                           :body    body
-                           :headers headers}
-    ({:status (_ :guard keyword?)} :as response) (update response :status http/status->code)
-    response response))
+(defn ^:private ->response [response]
+  (-> response
+      (match/match
+        nil {:status (http/status->code :http.status/not-found)}
+        [status] {:status (http/status->code status)}
+        [status body] {:status (http/status->code status) :body body}
+        [status body headers] {:status  (http/status->code status)
+                               :body    body
+                               :headers headers}
+        ({:status (_ :guard keyword?)} :as response) (update response :status http/status->code)
+        response response)
+      (vary-meta merge (meta response))))
 
 (defmethod ig/init-key ::vector-response [_ _]
+  "convert simplified vector response into response map"
   (fn [handler]
     (fn [request]
       (-> request handler ->response))))
 
 (defmethod ig/init-key ::serde [_ {:keys [edn-serde transit-serde]}]
+  "encode and decode body based on http headers"
   (fn [handler]
     (fn [request]
       (let [serde (condp string/starts-with? (or (get-in request [:headers "accept"])
@@ -55,6 +59,7 @@
               (update-in [:headers "content-type"] #(or % (serdes/mime-type serde')))))))))
 
 (defmethod ig/init-key ::with-route [_ {:keys [nav]}]
+  "parses url and adds routing info to the request"
   (fn [handler]
     (fn [{:keys [query-string uri] :as request}]
       (-> request
@@ -64,6 +69,7 @@
           handler))))
 
 (defmethod ig/init-key ::with-logging [_ _]
+  "basic logging around api requests"
   (fn [handler]
     (fn [request]
       (if (some-> request
@@ -77,18 +83,22 @@
               [time unit] (cond
                             (> elapsed 1000000) [(long (/ elapsed 1000000)) "m"]
                             (> elapsed 1000) [(long (/ elapsed 1000)) "μ"]
-                            :else [elapsed "n"])]
-          (log/info (format "%s %s [%d%ss] - %d"
-                            (csk/->SCREAMING_SNAKE_CASE_STRING (:request-method request))
-                            (:uri request)
-                            time
-                            unit
-                            (:status response)))
+                            :else [elapsed "n"])
+              msg (format "%s %s [%d%ss] - %d"
+                          (csk/->SCREAMING_SNAKE_CASE_STRING (:request-method request))
+                          (:uri request)
+                          time
+                          unit
+                          (:status response))]
+          (if (::ex (meta response))
+            (log/warn msg)
+            (log/info msg))
           (log/spy :debug (:body response))
           response)
         (handler request)))))
 
 (defmethod ig/init-key ::with-auth [_ {:keys [jwt-serde]}]
+  "parses the auth-token on the request"
   (fn [handler]
     (fn [request]
       (let [jwt (get-in request [:cookies "auth-token" :value])
@@ -98,13 +108,14 @@
             handler)))))
 
 (defmethod ig/init-key ::with-ex [_ {:keys [err-msg]}]
-  (let [err-response {:status 500 :body {:errors [{:message (or err-msg "an unexpected error occurred")}]}}]
+  "catches exceptions thrown from a handler and produces an error response"
+  (let [err-response ^::ex {:status 500 :body {:errors [{:message (or err-msg "an unexpected error occurred")}]}}]
     (fn [handler]
       (fn [request]
         (try (handler request)
              (catch ExceptionInfo ex
                (if-let [response (:response ex)]
-                 (->response response)
+                 (vary-meta (->response response) assoc ::ex true)
                  err-response))
              (catch Throwable _
                err-response))))))

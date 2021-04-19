@@ -1,8 +1,8 @@
 (ns test.browser-runner
   (:require
-    [immutant.web :as web]
-    [ring.middleware.resource :as ring.res]
-    [clojure.string :as string])
+    [clojure.string :as string]
+    [com.ben-allred.audiophile.api.utils.ring :as ring]
+    [immutant.web :as web])
   (:import
     (org.openqa.selenium By)
     (org.openqa.selenium.firefox FirefoxDriver)))
@@ -21,7 +21,7 @@
 (defn -main [& _]
   (let [env (System/getenv)
         server-port (Long/parseLong (or (get env "UI_TEST_PORT") "8080"))
-        _ (web/run #(or (ring.res/resource-request % "private")
+        _ (web/run #(or (ring/resource-request % "private")
                         {:status 204})
                    {:port server-port :host "0.0.0.0"})
         driver (FirefoxDriver.)]

@@ -2,14 +2,14 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.templates.core :as templates]
+    [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
-    [integrant.core :as ig]
-    [ring.middleware.resource :as ring.res]))
+    [integrant.core :as ig]))
 
 (defmethod ig/init-key ::assets [_ _]
   (fn [{:keys [uri] :as request}]
     (some-> request
-            (ring.res/resource-request "public")
+            (ring/resource-request "public")
             (assoc-in [:headers "content-type"]
                       (cond
                         (string/ends-with? uri ".js") "application/javascript"

@@ -9,6 +9,7 @@
        (java.io PushbackReader))))
 
 (def readers
+  "custom readers for parsing duct config files"
   {'audiophile/uuid-re (partial conj [uuids/regex])
    'audiophile/merge   (partial reduce duct/merge-configs {})})
 

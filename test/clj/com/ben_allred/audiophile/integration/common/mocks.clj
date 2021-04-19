@@ -3,7 +3,7 @@
     (clojure.lang IAtom)))
 
 (defprotocol IMock
-  (init! [this]))
+  (init! [this] "set all mock behavior to initial behavior"))
 
 (defn ^:private ->method [method f state n]
   (let [args (into [] (repeatedly n gensym))]
@@ -12,6 +12,7 @@
           (first args))))
 
 (defmacro ->mock
+  "takes a reify expression and an optional map of default mocks and generates a mutable mocking implementation"
   ([reify]
    `(->mock nil ~reify))
   ([defaults reify]

@@ -3,7 +3,9 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.templates.html :as html]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]))
+    [com.ben-allred.audiophile.common.utils.maps :as maps])
+  (:import
+    (java.util Map$Entry)))
 
 (declare ^:private render)
 
@@ -21,8 +23,13 @@
 
 (defn ^:private clean-attrs [attrs]
   (-> attrs
-      (maps/dissocp (some-fn nil? fn?))
-      (maps/walk (fn [k v] [k (if (keyword? v) (name v) v)]))
+      (->> (colls/postwalk (fn [x]
+                            (if (instance? Map$Entry x)
+                              (let [v (val x)]
+                                (when-not (or (nil? v) (fn? v))
+                                  [(key x) (cond-> v
+                                             (keyword? v) name)]))
+                              x))))
       (maps/update-maybe :class coll->class)
       (maps/update-maybe :style m->css)))
 

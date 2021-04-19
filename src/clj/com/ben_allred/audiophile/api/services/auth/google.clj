@@ -27,21 +27,22 @@
                                                  :client_id client-id
                                                  :client_secret client-secret
                                                  :redirect_uri redirect-uri))}]
-    (v/deref! (http/post http-client token-uri request))))
+    (http/post http-client token-uri request)))
 
-(defn ^:private profile* [http-client {:keys [profile-uri]} opts]
-  (v/deref! (http/get http-client
-                      profile-uri
-                      {:query-params {:access_token (:token opts)}
-                       :headers      {:content-type "application/json"
-                                      :accept       "application/json"}})))
+(defn ^:private profile* [http-client {:keys [profile-uri] :as cfg} opts]
+  (-> (token* http-client cfg opts)
+      (v/then (fn [resp]
+                (http/get http-client
+                          profile-uri
+                          {:query-params (select-keys resp #{:access_token})
+                           :headers      {:content-type "application/json"
+                                          :accept       "application/json"}})))
+      v/deref!))
 
 (deftype GoogleOAuthProvider [http-client cfg]
   pauth/IOAuthProvider
   (-redirect-uri [_ opts]
     (redirect-uri* cfg opts))
-  (-token [_ opts]
-    (token* http-client cfg opts))
   (-profile [_ opts]
     (profile* http-client cfg opts)))
 

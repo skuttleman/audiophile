@@ -7,8 +7,7 @@
     [com.ben-allred.audiophile.integration.common.mocks :as mocks]
     [duct.core :as duct]
     [duct.core.env :as env*]
-    [integrant.core :as ig]
-    [ring.middleware.cookies :as cookies]))
+    [integrant.core :as ig]))
 
 (def ^:private config-base
   (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-test"]))]
@@ -30,7 +29,6 @@
          (mocks/->mock (reify
                          pauth/IOAuthProvider
                          (-redirect-uri [_ _])
-                         (-token [_ _])
                          (-profile [_ _])))))
 
 (defn setup-mock
@@ -56,8 +54,3 @@
        ~@body
        (finally
          (ig/halt! system#)))))
-
-(defn decode-cookies [response]
-  (->> (get-in response [:headers "Set-Cookie"])
-       (map #(:cookies (cookies/cookies-request {:headers {"cookie" %}})))
-       (reduce merge {})))
