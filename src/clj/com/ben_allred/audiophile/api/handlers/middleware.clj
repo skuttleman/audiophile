@@ -3,9 +3,9 @@
     [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.services.http :as http]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [integrant.core :as ig])
@@ -16,7 +16,7 @@
 (defn ^:private ->response [response]
   (-> response
       (match/match
-        nil {:status (http/status->code :http.status/not-found)}
+        nil {:status (http/status->code ::http/not-found)}
         [status] {:status (http/status->code status)}
         [status body] {:status (http/status->code status) :body body}
         [status body headers] {:status  (http/status->code status)
@@ -114,8 +114,10 @@
       (fn [request]
         (try (handler request)
              (catch ExceptionInfo ex
+               (log/error ex)
                (if-let [response (:response ex)]
                  (vary-meta (->response response) assoc ::ex true)
                  err-response))
-             (catch Throwable _
+             (catch Throwable ex
+               (log/error ex)
                err-response))))))

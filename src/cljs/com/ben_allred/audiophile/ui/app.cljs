@@ -36,6 +36,7 @@
 
 (defn ^:export init
   ([]
+   (set! log/*ctx* {:disabled? true})
    (init (ig/init config)))
   ([system]
    (let [{store ::ui-store/store

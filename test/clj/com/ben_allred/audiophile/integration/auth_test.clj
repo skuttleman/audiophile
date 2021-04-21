@@ -1,10 +1,13 @@
 (ns ^:integration com.ben-allred.audiophile.integration.auth-test
   (:require
+    [clojure.string :as string]
     [clojure.test :refer [are deftest is testing use-fixtures]]
     [com.ben-allred.audiophile.api.handlers.core :as handlers]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
-    [com.ben-allred.audiophile.common.services.http :as http]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.utils.http :as http]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.utils.uri :as uri]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
     [com.ben-allred.audiophile.integration.common.mocks :as mocks]))
@@ -54,6 +57,14 @@
             (-> system
                 (get [:duct/const :services/oauth])
                 (mocks/set-mock! :-token nil))
-            (is (http/server-error? (-> {}
-                                        (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
-                                        handler)))))))))
+            (testing "redirects with token cookie"
+              (let [response (-> {}
+                                 (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
+                                 handler)
+                    base-url (get system [:duct/const :env/base-url])
+                    cookies (ring/decode-cookies response)
+                    location (get-in response [:headers "Location"])]
+                (is (http/redirect? response))
+                (is (string/starts-with? location base-url))
+                (is (= "login-failed" (get-in (uri/parse location) [:query :error-msg])))
+                (is (= "" (get-in cookies ["auth-token" :value])))))))))))

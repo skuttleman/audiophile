@@ -4,7 +4,7 @@
           {:target     :browser
            :output-dir "resources/public/js"
            :compiler   {:optimizations :none}
-           :devtools   {:watch-dir  "resources/public/css"
+           :devtools   {:watch-dir  "resources/public"
                         :after-load com.ben-allred.audiophile.ui.dev.core/init}
            :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
 
@@ -16,7 +16,6 @@
 
           :test
           {:target    :browser-test
-           ;:output-to "target/node-tests.js"
            :test-dir "resources/private"
            :ns-regexp "-test$"
            :devtools {:http-root "resources/private"}

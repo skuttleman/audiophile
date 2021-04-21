@@ -7,6 +7,7 @@
     [cognitect.transit :as trans]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.keywords :as keywords]
+    [com.ben-allred.audiophile.common.utils.uri :as uri]
     [integrant.core :as ig])
   #?(:clj
      (:import
@@ -69,6 +70,16 @@
     (deserialize [_ value _]
       #?(:clj (jsonista/read-value value object-mapper)
          :cljs (js/JSON.parse value)))))
+
+(defmethod ig/init-key ::urlencode [_ _]
+  (reify
+    pserdes/ISerde
+    (mime-type [_]
+      "application/x-www-form-urlencoded")
+    (serialize [_ value _]
+      (uri/join-query value))
+    (deserialize [_ value _]
+      (uri/split-query value))))
 
 (defmethod ig/init-key ::jwt [_ {:keys [algo data-serde expiration secret]}]
   (reify

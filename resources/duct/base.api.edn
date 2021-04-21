@@ -12,7 +12,7 @@
   {:router     #ig/ref :com.ben-allred.audiophile.api.handlers.core/router
    :middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-ex
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route]}}]

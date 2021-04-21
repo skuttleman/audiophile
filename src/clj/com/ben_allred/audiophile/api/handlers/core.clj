@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
+    [com.ben-allred.audiophile.common.utils.http :as http]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::router [_ route-table]
@@ -20,7 +21,7 @@
         (ui request)
 
         :else
-        [:http.status/not-found]))))
+        [::http/not-found]))))
 
 (defmethod ig/init-key ::app [_ {:keys [middleware router]}]
   "ring handler to be run as webserver"

@@ -49,7 +49,6 @@
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]
  {:http-client #ig/ref :services/http
   :method      :get
-  :nav         #ig/ref :services/nav
   :route       :auth/details}
 
  [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]

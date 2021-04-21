@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.api.templates.core :as templates]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.utils.http :as http]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::assets [_ _]
@@ -17,10 +18,10 @@
                         :else "text/plain")))))
 
 (defmethod ig/init-key ::health [_ _]
-  (constantly [:http.status/ok {:a :ok}]))
+  (constantly [::http/ok {:a :ok}]))
 
 (defmethod ig/init-key ::ui [_ {:keys [store app]}]
   (fn [_]
-    [:http.status/ok
+    [::http/ok
      (templates/html [app (ui-store/get-state store)])
      {"content-type" "text/html"}]))

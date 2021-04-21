@@ -1,0 +1,5 @@
+{:com.ben-allred.audiophile.common.services.http/client
+ ^:promote {:middlewares [#ig/ref :com.ben-allred.audiophile.common.services.http/with-nav]}
+
+ :com.ben-allred.audiophile.common.services.http/with-nav
+ {:nav #ig/ref :services/nav}}

@@ -1,7 +1,9 @@
 (ns com.ben-allred.audiophile.ui.dev.core
   (:require
+    [clojure.pprint :as pp]
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.app :as app]
@@ -17,6 +19,7 @@
   (cfg/load-config "ui-dev.edn" [:duct.profile/base :duct.profile/dev]))
 
 (defn init []
+  (pp/pprint config)
   (app/init (swap! sys (fn [system]
                          (some-> system ig/halt!)
                          (ig/init config)))))

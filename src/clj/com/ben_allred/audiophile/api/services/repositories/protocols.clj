@@ -4,5 +4,5 @@
   (transact! [this f]))
 
 (defprotocol IExecute
-  (execute! [this query opts])
-  (exec-raw! [this sql opts]))
+  (exec-raw! [this sql opts])
+  (execute! [this query opts]))

@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.common.services.resources.core
   (:require
-    [com.ben-allred.audiophile.common.services.http :as http]
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [integrant.core :as ig])
@@ -48,14 +48,15 @@
   (let [state (r/atom {:status :init})]
     (->Resource state opts->vow)))
 
-(defmethod ig/init-key ::http-handler [_ {:keys [http-client method nav opts->params opts->request route]}]
+(defmethod ig/init-key ::http-handler [_ {:keys [http-client method opts->params opts->request route]}]
   (let [opts->params (or opts->params (constantly nil))
         opts->request (or opts->request identity)]
     (fn [opts]
-      (http/go http-client
-               method
-               (nav/path-for nav route (opts->params opts))
-               (opts->request opts)))))
+      (http/request! http-client
+                     (assoc (opts->request opts)
+                            :method method
+                            :nav/route route
+                            :nav/params (opts->params opts))))))
 
 (defn request!
   ([resource]

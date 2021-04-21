@@ -44,23 +44,27 @@
                                                                 (fn [t k v]
                                                                   (conj! t (entity-fn [k v])))))))))
 
-(deftype Executor [transactor conn]
+(deftype Executor [conn]
   prepos/IExecute
-  (execute! [_ query opts]
-    (exec* conn (sql/format query :quoting :ansi) opts))
   (exec-raw! [_ sql opts]
-    (exec* conn (cond-> sql (not (vector? sql)) vector) opts)))
+    (let [sql-params (cond-> sql
+                       (not (vector? sql)) vector)]
+      (log/debug "[TX] - executing:" sql-params)
+      (exec* conn sql-params opts)))
+  (execute! [this query opts]
+    (log/debug "[TX] - formatting:" query)
+    (prepos/exec-raw! this (sql/format query :quoting :ansi) opts)))
 
-(deftype Transactor [datasource opts]
+(deftype Transactor [datasource opts ->executor]
   prepos/ITransact
-  (transact! [this f]
+  (transact! [_ f]
     (jdbc/transact datasource
                    (fn [conn]
-                     (f (->Executor this conn)))
+                     (f (->executor conn)))
                    opts)))
 
 (defmethod ig/init-key ::transactor [_ {:keys [datasource]}]
-  (->Transactor datasource nil))
+  (->Transactor datasource nil ->Executor))
 
 (defmethod ig/init-key ::cfg [_ {:keys [db-name host password port user]}]
   {:auto-commit           true

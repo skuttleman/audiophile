@@ -1,12 +1,50 @@
 (ns com.ben-allred.audiophile.common.utils.logger
   (:require
+    [clojure.string :as string]
     [taoensso.timbre :as log*]))
 
-(def ^:macro ^{:arglists '([& args])} debug (var-get #'log*/debug))
-(def ^:macro ^{:arglists '([& args])} info (var-get #'log*/info))
-(def ^:macro ^{:arglists '([& args])} warn (var-get #'log*/warn))
-(def ^:macro ^{:arglists '([& args])} error (var-get #'log*/error))
-(def ^:macro ^{:arglists '([form] [level form])} spy (var-get #'log*/spy))
+(def ^:dynamic *ctx* nil)
+
+(defmacro with-ctx [ctx & body]
+  (if (:ns &env)
+    `(do ~@body)
+    `(binding [*ctx* (merge *ctx* ~ctx)]
+       ~@body)))
+
+(defmacro log [level line & args]
+  `(when-not (:disabled? *ctx*) ;; TBD - ctx
+     (log*/log! ~level :p ~args {:?line ~line})))
+
+(defmacro trace [& args]
+  `(log :trace ~(:line (meta &form)) ~@args))
+
+(defmacro debug [& args]
+  `(log :debug ~(:line (meta &form)) ~@args))
+
+(defmacro info [& args]
+  `(log :info ~(:line (meta &form)) ~@args))
+
+(defmacro warn [& args]
+  `(log :warn ~(:line (meta &form)) ~@args))
+
+(defmacro error [& args]
+  `(log :error ~(:line (meta &form)) ~@args))
+
+(defmacro fatal [& args]
+  `(log :fatal ~(:line (meta &form)) ~@args))
+
+(defmacro report [& args]
+  `(log :report ~(:line (meta &form)) ~@args))
+
+(defmacro spy
+  ([form]
+   `(let [val# ~form]
+      (log :debug ~(:line (meta &form)) '~form "=>" val#)
+      val#))
+  ([level form]
+   `(let [val# ~form]
+      (log ~level ~(:line (meta &form)) '~form "=>" val#)
+      val#)))
 
 (defn ^:private clean [data]
   (assoc data :hostname_ (delay nil)))

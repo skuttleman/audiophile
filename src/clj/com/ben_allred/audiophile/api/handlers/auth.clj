@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig])
   (:import
@@ -31,23 +32,37 @@
   ([nav base-url]
    (logout! nav base-url nil))
   ([nav base-url error-msg]
-   (redirect nav (nav/path-for nav :ui/home (when error-msg {:query-params {:error-msg error-msg}})) base-url "" {:max-age 0})))
+   (redirect nav
+             (nav/path-for nav :ui/home (when error-msg
+                                          {:query-params {:error-msg error-msg}}))
+             base-url
+             ""
+             {:max-age 0})))
 
-(defn login!
-  "when user is not nil, generate a redirect response with an auth-token cookie
-   when user is nil, logout"
-  [nav user jwt-serde base-url redirect-uri]
-  (cond
-    (seq user)
-    (redirect nav redirect-uri base-url (serdes/serialize jwt-serde {:user user}))
+(defmacro unsafe! [ctx & body]
+  `(try [~@body]
+        (catch Throwable ex#
+          (log/error ex# "an error occurred" ~ctx)
+          [nil ex#])))
 
-    :else
-    (logout! nav base-url :user-not-found)))
+(defn login! [nav tx jwt-serde base-url email]
+  (if-let [user (first (unsafe! "querying the user from the database"
+                         (when email
+                           (users/query-by-email tx email))))]
+    (redirect nav
+              (nav/path-for nav :ui/home)
+              base-url
+              (serdes/serialize jwt-serde {:user user}))
+    (logout! nav base-url :login-failed)))
 
-(defmethod ig/init-key ::login [_ {:keys [oauth]}]
+(defmethod ig/init-key ::login [_ {:keys [nav oauth]}]
   "GET /auth/login - redirect to auth provider"
   (fn [_]
-    (ring/redirect (auth/redirect-uri oauth))))
+    (ring/redirect (or (first (unsafe! "generating a redirect url to the auth provider"
+                                (auth/redirect-uri oauth)))
+                       (nav/path-for nav
+                                     :ui/home
+                                     {:query-params {:error-msg :login-failed}})))))
 
 (defmethod ig/init-key ::logout [_ {:keys [base-url nav]}]
   "GET /auth/logout - remove auth-token cookie"
@@ -58,17 +73,13 @@
   "GET /auth/callback - handle redirect from auth provider"
   (fn [request]
     (let [params (get-in request [:nav/route :query-params])
-          profile (auth/profile oauth params)]
-      (login! nav
-              (users/query-by-email tx (:email profile))
-              jwt-serde
-              base-url
-              "/"))))
+          profile (first (unsafe! "fetching user profile from the OAuth provider"
+                           (auth/profile oauth params)))]
+      (login! nav tx jwt-serde base-url (:email profile)))))
 
 (defmethod ig/init-key ::details [_ _]
   "GET /auth/details - return current logged on user's details"
   (fn [request]
     (if-let [user (get-in request [:auth/user :data :user])]
-      [:http.status/ok
-       {:data user}]
-      (token->cookie {:status :http.status/no-content} "" {:max-age 0}))))
+      [::http/ok {:data user}]
+      (token->cookie {:status ::http/no-content} "" {:max-age 0}))))

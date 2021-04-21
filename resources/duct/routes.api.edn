@@ -42,7 +42,8 @@
  {}
 
  :com.ben-allred.audiophile.api.handlers.auth/login
- {:oauth #ig/ref :services/oauth}
+ {:nav   #ig/ref :services/nav
+  :oauth #ig/ref :services/oauth}
 
  :com.ben-allred.audiophile.api.handlers.auth/logout
  {:base-url #ig/ref :env/base-url
@@ -52,8 +53,8 @@
  {:base-url  #ig/ref :env/base-url
   :jwt-serde #ig/ref :serdes/jwt
   :nav       #ig/ref :services/nav
-  :tx        #ig/ref :services/transactor
-  :oauth     #ig/ref :services/oauth}
+  :oauth     #ig/ref :services/oauth
+  :tx        #ig/ref :services/transactor}
 
  :com.ben-allred.audiophile.api.handlers.auth/details
  {}}
