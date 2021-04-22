@@ -1,10 +1,10 @@
 #audiophile/merge
 [#duct/include "duct/base.edn"
- #duct/include "duct/env.api.edn"
- #duct/include "duct/routes.api.edn"
- #duct/include "duct/serdes.api.edn"
- #duct/include "duct/services.api.edn"
- #duct/include "duct/ui-components.api.edn"
+ #duct/include "duct/api/env.edn"
+ #duct/include "duct/api/routes.edn"
+ #duct/include "duct/api/serdes.edn"
+ #duct/include "duct/api/services.edn"
+ #duct/include "duct/api/ui-components.edn"
  {[:duct/const :api/handler]
   #ig/ref :com.ben-allred.audiophile.api.handlers.core/app
 

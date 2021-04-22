@@ -1,6 +1,6 @@
 #audiophile/merge
 [#duct/include "duct/base.edn"
- #duct/include "duct/services.ui.edn"
+ #duct/include "duct/ui/services.edn"
  {[:duct/const :services/nav]
   #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
 

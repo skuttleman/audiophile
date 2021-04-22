@@ -1,2 +1,2 @@
-{:duct.profile/base #duct/include "duct/base.api.edn"
+{:duct.profile/base #duct/include "duct/api/base.edn"
  :duct.profile/test {}}

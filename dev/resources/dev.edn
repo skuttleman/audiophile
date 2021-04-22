@@ -1,5 +1,5 @@
 {:duct.profile/base
- #duct/include "duct/base.api.edn"
+ #duct/include "duct/api/base.edn"
 
  :duct.profile/dev
  {[:com.ben-allred.audiophile.api.core/server :duct/daemon]

@@ -1,5 +1,5 @@
 {:duct.profile/base
- #duct/include "duct/base.api.edn"
+ #duct/include "duct/api/base.edn"
 
  :duct.profile/migrations
  {:duct.core/project-ns
