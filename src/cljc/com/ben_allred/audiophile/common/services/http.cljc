@@ -28,16 +28,7 @@
    (cond-> value (not response?) :body)))
 
 (defn ^:private find-serde [{:keys [accept content-type]} serdes]
-  (let [content-type (or content-type accept "")
-        default-serde (or (:default serdes)
-                          (:edn serdes)
-                          (some-> serdes first val)
-                          (throw (ex-info "could not find serializer" {})))]
-    (loop [[[_ serde] :as serdes] (seq serdes)]
-      (cond
-        (empty? serdes) default-serde
-        (string/starts-with? content-type (serdes/mime-type serde)) serde
-        :else (recur (rest serdes))))))
+  (serdes/find-serde serdes (or content-type accept "")))
 
 (defn ^:private deserialize* [ch-response serde serdes]
   (let [{:keys [headers]

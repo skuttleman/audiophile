@@ -4,6 +4,7 @@
               [clojure.java.io :as io]
               [jsonista.core :as jsonista]])
     [#?(:clj clojure.edn :cljs cljs.reader) :as edn*]
+    [clojure.string :as string]
     [cognitect.transit :as trans]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.keywords :as keywords]
@@ -127,3 +128,14 @@
 
 (defn mime-type [serde]
   (pserdes/mime-type serde))
+
+(defn find-serde [serdes type]
+  (let [default-serde (or (:default serdes)
+                          (:edn serdes)
+                          (some-> serdes first val)
+                          (throw (ex-info "could not find serializer" {})))]
+    (loop [[[_ serde] :as serdes] (seq serdes)]
+      (cond
+        (empty? serdes) default-serde
+        (string/starts-with? type (mime-type serde)) serde
+        :else (recur (rest serdes))))))

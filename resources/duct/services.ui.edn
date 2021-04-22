@@ -2,4 +2,12 @@
  ^:promote {:middlewares [#ig/ref :com.ben-allred.audiophile.common.services.http/with-nav]}
 
  :com.ben-allred.audiophile.common.services.http/with-nav
- {:nav #ig/ref :services/nav}}
+ {:nav #ig/ref :services/nav}
+
+ :com.ben-allred.audiophile.common.services.pubsub.ws/handler
+ {:ws-ch #ig/ref :com.ben-allred.audiophile.common.services.pubsub.ws/ws-ch
+  :store #ig/ref :services/store}
+
+ :com.ben-allred.audiophile.common.services.pubsub.ws/ws-ch
+ {:nav   #ig/ref :services/nav
+  :serde #ig/ref :serdes/edn}}

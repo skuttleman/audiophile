@@ -10,6 +10,8 @@
     com.ben-allred.audiophile.common.services.http
     com.ben-allred.audiophile.common.services.navigation.core
     com.ben-allred.audiophile.common.services.navigation.parsers
+    com.ben-allred.audiophile.common.services.pubsub.core
+    com.ben-allred.audiophile.common.services.pubsub.ws
     com.ben-allred.audiophile.common.services.resources.core
     com.ben-allred.audiophile.common.services.resources.toaster
     com.ben-allred.audiophile.common.services.resources.users

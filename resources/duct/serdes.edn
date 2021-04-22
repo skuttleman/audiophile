@@ -1,4 +1,11 @@
-{[:duct/const :serdes/edn]
+{[:duct/const :config/serdes]
+ {:edn       #ig/ref :serdes/edn
+  :json      #ig/ref :serdes/json
+  :transit   #ig/ref :serdes/transit
+  :urlencode #ig/ref :serdes/urlencode
+  :default   #ig/ref :serdes/edn}
+
+ [:duct/const :serdes/edn]
  #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
 
  [:duct/const :serdes/transit]

@@ -11,7 +11,8 @@
     [integrant.core :as ig])
   (:import
     (clojure.lang ExceptionInfo)
-    (java.io File InputStream)))
+    (java.io File InputStream)
+    (org.projectodd.wunderboss.web.async Channel)))
 
 (defn ^:private ->response [response]
   (-> response
@@ -54,6 +55,7 @@
           (and (some? resp)
                (not (instance? File resp))
                (not (instance? InputStream resp))
+               (not (instance? Channel resp))
                (not (string? resp)))
           (-> (update :body (partial serdes/serialize serde'))
               (update-in [:headers "content-type"] #(or % (serdes/mime-type serde')))))))))

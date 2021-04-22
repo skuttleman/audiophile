@@ -1,4 +1,5 @@
 (ns com.ben-allred.audiophile.common.utils.maps
+  #?(:cljs (:require-macros com.ben-allred.audiophile.common.utils.maps))
   (:refer-clojure :exclude [flatten])
   (:require [medley.core :as medley]))
 
@@ -76,3 +77,10 @@
 (def ^{:arglists '([f coll] [f c1 & colls])} map-vals
   "creates a new map where all the values are the result of calling f"
   medley/map-vals)
+
+(defmacro ->m [& kvs]
+  (loop [m (transient {}) [k v :as kvs] kvs]
+    (cond
+      (empty? kvs) (persistent! m)
+      (symbol? k) (recur (assoc! m (keyword k) k) (next kvs))
+      :else (recur (assoc! m k v) (nnext kvs)))))

@@ -46,4 +46,4 @@
     (duct/await-daemons system)))
 
 (comment
-  (alter-var-root #'system reset-sys!))
+  (do (alter-var-root #'system reset-sys!) nil))
