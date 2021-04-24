@@ -11,3 +11,33 @@
   (let [ch (async/promise-chan)]
     (v/peek prom #(async/go (async/>! ch %)))
     ch))
+
+(defn ^:private <!* [ch ms]
+  (async/go
+    (let [[val] (async/alts! [ch (async/go
+                                   (async/<! (async/timeout ms))
+                                   ::timed-out)])]
+      (when (= ::timed-out val)
+        (async/close! ch))
+      val)))
+
+(defn <!ms
+  ([ch]
+   (<!ms ch 1000))
+  ([ch ms]
+   (async/go
+     (let [val (async/<! (<!* ch ms))]
+       (when-not (= ::timed-out val)
+         val)))))
+
+#?(:clj
+   (defn <!!ms
+     ([ch]
+      (<!!ms ch 1000))
+     ([ch ms]
+      (let [val (async/<!! (<!* ch ms))]
+        (when (= ::timed-out val)
+          (throw (ex-info "timeout expired waiting for a value on chan"
+                          {:timeout ms
+                           :ch      ch})))
+        val))))

@@ -21,11 +21,12 @@
   (on-close [this] "when a connection is established"))
 
 (defmulti ^:private handle-msg (fn [_ _ event]
+                                 (log/debug "received event" event)
                                  (when (seqable? event)
                                    (first event))))
 (defmethod handle-msg :default
   [_ _ event]
-  (log/warn "unknown event type" event))
+  (log/warn "event not handled" event))
 
 (defmethod handle-msg :conn/ping
   [_ channel _]

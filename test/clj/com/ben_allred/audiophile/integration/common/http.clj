@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.integration.common.http
   (:refer-clojure :exclude [get])
   (:require
+    [clojure.core.async :as async]
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
@@ -28,6 +29,9 @@
   ([request system page params]
    (go request system :get page params)))
 
+(defn as-ws [request]
+  (assoc request :websocket? true))
+
 (defn with-serde
   ([handler system serde]
    (with-serde handler (clojure.core/get system [:duct/const serde])))
@@ -39,3 +43,9 @@
            (maps/update-maybe :body (partial serdes/serialize serde))
            handler
            (maps/update-maybe :body (partial serdes/deserialize serde)))))))
+
+(defmacro with-ws [[sym response] & body]
+  `(let [~sym (:body ~response)]
+     (try ~@body
+          (finally
+            (async/close! ~sym)))))

@@ -46,6 +46,28 @@
       (log ~level ~(:line (meta &form)) '~form "=>" val#)
       val#)))
 
+(defmacro spy-tap
+  ([f form]
+   `(let [val# ~form]
+      (log :info ~(:line (meta &form)) '(~f ~form) "=>" (~f val#))
+      val#))
+  ([level f form]
+   `(let [val# ~form]
+      (log ~level ~(:line (meta &form)) '(~f ~form) "=>" (~f val#))
+      val#)))
+
+(defmacro spy-on
+  ([f]
+   `(fn [& args#]
+      (let [result# (apply ~f args#)]
+        (log :info ~(:line (meta &form)) (cons '~f args#) "=>" result#)
+        result#)))
+  ([level f]
+   `(fn [& args#]
+      (let [result# (apply ~f args#)]
+        (log ~level ~(:line (meta &form)) (cons '~f args#) "=>" result#)
+        result#))))
+
 (defn ^:private clean [data]
   (assoc data :hostname_ (delay nil)))
 

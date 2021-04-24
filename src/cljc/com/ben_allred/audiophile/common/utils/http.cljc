@@ -69,6 +69,9 @@
 (def ^{:arglists '([response])} server-error?
   (partial check-status 500 599))
 
+(def ^{:arglists '([response])} error?
+  (some-fn client-error? server-error?))
+
 (defn request! [client request]
   (pres/request! client request))
 

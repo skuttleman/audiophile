@@ -1,2 +1,11 @@
 {:duct.profile/base #duct/include "duct/api/base.edn"
- :duct.profile/test {}}
+ :duct.profile/test {[:duct/const :routes/table]
+                     ^:promote {[:get :api/ws] #ig/ref :com.ben-allred.audiophile.integration.common.components/ws-handler}
+
+                     :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+                     ^:promote {:heartbeat-int-ms 250}
+
+                     :com.ben-allred.audiophile.integration.common.components/ws-handler
+                     {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
+                      :->handler #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+                      :serdes    #ig/ref :config/serdes}}}
