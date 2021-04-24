@@ -29,12 +29,14 @@
     (.get driver (str "http://localhost:" server-port "/index.html"))
     (while (not (ready? driver))
       (Thread/sleep 1))
-    (let [passes (count (.findElements driver (By/className "test-passing")))
+    (let [tests (count (.findElements driver (By/className "test-var")))
+          passes (count (.findElements driver (By/className "test-passing")))
           fails (count (.findElements driver (By/className "test-fail")))
           [color exit-code] (if (zero? fails)
                               [ANSI_GREEN 0]
                               [ANSI_RED 1])]
       (println "")
-      (println (str color (+ passes fails) " tests. " passes " passed. " fails " failed." ANSI_RESET))
+      (println (str color tests " tests. " passes " passed. " fails " failed." ANSI_RESET))
 
+      (.quit driver)
       (System/exit exit-code))))

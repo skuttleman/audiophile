@@ -1,7 +1,8 @@
 (ns com.ben-allred.audiophile.common.utils.maps
   #?(:cljs (:require-macros com.ben-allred.audiophile.common.utils.maps))
   (:refer-clojure :exclude [flatten])
-  (:require [medley.core :as medley]))
+  (:require
+    [medley.core :as medley]))
 
 (defn update-maybe
   "updates k on a map - only if that value is not nil"
@@ -78,9 +79,20 @@
   "creates a new map where all the values are the result of calling f"
   medley/map-vals)
 
-(defmacro ->m [& kvs]
-  (loop [m (transient {}) [k v :as kvs] kvs]
+(defmacro ->m
+  "compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol
+   also allows vectors of key/value pairs
+  (->m foo bar [baz :also]) => {:foo foo :bar bar baz :also}"
+  [& kvs]
+  (loop [m (transient {}) [x :as kvs] kvs]
     (cond
       (empty? kvs) (persistent! m)
-      (symbol? k) (recur (assoc! m (keyword k) k) (next kvs))
-      :else (recur (assoc! m k v) (nnext kvs)))))
+      (symbol? x) (recur (assoc! m (keyword x) x) (next kvs))
+      (or (map-entry? x) (vector? x)) (recur (conj! m x) (next kvs))
+      :else (throw (ex-info "must pass symbols, map entries, or vector tuples" {:bad-value x})))))
+
+(defn extract-keys
+  "takes a map and a sequence of keys and returns a vector with a map
+   with only the specified keys and another map with all but those keys"
+  [m keys]
+  [(select-keys m keys) (apply dissoc m keys)])

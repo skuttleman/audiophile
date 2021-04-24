@@ -28,8 +28,8 @@
     (let [{:keys [status value error]} @state]
       (v/then (v/create (fn [resolve reject]
                           (case status
-                            :success (on-success value)
-                            :error (on-error error)
+                            :success (resolve value)
+                            :error (reject error)
                             (let [watch-key (gensym)]
                               (add-watch state watch-key (fn [_ _ _ {:keys [status value error]}]
                                                            (when (case status
@@ -48,8 +48,7 @@
         value))))
 
 (defmethod ig/init-key ::resource [_ {:keys [opts->vow]}]
-  (let [state (r/atom {:status :init})]
-    (->Resource state opts->vow)))
+  (->Resource (r/atom {:status :init}) opts->vow))
 
 (defmethod ig/init-key ::http-handler [_ {:keys [http-client method opts->params opts->request route]}]
   (let [opts->params (or opts->params (constantly nil))

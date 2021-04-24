@@ -29,7 +29,7 @@
   (-navigate! [this path] "push a new state to the browser history")
   (-replace! [this path] "replace the current browser history state"))
 
-(deftype LinkedNavigator [pushy navigator]
+(deftype LinkedNavigator [pushy router]
   IHistory
   (-start! [_]
     (pushy/start! pushy)
@@ -46,43 +46,49 @@
 
   pserdes/ISerde
   (serialize [_ page opts]
-    (pserdes/serialize navigator page opts))
+    (pserdes/serialize router page opts))
   (deserialize [_ path opts]
-    (pserdes/deserialize navigator path opts)))
+    (pserdes/deserialize router path opts)))
 
-(deftype StubNavigator [routes]
+(defn serialize* [routes page opts]
+  (let [{:keys [query-params]} opts
+        qp (uri/join-query query-params)]
+    (-> (apply bidi/path-for
+               routes
+               page
+               (mapcat (fn [[k v]]
+                         [k (str (cond-> v
+                                   (keyword? v) name))])
+                       (-> opts
+                           (assoc :handler page)
+                           internal->params
+                           :route-params)))
+        (cond-> (seq qp) (str "?" qp)))))
+
+(defn deserialize* [routes path]
+  (let [[path' query-string] (string/split path #"\?")
+        qp (uri/split-query query-string)]
+    (some-> routes
+            (bidi/match-route path')
+            (assoc :path path')
+            (cond->
+              (seq qp) (assoc :query-params qp)
+              query-string (assoc :query-string query-string))
+            params->internal)))
+
+(deftype Router [routes]
   IHistory
   (-navigate! [_ _])
   (-replace! [_ _])
 
   pserdes/ISerde
   (serialize [_ page opts]
-    (let [{:keys [query-params]} opts
-          qp (uri/join-query query-params)]
-      (-> (apply bidi/path-for
-                 routes
-                 page
-                 (mapcat (fn [[k v]]
-                           [k (str (cond-> v
-                                     (keyword? v) name))])
-                         (-> opts
-                             (assoc :handler page)
-                             internal->params
-                             :route-params)))
-          (cond-> (seq qp) (str "?" qp)))))
+    (serialize* routes page opts))
   (deserialize [_ path _]
-    (let [[path' query-string] (string/split path #"\?")
-          qp (uri/split-query query-string)]
-      (-> routes
-          (bidi/match-route path')
-          params->internal
-          (assoc :path path')
-          (cond->
-            (seq qp) (assoc :query-params qp)
-            query-string (assoc :query-string query-string))))))
+    (deserialize* routes path)))
 
-(defmethod ig/init-key ::stub [_ {:keys [routes]}]
-  (->StubNavigator routes))
+(defmethod ig/init-key ::router [_ {:keys [routes]}]
+  (->Router routes))
 
 (defn ^:private on-nav [-nav store pushy page]
   (let [page' (maps/update-maybe page :query-params dissoc :error-msg)]
@@ -92,11 +98,11 @@
       (ui-store/dispatch! store [:router/updated page']))))
 
 (defmethod ig/init-key ::nav [_ {:keys [routes store]}]
-  (let [-nav (->StubNavigator routes)
+  (let [router (->Router routes)
         pushy (volatile! nil)]
-    (vreset! pushy (pushy/pushy #(on-nav -nav store @pushy %)
-                                #(serdes/deserialize -nav %)))
-    (doto (->LinkedNavigator @pushy -nav)
+    (vreset! pushy (pushy/pushy #(on-nav router store @pushy %)
+                                #(serdes/deserialize router %)))
+    (doto (->LinkedNavigator @pushy router)
       -start!)))
 
 (defmethod ig/halt-key! ::nav [_ nav]

@@ -21,31 +21,31 @@
                      (update-in [:topics key] (fnil conj #{}) topic)
                      (update-in [:subs topic] (fnil conj #{}) key)))))
 
-(defn ^:private unsubscribe*
-  ([state key]
-   (swap! state (fn [state]
-                  (-> state
-                      (update :listeners dissoc key)
-                      (update :topics dissoc key)
-                      (update :subs (fn [subs]
-                                      (persistent! (reduce (fn [subs' topic]
-                                                             (let [set (get subs topic)]
-                                                               (if-let [next-set (not-empty (disj set key))]
-                                                                 (assoc! subs' topic next-set)
-                                                                 (dissoc! subs' topic))))
-                                                           (transient subs)
-                                                           (get-in state [:topics key])))))))))
-  ([state key topic]
-   (swap! state (fn [state]
-                  (let [next-subs (not-empty (disj (get-in state [:subs topic]) key))
-                        next-topics (not-empty (disj (get-in state [:topics key])))]
-                    (-> state
-                        (cond->
-                          next-subs (assoc-in [:subs topic] next-subs)
-                          (not next-subs) (update :subs dissoc topic)
-                          next-topics (assoc-in [:topics key] next-topics)
-                          (not next-topics) (-> (update :topics dissoc key)
-                                                (update :listeners dissoc key)))))))))
+(defn ^:private unsubscribe-all [state key]
+  (swap! state (fn [state]
+                 (-> state
+                     (update :listeners dissoc key)
+                     (update :topics dissoc key)
+                     (update :subs (fn [subs]
+                                     (persistent! (reduce (fn [subs' topic]
+                                                            (let [set (get subs topic)]
+                                                              (if-let [next-set (not-empty (disj set key))]
+                                                                (assoc! subs' topic next-set)
+                                                                (dissoc! subs' topic))))
+                                                          (transient subs)
+                                                          (get-in state [:topics key])))))))))
+
+(defn ^:private unsubscribe* [state key topic]
+  (swap! state (fn [state]
+                 (let [next-subs (not-empty (disj (get-in state [:subs topic]) key))
+                       next-topics (not-empty (disj (get-in state [:topics key])))]
+                   (-> state
+                       (cond->
+                         next-subs (assoc-in [:subs topic] next-subs)
+                         (not next-subs) (update :subs dissoc topic)
+                         next-topics (assoc-in [:topics key] next-topics)
+                         (not next-topics) (-> (update :topics dissoc key)
+                                               (update :listeners dissoc key))))))))
 
 (deftype PubSub [state]
   ppubsub/IPubSub
@@ -56,7 +56,7 @@
     (subscribe* state key topic listener)
     this)
   (unsubscribe! [this key]
-    (unsubscribe* state key)
+    (unsubscribe-all state key)
     this)
   (unsubscribe! [this key topic]
     (unsubscribe* state key topic)

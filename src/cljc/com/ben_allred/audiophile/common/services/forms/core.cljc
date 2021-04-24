@@ -2,7 +2,9 @@
   (:require
     [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
     [com.ben-allred.audiophile.common.services.resources.core :as res]
-    [com.ben-allred.audiophile.common.services.resources.protocols :as pres])
+    [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.utils.fns :as fns]
+    [com.ben-allred.audiophile.common.utils.maps :as maps])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -39,20 +41,22 @@
   ([form path]
    (with-attrs nil form path))
   ([attrs form path]
-   (let [visited? (when (satisfies? pforms/ITrack form)
+   (let [tracks? (satisfies? pforms/ITrack form)
+         visited? (when tracks?
                     (visited? form path))
          errors (when (satisfies? pforms/IValidate form)
                   (get-in (errors form) path))]
      (-> attrs
          (assoc :visited? visited?)
-         (update :disabled #(or % (when (satisfies? pres/IResource form)
-                                    (res/requesting? form))))
-         (update :on-blur (fn [on-blur]
-                            (fn [e]
-                              (visit! form path)
-                              (when on-blur
-                                (on-blur e)))))
+         (maps/assoc-defaults :disabled (when (satisfies? pres/IResource form)
+                                          (res/requesting? form))
+                              :on-blur (constantly nil))
+
          (cond->
+           tracks?
+           (update :on-blur fns/sidecar! (fn [_]
+                                           (visit! form path)))
+
            (derefable? form)
            (assoc :value (get-in @form path))
 
