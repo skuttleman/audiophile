@@ -5,9 +5,7 @@
  {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.services.pubsub.ws/handler
- {:ws-ch #ig/ref :com.ben-allred.audiophile.common.services.pubsub.ws/ws-ch
-  :store #ig/ref :services/store}
-
- :com.ben-allred.audiophile.common.services.pubsub.ws/ws-ch
- {:nav   #ig/ref :services/nav
-  :serde #ig/ref :serdes/edn}}
+ {:nav          #ig/ref :services/nav
+  :serde        #ig/ref :serdes/edn
+  :store        #ig/ref :services/store
+  :user-details #ig/ref :resources/user-details}}

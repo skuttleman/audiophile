@@ -1,59 +1,72 @@
 (ns com.ben-allred.audiophile.api.services.repositories.core
   (:require
-    [camel-snake-kebab.core :as csk]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [hikari-cp.core :as hikari]
-    [next.jdbc.result-set :as result-set]
     [honeysql.core :as sql]
     [integrant.core :as ig]
-    [next.jdbc :as jdbc])
+    [next.jdbc :as jdbc]
+    [next.jdbc.result-set :as result-set])
   (:import
     (java.sql Date ResultSet)))
 
-(defn ->builder-fn [xform ->row!]
-  (fn [^ResultSet rs _opts]
-    (let [meta (.getMetaData rs)
-          collect! (xform conj!)
-          cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
-                     (range (.getColumnCount meta)))
-          col-count (count cols)]
-      (reify
-        result-set/RowBuilder
-        (->row [_] (transient {}))
-        (column-count [_] col-count)
-        (with-column [_ row i]
-          (let [k (nth cols (dec i))
-                v (result-set/read-column-by-index (.getObject rs ^Integer i) meta i)]
-            (->row! row k (cond-> v (instance? Date v) .toLocalDate))))
-        (row! [_ row] (persistent! row))
-
-        result-set/ResultSetBuilder
-        (->rs [_] (transient []))
-        (with-row [_ mrs row] (collect! mrs row))
-        (rs! [_ mrs] (persistent! mrs))))))
-
 (defn ^:private exec* [conn psql opts]
-  (let [result-xform (or (:result-xform opts) identity)
-        entity-fn (comp (or (:entity-fn opts) identity)
-                        (fn [[k v]]
-                          [(keyword k) v]))]
-    (sequence
-      (jdbc/execute! conn psql (assoc (:sql/opts opts)
-                                      :builder-fn (->builder-fn result-xform
-                                                                (fn [t k v]
-                                                                  (conj! t (entity-fn [k v])))))))))
+  (jdbc/execute! conn psql opts))
 
-(deftype Executor [conn]
+(deftype QueryFormatter []
+  prepos/IFormatQuery
+  (format [_ query]
+    (sql/format query :quoting :ansi)))
+
+(defmethod ig/init-key ::query-formatter [_ _]
+  (->QueryFormatter))
+
+(deftype Builder [cols col-cnt collect! ->row! rs]
+  result-set/RowBuilder
+  (->row [_] (transient {}))
+  (column-count [_] col-cnt)
+  (with-column [_ row i]
+    (let [k (nth cols (dec i))
+          v (result-set/read-column-by-index (.getObject ^ResultSet rs ^Integer i) meta i)]
+      (->row! row k (cond-> v (instance? Date v) .toLocalDate))))
+  (row! [_ row] (persistent! row))
+
+  result-set/ResultSetBuilder
+  (->rs [_] (transient []))
+  (with-row [_ mrs row] (collect! mrs row))
+  (rs! [_ mrs] (persistent! mrs)))
+
+(defmethod ig/init-key ::->builder-fn [_ _]
+  (fn [{:keys [entity-fn result-xform]}]
+    (let [xform (or result-xform identity)
+          entity-fn (cond->> (fn [[k v]]
+                               [(keyword k) v])
+                             entity-fn (comp entity-fn))
+          ->row! (fn [t k v]
+                   (conj! t (entity-fn [k v])))]
+      (fn [^ResultSet rs _opts]
+        (let [meta (.getMetaData rs)
+              col-cnt (.getColumnCount meta)
+              cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
+                         (range col-cnt))]
+          (->Builder cols col-cnt (xform conj!) ->row! rs))))))
+
+(deftype Executor [conn ->builder-fn query-formatter]
   prepos/IExecute
   (exec-raw! [_ sql opts]
     (let [sql-params (cond-> sql
                        (not (vector? sql)) vector)]
       (log/debug "[TX] - executing:" sql-params)
-      (exec* conn sql-params opts)))
+      (exec* conn sql-params (assoc (:sql/opts opts)
+                                    :builder-fn (->builder-fn opts)))))
   (execute! [this query opts]
     (log/debug "[TX] - formatting:" query)
-    (prepos/exec-raw! this (sql/format query :quoting :ansi) opts)))
+    (prepos/exec-raw! this
+                      (prepos/format query-formatter query)
+                      opts)))
+
+(defmethod ig/init-key ::->executor [_ {:keys [->builder-fn query-formatter]}]
+  (fn [conn] (->Executor conn ->builder-fn query-formatter)))
 
 (deftype Transactor [datasource opts ->executor]
   prepos/ITransact
@@ -63,8 +76,8 @@
                      (f (->executor conn)))
                    opts)))
 
-(defmethod ig/init-key ::transactor [_ {:keys [datasource]}]
-  (->Transactor datasource nil ->Executor))
+(defmethod ig/init-key ::transactor [_ {:keys [->executor datasource]}]
+  (->Transactor datasource nil ->executor))
 
 (defmethod ig/init-key ::cfg [_ {:keys [db-name host password port user]}]
   {:auto-commit           true

@@ -4,10 +4,10 @@
     [com.ben-allred.audiophile.api.services.env :as env]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
-    [com.ben-allred.audiophile.integration.common.mocks :as mocks]
     [duct.core :as duct]
     [duct.core.env :as env*]
-    [integrant.core :as ig]))
+    [integrant.core :as ig]
+    [test.utils.mocks :as mocks]))
 
 (def ^:private config-base
   (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-test"]))]
@@ -31,11 +31,8 @@
                          (-redirect-uri [_ _])
                          (-profile [_ _])))))
 
-(defn setup-mock
-  ([config mock-k method arity f-or-val]
-   (setup-mock config mock-k [method arity] f-or-val))
-  ([config mock-k method f-or-val]
-   (update config [:duct/const mock-k] mocks/set-mock! method f-or-val)))
+(defn setup-mock [config mock-k method f-or-val]
+  (update config [:duct/const mock-k] mocks/set-mock! method f-or-val))
 
 (defn setup-mocks [config & args]
   (->> args

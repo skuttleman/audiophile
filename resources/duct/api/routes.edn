@@ -2,16 +2,16 @@
  #ig/ref :routes/table
 
  [:duct/const :routes/table]
- {[:get :api/ws]           #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
-  [:get :auth/callback]    #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
-  [:get :auth/details]     #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
-  [:get :auth/login]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
-  [:get :auth/logout]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
-  [:get :resources/css]    #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :resources/health] #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
-  [:get :resources/js]     #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :ui/home]          #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
-  [:get :ui/not-found]     #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
+ {^:auth/user [:get :api/ws] #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  [:get :auth/callback]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
+  [:get :auth/details]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
+  [:get :auth/login]         #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
+  [:get :auth/logout]        #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
+  [:get :resources/css]      #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :resources/health]   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
+  [:get :resources/js]       #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :ui/home]            #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
+  [:get :ui/not-found]       #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
 
  :com.ben-allred.audiophile.api.handlers.resources/health
  {}
@@ -61,6 +61,13 @@
  {}
 
  :com.ben-allred.audiophile.api.services.pubsub.ws/handler
- {:heartbeat-int #ig/ref :env.ws/heartbeat-int
-  :pubsub        #ig/ref :services/pubsub
-  :serdes        #ig/ref :config/serdes}}
+ {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
+  :->handler #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->handler}
+
+ :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
+ {:serdes #ig/ref :config/serdes}
+
+ :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+ {:heartbeat-int-ms #ig/ref :env.ws/heartbeat-int-ms
+  :pubsub           #ig/ref :services/pubsub
+  :serdes           #ig/ref :config/serdes}}

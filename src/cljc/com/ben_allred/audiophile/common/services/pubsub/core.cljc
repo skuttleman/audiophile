@@ -5,15 +5,14 @@
     [integrant.core :as ig]))
 
 (defn ^:private publish* [state this topic event]
-  (let [state (log/spy :warn @state)
-        subs (log/spy :warn (get-in state [:subs topic]))]
+  (let [state @state
+        subs (get-in state [:subs topic])]
     (doseq [key subs
-            :let [handler (log/spy :warn (get-in state [:listeners key topic]))]
+            :let [handler (get-in state [:listeners key topic])]
             :when handler]
       (try (handler topic event)
            (catch #?(:cljs :default :default Throwable) _
-             (log/spy :warn _)
-             (ppubsub/unsubscribe! this key))))))
+             (ppubsub/unsubscribe! this key topic))))))
 
 (defn subscribe* [state key topic listener]
   (swap! state (fn [state]
@@ -27,6 +26,7 @@
    (swap! state (fn [state]
                   (-> state
                       (update :listeners dissoc key)
+                      (update :topics dissoc key)
                       (update :subs (fn [subs]
                                       (persistent! (reduce (fn [subs' topic]
                                                              (let [set (get subs topic)]
@@ -34,8 +34,7 @@
                                                                  (assoc! subs' topic next-set)
                                                                  (dissoc! subs' topic))))
                                                            (transient subs)
-                                                           (get-in state [:topics key])))))
-                      (update :topics dissoc key)))))
+                                                           (get-in state [:topics key])))))))))
   ([state key topic]
    (swap! state (fn [state]
                   (let [next-subs (not-empty (disj (get-in state [:subs topic]) key))

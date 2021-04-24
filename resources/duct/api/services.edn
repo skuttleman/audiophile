@@ -15,7 +15,18 @@
  {:spec #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/cfg}
 
  :com.ben-allred.audiophile.api.services.repositories.core/transactor
- {:datasource #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource}
+ {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->executor
+  :datasource #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource}
+
+ :com.ben-allred.audiophile.api.services.repositories.core/->executor
+ {:->builder-fn #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->builder-fn
+  :query-formatter #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/query-formatter}
+
+ :com.ben-allred.audiophile.api.services.repositories.core/query-formatter
+ {}
+
+ :com.ben-allred.audiophile.api.services.repositories.core/->builder-fn
+ {}
 
  :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
  {:cfg         {:client-id     #ig/ref :env.goauth/client-id

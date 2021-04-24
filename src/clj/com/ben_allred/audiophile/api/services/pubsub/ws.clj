@@ -3,85 +3,133 @@
     [clojure.core.async :as async]
     [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [immutant.web.async :as web.async]
     [integrant.core :as ig]))
 
-(defmulti ^:private take-action! (fn [event _]
-                                   (when (seqable? event)
-                                     (first event))))
-(defmethod take-action! :default
-  [event _]
+(defprotocol IChannel
+  "represents a TCP channel"
+  (open? [this] "is the connection open?")
+  (send! [this msg] "send to a topic")
+  (close! [this] "when open, closes the connection"))
+
+(defprotocol IHandler
+  "handles websocket events"
+  (on-open [this] "when a connection is established")
+  (on-message [this msg] "when a message is received")
+  (on-close [this] "when a connection is established"))
+
+(defmulti ^:private handle-msg (fn [_ _ event]
+                                 (when (seqable? event)
+                                   (first event))))
+(defmethod handle-msg :default
+  [_ _ event]
   (log/warn "unknown event type" event))
 
-(defmethod take-action! :conn/ping
-  [_ {:keys [ch send-fn]}]
-  (send-fn ch [:conn/pong]))
+(defmethod handle-msg :conn/ping
+  [_ channel _]
+  (send! channel [:conn/pong]))
 
-(defmethod take-action! :conn/pong
-  [_ _])
+(defmethod handle-msg :conn/pong
+  [_ _ _])
 
-(defn ^:private handle-on-open [{:keys [ch-id heartbeat-int pubsub send-fn user-id]}]
-  (fn [ch]
-    (pubsub/subscribe! pubsub
-                       ch-id
-                       [::broadcast]
-                       (fn [_ [event-id event]]
-                         (send-fn ch [:event/broadcast event-id event])))
-    (pubsub/subscribe! pubsub
-                       ch-id
-                       [::user user-id]
-                       (fn [_ [event-id event]]
-                         (send-fn ch [:event/user event-id event {:user/id user-id}])))
-    (async/go-loop []
-      (async/<! (async/timeout (* 1000 heartbeat-int)))
-      (when (web.async/open? ch)
-        (try
-          (send-fn ch [:conn/ping])
-          (catch Throwable _
-            (try
-              (web.async/close ch)
-              (catch Throwable _))))
-        (recur)))))
+(defn ^:private handle-open [{:keys [ch-id heartbeat-int-ms pubsub user-id]} channel]
+  (pubsub/subscribe! pubsub
+                     ch-id
+                     [::broadcast]
+                     (fn [_ [event-id event]]
+                       (send! channel [:event/broadcast event-id event])))
+  (pubsub/subscribe! pubsub
+                     ch-id
+                     [::user user-id]
+                     (fn [_ [event-id event]]
+                       (send! channel [:event/user event-id event {:user/id user-id}])))
+  (async/go-loop []
+    (async/<! (async/timeout heartbeat-int-ms))
+    (when (open? channel)
+      (try
+        (send! channel [:conn/ping])
+        (catch Throwable _
+          (try
+            (close! channel)
+            (catch Throwable _))))
+      (recur))))
 
-(defn ^:private handle-on-close [{:keys [ch-id pubsub user-id]}]
-  (fn [_ reason]
-    (log/debug "websocket closed:" ch-id reason)
-    (log/info "websocket closed:" user-id)
-    (pubsub/unsubscribe! pubsub ch-id)))
+(defn ^:private handle-close [{:keys [ch-id pubsub user-id]} _]
+  (log/info "websocket closed:" user-id)
+  (pubsub/unsubscribe! pubsub ch-id))
 
-(defmethod ig/init-key ::handler [_ {:keys [heartbeat-int pubsub serdes]}]
+(defmethod ig/init-key ::->handler [_ {:keys [heartbeat-int-ms pubsub serdes]}]
+  (fn [request channel]
+    (let [user-id (get-in request [:auth/user :data :user :user/id])
+          params (get-in request [:nav/route :query-params])
+          deserializer (serdes/find-serde serdes
+                                          (or (:content-type params)
+                                              (:accept params)
+                                              ""))
+          ctx {:ch-id            (uuids/random)
+               :heartbeat-int-ms heartbeat-int-ms
+               :user-id          user-id
+               :pubsub           pubsub
+               :state            (ref nil)}]
+      (reify
+        IHandler
+        (on-open [_]
+          (handle-open ctx channel))
+        (on-message [_ msg]
+          (handle-msg ctx channel (serdes/deserialize deserializer msg)))
+        (on-close [_]
+          (handle-close ctx channel))))))
+
+(defmethod ig/init-key ::->channel [_ {:keys [serdes]}]
+  (fn [request channel]
+    (let [params (get-in request [:nav/route :query-params])
+          serializer (serdes/find-serde serdes
+                                        (or (:accept params)
+                                            (:content-type params)
+                                            ""))]
+      (reify
+        IChannel
+        (open? [_]
+          (open? channel))
+        (send! [_ msg]
+          (try
+            (send! channel (serdes/serialize serializer msg))
+            (catch Throwable ex
+              (log/warn ex "failed to send msg to websocket" msg))))
+        (close! [_]
+          (try
+            (close! channel)
+            (catch Throwable ex
+              (log/warn ex "web socket did not close successfully"))))))))
+
+(deftype Channel [ch]
+  IChannel
+  (open? [_]
+    (web.async/open? ch))
+  (send! [_ msg]
+    (web.async/send! ch msg))
+  (close! [_]
+    (web.async/close ch)))
+
+(defmethod ig/init-key ::handler [_ {:keys [->channel ->handler]}]
   (fn [request]
-    (if-not (:auth/user request)
-      {:status ::http/unauthorized :body {:errors [{:message "you must be logged in"}]}}
-      (when (:websocket? request)
-        (let [serializer (serdes/find-serde serdes (or (get-in request [:nav/route :query-params :accept])
-                                                       (get-in request [:nav/route :query-params :content-type])
-                                                       ""))
-              deserializer (serdes/find-serde serdes (or (get-in request [:nav/route :query-params :content-type])
-                                                         (get-in request [:nav/route :query-params :accept])
-                                                         ""))
-              ch-id (uuids/random)
-              user-id (get-in request [:auth/user :data :user :user/id])
-              ctx {:ch-id         ch-id
-                   :heartbeat-int heartbeat-int
-                   :user-id       user-id
-                   :pubsub        pubsub
-                   :send-fn       (fn [ch msg]
-                                    (log/debug "sending message" ch-id msg)
-                                    (web.async/send! ch (serdes/serialize serializer msg)))
-                   :state         (ref nil)}]
-          (log/info "connecting websocket:" user-id)
-          (-> request
-              (web.async/as-channel {:on-open    (handle-on-open ctx)
-                                     :on-message (fn [ch event]
-                                                   (let [msg (serdes/deserialize deserializer event)]
-                                                     (log/debug "receiving message" ch-id msg)
-                                                     (take-action! msg (assoc ctx :ch ch))))
-                                     :on-close   (handle-on-close ctx)})
-              (assoc :serialized? true)))))))
+    (when (:websocket? request)
+      (let [handler (promise)
+            deref* (fn [ch]
+                     (when-not (realized? handler)
+                       (->> (->Channel ch)
+                            (->channel request)
+                            (->handler request)
+                            (deliver handler)))
+                     @handler)]
+        (web.async/as-channel request
+                              {:on-open    (comp on-open deref*)
+                               :on-message (fn [ch msg]
+                                             (on-message (deref* ch) msg))
+                               :on-close   (fn [ch _]
+                                             (on-close (deref* ch)))})))))
 
 (defn broadcast! [pubsub event-id event]
   (pubsub/publish! pubsub [::broadcast] [event-id event]))

@@ -39,7 +39,7 @@
 (defmacro spy
   ([form]
    `(let [val# ~form]
-      (log :debug ~(:line (meta &form)) '~form "=>" val#)
+      (log :info ~(:line (meta &form)) '~form "=>" val#)
       val#))
   ([level form]
    `(let [val# ~form]

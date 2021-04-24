@@ -26,16 +26,19 @@
   pv/IPromise
   (then [_ on-success on-error]
     (let [{:keys [status value error]} @state]
-      (case status
-        :success (on-success value)
-        :error (on-error error)
-        (let [watch-key (gensym)]
-          (add-watch state watch-key (fn [_ _ _ {:keys [status value error]}]
-                                       (when (case status
-                                               :success [(on-success value)]
-                                               :error [(on-error error)]
-                                               nil)
-                                         (remove-watch state watch-key))))))))
+      (v/then (v/create (fn [resolve reject]
+                          (case status
+                            :success (on-success value)
+                            :error (on-error error)
+                            (let [watch-key (gensym)]
+                              (add-watch state watch-key (fn [_ _ _ {:keys [status value error]}]
+                                                           (when (case status
+                                                                   :success [(resolve value)]
+                                                                   :error [(reject error)]
+                                                                   nil)
+                                                             (remove-watch state watch-key))))))))
+              on-success
+              on-error)))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]

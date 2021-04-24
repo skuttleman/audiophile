@@ -10,7 +10,7 @@
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [com.ben-allred.audiophile.integration.common.mocks :as mocks]))
+    [test.utils.mocks :as mocks]))
 
 (deftest auth-details-test
   (testing "GET /auth/details"

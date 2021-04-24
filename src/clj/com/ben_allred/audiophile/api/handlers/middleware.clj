@@ -27,6 +27,12 @@
         response response)
       (vary-meta merge (meta response))))
 
+(defn ^:private serializable? [resp]
+  (and (some? resp)
+       (empty? (for [class [File InputStream Channel String]
+                     :when (instance? class resp)]
+                 class))))
+
 (defmethod ig/init-key ::vector-response [_ _]
   "convert simplified vector response into response map"
   (fn [handler]
@@ -52,11 +58,7 @@
                      (serdes/mime-type transit-serde) transit-serde
                      serde)]
         (cond-> response
-          (and (some? resp)
-               (not (instance? File resp))
-               (not (instance? InputStream resp))
-               (not (instance? Channel resp))
-               (not (string? resp)))
+          (serializable? resp)
           (-> (update :body (partial serdes/serialize serde'))
               (update-in [:headers "content-type"] #(or % (serdes/mime-type serde')))))))))
 
