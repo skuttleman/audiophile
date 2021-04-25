@@ -7,6 +7,7 @@
     [clojure.string :as string]
     [cognitect.transit :as trans]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.keywords :as keywords]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [integrant.core :as ig])
@@ -25,13 +26,12 @@
     (serialize [_ value _]
       (pr-str value))
     (deserialize [_ value opts]
-      (try
+      (u/silent!
         (cond
           (nil? value) nil
           (string? value) (edn*/read-string opts value)
           #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn*/read opts))])
-          :else (edn*/read opts value))
-        (catch #?(:cljs :default :default Throwable) _ nil)))))
+          :else (edn*/read opts value))))))
 
 (defmethod ig/init-key ::transit [_ _]
   (reify
@@ -48,7 +48,7 @@
                    trans/writer
                    (trans/write value))))
     (deserialize [_ value _]
-      (try
+      (u/silent!
         #?(:clj  (-> value
                      (cond->
                        (not (instance? InputStream value))
@@ -57,8 +57,7 @@
                      trans/read)
            :cljs (-> :json
                      trans/reader
-                     (trans/read value)))
-        (catch #?(:cljs :default :default Throwable) _ nil)))))
+                     (trans/read value)))))))
 
 (defmethod ig/init-key ::json [_ {:keys [object-mapper]}]
   (reify
@@ -101,13 +100,12 @@
                 clj-jwt/to-str))))
     (deserialize [_ token opts]
       #?(:clj
-          (try
+          (u/silent!
             (some-> (let [jwt (clj-jwt/str->jwt token)]
                       (when (clj-jwt/verify jwt algo secret)
                         jwt))
                     :claims
-                    (update :data (partial pserdes/deserialize data-serde) opts))
-            (catch Throwable _ nil))))))
+                    (update :data (partial pserdes/deserialize data-serde) opts)))))))
 
 (defmethod ig/init-key ::object-mapper [_ _]
   #?(:clj (jsonista/object-mapper

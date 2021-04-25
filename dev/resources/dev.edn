@@ -22,4 +22,4 @@
   {:base-url  #ig/ref :env/base-url
    :jwt-serde #ig/ref :serdes/jwt
    :nav       #ig/ref :services/nav
-   :tx        #ig/ref :services/transactor}}}
+   :user-repo #ig/ref :repositories/users}}}

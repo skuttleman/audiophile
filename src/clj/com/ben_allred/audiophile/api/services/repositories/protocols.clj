@@ -9,4 +9,4 @@
   (execute! [this query opts]))
 
 (defprotocol IFormatQuery
-  (format [_ query]))
+  (format [this query]))

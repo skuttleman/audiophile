@@ -12,3 +12,13 @@
   "recursively walk a data structure applying f to every value"
   [f coll]
   (walk/postwalk f coll))
+
+(defn force-sequential [item]
+  (cond-> item
+    (not (sequential? item)) vector))
+
+(defn only! [coll]
+  (let [[item & more] coll]
+    (when (seq more)
+      (throw (ex-info "expected singleton collection, but got more than one item" {})))
+    item))

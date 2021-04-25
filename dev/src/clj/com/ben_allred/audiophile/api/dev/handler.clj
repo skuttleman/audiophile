@@ -16,16 +16,16 @@
                              {:query-params (select-keys params #{:email :redirect-uri})}))
           ring/redirect))))
 
-(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav tx]}]
+(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav user-repo]}]
   "GET /auth/callback - dev only implementation"
   (fn [request]
     (let [{:keys [email]} (get-in request [:nav/route :query-params])]
-      (auth/login! nav tx jwt-serde base-url email))))
+      (auth/login! nav jwt-serde base-url user-repo email))))
 
 (defmethod ig/init-key ::app [_ {:keys [app]}]
   "for when dev modifications are needed (like additional middleware)"
   (fn [request]
     (try (app request)
          (catch Throwable ex
-           (log/error ex)
+           (log/error ex "[DEV] uncaught exception!")
            {:status 500}))))

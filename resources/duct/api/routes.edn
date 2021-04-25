@@ -2,16 +2,20 @@
  #ig/ref :routes/table
 
  [:duct/const :routes/table]
- {^:auth/user [:get :api/ws] #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
-  [:get :auth/callback]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
-  [:get :auth/details]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
-  [:get :auth/login]         #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
-  [:get :auth/logout]        #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
-  [:get :resources/css]      #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :resources/health]   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
-  [:get :resources/js]       #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :ui/home]            #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
-  [:get :ui/not-found]       #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
+ {^:auth/user [:get :api/ws]        #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  ^:auth/user [:get :api/projects]  #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch-all
+  ^:auth/user [:post :api/projects] #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
+  ^:auth/user [:get :api/teams]     #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
+  ^:auth/user [:post :api/teams]    #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create
+  [:get :auth/callback]             #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
+  [:get :auth/details]              #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
+  [:get :auth/login]                #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
+  [:get :auth/logout]               #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
+  [:get :resources/css]             #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :resources/health]          #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
+  [:get :resources/js]              #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :ui/home]                   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
+  [:get :ui/not-found]              #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
 
  :com.ben-allred.audiophile.api.handlers.resources/health
  {}
@@ -55,10 +59,22 @@
   :jwt-serde #ig/ref :serdes/jwt
   :nav       #ig/ref :services/nav
   :oauth     #ig/ref :services/oauth
-  :tx        #ig/ref :services/transactor}
+  :user-repo #ig/ref :repositories/users}
 
  :com.ben-allred.audiophile.api.handlers.auth/details
  {}
+
+ :com.ben-allred.audiophile.api.handlers.projects/fetch-all
+ {:project-repo #ig/ref :repositories/projects}
+
+ :com.ben-allred.audiophile.api.handlers.projects/create
+ {:project-repo #ig/ref :repositories/projects}
+
+ :com.ben-allred.audiophile.api.handlers.teams/fetch-all
+ {:team-repo #ig/ref :repositories/teams}
+
+ :com.ben-allred.audiophile.api.handlers.teams/create
+ {:team-repo #ig/ref :repositories/teams}
 
  :com.ben-allred.audiophile.api.services.pubsub.ws/handler
  {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel

@@ -2,17 +2,17 @@
   (:require
     [clojure.java.io :as io]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.utils.core :as u]
     [integrant.core :as ig])
   (:import
     (java.net InetAddress)))
 
 (defn ^:private file->env [file]
-  (try
+  (u/silent!
     (some->> file
              io/file
              slurp
-             (serdes/deserialize (ig/init-key ::serdes/edn nil)))
-    (catch Throwable _ nil)))
+             (serdes/deserialize (ig/init-key ::serdes/edn nil)))))
 
 (defn load-env [files]
   (transduce (map file->env)

@@ -3,6 +3,7 @@
     [clojure.core.async :as async]
     [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [immutant.web.async :as web.async]
@@ -52,9 +53,7 @@
       (try
         (send! channel [:conn/ping])
         (catch Throwable _
-          (try
-            (close! channel)
-            (catch Throwable _))))
+          (u/silent! (close! channel))))
       (recur))))
 
 (defn ^:private handle-close [{:keys [ch-id pubsub user-id]} _]

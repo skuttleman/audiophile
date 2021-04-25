@@ -1,0 +1,11 @@
+{[:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/users]
+ {:entity #ig/ref :entities/users
+  :tx     #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/projects]
+ {:entity #ig/ref :entities/projects
+  :tx     #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/teams]
+ {:entity #ig/ref :entities/teams
+  :tx     #ig/ref :services/transactor}}

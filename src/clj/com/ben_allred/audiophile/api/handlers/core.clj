@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.api.handlers.validations.core :as validations]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::router [_ route-table]
@@ -16,10 +17,10 @@
           ui (get route-table [:get :ui/home])]
       (cond
         (and (:auth/user route-restrictions) (not (:auth/user request)))
-        [::http/unauthorized {:errors [{:message "you must be logged in"}]}]
+        (ring/abort! "you must be logged in" ::http/unauthorized)
 
         handler
-        (handler request)
+        (handler (validations/validate! k request))
 
         (and (= :get request-method)
              (not (string/starts-with? uri "/api")))

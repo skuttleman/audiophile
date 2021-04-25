@@ -119,7 +119,7 @@
         (try (handler request)
              (catch ExceptionInfo ex
                (log/error ex)
-               (if-let [response (:response ex)]
+               (if-let [response (:response (ex-data ex))]
                  (vary-meta (->response response) assoc ::ex true)
                  err-response))
              (catch Throwable ex

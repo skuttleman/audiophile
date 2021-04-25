@@ -1,0 +1,17 @@
+{[:com.ben-allred.audiophile.api.services.repositories.entities.core/entity :entities/users]
+ {:entities #ig/ref :com.ben-allred.audiophile.api.services.repositories.entities.core/entities
+  :namespace :user
+  :table-name :users}
+
+ [:com.ben-allred.audiophile.api.services.repositories.entities.core/entity :entities/projects]
+ {:entities #ig/ref :com.ben-allred.audiophile.api.services.repositories.entities.core/entities
+  :namespace :project
+  :table-name :projects}
+
+ [:com.ben-allred.audiophile.api.services.repositories.entities.core/entity :entities/teams]
+ {:entities #ig/ref :com.ben-allred.audiophile.api.services.repositories.entities.core/entities
+  :namespace :team
+  :table-name :teams}
+
+ :com.ben-allred.audiophile.api.services.repositories.entities.core/entities
+ {:tx #ig/ref :services/transactor}}

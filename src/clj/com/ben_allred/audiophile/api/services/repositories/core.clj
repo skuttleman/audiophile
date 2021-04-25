@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.api.services.repositories.core
   (:require
+    [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [hikari-cp.core :as hikari]
-    [honeysql.core :as sql]
     [integrant.core :as ig]
     [next.jdbc :as jdbc]
     [next.jdbc.result-set :as result-set])
@@ -16,7 +16,7 @@
 (deftype QueryFormatter []
   prepos/IFormatQuery
   (format [_ query]
-    (sql/format query :quoting :ansi)))
+    (sql/format query)))
 
 (defmethod ig/init-key ::query-formatter [_ _]
   (->QueryFormatter))
@@ -41,7 +41,7 @@
     (let [xform (or result-xform identity)
           entity-fn (cond->> (fn [[k v]]
                                [(keyword k) v])
-                             entity-fn (comp entity-fn))
+                      entity-fn (comp entity-fn))
           ->row! (fn [t k v]
                    (conj! t (entity-fn [k v])))]
       (fn [^ResultSet rs _opts]
@@ -73,7 +73,7 @@
   (transact! [_ f]
     (jdbc/transact datasource
                    (fn [conn]
-                     (f (->executor conn)))
+                     (f (->executor conn) opts))
                    opts)))
 
 (defmethod ig/init-key ::transactor [_ {:keys [->executor datasource]}]
@@ -116,8 +116,11 @@
   ([executor sql opts]
    (prepos/exec-raw! executor sql opts)))
 
+(defn ->exec! [executor opts exec-fn f]
+  (exec-fn executor (f opts) opts))
+
 (defn transact!
   ([transactor f]
    (prepos/transact! transactor f))
   ([transactor f & args]
-   (prepos/transact! transactor #(apply f % args))))
+   (prepos/transact! transactor #(apply f %1 %2 args))))

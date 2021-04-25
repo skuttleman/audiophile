@@ -1,16 +1,16 @@
 (ns com.ben-allred.audiophile.api.services.repositories.users
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.core :as repos]))
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
+    [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
+    [com.ben-allred.audiophile.common.utils.fns :as fns]
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
-(defn ^:private query* [clause]
-  {:select [[:users.id "user/id"]
-            [:users.first-name "user/first-name"]
-            [:users.last-name "user/last-name"]
-            [:users.handle "user/handle"]
-            [:users.email "user/email"]
-            [:users.created-at "user/created-at"]]
-   :from   [:users]
-   :where  clause})
-
-(defn query-by-email [transactor email]
-  (first (repos/transact! transactor repos/execute! (query* [:= :users.email email]))))
+(defn query-by-email [repo email]
+  (-> repo
+      (repos/transact! repos/->exec!
+                       repos/execute!
+                       (fns/=> :entity/users
+                               (update :fields (partial remove #{:mobile-number}))
+                               (assoc :where [:= :users.email email])
+                               entities/select*))
+      first))

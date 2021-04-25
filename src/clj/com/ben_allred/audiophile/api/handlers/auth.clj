@@ -45,10 +45,10 @@
           (log/error ex# "an error occurred" ~ctx)
           [nil ex#])))
 
-(defn login! [nav tx jwt-serde base-url email]
+(defn login! [nav jwt-serde base-url user-repo email]
   (if-let [user (first (unsafe! "querying the user from the database"
                          (when email
-                           (users/query-by-email tx email))))]
+                           (users/query-by-email user-repo email))))]
     (redirect nav
               (nav/path-for nav :ui/home)
               base-url
@@ -69,13 +69,13 @@
   (fn [_]
     (logout! nav base-url)))
 
-(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav oauth tx]}]
+(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav oauth user-repo]}]
   "GET /auth/callback - handle redirect from auth provider"
   (fn [request]
     (let [params (get-in request [:nav/route :query-params])
           profile (first (unsafe! "fetching user profile from the OAuth provider"
                            (auth/profile oauth params)))]
-      (login! nav tx jwt-serde base-url (:email profile)))))
+      (login! nav jwt-serde base-url user-repo (:email profile)))))
 
 (defmethod ig/init-key ::details [_ _]
   "GET /auth/details - return current logged on user's details"

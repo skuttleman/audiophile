@@ -3,6 +3,9 @@
     [clojure.string :as string]
     [taoensso.timbre :as log*]))
 
+(def ^:const ANSI_RESET "\u001B[0m")
+(def ^:const ANSI_YELLOW "\u001B[33m")
+
 (def ^:dynamic *ctx* nil)
 
 (defmacro with-ctx [ctx & body]
@@ -39,11 +42,11 @@
 (defmacro spy
   ([form]
    `(let [val# ~form]
-      (log :info ~(:line (meta &form)) '~form "=>" val#)
+      (log :info ~(:line (meta &form)) ~(str ANSI_YELLOW form ANSI_RESET) "=>" val#)
       val#))
   ([level form]
    `(let [val# ~form]
-      (log ~level ~(:line (meta &form)) '~form "=>" val#)
+      (log ~level ~(:line (meta &form)) ~(str ANSI_YELLOW form ANSI_RESET) "=>" val#)
       val#)))
 
 (defmacro spy-tap

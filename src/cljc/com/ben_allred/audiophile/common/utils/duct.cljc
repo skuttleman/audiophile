@@ -10,8 +10,8 @@
 
 (def readers
   "custom readers for parsing duct config files"
-  {'audiophile/uuid-re (partial conj [uuids/regex])
-   'audiophile/merge   (partial reduce duct/merge-configs {})})
+  {'audiophile/uuid-param (partial conj [uuids/regex])
+   'audiophile/merge      (partial reduce duct/merge-configs {})})
 
 #?(:clj
    (defmethod env*/coerce 'Edn [s _]

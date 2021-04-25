@@ -15,30 +15,6 @@
  [:duct/const :resources/user-details]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :user/details]
 
- [:duct/const :nav/routes]
- [""
-  [;; AUTH
-   ["/auth"
-    [["/callback" :auth/callback]
-     ["/login" :auth/login]
-     ["/logout" :auth/logout]
-     ["/details" :auth/details]
-     [true :api/not-found]]]
-
-   ;; API
-   ["/api"
-    [[true :api/not-found]]]
-
-   ;; UI
-   ["/" :ui/home]
-   ["/login" :ui/login]
-
-   ;; RESOURCES
-   ["/health" :resources/health]
-   ["/js" [[true :resources/js]]]
-   ["/css" [[true :resources/css]]]
-   [true :ui/not-found]]]
-
  [:duct/const :ui/err-codes]
  {:user-not-found "Authentication failed.User not found."}
 

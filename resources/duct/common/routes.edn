@@ -1,0 +1,30 @@
+{[:duct/const :nav/routes]
+ [""
+  [;; AUTH
+   ["/auth"
+    [["/callback" :auth/callback]
+     ["/login" :auth/login]
+     ["/logout" :auth/logout]
+     ["/details" :auth/details]
+     [true :api/not-found]]]
+
+   ;; API
+   ["/api"
+    [["/ws" :api/ws]
+     ["/projects"
+      [["" :api/projects]
+       [["/projects/" #audiophile/uuid-param :project-id] :api/project]]]
+     ["/teams"
+      [["" :api/teams]
+       [["/teams/" #audiophile/uuid-param :team-id] :api/team]]]
+     [true :api/not-found]]]
+
+   ;; UI
+   ["/" :ui/home]
+   ["/login" :ui/login]
+
+   ;; RESOURCES
+   ["/health" :resources/health]
+   ["/js" [[true :resources/js]]]
+   ["/css" [[true :resources/css]]]
+   [true :ui/not-found]]]}
