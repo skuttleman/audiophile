@@ -2,12 +2,21 @@
   (:require
     [clojure.core.async :as async]
     [clojure.core.async.impl.protocols :as async.protocols]
+    [clojure.string :as string]
+    [com.ben-allred.audiophile.api.dev.migrations :as mig]
     [com.ben-allred.audiophile.api.services.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig])
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [hikari-cp.core :as hikari]
+    [integrant.core :as ig]
+    [next.jdbc :as jdbc]
+    [next.jdbc.protocols :as pjdbc])
   (:import
+    (java.io Closeable)
+    (javax.sql DataSource)
     (org.projectodd.wunderboss.web.async Channel)))
 
 (defmethod ig/init-key ::ws-handler [_ {:keys [->channel ->handler serdes]}]
@@ -54,3 +63,33 @@
                        (when (ws/open? channel)
                          (ws/on-close handler))
                        (ws/close! channel)))]))))
+
+(defmethod ig/init-key ::transactor [_ {:keys [->executor datasource migrator seed-data]}]
+  (mig/migrate! migrator)
+  (doto (repos/->Transactor datasource nil ->executor)
+    (repos/transact! (fn [executor _]
+                       (doseq [query seed-data]
+                         (repos/execute! executor query))))))
+
+(defmethod ig/init-key ::datasource [_ {:keys [spec]}]
+  (let [datasource (hikari/make-datasource spec)
+        db-name (str "test_db_" (string/replace (str (uuids/random)) #"-" ""))]
+    (jdbc/execute! datasource [(str "CREATE DATABASE " db-name)])
+    (let [ds (hikari/make-datasource (assoc spec :database-name db-name))]
+      (reify
+        Closeable
+        (close [_]
+          (hikari/close-datasource ds)
+          (jdbc/execute! datasource [(str "DROP DATABASE " db-name)])
+          (hikari/close-datasource datasource))
+
+        DataSource
+        (getConnection [_]
+          (.getConnection ds))
+
+        pjdbc/Transactable
+        (-transact [_ body-fn opts]
+          (pjdbc/-transact ds body-fn opts))))))
+
+(defmethod ig/halt-key! ::datasource [_ datasource]
+  (.close datasource))

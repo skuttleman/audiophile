@@ -17,19 +17,24 @@
         (duct/read-config uduct/readers)
         (duct/prep-config [:duct.profile/base :duct.profile/test]))))
 
-(defn ^:private mocked-cfg [base]
-  (assoc base
-         [:duct/const :services/transactor]
-         (mocks/->mock (reify
-                         prepos/ITransact
-                         (transact! [this f] (f this))
-                         prepos/IExecute
-                         (execute! [_ _ _])))
-         [:duct/const :services/oauth]
-         (mocks/->mock (reify
-                         pauth/IOAuthProvider
-                         (-redirect-uri [_ _])
-                         (-profile [_ _])))))
+(defn ^:private mocked-cfg
+  ([base]
+   (mocked-cfg base nil))
+  ([base opts]
+   (-> base
+       (assoc [:duct/const :services/oauth]
+              (mocks/->mock (reify
+                              pauth/IOAuthProvider
+                              (-redirect-uri [_ _])
+                              (-profile [_ _]))))
+       (cond->
+         (not (:db/enabled? opts))
+         (assoc [:duct/const :services/transactor]
+                (mocks/->mock (reify
+                                prepos/ITransact
+                                (transact! [this f] (f this nil))
+                                prepos/IExecute
+                                (execute! [_ _ _]))))))))
 
 (defn setup-mock [config mock-k method f-or-val]
   (update config [:duct/const mock-k] mocks/set-mock! method f-or-val))
@@ -41,13 +46,27 @@
                  (setup-mock cfg k m f))
                config)))
 
-(defmacro with-config [[sym keys f & f-args] & body]
-  `(let [cfg# (~mocked-cfg ~config-base)
-         system# (-> cfg#
-                     ((or ~f identity) ~@f-args)
-                     (ig/init ~keys))
-         ~sym system#]
-     (try
-       ~@body
-       (finally
-         (ig/halt! system#)))))
+(defmacro with-config [[sym keys f & f-args] opts & body]
+  (let [[opts body] (if (map? opts)
+                      [opts body]
+                      [nil (cons opts body)])]
+    `(let [cfg# (~mocked-cfg ~config-base ~opts)
+           system# (-> cfg#
+                       ((or ~f identity) ~@f-args)
+                       (ig/init ~keys))
+           ~sym system#]
+       (try
+         ~@body
+         (finally
+           (ig/halt! system#))))))
+
+(defn seed-user [system email]
+  (->> (get-in (get system [:duct/const :test/seed-data]) [0 :values])
+       (filter (comp #{email} :email))
+       first
+       (into {}
+             (map (fn [[k v]]
+                    [(keyword "user" (name k)) v])))))
+
+(defn component [system k]
+  (second (ig/find-derived-1 system k)))

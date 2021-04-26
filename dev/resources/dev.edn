@@ -1,17 +1,20 @@
 {:duct.profile/base
- #duct/include "duct/api/base.edn"
+ #audiophile/merge
+ [#duct/include "duct/api/base.edn"
+  {[:duct/const :resources/migration-path]
+   "db/migrations"}]
 
  :duct.profile/dev
- {[:com.ben-allred.audiophile.api.core/server :duct/daemon]
+ {[:duct/const :routes/table]
+  ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
+             [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
+
+  [:com.ben-allred.audiophile.api.core/server :duct/daemon]
   {:handler     #ig/ref :api/handler
    :server-port #ig/ref :env/server-port}
 
   :com.ben-allred.audiophile.api.dev.handler/app
   {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}
-
-  [:duct/const :routes/table]
-  ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
-             [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
 
   ;; components
   :com.ben-allred.audiophile.api.dev.handler/login

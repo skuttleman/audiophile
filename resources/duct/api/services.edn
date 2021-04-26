@@ -1,10 +1,13 @@
 {[:duct/const :services/transactor]
  #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/transactor
 
+ [:duct/const :services/datasource]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource
+
  [:duct/const :services/oauth]
  #ig/ref :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
 
- :com.ben-allred.audiophile.api.services.repositories.core/cfg
+ [:com.ben-allred.audiophile.api.services.repositories.core/cfg :config/db]
  {:db-name  #ig/ref :env/db-name
   :host     #ig/ref :env/db-host
   :password #ig/ref :env/db-password
@@ -12,14 +15,14 @@
   :user     #ig/ref :env/db-user}
 
  :com.ben-allred.audiophile.api.services.repositories.core/datasource
- {:spec #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/cfg}
+ {:spec #ig/ref :config/db}
 
  :com.ben-allred.audiophile.api.services.repositories.core/transactor
  {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->executor
   :datasource #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource}
 
  :com.ben-allred.audiophile.api.services.repositories.core/->executor
- {:->builder-fn #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->builder-fn
+ {:->builder-fn    #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->builder-fn
   :query-formatter #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/query-formatter}
 
  :com.ben-allred.audiophile.api.services.repositories.core/query-formatter

@@ -1,0 +1,7 @@
+[{:insert-into :users
+  :values      [{:id            #uuid "a41152f5-4f29-4e0f-aba9-c48ae0ab9676"
+                 :first-name    "Joe"
+                 :last-name     "Example"
+                 :handle        "handly"
+                 :email         "joe@example.com"
+                 :mobile-number "1234567890"}]}]

@@ -1,11 +1,34 @@
-{:duct.profile/base #duct/include "duct/api/base.edn"
- :duct.profile/test {[:duct/const :routes/table]
-                     ^:promote {[:get :api/ws] #ig/ref :com.ben-allred.audiophile.integration.common.components/ws-handler}
+#audiophile/merge
+[#duct/include "dev.edn"
+ {:duct.profile/test {[:duct/const :routes/table]
+                      ^:promote {[:get :api/ws] #ig/ref :com.ben-allred.audiophile.integration.common.components/ws-handler}
 
-                     :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
-                     ^:promote {:heartbeat-int-ms 250}
+                      [:duct/const :services/transactor]
+                      ^:promote #ig/ref :com.ben-allred.audiophile.integration.common.components/transactor
 
-                     :com.ben-allred.audiophile.integration.common.components/ws-handler
-                     {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
-                      :->handler #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
-                      :serdes    #ig/ref :config/serdes}}}
+                      [:duct/const :services/datasource]
+                      ^:promote #ig/ref :com.ben-allred.audiophile.integration.common.components/datasource
+
+                      [:duct/const :test/seed-data]
+                      #duct/include "seed.edn"
+
+                      :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+                      ^:promote {:heartbeat-int-ms 250}
+
+                      :com.ben-allred.audiophile.integration.common.components/ws-handler
+                      {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
+                       :->handler #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+                       :serdes    #ig/ref :config/serdes}
+
+                      :com.ben-allred.audiophile.integration.common.components/transactor
+                      {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->executor
+                       :datasource #ig/ref :services/datasource
+                       :migrator   #ig/ref :com.ben-allred.audiophile.api.dev.migrations/migrator
+                       :seed-data  #ig/ref :test/seed-data}
+
+                      :com.ben-allred.audiophile.integration.common.components/datasource
+                      {:spec #ig/ref :config/db}
+
+                      :com.ben-allred.audiophile.api.dev.migrations/migrator
+                      {:datasource          #ig/ref :com.ben-allred.audiophile.integration.common.components/datasource
+                       :migrations-res-path #ig/ref :resources/migration-path}}}]

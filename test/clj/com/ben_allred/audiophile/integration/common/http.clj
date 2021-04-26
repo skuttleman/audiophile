@@ -5,7 +5,8 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]))
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
+    [com.ben-allred.audiophile.integration.common :as int]))
 
 (defn login
   ([request system]
@@ -34,7 +35,7 @@
 
 (defn with-serde
   ([handler system serde]
-   (with-serde handler (clojure.core/get system [:duct/const serde])))
+   (with-serde handler (int/component system serde)))
   ([handler serde]
    (let [mime-type (serdes/mime-type serde)]
      (fn [request]
