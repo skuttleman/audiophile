@@ -32,6 +32,8 @@
 
 (defn create
   ([]
-   (create nil))
+   (->NoopForm nil))
   ([value]
+   (->NoopForm value))
+  ([value _]
    (->NoopForm value)))

@@ -1,7 +1,10 @@
 (ns com.ben-allred.audiophile.common.utils.logger
+  #?(:cljs
+     (:require-macros
+       [com.ben-allred.audiophile.common.utils.logger]))
   (:require
-    [clojure.string :as string]
-    [taoensso.timbre :as log*]))
+    [taoensso.timbre :as log*]
+    [clojure.pprint :as pp]))
 
 (def ^:const ANSI_RESET "\u001B[0m")
 (def ^:const ANSI_YELLOW "\u001B[33m")
@@ -71,9 +74,13 @@
         (log ~level ~(:line (meta &form)) (cons '~f args#) "=>" result#)
         result#))))
 
+(defn pprint [value]
+  "reagent component for displaying clojure data in the browser - debug only"
+  [:pre (with-out-str (pp/pprint value))])
+
 (defn ^:private clean [data]
   (assoc data :hostname_ (delay nil)))
 
-(log*/merge-config! {:level      (keyword (or (System/getenv "LOG_LEVEL")
+(log*/merge-config! {:level      (keyword (or #?(:clj (System/getenv "LOG_LEVEL"))
                                               :info))
                      :middleware [clean]})

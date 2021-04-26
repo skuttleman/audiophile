@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [integrant.core :as ig]))
 
@@ -14,10 +15,24 @@
           (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
    "Logout"])
 
-(defmethod ig/init-key ::root [_ {:keys [nav]}]
+(defn project-view [projects state]
+  [:div
+   [:p "I am projects"]
+   [log/pprint projects]])
+
+(defn team-view [teams state]
+  [:div
+   [:p "I am teams"]
+   [log/pprint teams]])
+
+(defmethod ig/init-key ::root [_ {:keys [nav projects-tile teams-tile]}]
   (fn [state]
-    (if-let [{:user/keys [first-name]} (:auth/user state)]
-      [:p "Welcome, " first-name]
+    (if (:auth/user state)
+      [:div
+       [:p "Welcome, " (get-in state [:auth/user :user/first-name])]
+       [:div.columns.layout--space-below.layout--xxl.gutters
+        [projects-tile state project-view]
+        [teams-tile state team-view]]]
       (nav/navigate! nav :ui/login))))
 
 (defmethod ig/init-key ::header [_ {:keys [nav]}]

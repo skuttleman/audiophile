@@ -1,9 +1,11 @@
 (ns com.ben-allred.audiophile.common.services.resources.multi
   (:require
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv])
+    [com.ben-allred.vow.impl.protocol :as pv]
+    [integrant.core :as ig])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -41,3 +43,6 @@
 
 (defn ->multi-resource [resources]
   (->MultiResource resources))
+
+(defmethod ig/init-key ::resource [_ {:keys [resources]}]
+  (->multi-resource resources))

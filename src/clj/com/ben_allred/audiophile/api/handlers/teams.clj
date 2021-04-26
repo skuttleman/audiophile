@@ -11,6 +11,6 @@
       [::http/ok {:data (teams/query-all team-repo user-id)}])))
 
 (defmethod ig/init-key ::create [_ {:keys [team-repo]}]
-  (fn [{team :validations/body :as request}]
+  (fn [{team :valid/data :as request}]
     (let [user-id (get-in request [:auth/user :data :user :user/id])]
       [::http/ok {:data (teams/create! team-repo team user-id)}])))

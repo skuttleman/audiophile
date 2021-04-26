@@ -16,7 +16,7 @@
 
 ;; teams
 (s/def :team/name ::trimmed-string)
-(s/def :team/type #{:PERSONAL :COLLABORATIVE})
+(s/def :team/type #{:COLLABORATIVE})
 (s/def ::team-new
   (s/keys :req [:team/name
                 :team/type]))

@@ -12,12 +12,16 @@
     com.ben-allred.audiophile.common.services.navigation.parsers
     com.ben-allred.audiophile.common.services.pubsub.core
     com.ben-allred.audiophile.common.services.pubsub.ws
+    com.ben-allred.audiophile.common.services.resources.cached
     com.ben-allred.audiophile.common.services.resources.core
+    com.ben-allred.audiophile.common.services.resources.multi
     com.ben-allred.audiophile.common.services.resources.toaster
     com.ben-allred.audiophile.common.services.resources.users
+    com.ben-allred.audiophile.common.views.components.tiles
     com.ben-allred.audiophile.common.views.components.toast
     com.ben-allred.audiophile.common.views.roots.home
-    com.ben-allred.audiophile.common.views.roots.login))
+    com.ben-allred.audiophile.common.views.roots.login
+    com.ben-allred.audiophile.common.views.roots.projects))
 
 (defn ^:private app [app* store]
   [app* (-> store
@@ -36,7 +40,7 @@
 (def ^:private config
   (cfg/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
 
-(defn ^:export init
+(defn init
   ([]
    (set! log/*ctx* {:disabled? true})
    (init (ig/init config)))

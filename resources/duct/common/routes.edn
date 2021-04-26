@@ -13,7 +13,7 @@
     [["/ws" :api/ws]
      ["/projects"
       [["" :api/projects]
-       [["/projects/" #audiophile/uuid-param :project-id] :api/project]]]
+       [["/" #audiophile/uuid-param :project-id] :api/project]]]
      ["/teams"
       [["" :api/teams]
        [["/teams/" #audiophile/uuid-param :team-id] :api/team]]]
@@ -22,6 +22,10 @@
    ;; UI
    ["/" :ui/home]
    ["/login" :ui/login]
+   ["/projects"
+    [["" :ui/projects]
+     [["/" #audiophile/uuid-param :project-id] :ui/project]
+     ["/new" :ui/projects#new]]]
 
    ;; RESOURCES
    ["/health" :resources/health]

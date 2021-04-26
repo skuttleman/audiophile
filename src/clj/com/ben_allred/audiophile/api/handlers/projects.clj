@@ -11,6 +11,6 @@
       [::http/ok {:data (projects/query-all project-repo user-id)}])))
 
 (defmethod ig/init-key ::create [_ {:keys [project-repo]}]
-  (fn [{project :validations/body :as request}]
+  (fn [{project :valid/data :as request}]
     (let [user-id (get-in request [:auth/user :data :user :user/id])]
       [::http/ok {:data (projects/create! project-repo project user-id)}])))

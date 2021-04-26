@@ -1,10 +1,9 @@
-{:duct.profile/base
-  #duct/include "dev.edn"
+#audiophile/merge
+[#duct/include "dev.edn"
+ {:duct.profile/migrations
+  {:duct.core/project-ns
+   :com.ben-allred/audiophile.migrations
 
- :duct.profile/migrations
- {:duct.core/project-ns
-  :com.ben-allred/audiophile.migrations
-
-  :com.ben-allred.audiophile.api.dev.migrations/migrator
-  {:datasource          #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource
-   :migrations-res-path #ig/ref :resources/migration-path}}}
+   :com.ben-allred.audiophile.api.dev.migrations/migrator
+   {:datasource          #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource
+    :migrations-res-path #ig/ref :resources/migration-path}}}]

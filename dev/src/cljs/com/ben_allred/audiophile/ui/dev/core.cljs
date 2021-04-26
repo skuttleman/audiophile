@@ -18,7 +18,7 @@
 (def ^:private config
   (cfg/load-config "ui-dev.edn" [:duct.profile/base :duct.profile/dev]))
 
-(defn init []
+(defn ^:export init []
   (pp/pprint config)
   (app/init (swap! sys (fn [system]
                          (some-> system ig/halt!)
