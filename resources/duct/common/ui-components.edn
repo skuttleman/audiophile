@@ -59,6 +59,23 @@
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/create]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/create]}
 
+ [:com.ben-allred.audiophile.common.services.resources.toaster/resource :projects/create]
+ {:error-fn   #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/create]
+  :store      #ig/ref :services/store
+  :success-fn #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]
+ {:msg "Success"}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
+ {:msg "An error occurred."}
+
+ [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
+ {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :projects/create]
+  :nav      #ig/ref :services/nav
+  :routes   {:success/page :ui/home}}
+
  [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]
  {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]}
 
@@ -79,7 +96,7 @@
   :login-form #ig/ref :views/login-form}
 
  :com.ben-allred.audiophile.common.views.roots.projects/create
- {:projects #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/create]
+ {:projects #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
   :teams    #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]

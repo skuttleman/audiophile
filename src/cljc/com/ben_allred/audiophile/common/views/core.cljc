@@ -18,5 +18,5 @@
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
       [:div.layout--inset
-       [comp/with-resource [user-resource] root components-table state]]]
+       [comp/with-resource [user-resource {:spinner/size :large}] root components-table state]]]
      [toasts (:toasts state)]]))

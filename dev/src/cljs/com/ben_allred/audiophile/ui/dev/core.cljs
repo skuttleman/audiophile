@@ -22,7 +22,12 @@
   (pp/pprint config)
   (app/init (swap! sys (fn [system]
                          (some-> system ig/halt!)
-                         (ig/init config)))))
+                         (try (let [system (ig/init config)]
+                                (pp/pprint config)
+                                system)
+                              (catch :default ex
+                                (log/error ex "ERROR!!!")
+                                config))))))
 
 (def validator
   (f/validator {:email (f/required "email is required")}))

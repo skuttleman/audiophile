@@ -30,7 +30,8 @@
     (if (:auth/user state)
       [:div
        [:p "Welcome, " (get-in state [:auth/user :user/first-name])]
-       [:div.columns.layout--space-below.layout--xxl.gutters
+       [:div.level.layout--space-below.layout--xxl.gutters
+        {:style {:align-content :flex-start}}
         [projects-tile state project-view]
         [teams-tile state team-view]]]
       (nav/navigate! nav :ui/login))))

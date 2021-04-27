@@ -15,6 +15,7 @@
     com.ben-allred.audiophile.common.services.resources.cached
     com.ben-allred.audiophile.common.services.resources.core
     com.ben-allred.audiophile.common.services.resources.multi
+    com.ben-allred.audiophile.common.services.resources.redirect
     com.ben-allred.audiophile.common.services.resources.toaster
     com.ben-allred.audiophile.common.services.resources.users
     com.ben-allred.audiophile.common.views.components.tiles

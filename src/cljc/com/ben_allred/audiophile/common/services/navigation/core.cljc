@@ -115,6 +115,7 @@
    (serdes/serialize nav page params)))
 
 (defn navigate!
+  "push a path + params to the browser's history"
   ([nav page]
    (navigate! nav page nil))
   ([nav page params]
@@ -127,6 +128,7 @@
    (-replace! nav (path-for nav page params))))
 
 (defn goto!
+  "send the browser to a location with a page rebuild"
   ([nav page]
    (goto! nav page nil))
   ([nav page params]

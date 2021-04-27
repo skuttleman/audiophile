@@ -12,9 +12,9 @@
 (def ^:private code->key
   (set/map-invert key->code))
 
-(def ^:const window #?(:cljs js/window))
+(def ^:const window #?(:cljs js/window :default nil))
 
-(def ^:const document #?(:cljs js/document))
+(def ^:const document #?(:cljs js/document :default nil))
 
 (defn stop-propagation [event]
   #?(:cljs

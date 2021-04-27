@@ -2,7 +2,8 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
-    [com.ben-allred.audiophile.common.services.stubs.reagent :as r]))
+    [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
+    [com.ben-allred.audiophile.common.utils.fns :as fns]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small? visited?]} & body]
   (let [errors (seq (remove nil? errors))
@@ -137,3 +138,44 @@
                #?@(:cljs [:on-click #(on-change (not value))])}
               (merge (select-keys attrs #{:class :id :on-blur :ref})))
           (if value true-display false-display)]]))))
+
+(defn openable [& _]
+  (let [open? (r/atom false)
+        ref (volatile! nil)
+        listeners [(dom/add-listener dom/window :click (fn [e]
+                                                         (if (->> (.-target e)
+                                                                  (iterate #(some-> % .-parentNode))
+                                                                  (take-while some?)
+                                                                  (filter (partial = @ref))
+                                                                  (empty?))
+                                                           (do (reset! open? false)
+                                                               (some-> @ref dom/blur))
+                                                           (some-> @ref dom/focus))))
+                   (dom/add-listener dom/window
+                                     :keydown
+                                     #(when (#{:key-codes/tab :key-codes/esc} (dom/event->key %))
+                                        (reset! open? false))
+                                     true)]]
+    (r/create-class
+      {:component-will-unmount
+       (fn [_]
+         (run! dom/remove-listener listeners))
+       :reagent-render
+       (fn [component & args]
+         (let [attrs (-> {:on-toggle (fn [_]
+                                       (swap! open? not))
+                          :open?     @open?}
+                         (update :ref (fn [ref-fn]
+                                        (fn [node]
+                                          (when node
+                                            (vreset! ref node))
+                                          (when ref-fn
+                                            (ref-fn node)))))
+                         (update :on-blur (fn [on-blur]
+                                            (fn [e]
+                                              (when-let [node @ref]
+                                                (if @open?
+                                                  (some-> node dom/focus)
+                                                  (when on-blur
+                                                    (on-blur e))))))))]
+           (into [component attrs] args)))})))
