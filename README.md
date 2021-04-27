@@ -17,6 +17,7 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 ```bash
 $ git clone git@github.com:skuttleman/audiophile.git
 $ cd audiophile
+$ cp bin/pre-commit.sh .git/hooks/pre-commit
 $ npm install
 $ bin/run.sh dev
 ```
