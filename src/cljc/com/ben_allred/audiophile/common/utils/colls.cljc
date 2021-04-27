@@ -22,3 +22,6 @@
     (when (seq more)
       (throw (ex-info "expected singleton collection, but got more than one item" {})))
     item))
+
+(defn split-on [pred coll]
+  [(filter pred coll) (remove pred coll)])

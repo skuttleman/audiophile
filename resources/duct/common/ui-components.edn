@@ -8,7 +8,8 @@
  [:duct/const :ui.components/table]
  {:ui/home         #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
   :ui/login        #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root
-  :ui/projects#new #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/create}
+  :ui/projects#new #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/create
+  :ui/teams#new    #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/create}
 
  [:duct/const :services/store]
  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
@@ -50,6 +51,12 @@
   :method      :get
   :route       :api/teams}
 
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/create]
+ {:http-client   #ig/ref :services/http
+  :method        :post
+  :route         :api/teams
+  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
+
  [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]}
 
@@ -65,12 +72,6 @@
   :store      #ig/ref :services/store
   :success-fn #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]}
 
- [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]
- {:msg "Success"}
-
- [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
- {:msg "An error occurred."}
-
  [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
  {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :projects/create]
   :nav      #ig/ref :services/nav
@@ -82,8 +83,28 @@
  [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/all]}
 
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/create]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/create]}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/resource :teams/create]
+ {:error-fn   #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/create]
+  :store      #ig/ref :services/store
+  :success-fn #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]}
+
+ [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]
+ {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :teams/create]
+  :nav      #ig/ref :services/nav
+  :routes   {:success/page :ui/home}}
+
  :com.ben-allred.audiophile.common.services.resources.users/login
  {:nav #ig/ref :services/nav}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]
+ {:msg "Success"}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
+ {:msg "An error occurred."}
 
  ;; Reagent Components
  :com.ben-allred.audiophile.common.views.roots.home/root
@@ -98,6 +119,9 @@
  :com.ben-allred.audiophile.common.views.roots.projects/create
  {:projects #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
   :teams    #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}
+
+ :com.ben-allred.audiophile.common.views.roots.teams/create
+ {:teams #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]}
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
  {:links    [{:label "Create new"

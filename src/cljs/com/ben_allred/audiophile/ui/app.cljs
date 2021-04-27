@@ -22,7 +22,8 @@
     com.ben-allred.audiophile.common.views.components.toast
     com.ben-allred.audiophile.common.views.roots.home
     com.ben-allred.audiophile.common.views.roots.login
-    com.ben-allred.audiophile.common.views.roots.projects))
+    com.ben-allred.audiophile.common.views.roots.projects
+    com.ben-allred.audiophile.common.views.roots.teams))
 
 (defn ^:private app [app* store]
   [app* (-> store

@@ -2,7 +2,6 @@
   (:require
     [clojure.set :as set]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
-    [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.common.utils.logger :as log]))
@@ -25,16 +24,19 @@
                            on-change))}
           [item-control display]])])))
 
-(defn button [attrs]
-  (let [selected-count (count (:selected attrs))]
+(defn button [{:keys [attrs->content selected] :as attrs}]
+  (let [selected-count (count selected)
+        content (if attrs->content
+                  (attrs->content attrs)
+                  (case selected-count
+                    0 "Select…"
+                    1 "1 Item Selected"
+                    (str selected-count " Items Selected")))]
     [:button.button
      (-> attrs
          (select-keys #{:class :disabled :on-blur :on-click :ref})
          (assoc :type :button))
-     (case selected-count
-       0 "Select…"
-       1 "1 Item Selected"
-       (str selected-count " Items Selected"))
+     content
      [:span
       {:style {:margin-left "10px"}}
       [comp/icon (if (:open? attrs) :chevron-up :chevron-down)]]]))
@@ -76,7 +78,6 @@
             [comp/alert :info "No results"])]]])]))
 
 (defn dropdown [{:keys [options] :as attrs}]
-  "options, item-control"
   (let [options-by-id (or (:options-by-id attrs) (into {} options))]
     [in/form-field
      attrs
