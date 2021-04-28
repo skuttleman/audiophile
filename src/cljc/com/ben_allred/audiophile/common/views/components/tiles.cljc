@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.common.views.components.tiles
   (:require
-    [com.ben-allred.audiophile.common.views.components.core :as comp]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]))
+    [com.ben-allred.audiophile.common.views.components.core :as comp]
+    [integrant.core :as ig]))
 
 (defmethod ig/init-key ::with-resource [_ {:keys [links nav resource title]}]
   (fn [state view & args]

@@ -1,0 +1,57 @@
+{:com.ben-allred.audiophile.common.views.core/app
+ {:components-table #ig/ref :ui.components/table
+  :header           #ig/ref :com.ben-allred.audiophile.common.views.roots.home/header
+  :toasts           #ig/ref :com.ben-allred.audiophile.common.views.components.toast/toasts
+  :banners          #ig/ref :com.ben-allred.audiophile.common.views.components.toast/banners
+  :user-resource    #ig/ref :resources/user-details}
+
+ [:duct/const :ui.components/table]
+ {:ui/home         #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
+  :ui/login        #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root
+  :ui/projects#new #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/create
+  :ui/teams#new    #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/create}
+
+ [:duct/const :services/store]
+ #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
+
+ [:duct/const :resources/user-details]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
+
+ [:duct/const :resources/projects.all]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/all]
+
+ [:duct/const :resources/teams.all]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
+
+ [:duct/const :ui/err-codes]
+ {:user-not-found "Authentication failed.User not found."}
+
+ :com.ben-allred.audiophile.common.services.ui-store.core/store
+ {}
+
+ :com.ben-allred.audiophile.common.services.resources.users/login
+ {:nav #ig/ref :services/nav}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]
+ {:http-client #ig/ref :services/http
+  :method      :get
+  :route       :auth/details}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :user/details]}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]
+ {:msg "Success"}
+
+ [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
+ {:msg "An error occurred."}
+
+ :com.ben-allred.audiophile.common.views.components.toast/toasts
+ {:store #ig/ref :services/store}
+
+ :com.ben-allred.audiophile.common.views.components.toast/banners
+ {:store     #ig/ref :services/store
+  :err-codes #ig/ref :ui/err-codes}
+
+ :com.ben-allred.audiophile.common.services.resources.validated/opts->request
+ {}}

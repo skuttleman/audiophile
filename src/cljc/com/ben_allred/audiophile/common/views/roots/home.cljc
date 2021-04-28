@@ -17,13 +17,23 @@
 
 (defn project-view [projects state]
   [:div
-   [:p "I am projects"]
-   [log/pprint projects]])
+   [:p [:strong "Your projects"]]
+   (if (seq projects)
+     [:ul
+      (for [{:project/keys [id name]} projects]
+        ^{:key id}
+        [:li "• " name])]
+     [:p "You don't have any projects. Why not create one?"])])
 
 (defn team-view [teams state]
   [:div
-   [:p "I am teams"]
-   [log/pprint teams]])
+   [:p [:strong "Your teams"]]
+   (if (seq teams)
+     [:ul
+      (for [{team-name :team/name :team/keys [id type]} teams]
+        ^{:key id}
+        [:li "• " team-name (str " - " type)])]
+     [:p "You don't have any teams. Why not create one?"])])
 
 (defmethod ig/init-key ::root [_ {:keys [nav projects-tile teams-tile]}]
   (fn [state]

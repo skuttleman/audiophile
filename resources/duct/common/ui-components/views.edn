@@ -1,0 +1,14 @@
+{:com.ben-allred.audiophile.common.views.roots.home/root
+ {:nav           #ig/ref :services/nav
+  :projects-tile #ig/ref [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
+  :teams-tile    #ig/ref [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :teams/all]}
+
+ :com.ben-allred.audiophile.common.views.roots.login/root
+ {:nav        #ig/ref :services/nav
+  :login-form #ig/ref :views/login-form}
+
+ [:com.ben-allred.audiophile.common.views.roots.login/login-form :views/login-form]
+ {:nav #ig/ref :services/nav}
+
+ :com.ben-allred.audiophile.common.views.roots.home/header
+ {:nav #ig/ref :services/nav}}
