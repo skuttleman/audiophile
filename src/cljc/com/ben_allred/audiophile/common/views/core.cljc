@@ -9,7 +9,7 @@
         component (get components-table handler comp/not-found)]
     [component (assoc state :auth/user auth-user)]))
 
-(defmethod ig/init-key ::app [_ {:keys [banners components-table header toasts user-resource]}]
+(defmethod ig/init-key ::app [_ {:keys [banners components-table header modals toasts user-resource]}]
   (fn [state]
     [:div
      [banners (:banners state)]
@@ -19,4 +19,5 @@
       {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
       [:div.layout--inset
        [comp/with-resource [user-resource {:spinner/size :large}] root components-table state]]]
+     [modals (:modals state)]
      [toasts (:toasts state)]]))

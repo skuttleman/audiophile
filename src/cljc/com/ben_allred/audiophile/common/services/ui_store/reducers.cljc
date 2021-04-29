@@ -28,7 +28,23 @@
      :banners/remove! (dissoc state id)
      state)))
 
+(defn ^:private modals
+  ([] {})
+  ([state [type id frame]]
+   (case type
+     :modals/add! (assoc state id (assoc frame :state :init))
+     :modals/display! (maps/update-maybe state id assoc :state :showing)
+     :modals/hide! (maps/update-maybe state id assoc :state :removing)
+     :modals/hide-all! (into state
+                             (map (fn [[k v]]
+                                    [k (assoc v :state :removing)]))
+                             state)
+     :modals/remove! (dissoc state id)
+     :modals/remove-all! (empty state)
+     state)))
+
 (def reducer
-  (rcollaj/combine {:banners banners
-                    :page    page
-                    :toasts  toasts}))
+  (rcollaj/combine (maps/->m banners
+                             modals
+                             page
+                             toasts)))
