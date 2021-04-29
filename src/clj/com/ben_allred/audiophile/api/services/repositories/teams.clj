@@ -27,4 +27,5 @@
                                                                   row))
                             (->> [:= :id team-id]
                                  (entities/select* entity)
-                                 (repos/execute! executor))))))
+                                 (repos/execute! executor)
+                                 first)))))

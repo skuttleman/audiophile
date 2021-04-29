@@ -5,8 +5,7 @@
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [com.ben-allred.vow.core :as v]))
+    [com.ben-allred.audiophile.common.utils.maps :as maps]))
 
 (def ^:private level->class
   {:error "is-danger"})

@@ -27,12 +27,10 @@
   :routes   {:success/page :ui/home}}
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
- {:links    [{:label "Create new"
-              :page  :ui/projects#new}]
-  :nav      #ig/ref :services/nav
-  :resource #ig/ref :resources/projects.all
+ {:resource #ig/ref :resources/projects.all
   :title    "Your Projects"}
 
  :com.ben-allred.audiophile.common.views.roots.projects/create
- {:projects #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
-  :teams    #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}}
+ {:all-projects #ig/ref :resources/projects.all
+  :projects     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
+  :teams        #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}}

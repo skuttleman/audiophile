@@ -7,9 +7,11 @@
     transition: background-color 0.333s ease-out;
     width: 100vw;
     z-index: 200;
+    pointer-events: none;
 
     &.is-active {
         background-color: rgba(10,10,10,0.86);
+        pointer-events: auto;
     }
 
     .modal-stack {

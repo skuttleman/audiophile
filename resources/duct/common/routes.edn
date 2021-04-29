@@ -24,12 +24,10 @@
    ["/login" :ui/login]
    ["/projects"
     [["" :ui/projects]
-     [["/" #audiophile/uuid-param :project-id] :ui/project]
-     ["/new" :ui/projects#new]]]
+     [["/" #audiophile/uuid-param :project-id] :ui/project]]]
    ["/teams"
     [["" :ui/teams]
-     [["/" #audiophile/uuid-param :team-id] :ui/team]
-     ["/new" :ui/teams#new]]]
+     [["/" #audiophile/uuid-param :team-id] :ui/team]]]
 
    ;; RESOURCES
    ["/health" :resources/health]

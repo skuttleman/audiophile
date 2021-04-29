@@ -1,20 +1,26 @@
 (ns com.ben-allred.audiophile.common.views.components.tiles
   (:require
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [integrant.core :as ig]))
 
-(defmethod ig/init-key ::with-resource [_ {:keys [links nav resource title]}]
-  (fn [state view & args]
-    [:div.tile
-     [:div.panel {:style {:min-width "400px"}}
+(defn tile [heading body & tabs]
+  [:div.tile
+   ^{:data-foo "bar"} [:div]
+   [:div {:data-foo "bar"}]
+   [:div.panel {:style {:min-width        "400px"
+                        :background-color "#fcfcfc"}}
+    (when heading
       [:div.panel-heading
-       [:h2.subtitle title]]
-      [:div.panel-tabs
-       (for [{:keys [label page params]} links]
-         ^{:key [page label]}
-         [:a.link {:href (nav/path-for nav page params)} label])]
-      [:div.panel-block
-       (cond-> [comp/with-resource [resource {:spinner/size :small}] view state]
-         (seq args) (into args))]]]))
+       heading])
+    (when (seq tabs)
+      (into [:div.panel-tabs {:style {:padding "8px 0"}}] tabs))
+    [:div.panel-block
+     body]]])
+
+(defmethod ig/init-key ::with-resource [_ {:keys [resource title]}]
+  (fn [state view & tabs]
+    (into [tile
+           [:h2.subtitle title]
+           [comp/with-resource [resource {:spinner/size :small}] view state]]
+          tabs)))

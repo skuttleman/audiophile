@@ -1,7 +1,11 @@
 (ns com.ben-allred.audiophile.common.views.roots.home
   (:require
+    [#?(:clj  com.ben-allred.audiophile.common.services.forms.noop
+        :cljs com.ben-allred.audiophile.ui.services.forms.standard) :as form]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
+    [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
+    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [integrant.core :as ig]))
@@ -35,15 +39,31 @@
         [:li "• " team-name (str " - " type)])]
      [:p "You don't have any teams. Why not create one?"])])
 
-(defmethod ig/init-key ::root [_ {:keys [nav projects-tile teams-tile]}]
+(defn ^:private clicker [store view title]
+  (fn [_]
+    (ui-store/dispatch! store
+                        (actions/modal! [:h2.subtitle title]
+                                        [view]))))
+
+(defmethod ig/init-key ::root [_ {:keys [nav project-form projects-tile store team-form teams-tile]}]
   (fn [state]
     (if (:auth/user state)
       [:div
        [:p "Welcome, " (get-in state [:auth/user :user/first-name])]
        [:div.level.layout--space-below.layout--xxl.gutters
         {:style {:align-content :flex-start}}
-        [projects-tile state project-view]
-        [teams-tile state team-view]]]
+        [projects-tile
+         state
+         project-view
+         [:button.button.is-primary
+          {:on-click (clicker store project-form "Create project")}
+          "Create one"]]
+        [teams-tile
+         state
+         team-view
+         [:button.button.is-primary
+          {:on-click (clicker store team-form "Create team")}
+          "Create one"]]]]
       (nav/navigate! nav :ui/login))))
 
 (defmethod ig/init-key ::header [_ {:keys [nav]}]

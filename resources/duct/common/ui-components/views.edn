@@ -1,6 +1,9 @@
 {:com.ben-allred.audiophile.common.views.roots.home/root
  {:nav           #ig/ref :services/nav
+  :project-form  #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/create
   :projects-tile #ig/ref [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
+  :store         #ig/ref :services/store
+  :team-form     #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/create
   :teams-tile    #ig/ref [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :teams/all]}
 
  :com.ben-allred.audiophile.common.views.roots.login/root

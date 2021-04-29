@@ -45,13 +45,13 @@
   (fn [store]
     (ui-store/dispatch! store [:modals/hide! id])
     (async/go
-      (async/<! (async/timeout 2000))
+      (async/<! (async/timeout 500))
       (ui-store/dispatch! store [:modals/remove! id]))))
 
 (defn remove-modal-all! [store]
   (ui-store/dispatch! store [:modals/hide-all!])
   (async/go
-    (async/<! (async/timeout 2000))
+    (async/<! (async/timeout 500))
     (ui-store/dispatch! store [:modals/remove-all!])))
 
 (defn modal!
