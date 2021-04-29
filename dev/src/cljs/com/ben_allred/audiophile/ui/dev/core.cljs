@@ -20,14 +20,15 @@
 
 (defn ^:export init []
   (pp/pprint config)
-  (app/init (swap! sys (fn [system]
-                         (some-> system ig/halt!)
-                         (try (let [system (ig/init config)]
-                                (pp/pprint config)
-                                system)
-                              (catch :default ex
-                                (log/error ex "ERROR!!!")
-                                config))))))
+  (app/init (reset! sys (try (let [system (ig/init config)]
+                               (pp/pprint config)
+                               system)
+                             (catch :default ex
+                               (log/error ex "ERROR!!!")
+                               config)))))
+
+(defn ^:export halt []
+  (some-> sys deref ig/halt!))
 
 (def validator
   (f/validator {:email (f/required "email is required")}))

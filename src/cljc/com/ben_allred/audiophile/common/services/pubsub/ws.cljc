@@ -30,7 +30,8 @@
                 (assoc :path nil :query nil :fragment nil)
                 (update :scheme {"http" "ws" "https" "wss"})
                 uri/stringify
-                (str (nav/path-for nav :api/ws params)))]
+                (str (nav/path-for nav :api/ws params)))
+        vol (volatile! nil)]
     (-> user-details
         (v/then (fn [details]
                   (when details
@@ -40,11 +41,12 @@
                                                                    (remove (comp #{:conn/ping :conn/pong} first)))
                                                :out-buf-or-n 100
                                                :out-xform    (map (partial serdes/serialize serde))})]
+                      (vreset! vol ws)
                       (async/go-loop []
                         (when-let [msg (some-> ws async/<!)]
                           (handle-msg store msg)
-                          (recur)))
-                      ws)))))))
+                          (recur))))))))
+    vol))
 
-(defmethod ig/halt-key! ::handler [_ vow]
-  (v/then-> vow (some-> async/close!)))
+(defmethod ig/halt-key! ::handler [_ ws]
+  (some-> ws deref async/close!))

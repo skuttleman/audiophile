@@ -4,8 +4,9 @@
           {:target     :browser
            :output-dir "resources/public/js"
            :compiler   {:optimizations :none}
-           :devtools   {:watch-dir  "resources/public"
-                        :after-load com.ben-allred.audiophile.ui.dev.core/init}
+           :devtools   {:watch-dir   "resources/public"
+                        :before-load com.ben-allred.audiophile.ui.dev.core/halt
+                        :after-load  com.ben-allred.audiophile.ui.dev.core/init}
            :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
 
           :ui
@@ -16,7 +17,7 @@
 
           :test
           {:target    :browser-test
-           :test-dir "resources/private"
+           :test-dir  "resources/private"
            :ns-regexp "-test$"
-           :devtools {:http-root "resources/private"}
+           :devtools  {:http-root "resources/private"}
            :autorun   true}}}
