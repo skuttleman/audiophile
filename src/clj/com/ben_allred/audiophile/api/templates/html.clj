@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.api.templates.html
   (:require
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [hiccup.core :as hiccup]))
 
 (defn layout [app]

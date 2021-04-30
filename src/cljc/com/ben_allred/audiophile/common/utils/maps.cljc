@@ -80,19 +80,22 @@
   medley/map-vals)
 
 (defmacro ->m
-  "compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol
-   also allows vectors of key/value pairs
+  "Compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol.
+   Also allows vectors of key/value pairs. Optionally handles a map literal as first arg.
   (->m foo bar [baz :also]) => {:foo foo :bar bar baz :also}"
-  [& kvs]
-  (loop [m (transient {}) [x :as kvs] kvs]
-    (cond
-      (empty? kvs) (persistent! m)
-      (symbol? x) (recur (assoc! m (keyword x) x) (next kvs))
-      (or (map-entry? x) (vector? x)) (recur (conj! m x) (next kvs))
-      :else (throw (ex-info "must pass symbols, map entries, or vector tuples" {:bad-value x})))))
+  [m? & kvs]
+  (let [[m kvs] (if (map? m?)
+                  [m? kvs]
+                  [{} (cons m? kvs)])]
+    (loop [m (transient m) [x :as kvs] kvs]
+      (cond
+        (empty? kvs) (persistent! m)
+        (symbol? x) (recur (assoc! m (keyword x) x) (next kvs))
+        (or (map-entry? x) (vector? x)) (recur (conj! m x) (next kvs))
+        :else (throw (ex-info "must pass symbols, map entries, or vector tuples" {:bad-value x}))))))
 
 (defn extract-keys
-  "takes a map and a sequence of keys and returns a vector with a map
+  "Takes a map and a sequence of keys and returns a vector with a map
    with only the specified keys and another map with all but those keys"
   [m keys]
   [(select-keys m keys) (apply dissoc m keys)])

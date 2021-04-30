@@ -43,7 +43,7 @@
     :else arg))
 
 (defn ^:private render [[node & args :as tree]]
-  (when tree
+  (when node
     (let [[node & args] (if (fn? node)
                           (loop [node (apply node args)]
                             (if (fn? node)

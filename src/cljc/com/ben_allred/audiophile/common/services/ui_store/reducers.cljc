@@ -43,8 +43,16 @@
      :modals/remove-all! (empty state)
      state)))
 
+(defn user-details
+  ([] nil)
+  ([state [type data]]
+   (case type
+     :user-details/received data
+     state)))
+
 (def reducer
-  (rcollaj/combine (maps/->m banners
+  (rcollaj/combine (maps/->m {:auth/user user-details}
+                             banners
                              modals
                              page
                              toasts)))

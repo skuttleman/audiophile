@@ -1,12 +1,4 @@
-{:com.ben-allred.audiophile.common.views.core/app
- {:components-table #ig/ref :ui.components/table
-  :header           #ig/ref :com.ben-allred.audiophile.common.views.roots.home/header
-  :modals           #ig/ref :com.ben-allred.audiophile.common.views.components.modal/modals
-  :toasts           #ig/ref :com.ben-allred.audiophile.common.views.components.toast/toasts
-  :banners          #ig/ref :com.ben-allred.audiophile.common.views.components.toast/banners
-  :user-resource    #ig/ref :resources/user-details}
-
- [:duct/const :ui.components/table]
+{[:duct/const :ui.components/table]
  {:ui/home         #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
   :ui/login        #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root}
 
