@@ -21,7 +21,9 @@
   (s/keys :req [:team/name
                 :team/type]))
 
-(defmulti spec identity)
+(defmulti spec
+          "returns a spec for a validating a request for a route. defaults to `nil`."
+          identity)
 (defmethod spec :default
   [_])
 

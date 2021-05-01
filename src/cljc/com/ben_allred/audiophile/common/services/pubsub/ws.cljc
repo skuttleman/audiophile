@@ -22,7 +22,7 @@
             event (log/warn "unknown msg" event))
           (->> (ui-store/dispatch! store))))
 
-(defmethod ig/init-key ::handler [_ {:keys [base-url nav serde store user-details]}]
+(defmethod ig/init-key ::handler [_ {:keys [base-url nav reconnect-ms serde store user-details]}]
   (let [params {:query-params {:content-type (serdes/mime-type serde)}}
         url (-> #?(:cljs (.-location js/window) :default base-url)
                 str
@@ -34,9 +34,10 @@
         vol (volatile! nil)]
     (-> user-details
         (v/then (fn [details]
-                  (when details
+                  (when (and details (nil? @vol))
                     (let [ws (ws*/keep-alive! url
-                                              {:in-buf-or-n  100
+                                              {:reconnect-ms reconnect-ms
+                                               :in-buf-or-n  100
                                                :in-xform     (comp (map (partial serdes/deserialize serde))
                                                                    (remove (comp #{:conn/ping :conn/pong} first)))
                                                :out-buf-or-n 100
@@ -49,4 +50,5 @@
     vol))
 
 (defmethod ig/halt-key! ::handler [_ ws]
-  (some-> ws deref async/close!))
+  (some-> ws deref async/close!)
+  (vreset! ws ::disco))

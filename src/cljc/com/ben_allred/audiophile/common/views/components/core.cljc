@@ -39,18 +39,19 @@
    [:i.fas (update attrs :class conj (str "fa-" (name icon-class)))]))
 
 (defn form [{:keys [buttons disabled form on-submitted] :as attrs} & fields]
-  (let [ready? (when (satisfies? pres/IResource form)
+  (let [resource? (satisfies? pres/IResource form)
+        ready? (when resource?
                  (res/ready? form))
         disabled (or disabled
                      (not ready?)
                      (->> (forms/errors form)
                           maps/flatten
                           (filter (fn [[path]]
-                                    (forms/visited? form path)))
+                                    (forms/touched? form path)))
                           seq))]
     (-> [:form.form.layout--stack-between
          {:on-submit (comp (fn [_]
-                             (when (satisfies? pres/IResource form)
+                             (when resource?
                                (cond-> (res/request! form attrs)
                                  on-submitted on-submitted)))
                            dom/prevent-default)}]

@@ -8,7 +8,6 @@
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::router [_ route-table]
-  "HTTP router for API server"
   (fn [{:keys [request-method uri] :as request}]
     (let [route (get-in request [:nav/route :handler])
           [k handler] (or (find route-table [(:request-method request) route])
@@ -30,7 +29,6 @@
         [::http/not-found]))))
 
 (defmethod ig/init-key ::app [_ {:keys [middleware router]}]
-  "ring handler to be run as webserver"
   (reduce (fn [handler mw]
             (mw handler))
           router

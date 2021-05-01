@@ -44,6 +44,7 @@
   (cfg/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
 
 (defn init
+  "runs when the browser page has loaded"
   ([]
    (set! log/*ctx* {:disabled? true})
    (init (ig/init config)))

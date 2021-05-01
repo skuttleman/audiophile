@@ -45,7 +45,7 @@
                         :remote/initialized
                         :remote/init.error)
         (if-let [errors (forms/errors this)]
-          (do (forms/visit! form)
+          (do (forms/touch! form)
               (v/reject [:local/rejected errors]))
           (request* id
                     resource
@@ -56,21 +56,23 @@
   (status [_]
     (pres/status resource))
 
-  pforms/IChange
+  pforms/IInit
   (init! [_ value]
     (forms/init! form value))
-  (update! [_ path value]
-    (forms/update! form path value))
+
+  pforms/IChange
+  (change! [_ path value]
+    (forms/change! form path value))
 
   pforms/ITrack
-  (visit! [_]
-    (forms/visit! form))
-  (visit! [_ path]
-    (forms/visit! form path))
-  (visited? [_]
-    (forms/visited? form))
-  (visited? [_ path]
-    (forms/visited? form path))
+  (touch! [_]
+    (forms/touch! form))
+  (touch! [_ path]
+    (forms/touch! form path))
+  (touched? [_]
+    (forms/touched? form))
+  (touched? [_ path]
+    (forms/touched? form path))
 
   pforms/IValidate
   (errors [_]

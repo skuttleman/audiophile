@@ -6,6 +6,7 @@
 
  :com.ben-allred.audiophile.common.services.pubsub.ws/handler
  {:nav          #ig/ref :services/nav
+  :reconnect-ms #ig/ref :env/ws-reconnect-ms
   :serde        #ig/ref :serdes/edn
   :store        #ig/ref :services/store
   :user-details #ig/ref :resources/user-details}}

@@ -6,20 +6,22 @@
        (clojure.lang IDeref))))
 
 (deftype NoopForm [value]
-  pforms/IChange
+  pforms/IInit
   (init! [_ _]
     nil)
-  (update! [_ _ _]
+
+  pforms/IChange
+  (change! [_ _ _]
     nil)
 
   pforms/ITrack
-  (visit! [_]
+  (touch! [_]
     nil)
-  (visit! [_ _]
+  (touch! [_ _]
     nil)
-  (visited? [_]
+  (touched? [_]
     false)
-  (visited? [_ _]
+  (touched? [_ _]
     false)
 
   pforms/IValidate
@@ -31,6 +33,8 @@
     value))
 
 (defn create
+  "Creates a form that stubs all operations and always produces the same value when `deref`'ed.
+   Supports 2-arity to match other form constructors."
   ([]
    (->NoopForm nil))
   ([value]

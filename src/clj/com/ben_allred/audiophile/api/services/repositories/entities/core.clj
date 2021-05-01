@@ -36,6 +36,7 @@
       (assoc :table table-name :namespace namespace)))
 
 (defn select*
+  "Generates a query for selecting from a database table"
   ([entity clause]
    (assoc (select* entity) :where clause))
   ([{:keys [alias fields namespace table] :as entity}]
@@ -48,7 +49,9 @@
                table)]
     :entity entity}))
 
-(defn insert-into [{:keys [casts fields table]} input]
+(defn insert-into
+  "Generates a query for inserting rows into a database table"
+  [{:keys [casts fields table]} input]
   {:insert-into table
    :values      (for [value (colls/force-sequential input)]
                   (into {}

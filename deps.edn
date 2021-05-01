@@ -8,7 +8,7 @@
            com.ben-allred/formation            {:mvn/version "0.6.2"
                                                 :exclusions  [nrepl/nrepl]}
            com.ben-allred/vow                  {:mvn/version "0.6.1"}
-           com.ben-allred/ws-client-cljc       {:mvn/version "0.2.0"
+           com.ben-allred/ws-client-cljc       {:mvn/version "0.2.2"
                                                 :exclusions  [nrepl/nrepl
                                                               org.clojure/core.async]}
            com.cognitect/transit-clj           {:mvn/version "0.8.313"}

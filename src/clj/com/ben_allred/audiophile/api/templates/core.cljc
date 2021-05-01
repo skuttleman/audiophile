@@ -52,5 +52,13 @@
                           tree)]
       (into [node] (map render*) args))))
 
-(defn html [tree]
+(defn html
+  "Converts a nested tree of hiccup-like components, invoking any functions
+   with the rest of the items in the vector and returns the resulting hiccup.
+
+   ```clojure
+   (html [:div.class [(fn [x] [:span#id {:attr :foo} x]) \"XXX\"]])
+   ;; => [:div.class [:span#id \"XXX\"]]
+   ```"
+  [tree]
   (html/render (render tree)))

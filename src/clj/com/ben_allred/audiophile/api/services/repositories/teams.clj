@@ -5,7 +5,7 @@
     [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
     [com.ben-allred.audiophile.common.utils.logger :as log]))
 
-(defn clause* [user-id]
+(defn ^:private clause* [user-id]
   [:exists {:select [:user-id]
             :from   [:user-teams]
             :where  [:= :user-teams.user-id user-id]}])

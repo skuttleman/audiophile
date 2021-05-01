@@ -5,7 +5,9 @@
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.logger :as log]))
 
-(defn query-by-email [repo email]
+(defn query-by-email
+  "Find a user by email address."
+  [repo email]
   (-> repo
       (repos/transact! repos/->exec!
                        repos/execute!

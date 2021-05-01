@@ -10,16 +10,16 @@
     [integrant.core :as ig]))
 
 (defprotocol IChannel
-  "represents a TCP channel"
+  "A WebSocket channel"
   (open? [this] "is the connection open?")
   (send! [this msg] "send to a topic")
   (close! [this] "when open, closes the connection"))
 
 (defprotocol IHandler
-  "handles websocket events"
-  (on-open [this] "when a connection is established")
-  (on-message [this msg] "when a message is received")
-  (on-close [this] "when a connection is established"))
+  "Handles WebSocket events"
+  (on-open [this] "Callback indicating a connection has been established")
+  (on-message [this msg] "Callback for handling a received message")
+  (on-close [this] "Callback indicating when a connection has been established"))
 
 (defmulti ^:private handle-msg (fn [_ _ event]
                                  (log/debug "received event" event)

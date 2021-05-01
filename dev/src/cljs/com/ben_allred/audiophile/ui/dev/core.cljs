@@ -20,9 +20,7 @@
 
 (defn ^:export init []
   (pp/pprint config)
-  (app/init (reset! sys (try (let [system (ig/init config)]
-                               (pp/pprint config)
-                               system)
+  (app/init (reset! sys (try (ig/init config)
                              (catch :default ex
                                (log/error ex "ERROR!!!")
                                config)))))

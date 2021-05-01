@@ -26,6 +26,8 @@
     [:div#root app]
     [:script {:src "/js/main.js"}]]])
 
-(defn render [view]
+(defn render
+  "Takes a nested hiccup tree of body elements and wraps it with a standard layout"
+  [view]
   (str "<!doctype html>"
        (hiccup/html nil (layout view))))

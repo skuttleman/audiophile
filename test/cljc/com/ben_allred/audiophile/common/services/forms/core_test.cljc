@@ -10,13 +10,13 @@
 
 (deftest with-attrs-test
   (testing "with-attrs"
-    (let [visit! (atom nil)
+    (let [touch! (atom nil)
           form (reify
                  pforms/ITrack
-                 (visited? [_ path]
-                   [::visited path])
-                 (visit! [_ path]
-                   (reset! visit! [::visit! path]))
+                 (touched? [_ path]
+                   [::touched path])
+                 (touch! [_ path]
+                   (reset! touch! [::touch! path]))
 
                  pforms/IValidate
                  (errors [_]
@@ -27,7 +27,7 @@
                    {:some {:path ::value}})
 
                  pforms/IChange
-                 (update! [_ _ value]
+                 (change! [_ _ value]
                    [::changed value]))]
       (testing "updates form attrs"
         (let [[{:keys [on-blur on-change]} attrs] (-> {:some     :attrs
@@ -35,11 +35,11 @@
                                                       (forms/with-attrs form [:some :path])
                                                       (maps/extract-keys #{:on-blur :on-change}))]
           (is (= {:some     :attrs
-                  :visited? [::visited [:some :path]]
+                  :visited? [::touched [:some :path]]
                   :disabled ::disabled
                   :value    ::value
                   :errors   ::errors}
                  attrs))
           (on-blur :value)
-          (is (= [::visit! [:some :path]] @visit!))
+          (is (= [::touch! [:some :path]] @touch!))
           (is (= [::changed :value] (on-change :value))))))))

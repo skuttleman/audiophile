@@ -11,14 +11,14 @@
         (testing "has no error"
           (is (nil? (forms/errors form))))
 
-        (testing "tracks visitation"
-          (is (not (forms/visited? form)))
-          (is (not (forms/visited? form [:bar :quux]))))
+        (testing "tracks touch state"
+          (is (not (forms/touched? form)))
+          (is (not (forms/touched? form [:bar :quux]))))
 
-        (testing "and when updating the form"
-          (forms/update! form [:foo] "foo")
-          (forms/update! form [:bar :baz] "bar/baz")
-          (forms/visit! form [:none])
+        (testing "and when changing the form"
+          (forms/change! form [:foo] "foo")
+          (forms/change! form [:bar :baz] "bar/baz")
+          (forms/touch! form [:none])
 
           (testing "has data"
             (is (= {:foo "foo"
@@ -29,12 +29,12 @@
           (testing "has no error"
             (is (nil? (forms/errors form))))
 
-          (testing "tracks visitation"
-            (is (forms/visited? form))
-            (is (forms/visited? form [:none]))
-            (is (forms/visited? form [:bar :baz]))
-            (is (forms/visited? form [:foo]))
-            (is (not (forms/visited? form [:bar :quux]))))
+          (testing "tracks touch state"
+            (is (forms/touched? form))
+            (is (forms/touched? form [:none]))
+            (is (forms/touched? form [:bar :baz]))
+            (is (forms/touched? form [:foo]))
+            (is (not (forms/touched? form [:bar :quux]))))
 
           (testing "and when initializing the form"
             (forms/init! form {:new :value})
@@ -43,13 +43,13 @@
               (is (= {:new :value}
                      @form)))
 
-            (testing "tracks visitation"
-              (is (not (forms/visited? form)))
-              (is (not (forms/visited? form [:new])))
-              (is (not (forms/visited? form [:none])))
-              (is (not (forms/visited? form [:bar :baz])))
-              (is (not (forms/visited? form [:foo])))
-              (is (not (forms/visited? form [:bar :quux]))))))))
+            (testing "tracks touch state"
+              (is (not (forms/touched? form)))
+              (is (not (forms/touched? form [:new])))
+              (is (not (forms/touched? form [:none])))
+              (is (not (forms/touched? form [:bar :baz])))
+              (is (not (forms/touched? form [:foo])))
+              (is (not (forms/touched? form [:bar :quux]))))))))
 
 
     (testing "when using a form with a validator"
@@ -62,7 +62,7 @@
             (is (nil? (forms/errors form)))))
 
         (testing "and when the validator returns errors"
-          (forms/update! form [:a] :not-value)
+          (forms/change! form [:a] :not-value)
 
           (testing "the form has errors"
             (is (= ["a must = value"]

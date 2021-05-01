@@ -105,22 +105,37 @@
   (hikari/close-datasource datasource))
 
 (defn execute!
+  "Executes a query"
   ([executor query]
    (execute! executor query nil))
   ([executor query opts]
    (prepos/execute! executor query opts)))
 
 (defn exec-raw!
+  "Executes a raw SQL statement"
   ([executor sql]
    (exec-raw! executor sql nil))
   ([executor sql opts]
    (prepos/exec-raw! executor sql opts)))
 
-(defn ->exec! [executor opts exec-fn f]
-  (exec-fn executor (f opts) opts))
-
 (defn transact!
+  "Open a transactor and invoke a callback with an executor for running queries. The
+   callback should take `executor` and `opts` which is any additional information
+   for the context of the transactor. Any additional args will be passed to the callback
+   for convenience."
   ([transactor f]
    (prepos/transact! transactor f))
   ([transactor f & args]
    (prepos/transact! transactor #(apply f %1 %2 args))))
+
+(defn ->exec!
+  "Helper function executing a single query with a transactor. `f` will be called
+   with the transactor's `opts`. Any additional args will be passed to `f` as well.
+
+  ```clojure
+  (repos/transact! tx repos/->exec! repos/execute! (fn [opts] ...))
+  ```"
+  ([executor opts exec-fn f]
+   (exec-fn executor (f opts) opts))
+  ([executor opts exec-fn f & args]
+   (exec-fn executor (apply f opts args) opts)))

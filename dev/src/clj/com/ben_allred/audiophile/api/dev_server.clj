@@ -12,18 +12,20 @@
 (defonce system nil)
 
 (def reload!
-  (rel/wrap-reload identity {:dirs ["src/clj"
-                                    "src/cljc"
-                                    "test/clj"
-                                    "test/cljc"
-                                    "dev/src/clj"]}))
+  (let [reload* (rel/wrap-reload identity {:dirs ["src/clj"
+                                                   "src/cljc"
+                                                   "test/clj"
+                                                   "test/cljc"
+                                                   "dev/src/clj"]})]
+    (fn []
+      (reload* nil))))
 
 (defn reset-sys!
   ([]
    (reset-sys! system))
   ([sys]
    (some-> sys ig/halt!)
-   (reload! nil)
+   (reload!)
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev"]))]
      (-> "dev.edn"
          duct/resource

@@ -13,23 +13,26 @@
   #?(:clj  (instance? IDeref x)
      :cljs (satisfies? IDeref x)))
 
-(defn init! [form value]
-  (pforms/init! form value))
-
-(defn update! [form path value]
-  (pforms/update! form path value))
-
-(defn visit!
+(defn init!
   ([form]
-   (pforms/visit! form))
-  ([form path]
-   (pforms/visit! form path)))
+   (pforms/init! form))
+  ([form value]
+   (pforms/init! form value)))
 
-(defn visited?
+(defn change! [form path value]
+  (pforms/change! form path value))
+
+(defn touch!
   ([form]
-   (pforms/visited? form))
+   (pforms/touch! form))
   ([form path]
-   (pforms/visited? form path)))
+   (pforms/touch! form path)))
+
+(defn touched?
+  ([form]
+   (pforms/touched? form))
+  ([form path]
+   (pforms/touched? form path)))
 
 (defn errors [form]
   (pforms/errors form))
@@ -43,7 +46,7 @@
   ([attrs form path]
    (let [tracks? (satisfies? pforms/ITrack form)
          visited? (when tracks?
-                    (visited? form path))
+                    (touched? form path))
          errors (when (satisfies? pforms/IValidate form)
                   (get-in (errors form) path))]
      (-> attrs
@@ -55,13 +58,13 @@
          (cond->
            tracks?
            (update :on-blur fns/sidecar! (fn [_]
-                                           (visit! form path)))
+                                           (touch! form path)))
 
            (derefable? form)
            (assoc :value (get-in @form path))
 
            (satisfies? pforms/IChange form)
-           (assoc :on-change (partial pforms/update! form path))
+           (assoc :on-change (partial pforms/change! form path))
 
            (and visited? errors)
            (assoc :errors errors))))))

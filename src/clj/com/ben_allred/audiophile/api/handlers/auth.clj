@@ -28,7 +28,7 @@
          (token->cookie value cookie)))))
 
 (defn logout!
-  "generate a redirect response that removes the auth-token cookie"
+  "Generate a redirect response that removes the auth-token cookie"
   ([nav base-url]
    (logout! nav base-url nil))
   ([nav base-url error-msg]
@@ -39,13 +39,15 @@
              ""
              {:max-age 0})))
 
-(defmacro unsafe! [ctx & body]
+(defmacro ^:private unsafe! [ctx & body]
   `(try [~@body]
         (catch Throwable ex#
           (log/error ex# "an error occurred" ~ctx)
           [nil ex#])))
 
-(defn login! [nav jwt-serde base-url user-repo email]
+(defn login!
+  "Authenticates a user and either returns a response with auth token or a redirect back to login page"
+  [nav jwt-serde base-url user-repo email]
   (if-let [user (first (unsafe! "querying the user from the database"
                          (when email
                            (users/query-by-email user-repo email))))]
@@ -56,7 +58,6 @@
     (logout! nav base-url :login-failed)))
 
 (defmethod ig/init-key ::login [_ {:keys [nav oauth]}]
-  "GET /auth/login - redirect to auth provider"
   (fn [_]
     (ring/redirect (or (first (unsafe! "generating a redirect url to the auth provider"
                                 (auth/redirect-uri oauth)))
@@ -65,12 +66,10 @@
                                      {:query-params {:error-msg :login-failed}})))))
 
 (defmethod ig/init-key ::logout [_ {:keys [base-url nav]}]
-  "GET /auth/logout - remove auth-token cookie"
   (fn [_]
     (logout! nav base-url)))
 
 (defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav oauth user-repo]}]
-  "GET /auth/callback - handle redirect from auth provider"
   (fn [request]
     (let [params (get-in request [:nav/route :query-params])
           profile (first (unsafe! "fetching user profile from the OAuth provider"
@@ -78,7 +77,6 @@
       (login! nav jwt-serde base-url user-repo (:email profile)))))
 
 (defmethod ig/init-key ::details [_ _]
-  "GET /auth/details - return current logged on user's details"
   (fn [request]
     (if-let [user (get-in request [:auth/user :data :user])]
       [::http/ok {:data user}]
