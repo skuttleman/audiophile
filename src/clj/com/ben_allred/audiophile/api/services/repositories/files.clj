@@ -1,30 +1,37 @@
 (ns com.ben-allred.audiophile.api.services.repositories.files
   (:require
-    [clojure.java.io :as io]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
 
-(defn create-artifact [repo artifact user-id]
+(defmacro ^:private with-unexceptional [fut & body]
+  `(let [future# (future ~fut)]
+     (try (let [result# (do ~@body)]
+            @future#
+            result#)
+          (catch Throwable ex#
+            (future-cancel future#)
+            (throw ex#)))))
+
+(defn create-artifact
+  "Save an artifact to the repository and upload the content to the kv store.
+   If write to kv store fails, repository will be rolled back. Otherwise, cleanup TBD"
+  [repo artifact user-id]
   (repos/transact! repo (fn [executor {store :store/kv entity :entity/artifacts}]
-                          (let [key (str "artifacts/" (uuids/random))
-                                s3-result (future
-                                            (repos/put! store
-                                                        key
-                                                        (io/input-stream (:tempfile artifact))
-                                                        {:content-type (:content-type artifact)
-                                                         :metadata     {:filename (:filename artifact)
-                                                                        :size     (:size artifact)}}))
-                                data {:uri        (repos/uri store key)
-                                      :created-by user-id}]
-                            (try
-                              (let [artifact-id (-> executor
-                                                    (repos/execute! (entities/insert-into entity data))
-                                                    first
-                                                    :id)]
-                                @s3-result
-                                {:artifact/id artifact-id})
-                              (catch Throwable ex
-                                (future-cancel s3-result)
-                                (throw ex)))))))
+                          (let [key (str "artifacts/" (uuids/random))]
+                            (with-unexceptional (repos/put! store
+                                                            key
+                                                            (:tempfile artifact)
+                                                            {:content-type (:content-type artifact)
+                                                             :metadata     {:filename (:filename artifact)}})
+                              (let [data (-> artifact
+                                             (select-keys #{:content-type :filename})
+                                             (assoc :uri (repos/uri store key)
+                                                    :content-size (:size artifact)
+                                                    :created-by user-id))]
+                                {:artifact/id (->> data
+                                                   (entities/insert-into entity)
+                                                   (repos/execute! executor)
+                                                   first
+                                                   :id)}))))))

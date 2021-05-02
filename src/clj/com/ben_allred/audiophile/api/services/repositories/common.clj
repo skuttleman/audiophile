@@ -38,20 +38,18 @@
 (defmethod ig/init-key ::kv-repo [_ {:keys [kv-store tx]}]
   (->KVBackedRepository tx kv-store))
 
-(deftype SerdeStore [s3-client serdes]
+(deftype SerdeStore [s3-client stream-serde]
   prepos/IKVStore
   (uri [_ key opts]
     (prepos/uri s3-client key opts))
   (get [_ key opts]
-    (let [result (prepos/get s3-client key opts)
-          serde (serdes/find-serde serdes (:ContentType result))]
-      (update result :Body (partial serdes/deserialize serde))))
+    (let [result (prepos/get s3-client key opts)]
+      (update result :Body (partial serdes/deserialize stream-serde))))
   (put! [_ key value opts]
-    (let [serde (serdes/find-serde serdes (:content-type opts))]
-      (prepos/put! s3-client key value #_(serdes/serialize serde value opts) opts))))
+    (prepos/put! s3-client key (serdes/serialize stream-serde value) opts)))
 
-(defmethod ig/init-key ::s3-store [_ {:keys [s3-client serdes]}]
-  (->SerdeStore s3-client serdes))
+(defmethod ig/init-key ::s3-store [_ {:keys [s3-client stream-serde]}]
+  (->SerdeStore s3-client stream-serde))
 
 (defn query-many [repo entity-key clause]
   (repos/transact! repo

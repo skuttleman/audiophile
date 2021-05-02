@@ -61,8 +61,8 @@
                         {:type     :submit
                          :disabled disabled}
                         (:submit/text attrs "Submit")]]
-                buttons
-                (into buttons)
+                disabled
+                (conj [:div {:style {:margin-bottom "8px"}} [spinner nil]])
 
-                (not ready?)
-                (conj [:div {:style {:margin-bottom "8px"}} [spinner nil]]))))))
+                buttons
+                (into buttons))))))

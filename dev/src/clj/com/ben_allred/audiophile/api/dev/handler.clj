@@ -1,10 +1,43 @@
 (ns com.ben-allred.audiophile.api.dev.handler
   (:require
+    [clojure.edn :as edn*]
+    [clojure.java.io :as io]
+    [clojure.java.shell :as sh]
+    [clojure.string :as string]
     [com.ben-allred.audiophile.api.handlers.auth :as auth]
+    [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [integrant.core :as ig])
+  (:import
+    (java.nio.file Files LinkOption)
+    (java.nio.file.attribute BasicFileAttributes)
+    (java.util Date)))
+
+(defmethod ig/init-key ::s3-client [_ _]
+  (reify
+    prepos/IKVStore
+    (uri [_ key _]
+      (str "local://target/" key))
+    (get [_ key _]
+      (Thread/sleep 1000)
+      (let [file (io/file (str "target/" key ".dat"))
+            attrs (when (.exists file)
+                    (Files/readAttributes (.toPath file) BasicFileAttributes (make-array LinkOption 0)))]
+        (if attrs
+          (assoc (edn*/read-string (slurp (str "target/" key ".edn")))
+                 :LastModified (Date/from (.toInstant (.creationTime attrs)))
+                 :Body (io/input-stream file))
+          (throw (ex-info "could not stub S3Client#get" {:key key})))))
+    (put! [_ key value opts]
+      (Thread/sleep 1000)
+      (sh/sh "mkdir" "-p" "target/artifacts")
+      (io/copy value (io/file (str "target/" key ".dat")))
+      (spit (str "target/" key ".edn")
+            (pr-str {:ContentType   (:content-type opts)
+                     :Metadata      (update (:metadata opts) :size str)
+                     :ContentLength (get-in opts [:metadata :size])})))))
 
 (defmethod ig/init-key ::login [_ {:keys [base-url nav]}]
   (fn [request]

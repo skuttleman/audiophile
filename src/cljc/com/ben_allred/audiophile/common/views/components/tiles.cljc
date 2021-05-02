@@ -18,8 +18,8 @@
     [:div.panel-block
      body]]])
 
-(defmethod ig/init-key ::with-resource [_ {:keys [resource title]}]
-  (fn [state view & tabs]
+(defmethod ig/init-key ::with-resource [_ {:keys [resource title view]}]
+  (fn [state & tabs]
     (into [tile
            [:h2.subtitle title]
            [comp/with-resource [resource {:spinner/size :small}] view state]]

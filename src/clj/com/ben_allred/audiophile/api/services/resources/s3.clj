@@ -1,8 +1,10 @@
 (ns com.ben-allred.audiophile.api.services.resources.s3
   (:require
+    [clojure.java.io :as io]
     [cognitect.aws.client.api :as aws]
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [integrant.core :as ig]))
 
 (deftype S3Client [client bucket]
@@ -28,3 +30,10 @@
                                                     {:access-key-id     access-key
                                                      :secret-access-key secret-key})})]
     (->S3Client client bucket)))
+
+(defmethod ig/init-key ::stream-serde [_ _]
+  (reify pserdes/ISerde
+    (serialize [_ file _]
+      (io/input-stream file))
+    (deserialize [_ response _]
+      response)))

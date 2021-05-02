@@ -3,6 +3,7 @@
     [clojure.pprint :as pp]
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
@@ -42,3 +43,6 @@
                                       :auto-focus? true}
                                      form
                                      [:email])]]))))
+
+(defn component [k]
+  (second (colls/only! (ig/find-derived @sys k))))

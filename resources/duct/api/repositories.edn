@@ -19,4 +19,8 @@
   :tx     #ig/ref :services/transactor}
 
  [:com.ben-allred.audiophile.api.services.repositories.common/s3-store :stores/s3]
- {:s3-client #ig/ref :services/s3-client}}
+ {:s3-client    #ig/ref :services/s3-client
+  :stream-serde #ig/ref :com.ben-allred.audiophile.api.services.resources.s3/stream-serde}
+
+ :com.ben-allred.audiophile.api.services.resources.s3/stream-serde
+ {}}

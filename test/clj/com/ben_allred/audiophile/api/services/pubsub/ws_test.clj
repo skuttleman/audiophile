@@ -2,6 +2,7 @@
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.api.services.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -22,7 +23,7 @@
                                                                 (second value)))}})
         request {:auth/user {:data {:user {:user/id ::user-id}}}
                  :nav/route {:query-params {:accept "foo/bar"}}}
-        mock (mocks/->mock (reify ws/IChannel
+        mock (mocks/->mock (reify pws/IChannel
                              (open? [_] ::open?)
                              (send! [_ _])
                              (close! [_] ::close!)))]
@@ -88,7 +89,7 @@
                                                     (deserialize [_ value _]
                                                       [:deserialized value]))}})
         request {:nav/route {:query-params {:accept "foo/bar"}}}
-        mock (mocks/->mock (reify ws/IChannel
+        mock (mocks/->mock (reify pws/IChannel
                              (open? [_] ::open?)
                              (send! [_ _])
                              (close! [_] ::close!)))]

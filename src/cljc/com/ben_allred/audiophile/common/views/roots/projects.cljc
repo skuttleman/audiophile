@@ -3,6 +3,7 @@
     [#?(:cljs    com.ben-allred.audiophile.ui.services.forms.standard
         :default com.ben-allred.audiophile.common.services.forms.noop) :as form]
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
@@ -33,6 +34,26 @@
   (if-let [team-id (first value)]
     (get-in options-by-id [team-id :team/name])
     "Select a team…"))
+
+(defmethod ig/init-key ::list [_ {:keys [nav]}]
+  (fn [projects _state]
+    [:div
+     [:p [:strong "Your projects"]]
+     (if (seq projects)
+       [:ul
+        (for [{:project/keys [id name]} projects]
+          ^{:key id}
+          [:li.layout--space-between
+           [:span "• " name]
+           [:a.link {:href (nav/path-for nav :ui/project {:route-params {:project-id id}})}
+            "Details"]])]
+       [:p "You don't have any projects. Why not create one?"])]))
+
+(defmethod ig/init-key ::one [_ {:keys [project]}]
+  (fn [state]
+    (let [project-id (get-in state [:page :route-params :project-id])
+          opts {:nav/params {:route-params {:project-id project-id}}}]
+      [comp/with-resource [project opts] log/pprint])))
 
 (defn create* [teams *projects _cb]
   (let [options (->> teams

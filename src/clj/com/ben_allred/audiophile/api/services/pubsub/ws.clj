@@ -125,3 +125,21 @@
 
 (defn send-user! [pubsub user-id event-id event]
   (pubsub/publish! pubsub [::user user-id] [event-id event]))
+
+(defn open? [ch]
+  (pws/open? ch))
+
+(defn send! [ch msg]
+  (pws/send! ch msg))
+
+(defn close! [ch]
+  (pws/close! ch))
+
+(defn on-open [handler]
+  (pws/on-open handler))
+
+(defn on-close [handler]
+  (pws/on-close handler))
+
+(defn on-message [handler msg]
+  (pws/on-message handler msg))

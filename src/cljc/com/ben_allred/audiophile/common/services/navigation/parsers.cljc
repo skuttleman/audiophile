@@ -8,6 +8,14 @@
   [params]
   (update params :route-params maps/update-maybe :project-id uuids/->uuid))
 
+(defmethod nav/params->internal :ui/project
+  [params]
+  (update params :route-params maps/update-maybe :project-id uuids/->uuid))
+
 (defmethod nav/internal->params :api/project
+  [params]
+  (update params :route-params maps/update-maybe :project-id str))
+
+(defmethod nav/internal->params :ui/project
   [params]
   (update params :route-params maps/update-maybe :project-id str))

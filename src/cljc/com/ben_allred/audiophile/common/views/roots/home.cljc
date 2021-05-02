@@ -17,26 +17,6 @@
           (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
    "Logout"])
 
-(defn project-view [projects state]
-  [:div
-   [:p [:strong "Your projects"]]
-   (if (seq projects)
-     [:ul
-      (for [{:project/keys [id name]} projects]
-        ^{:key id}
-        [:li "• " name])]
-     [:p "You don't have any projects. Why not create one?"])])
-
-(defn team-view [teams state]
-  [:div
-   [:p [:strong "Your teams"]]
-   (if (seq teams)
-     [:ul
-      (for [{team-name :team/name :team/keys [id type]} teams]
-        ^{:key id}
-        [:li "• " team-name (str " - " type)])]
-     [:p "You don't have any teams. Why not create one?"])])
-
 (defn ^:private clicker [store view title]
   (fn [_]
     (ui-store/dispatch! store
@@ -52,13 +32,11 @@
         {:style {:align-content :flex-start}}
         [projects-tile
          state
-         project-view
          [:button.button.is-primary
           {:on-click (clicker store project-form "Create project")}
           "Create one"]]
         [teams-tile
          state
-         team-view
          [:button.button.is-primary
           {:on-click (clicker store team-form "Create team")}
           "Create one"]]]]

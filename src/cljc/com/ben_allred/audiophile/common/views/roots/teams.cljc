@@ -14,6 +14,17 @@
 (def ^:private validator
   (constantly nil))
 
+(defmethod ig/init-key ::list [_ _]
+  (fn [teams _state]
+    [:div
+     [:p [:strong "Your teams"]]
+     (if (seq teams)
+       [:ul
+        (for [{team-name :team/name :team/keys [id type]} teams]
+          ^{:key id}
+          [:li "• " team-name (str " - " type)])]
+       [:p "You don't have any teams. Why not create one?"])]))
+
 (defn create* [*teams _cb]
   (let [form (vres/create *teams (form/create {:team/type :COLLABORATIVE} validator))]
     (fn [_*teams cb]

@@ -10,6 +10,12 @@
     (let [user-id (get-in request [:auth/user :data :user :user/id])]
       [::http/ok {:data (projects/query-all project-repo user-id)}])))
 
+(defmethod ig/init-key ::fetch [_ {:keys [project-repo]}]
+  (fn [request]
+    (let [project-id (get-in request [:nav/route :route-params :project-id])
+          user-id (get-in request [:auth/user :data :user :user/id])]
+      [::http/ok {:data (projects/query-by-id project-repo project-id user-id)}])))
+
 (defmethod ig/init-key ::create [_ {:keys [project-repo]}]
   (fn [{project :valid/data :as request}]
     (let [user-id (get-in request [:auth/user :data :user :user/id])]

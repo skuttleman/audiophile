@@ -8,6 +8,7 @@
     [com.ben-allred.audiophile.common.services.stubs.pushy :as pushy]
     [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [integrant.core :as ig]))
