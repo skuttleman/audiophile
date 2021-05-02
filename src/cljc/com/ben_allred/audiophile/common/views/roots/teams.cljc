@@ -8,7 +8,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
-    [com.ben-allred.vow.core :as v]
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [integrant.core :as ig]))
 
 (def ^:private validator

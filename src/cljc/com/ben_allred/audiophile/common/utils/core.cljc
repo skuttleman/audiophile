@@ -1,4 +1,6 @@
 (ns com.ben-allred.audiophile.common.utils.core
+  (:require
+    [com.ben-allred.audiophile.common.utils.logger :as log])
   #?(:cljs
      (:require-macros
        [com.ben-allred.audiophile.common.utils.core])))

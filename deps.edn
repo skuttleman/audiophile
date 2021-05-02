@@ -11,6 +11,9 @@
            com.ben-allred/ws-client-cljc       {:mvn/version "0.2.2"
                                                 :exclusions  [nrepl/nrepl
                                                               org.clojure/core.async]}
+           com.cognitect.aws/api               {:mvn/version "0.8.505"}
+           com.cognitect.aws/endpoints         {:mvn/version "1.1.11.1001"}
+           com.cognitect.aws/s3                {:mvn/version "811.2.889.0"}
            com.cognitect/transit-clj           {:mvn/version "0.8.313"}
            com.taoensso/timbre                 {:mvn/version "4.10.0"}
            duct/core                           {:mvn/version "0.8.0"}

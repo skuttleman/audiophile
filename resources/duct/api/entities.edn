@@ -13,5 +13,10 @@
   :namespace  :team
   :table-name :teams}
 
+ [:com.ben-allred.audiophile.api.services.repositories.entities.core/entity :entities/artifacts]
+ {:entities   #ig/ref :resources/entities
+  :namespace  :artifact
+  :table-name :artifacts}
+
  [:com.ben-allred.audiophile.api.services.repositories.entities.core/entities :resources/entities]
  {:tx #ig/ref :services/transactor}}

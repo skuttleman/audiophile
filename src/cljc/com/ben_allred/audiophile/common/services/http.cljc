@@ -13,12 +13,11 @@
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [integrant.core :as ig]))
 
-(defn ->serde [content-type serdes default-serde]
-  (loop [[[_ serde] :as serdes] (seq serdes)]
-    (cond
-      (empty? serdes) default-serde
-      (string/starts-with? content-type (serdes/mime-type serde)) serde
-      :else (recur (rest serdes)))))
+(defn ^:private ->serde [content-type serdes default-serde]
+  (serdes/find-serde serdes content-type default-serde))
+
+(defn ^:private find-serde [{:keys [accept content-type]} serdes]
+  (serdes/find-serde serdes (or content-type accept "")))
 
 (defn ^:private response*
   ([response?]
@@ -26,9 +25,6 @@
      (response* value response?)))
   ([value response?]
    (cond-> value (not response?) :body)))
-
-(defn ^:private find-serde [{:keys [accept content-type]} serdes]
-  (serdes/find-serde serdes (or content-type accept "")))
 
 (defn ^:private deserialize* [ch-response serde serdes]
   (let [{:keys [headers]
@@ -41,7 +37,7 @@
     (-> response
         (update :status #(http/code->status % %))
         (update :body #(cond->> %
-                                (string? %) (serdes/deserialize serde))))))
+                         (and serde (string? %)) (serdes/deserialize serde))))))
 
 (defn ^:private with-headers*
   ([]
@@ -104,16 +100,20 @@
       (request! [_ request]
         (let [serde (find-serde (:headers request) serdes)
               mime-type (serdes/mime-type serde)
-              serde (when-not (string? (:body request))
-                      (->serde mime-type serdes (:edn serdes)))
               body (:body request)]
           (-> request
               (cond->
-                body (-> (update :body (partial serdes/serialize serde))
-                         (update :headers (fn [headers]
-                                            (-> headers
-                                                (assoc :content-type mime-type)
-                                                (maps/assoc-defaults :accept mime-type))))))
+                (not mime-type)
+                (update :headers maps/assoc-defaults :accept "application/edn")
+
+                (and body mime-type)
+                (update :headers (fn [headers]
+                                   (-> headers
+                                       (assoc :content-type mime-type)
+                                       (maps/assoc-defaults :accept mime-type))))
+
+                (and serde body)
+                (update :body (partial serdes/serialize serde)))
               (->> (pres/request! http-client))
               (v/then-> (deserialize* serde serdes))
               (v/then (response* (:response? request))

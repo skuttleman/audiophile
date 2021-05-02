@@ -9,6 +9,9 @@
   ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
              [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
 
+  [:duct/const :api/handler]
+  #ig/ref :com.ben-allred.audiophile.api.dev.handler/app
+
   [:com.ben-allred.audiophile.api.core/server :duct/daemon]
   {:handler     #ig/ref :api/handler
    :server-port #ig/ref :env/server-port}

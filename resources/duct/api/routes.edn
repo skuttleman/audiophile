@@ -4,9 +4,10 @@
  [:duct/const :routes/table]
  {^:auth/user [:get :api/ws]        #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
   ^:auth/user [:get :api/projects]  #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch-all
-  ^:auth/user [:post :api/projects] #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
   ^:auth/user [:get :api/teams]     #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
+  ^:auth/user [:post :api/projects] #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
   ^:auth/user [:post :api/teams]    #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create
+  ^:auth/user [:post :api/upload]   #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
   [:get :auth/callback]             #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
   [:get :auth/details]              #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
   [:get :auth/login]                #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
@@ -75,6 +76,9 @@
 
  :com.ben-allred.audiophile.api.handlers.teams/create
  {:team-repo #ig/ref :repositories/teams}
+
+ :com.ben-allred.audiophile.api.handlers.files/upload
+ {:artifact-repo #ig/ref :repositories/artifacts}
 
  :com.ben-allred.audiophile.api.services.pubsub.ws/handler
  {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel

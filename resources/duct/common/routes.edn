@@ -11,6 +11,7 @@
    ;; API
    ["/api"
     [["/ws" :api/ws]
+     ["/upload" :api/upload]
      ["/projects"
       [["" :api/projects]
        [["/" #audiophile/uuid-param :project-id] :api/project]]]

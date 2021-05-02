@@ -1,6 +1,15 @@
 (ns com.ben-allred.audiophile.common.services.resources.protocols)
 
 (defprotocol IResource
-  (request! [this opts] "initiate a request for this resource - should return a com.ben-allred/vow")
-  (status [this] "get the status of the resource represented as a keyword
-                  sample values: #{:init :requesting :success :error}"))
+  "A component for handling asynchronous activity"
+  (request! [this opts] "Initiate a request for this resource - should return a com.ben-allred/vow")
+  (status [this]
+    "Get the status of the resource represented as a keyword.
+     Return value should be one of the following:
+
+     |   status    |               meaning                  |
+     |:------------|:---------------------------------------|
+     | :init       | initialized (or re-initialized) state  |
+     | :requesting | resource is processing.                |
+     | :success    | resources has processed successfully   |
+     | :success    | resources has processed unsuccessfully |"))

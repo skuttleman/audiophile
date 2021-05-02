@@ -1,4 +1,5 @@
 (ns com.ben-allred.audiophile.api.services.repositories.core
+  (:refer-clojure :exclude [get])
   (:require
     [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
@@ -10,9 +11,6 @@
   (:import
     (java.sql Date ResultSet)))
 
-(defn ^:private exec* [conn psql opts]
-  (jdbc/execute! conn psql opts))
-
 (deftype QueryFormatter []
   prepos/IFormatQuery
   (format [_ query]
@@ -20,6 +18,15 @@
 
 (defmethod ig/init-key ::query-formatter [_ _]
   (->QueryFormatter))
+
+(deftype RawFormatter []
+  prepos/IFormatQuery
+  (format [_ sql]
+    (cond-> sql
+      (not (vector? sql)) vector)))
+
+(defmethod ig/init-key ::raw-formatter [_ _]
+  (->RawFormatter))
 
 (deftype Builder [cols col-cnt collect! ->row! rs]
   result-set/RowBuilder
@@ -53,17 +60,12 @@
 
 (deftype Executor [conn ->builder-fn query-formatter]
   prepos/IExecute
-  (exec-raw! [_ sql opts]
-    (let [sql-params (cond-> sql
-                       (not (vector? sql)) vector)]
-      (log/debug "[TX] - executing:" sql-params)
-      (exec* conn sql-params (assoc (:sql/opts opts)
-                                    :builder-fn (->builder-fn opts)))))
-  (execute! [this query opts]
-    (log/debug "[TX] - formatting:" query)
-    (prepos/exec-raw! this
-                      (prepos/format query-formatter query)
-                      opts)))
+  (execute! [_ query opts]
+    (let [formatted (prepos/format query-formatter query)]
+      (log/debug "[TX] - formatting:" query)
+      (log/debug "[TX] - executing:" formatted)
+      (jdbc/execute! conn formatted (assoc (:sql/opts opts)
+                                           :builder-fn (->builder-fn opts))))))
 
 (defmethod ig/init-key ::->executor [_ {:keys [->builder-fn query-formatter]}]
   (fn [conn] (->Executor conn ->builder-fn query-formatter)))
@@ -111,13 +113,6 @@
   ([executor query opts]
    (prepos/execute! executor query opts)))
 
-(defn exec-raw!
-  "Executes a raw SQL statement"
-  ([executor sql]
-   (exec-raw! executor sql nil))
-  ([executor sql opts]
-   (prepos/exec-raw! executor sql opts)))
-
 (defn transact!
   "Open a transactor and invoke a callback with an executor for running queries. The
    callback should take `executor` and `opts` which is any additional information
@@ -139,3 +134,21 @@
    (exec-fn executor (f opts) opts))
   ([executor opts exec-fn f & args]
    (exec-fn executor (apply f opts args) opts)))
+
+(defn uri
+  ([kv-store key]
+   (uri kv-store key nil))
+  ([kv-store key opts]
+   (prepos/uri kv-store key opts)))
+
+(defn get
+  ([kv-store key]
+   (get kv-store key nil))
+  ([kv-store key opts]
+   (prepos/get kv-store key opts)))
+
+(defn put!
+  ([kv-store key value]
+   (put! kv-store key value nil))
+  ([kv-store key value opts]
+   (prepos/put! kv-store key value opts)))

@@ -34,36 +34,31 @@
                  class))))
 
 (defmethod ig/init-key ::vector-response [_ _]
-  "convert simplified vector response into response map"
   (fn [handler]
     (fn [request]
       (-> request handler ->response))))
 
-(defmethod ig/init-key ::serde [_ {:keys [edn-serde transit-serde]}]
-  "encode and decode body based on http headers"
+(defmethod ig/init-key ::serde [_ serdes]
   (fn [handler]
     (fn [request]
-      (let [serde (condp string/starts-with? (or (get-in request [:headers "accept"])
-                                                 (get-in request [:headers "content-type"])
-                                                 "unknown/mime-type")
-                    (serdes/mime-type transit-serde) transit-serde
-                    edn-serde)
+      (let [serde (serdes/find-serde serdes
+                                     (or (get-in request [:headers "accept"])
+                                         (get-in request [:headers "content-type"])
+                                         "application/edn"))
             {resp :body :as response} (-> request
                                           (maps/update-maybe :body (partial serdes/deserialize serde))
                                           handler)
-            serde' (condp string/starts-with? (or (get-in response [:headers "accept"])
-                                                  (get-in response [:headers "content-type"])
-                                                  "")
-                     (serdes/mime-type edn-serde) edn-serde
-                     (serdes/mime-type transit-serde) transit-serde
-                     serde)]
+            serde' (serdes/find-serde serdes
+                                      (or (get-in response [:headers "accept"])
+                                          (get-in response [:headers "content-type"])
+                                          "unknown/mime-type")
+                                      serde)]
         (cond-> response
           (serializable? resp)
           (-> (update :body (partial serdes/serialize serde'))
               (update-in [:headers "content-type"] #(or % (serdes/mime-type serde')))))))))
 
 (defmethod ig/init-key ::with-route [_ {:keys [nav]}]
-  "parses url and adds routing info to the request"
   (fn [handler]
     (fn [{:keys [query-string uri] :as request}]
       (-> request
@@ -73,7 +68,6 @@
           handler))))
 
 (defmethod ig/init-key ::with-logging [_ _]
-  "basic logging around api requests"
   (fn [handler]
     (fn [request]
       (if (some-> request
@@ -84,20 +78,25 @@
               response (handler request)
               end (System/nanoTime)
               elapsed (- end start)
-              [time unit] (cond
-                            (> elapsed 1000000) [(long (/ elapsed 1000000)) "m"]
-                            (> elapsed 1000) [(long (/ elapsed 1000)) "μ"]
-                            :else [elapsed "n"])
-              msg (format "%s %s [%d%ss] - %d"
+              color (cond
+                      (>= elapsed 1000000000) "\u001B[31m"
+                      (>= elapsed 100000000) "\u001B[33;1m"
+                      (>= elapsed 1000000) "\u001b[37;1m"
+                      (>= elapsed 1000) "\u001b[36m"
+                      :else "\u001b[32;1m")
+              time (cond
+                     (>= elapsed 1000000000) (str color (long (/ elapsed 1000000000)) "s\u001B[0m")
+                     (>= elapsed 1000000) (str color (long (/ elapsed 1000000)) "ms\u001B[0m")
+                     (>= elapsed 1000) (str color (long (/ elapsed 1000)) "μs\u001B[0m")
+                     :else (str color elapsed "ns\u001B[0m"))
+              msg (format "%s %s [%s] - %d"
                           (csk/->SCREAMING_SNAKE_CASE_STRING (:request-method request))
                           (:uri request)
                           time
-                          unit
                           (:status response))]
           (if (::ex (meta response))
             (log/warn msg)
             (log/info msg))
-          (log/spy :debug (:body response))
           response)
         (handler request)))))
 

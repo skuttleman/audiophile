@@ -45,10 +45,8 @@
   (redo! migrator))
 
 (defn seed! [transactor file]
-  (some->> file
-           io/resource
-           slurp
-           (repos/transact! transactor repos/exec-raw!)))
+  (let [seed-sql (some->> file io/resource slurp)]
+    (repos/transact! transactor repos/->exec! repos/execute! (constantly seed-sql))))
 
 (defn create! [migrator name]
   (-create migrator name))
@@ -82,6 +80,6 @@
         (ig/halt! system)))))
 
 (comment
-  (-main "create" "create_users_table")
+  (-main "create" "DESCRIPTION")
   (-main "migrate")
   (-main "redo"))

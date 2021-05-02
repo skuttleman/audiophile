@@ -7,6 +7,9 @@
  [:duct/const :services/oauth]
  #ig/ref :com.ben-allred.audiophile.api.services.auth.google/oauth-provider
 
+ [:duct/const :services/s3-client]
+ #ig/ref :com.ben-allred.audiophile.api.services.resources.s3/client
+
  [:com.ben-allred.audiophile.api.services.repositories.core/cfg :config/db]
  {:db-name  #ig/ref :env/db-name
   :host     #ig/ref :env/db-host
@@ -39,4 +42,10 @@
                 :redirect-uri  #ig/ref :env.goauth/redirect-uri
                 :token-uri     #ig/ref :env.goauth/token-uri
                 :profile-uri   #ig/ref :env.goauth/profile-uri}
-  :http-client #ig/ref :services/http}}
+  :http-client #ig/ref :services/http}
+
+ :com.ben-allred.audiophile.api.services.resources.s3/client
+ {:access-key #ig/ref :env.s3/access-key
+  :bucket     #ig/ref :env.s3/bucket
+  :region     #ig/ref :env.s3/region
+  :secret-key #ig/ref :env.s3/secret-key}}

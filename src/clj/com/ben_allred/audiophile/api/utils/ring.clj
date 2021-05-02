@@ -3,6 +3,7 @@
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [ring.middleware.cookies :as ring.cook]
+    [ring.middleware.multipart-params :as ring.multi]
     [ring.middleware.resource :as ring.res]
     [ring.util.response :as ring.resp]))
 
@@ -17,6 +18,9 @@
 (def ^{:arglists '([handler] [handler options])} wrap-cookies
   "Ring middleware for encoding and decoding cookies"
   ring.cook/wrap-cookies)
+
+(def ^{:arglists '([handler] [handler options])} wrap-multipart-params
+  ring.multi/wrap-multipart-params)
 
 (defn decode-cookies
   "Test utility for decoding response cookies"

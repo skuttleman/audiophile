@@ -6,4 +6,10 @@
 
    :com.ben-allred.audiophile.api.dev.migrations/migrator
    {:datasource          #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource
-    :migrations-res-path #ig/ref :resources/migration-path}}}]
+    :migrations-res-path #ig/ref :resources/migration-path}
+
+   :com.ben-allred.audiophile.api.services.repositories.core/->executor
+   ^:promote {:query-formatter #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/raw-formatter}
+
+   :com.ben-allred.audiophile.api.services.repositories.core/raw-formatter
+   {}}}]

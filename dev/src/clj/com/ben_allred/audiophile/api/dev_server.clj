@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.api.dev-server
   (:require
     [com.ben-allred.audiophile.api.services.env :as env]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [duct.core :as duct]
@@ -18,6 +19,12 @@
                                                    "test/cljc"
                                                    "dev/src/clj"]})]
     (fn []
+      (require 'com.ben-allred.audiophile.api.services.pubsub.ws :reload)
+      (require 'com.ben-allred.audiophile.api.services.repositories.common :reload)
+      (require 'com.ben-allred.audiophile.api.services.repositories.core :reload)
+      (require 'com.ben-allred.audiophile.api.services.resources.s3 :reload)
+      (require 'com.ben-allred.audiophile.common.services.navigation.core :reload)
+      (require 'com.ben-allred.audiophile.common.services.serdes.core :reload)
       (reload* nil))))
 
 (defn reset-sys!
@@ -46,6 +53,9 @@
                                  (nrepl/stop-server server)
                                  (ig/halt! system))))
     (duct/await-daemons system)))
+
+(defn component [k]
+  (second (colls/only! (ig/find-derived system k))))
 
 (comment
   (do (alter-var-root #'system reset-sys!) nil))

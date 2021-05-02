@@ -60,6 +60,15 @@
                             :nav/route route
                             :nav/params (opts->params opts))))))
 
+(defmethod ig/init-key ::file-uploader [_ _]
+  (fn [{:keys [files] :as opts}]
+    #?(:clj  (assoc opts :multipart (map (fn [file]
+                                           {:part-name "files[]"
+                                            :name      (.getName file)
+                                            :content   file})
+                                         files))
+       :cljs (assoc opts :multipart-params (map (partial conj ["files[]"]) files)))))
+
 (defn request!
   ([resource]
    (request! resource nil))

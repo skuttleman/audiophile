@@ -8,4 +8,15 @@
 
  [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/teams]
  {:entity #ig/ref :entities/teams
-  :tx     #ig/ref :services/transactor}}
+  :tx     #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/kv-repo :repositories/artifacts]
+ {:tx       #ig/ref [:com.ben-allred.audiophile.api.services.repositories.common/repo :repo/artifacts]
+  :kv-store #ig/ref :stores/s3}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repo/artifacts]
+ {:entity #ig/ref :entities/artifacts
+  :tx     #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/s3-store :stores/s3]
+ {:s3-client #ig/ref :services/s3-client}}

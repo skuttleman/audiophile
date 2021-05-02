@@ -32,4 +32,4 @@
   (reduce (fn [handler mw]
             (mw handler))
           router
-          (concat middleware [ring/wrap-cookies])))
+          (concat middleware [ring/wrap-multipart-params ring/wrap-cookies])))

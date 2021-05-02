@@ -1,9 +1,11 @@
 (ns com.ben-allred.audiophile.common.views.components.input-fields
   (:require
     [clojure.string :as string]
+    [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
-    [com.ben-allred.audiophile.common.utils.fns :as fns]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small? visited?]} & body]
   (let [errors (seq (remove nil? errors))
@@ -138,6 +140,43 @@
                #?@(:cljs [:on-click #(on-change (not value))])}
               (merge (select-keys attrs #{:class :id :on-blur :ref})))
           (if value true-display false-display)]]))))
+
+(def ^{:arglists '([attrs])} file
+  (with-auto-focus
+    (with-id
+      (fn [_]
+        (let [file-input (volatile! nil)]
+          (fn [{:keys [multi? on-change] :as attrs}]
+            [form-field
+             attrs
+             [:div
+              [:input {:ref      #(some->> % (vreset! file-input))
+                       :type     :file
+                       :multiple multi?
+                       :style    {:display :none}
+                       #?@(:cljs [:on-change (comp on-change
+                                                   (fn [e]
+                                                     (let [files (into #{} (some-> e .-target .-files))]
+                                                       (doto (.-target e)
+                                                         (aset "files" nil)
+                                                         (aset "value" nil))
+                                                       files)))])}]
+              [:button.button (-> attrs
+                                  (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
+                                  #?(:cljs (assoc :on-click (comp (fn [_]
+                                                                    (some-> @file-input .click))
+                                                                  dom/prevent-default))))
+               (:display attrs "Select file…")
+               [log/pprint (:value attrs)]]]]))))))
+
+(defn uploader [{:keys [multi? on-change resource] :as attrs}]
+  [file (-> attrs
+            (assoc :on-change (fn [file-set]
+                                (-> resource
+                                    (res/request! {:files file-set :multi? multi?})
+                                    (v/then-> log/spy)
+                                    (v/then on-change))))
+            (update :disabled #(or % (res/requesting? resource))))])
 
 (defn openable [& _]
   (let [open? (r/atom false)

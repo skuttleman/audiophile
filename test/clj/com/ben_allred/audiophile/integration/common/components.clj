@@ -23,14 +23,14 @@
   (fn [request]
     (when (:websocket? request)
       (let [params (get-in request [:nav/route :query-params])
-            serializer (serdes/find-serde serdes
-                                          (or (:content-type params)
-                                              (:accept params)
-                                              ""))
-            deserializer (serdes/find-serde serdes
-                                            (or (:accept params)
-                                                (:content-type params)
-                                                ""))
+            serializer (serdes/find-serde! serdes
+                                           (or (:content-type params)
+                                               (:accept params)
+                                               ""))
+            deserializer (serdes/find-serde! serdes
+                                             (or (:accept params)
+                                                 (:content-type params)
+                                                 ""))
             msgs (async/chan 100)
             channel (->channel request
                                (reify ws/IChannel

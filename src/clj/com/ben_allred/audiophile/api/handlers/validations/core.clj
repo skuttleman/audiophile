@@ -16,7 +16,8 @@
   "validates requests and either returns a request with conformed assoc'ed at :valid/data
    or throws a bad-request response. route specs are defined by defining a method on
    [[com.ben-allred.audiophile.api.handlers.validations.specs/spec]]"
-  [handler {{:keys [data]} :body :as request}]
-  (assoc request :valid/data (if-let [spec (specs/spec handler)]
-                               (check! spec handler data "invalid request")
-                               data)))
+  [handler {{:keys [data]} :body :keys [params] :as request}]
+  (let [payload (or data params)]
+    (assoc request :valid/data (if-let [spec (specs/spec handler)]
+                                 (check! spec handler payload "invalid request")
+                                 payload))))

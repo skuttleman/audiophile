@@ -7,7 +7,6 @@
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::login [_ {:keys [base-url nav]}]
-  "GET /auth/login - dev only implementation"
   (fn [request]
     (let [params (get-in request [:nav/route :query-params])]
       (-> base-url
@@ -17,15 +16,19 @@
           ring/redirect))))
 
 (defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav user-repo]}]
-  "GET /auth/callback - dev only implementation"
   (fn [request]
     (let [{:keys [email]} (get-in request [:nav/route :query-params])]
       (auth/login! nav jwt-serde base-url user-repo email))))
 
+(defn logging [app request]
+  (if (or (string/starts-with? (:uri request "") "/api")
+          (string/starts-with? (:uri request "") "/auth"))
+    (log/spy :debug (app (log/spy :debug request)))
+    (app request)))
+
 (defmethod ig/init-key ::app [_ {:keys [app]}]
-  "for when dev modifications are needed (like additional middleware)"
   (fn [request]
-    (try (app request)
+    (try (logging app request)
          (catch Throwable ex
            (log/error ex "[DEV] uncaught exception!")
            {:status 500}))))

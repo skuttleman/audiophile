@@ -3,14 +3,13 @@
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
 (deftype EntityExecutor [executor entity]
   prepos/IExecute
-  (exec-raw! [_ sql opts]
-    (repos/exec-raw! executor sql opts))
   (execute! [_ query opts]
     (repos/execute! executor query (assoc opts
                                           :entity-fn
@@ -29,6 +28,30 @@
 
 (defmethod ig/init-key ::repo [_ {:keys [entity tx]}]
   (->DefaultRepository tx entity (keyword "entity" (name (:table entity)))))
+
+(deftype KVBackedRepository [tx kv-store]
+  prepos/ITransact
+  (transact! [_ f]
+    (repos/transact! tx (fn [executor opts]
+                          (f executor (assoc opts :store/kv kv-store))))))
+
+(defmethod ig/init-key ::kv-repo [_ {:keys [kv-store tx]}]
+  (->KVBackedRepository tx kv-store))
+
+(deftype SerdeStore [s3-client serdes]
+  prepos/IKVStore
+  (uri [_ key opts]
+    (prepos/uri s3-client key opts))
+  (get [_ key opts]
+    (let [result (prepos/get s3-client key opts)
+          serde (serdes/find-serde serdes (:ContentType result))]
+      (update result :Body (partial serdes/deserialize serde))))
+  (put! [_ key value opts]
+    (let [serde (serdes/find-serde serdes (:content-type opts))]
+      (prepos/put! s3-client key value #_(serdes/serialize serde value opts) opts))))
+
+(defmethod ig/init-key ::s3-store [_ {:keys [s3-client serdes]}]
+  (->SerdeStore s3-client serdes))
 
 (defn query-many [repo entity-key clause]
   (repos/transact! repo

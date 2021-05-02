@@ -9,6 +9,7 @@
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.keywords :as keywords]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [integrant.core :as ig])
   #?(:clj
@@ -127,13 +128,19 @@
 (defn mime-type [serde]
   (pserdes/mime-type serde))
 
-(defn find-serde [serdes type]
+(defn find-serde
+  ([serdes type]
+   (find-serde serdes type nil))
+  ([serdes type default]
+   (loop [[[_ serde] :as serdes] (seq serdes)]
+     (cond
+       (empty? serdes) default
+       (string/starts-with? type (mime-type serde)) serde
+       :else (recur (rest serdes))))))
+
+(defn find-serde! [serdes type]
   (let [default-serde (or (:default serdes)
                           (:edn serdes)
                           (some-> serdes first val)
                           (throw (ex-info "could not find serializer" {})))]
-    (loop [[[_ serde] :as serdes] (seq serdes)]
-      (cond
-        (empty? serdes) default-serde
-        (string/starts-with? type (mime-type serde)) serde
-        :else (recur (rest serdes))))))
+    (find-serde serdes type default-serde)))
