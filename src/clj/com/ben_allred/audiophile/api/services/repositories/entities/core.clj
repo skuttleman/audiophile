@@ -35,18 +35,22 @@
       (get table-name)
       (assoc :table table-name :namespace namespace)))
 
+(defn ^:private from [{:keys [alias table]}]
+  (cond-> table
+    alias (vector alias)))
+
+(defn ^:private ->field [{:keys [alias namespace table]}]
+  (fn [field]
+    [(keyword (str (name (or alias table)) "." (name field)))
+     (str (name (or alias namespace)) "/" (name field))]))
+
 (defn select*
   "Generates a query for selecting from a database table"
   ([entity clause]
    (assoc (select* entity) :where clause))
-  ([{:keys [alias fields namespace table] :as entity}]
-   {:select (mapv (fn [field]
-                    [(keyword (str (name table) "." (name field)))
-                     (str (name namespace) "/" (name field))])
-                  fields)
-    :from   [(if alias
-               [table alias]
-               table)]
+  ([{:keys [fields] :as entity}]
+   {:select (mapv (->field entity) fields)
+    :from   [(from entity)]
     :entity entity}))
 
 (defn insert-into

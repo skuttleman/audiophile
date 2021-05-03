@@ -14,6 +14,8 @@ CREATE TABLE file_versions (
     file_id UUID REFERENCES files NOT NULL,
     name VARCHAR(255) NOT NULL,
     created_by UUID REFERENCES users NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now()
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now(),
+
+    CONSTRAINT file_versions_file_id_created_at UNIQUE(file_id, created_at)
 );
 --;;

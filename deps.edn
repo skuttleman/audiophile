@@ -19,7 +19,7 @@
            duct/core                           {:mvn/version "0.8.0"}
            hiccup/hiccup                       {:mvn/version "1.0.5"}
            hikari-cp/hikari-cp                 {:mvn/version "2.13.0"}
-           honeysql/honeysql                   {:mvn/version "0.9.2"}
+           honeysql/honeysql                   {:mvn/version "1.0.461"}
            metosin/jsonista                    {:mvn/version "0.1.1"}
            metosin/spec-tools                  {:mvn/version "0.10.5"}
            nilenso/honeysql-postgres           {:mvn/version "0.2.5"

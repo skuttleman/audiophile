@@ -6,18 +6,18 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
-(defmethod ig/init-key ::upload [_ {:keys [artifact-repo]}]
+(defmethod ig/init-key ::upload [_ {:keys [file-repo]}]
   (fn [request]
     (let [artifact-data (colls/only! (:valid/data request))
           user-id (get-in request [:auth/user :data :user :user/id])
-          artifact (files/create-artifact artifact-repo artifact-data user-id)]
+          artifact (files/create-artifact file-repo artifact-data user-id)]
       [::http/ok {:data artifact}])))
 
-(defmethod ig/init-key ::fetch-all [_ {:keys [artifact-repo]}]
+(defmethod ig/init-key ::fetch-all [_ {:keys [file-repo]}]
   (constantly [::http/not-implemented]))
 
-(defmethod ig/init-key ::create [_ {:keys [artifact-repo]}]
+(defmethod ig/init-key ::create [_ {:keys [file-repo]}]
   (constantly [::http/not-implemented]))
 
-(defmethod ig/init-key ::download [_ {:keys [s3-client]}]
+(defmethod ig/init-key ::download [_ {:keys [file-repo]}]
   (constantly [::http/not-implemented]))

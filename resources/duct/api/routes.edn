@@ -82,7 +82,7 @@
  {:team-repo #ig/ref :repositories/teams}
 
  :com.ben-allred.audiophile.api.handlers.files/upload
- {:artifact-repo #ig/ref :repositories/artifacts}
+ {:file-repo #ig/ref :repositories/files}
 
  :com.ben-allred.audiophile.api.handlers.files/download
  {:s3-client #ig/ref :services/s3-client}

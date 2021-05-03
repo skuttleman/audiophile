@@ -4,6 +4,7 @@
     [clojure.core.async.impl.protocols :as async.protocols]
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.dev.migrations :as mig]
+    [com.ben-allred.audiophile.api.services.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.api.services.pubsub.ws :as ws]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
@@ -33,7 +34,7 @@
                                                  ""))
             msgs (async/chan 100)
             channel (->channel request
-                               (reify ws/IChannel
+                               (reify pws/IChannel
                                  (open? [_]
                                    (not (async.protocols/closed? msgs)))
                                  (send! [_ msg]

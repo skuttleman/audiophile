@@ -10,13 +10,15 @@
  {:entity #ig/ref :entities/teams
   :tx     #ig/ref :services/transactor}
 
- [:com.ben-allred.audiophile.api.services.repositories.common/kv-repo :repositories/artifacts]
- {:tx       #ig/ref [:com.ben-allred.audiophile.api.services.repositories.common/repo :repo/artifacts]
+ [:com.ben-allred.audiophile.api.services.repositories.common/kv-repo :repositories/files]
+ {:tx       #ig/ref :com.ben-allred.audiophile.api.services.repositories.files/repo
   :kv-store #ig/ref :stores/s3}
 
- [:com.ben-allred.audiophile.api.services.repositories.common/repo :repo/artifacts]
- {:entity #ig/ref :entities/artifacts
-  :tx     #ig/ref :services/transactor}
+ :com.ben-allred.audiophile.api.services.repositories.files/repo
+ {:artifacts     #ig/ref :entities/artifacts
+  :file-versions #ig/ref :entities/file-versions
+  :files         #ig/ref :entities/files
+  :tx            #ig/ref :services/transactor}
 
  [:com.ben-allred.audiophile.api.services.repositories.common/s3-store :stores/s3]
  {:s3-client    #ig/ref :services/s3-client
