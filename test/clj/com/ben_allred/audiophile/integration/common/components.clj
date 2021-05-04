@@ -65,9 +65,9 @@
                          (ws/on-close handler))
                        (ws/close! channel)))]))))
 
-(defmethod ig/init-key ::transactor [_ {:keys [->executor datasource migrator seed-data]}]
+(defmethod ig/init-key ::transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
   (mig/migrate! migrator)
-  (doto (repos/->Transactor datasource nil ->executor)
+  (doto (repos/->Transactor datasource opts ->executor)
     (repos/transact! (fn [executor _]
                        (doseq [query seed-data]
                          (repos/execute! executor query))))))

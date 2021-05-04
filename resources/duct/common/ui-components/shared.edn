@@ -15,8 +15,14 @@
  [:duct/const :resources/project]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
 
+ [:duct/const :resources/project.files]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
+
  [:duct/const :resources/teams.all]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
+
+ [:duct/const :resources/team]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
 
  [:duct/const :ui/err-codes]
  {:user-not-found "Authentication failed.User not found."}

@@ -46,7 +46,7 @@
 
 (defn seed! [transactor file]
   (let [seed-sql (some->> file io/resource slurp)]
-    (repos/transact! transactor repos/->exec! repos/execute! (constantly seed-sql))))
+    (repos/transact! transactor repos/->exec! (constantly seed-sql))))
 
 (defn create! [migrator name]
   (-create migrator name))

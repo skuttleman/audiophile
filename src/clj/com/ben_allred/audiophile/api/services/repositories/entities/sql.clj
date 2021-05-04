@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.api.services.repositories.entities.sql
   (:refer-clojure :exclude [cast count format max])
   (:require
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [honeysql.core :as sql*]
     honeysql-postgres.format
     honeysql-postgres.helpers))

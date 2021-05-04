@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.handlers.auth
   (:require
     [com.ben-allred.audiophile.api.services.auth.core :as auth]
-    [com.ben-allred.audiophile.api.services.repositories.users :as users]
+    [com.ben-allred.audiophile.api.services.repositories.users.model :as users]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
@@ -69,12 +69,12 @@
   (fn [_]
     (logout! nav base-url)))
 
-(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav oauth user-repo]}]
+(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav oauth repo]}]
   (fn [request]
     (let [params (get-in request [:nav/route :query-params])
           profile (first (unsafe! "fetching user profile from the OAuth provider"
                            (auth/profile oauth params)))]
-      (login! nav jwt-serde base-url user-repo (:email profile)))))
+      (login! nav jwt-serde base-url repo (:email profile)))))
 
 (defmethod ig/init-key ::details [_ _]
   (fn [request]

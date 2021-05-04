@@ -10,6 +10,11 @@
   :method      :get
   :route       :api/teams}
 
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/one]
+ {:http-client  #ig/ref :services/http
+  :method       :get
+  :route        :api/team}
+
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/create]
  {:http-client   #ig/ref :services/http
   :method        :post
@@ -21,6 +26,9 @@
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/all]}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/one]}
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/create]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/create]}

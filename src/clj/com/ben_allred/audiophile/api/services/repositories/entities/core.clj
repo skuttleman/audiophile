@@ -44,6 +44,12 @@
     [(keyword (str (name (or alias table)) "." (name field)))
      (str (name (or alias namespace)) "/" (name field))]))
 
+(defn select-fields [entity field-set]
+  (update entity :fields (partial filter field-set)))
+
+(defn remove-fields [entity field-set]
+  (update entity :fields (partial remove field-set)))
+
 (defn select*
   "Generates a query for selecting from a database table"
   ([entity clause]
@@ -67,3 +73,14 @@
                                           cast (-> name (sql/cast cast)))]))))
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
+
+(defn join [query {:keys [fields] :as entity} on]
+  (-> query
+      (update :select into (map (->field entity)) fields)
+      (update :join
+              (fnil conj [])
+              (from entity)
+              on)))
+
+(defn order-by [query & clauses]
+  (update query :order-by (fnil into []) clauses))

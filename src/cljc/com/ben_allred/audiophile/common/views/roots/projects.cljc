@@ -49,11 +49,19 @@
             "Details"]])]
        [:p "You don't have any projects. Why not create one?"])]))
 
-(defmethod ig/init-key ::one [_ {:keys [project]}]
+(defn ^:private project-details [project team]
+  (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
+    [:div
+     [:h1.subtitle (:project/name project)]
+     [comp/with-resource [team opts] log/pprint]]))
+
+(defmethod ig/init-key ::one [_ {:keys [files project team]}]
   (fn [state]
     (let [project-id (get-in state [:page :route-params :project-id])
           opts {:nav/params {:route-params {:project-id project-id}}}]
-      [comp/with-resource [project opts] log/pprint])))
+      [:div
+       [comp/with-resource [project opts] project-details team]
+       [comp/with-resource [files opts] log/pprint]])))
 
 (defn create* [teams *projects _cb]
   (let [options (->> teams

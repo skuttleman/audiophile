@@ -9,8 +9,12 @@
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]
  {:http-client  #ig/ref :services/http
   :method       :get
-  :route        :api/project
-  :opts->params :nav/params}
+  :route        :api/project}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]
+ {:http-client  #ig/ref :services/http
+  :method       :get
+  :route        :api/project.files}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/create]
  {:http-client   #ig/ref :services/http
@@ -23,6 +27,9 @@
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]}
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/create]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/create]}
@@ -49,4 +56,6 @@
   :teams        #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}
 
  :com.ben-allred.audiophile.common.views.roots.projects/one
- {:project #ig/ref :resources/project}}
+ {:files   #ig/ref :resources/project.files
+  :project #ig/ref :resources/project
+  :team    #ig/ref :resources/team}}

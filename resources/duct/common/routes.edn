@@ -12,11 +12,13 @@
    ["/api"
     [["/ws" :api/ws]
      ["/artifacts" :api/artifacts]
-     ["/files"
-      [["" :api/files]]]
      ["/projects"
       [["" :api/projects]
-       [["/" #audiophile/uuid-param :project-id] :api/project]]]
+       [["/" #audiophile/uuid-param :project-id]
+        [["" :api/project]
+         ["/files"
+          [["" :api/project.files]
+           [["/" #audiophile/uuid-param :file-id] :api/project.file]]]]]]]
      ["/teams"
       [["" :api/teams]
        [["/teams/" #audiophile/uuid-param :team-id] :api/team]]]

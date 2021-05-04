@@ -19,13 +19,13 @@
                                                    "test/cljc"
                                                    "dev/src/clj"]})]
     (fn []
+      (reload* nil)
       (require 'com.ben-allred.audiophile.api.services.pubsub.ws :reload)
       (require 'com.ben-allred.audiophile.api.services.repositories.common :reload)
       (require 'com.ben-allred.audiophile.api.services.repositories.core :reload)
       (require 'com.ben-allred.audiophile.api.services.resources.s3 :reload)
       (require 'com.ben-allred.audiophile.common.services.navigation.core :reload)
-      (require 'com.ben-allred.audiophile.common.services.serdes.core :reload)
-      (reload* nil))))
+      (require 'com.ben-allred.audiophile.common.services.serdes.core :reload))))
 
 (defn reset-sys!
   ([]

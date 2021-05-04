@@ -8,20 +8,24 @@
     [com.ben-allred.audiophile.common.services.stubs.pushy :as pushy]
     [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [integrant.core :as ig]))
 
-(defmulti params->internal :handler)
-(defmethod params->internal :default
-  [params]
-  params)
+(defn ^:private params->internal [params]
+  (update params :route-params (fns/=>
+                                 (maps/update-maybe :file-id uuids/->uuid)
+                                 (maps/update-maybe :project-id uuids/->uuid)
+                                 (maps/update-maybe :team-id uuids/->uuid))))
 
-(defmulti internal->params :handler)
-(defmethod internal->params :default
-  [params]
-  params)
+(defn ^:private internal->params [params]
+  (update params :route-params (fns/=>
+                                 (maps/update-maybe :file-id str)
+                                 (maps/update-maybe :project-id str)
+                                 (maps/update-maybe :team-id str))))
 
 (defprotocol IHistory
   "This can only be implemented in browser targeted cljs builds"

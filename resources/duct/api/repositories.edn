@@ -1,26 +1,21 @@
-{[:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/users]
- {:entity #ig/ref :entities/users
-  :tx     #ig/ref :services/transactor}
+{[:duct/const :services/repositories]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/repo
 
- [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/projects]
- {:entity #ig/ref :entities/projects
-  :tx     #ig/ref :services/transactor}
+ [:duct/const :stores/s3]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/store
 
- [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/teams]
- {:entity #ig/ref :entities/teams
-  :tx     #ig/ref :services/transactor}
+ :com.ben-allred.audiophile.api.services.repositories.common/repo
+ {:opts {:entity/artifacts     #ig/ref :entities/artifacts
+         :entity/file-versions #ig/ref :entities/file-versions
+         :entity/files         #ig/ref :entities/files
+         :entity/projects      #ig/ref :entities/projects
+         :entity/teams         #ig/ref :entities/teams
+         :entity/user-teams    #ig/ref :entities/user-teams
+         :entity/users         #ig/ref :entities/users
+         :store/kv             #ig/ref :stores/s3}
+  :tx   #ig/ref :services/transactor}
 
- [:com.ben-allred.audiophile.api.services.repositories.common/kv-repo :repositories/files]
- {:tx       #ig/ref :com.ben-allred.audiophile.api.services.repositories.files/repo
-  :kv-store #ig/ref :stores/s3}
-
- :com.ben-allred.audiophile.api.services.repositories.files/repo
- {:artifacts     #ig/ref :entities/artifacts
-  :file-versions #ig/ref :entities/file-versions
-  :files         #ig/ref :entities/files
-  :tx            #ig/ref :services/transactor}
-
- [:com.ben-allred.audiophile.api.services.repositories.common/s3-store :stores/s3]
+ :com.ben-allred.audiophile.api.services.repositories.common/store
  {:s3-client    #ig/ref :services/s3-client
   :stream-serde #ig/ref :com.ben-allred.audiophile.api.services.resources.s3/stream-serde}
 

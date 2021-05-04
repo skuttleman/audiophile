@@ -128,12 +128,12 @@
    with the transactor's `opts`. Any additional args will be passed to `f` as well.
 
   ```clojure
-  (repos/transact! tx repos/->exec! repos/execute! (fn [opts] ...))
+  (repos/transact! tx repos/->exec! (fn [opts] ...))
   ```"
-  ([executor opts exec-fn f]
-   (exec-fn executor (f opts) opts))
-  ([executor opts exec-fn f & args]
-   (exec-fn executor (apply f opts args) opts)))
+  ([executor opts f]
+   (execute! executor (f opts) opts))
+  ([executor opts f & args]
+   (execute! executor (apply f opts args) opts)))
 
 (defn uri
   ([kv-store key]

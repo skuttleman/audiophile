@@ -15,20 +15,19 @@
 (s/def :project/team-id uuid?)
 
 (s/def ::project-new
-  (s/keys :req [:project/name
-                :project/team-id]))
+  (s/keys :req [:project/name :project/team-id]))
 
 ;; teams
 (s/def :team/name ::trimmed-string)
 (s/def :team/type #{:COLLABORATIVE})
 
 (s/def ::team-new
-  (s/keys :req [:team/name
-                :team/type]))
+  (s/keys :req [:team/name :team/type]))
 
 ;; files
-(s/def :artifact/filename string?)
-(s/def :artifact/content-type string?)
+(s/def :artifact/id uuid?)
+(s/def :artifact/filename ::trimmed-string)
+(s/def :artifact/content-type ::trimmed-string)
 (s/def :artifact/tempfile #(instance? File %))
 (s/def :artifact/size nat-int?)
 (s/def :artifact/params
@@ -39,11 +38,16 @@
                  (or (try (uuids/->uuid s)
                           (catch Throwable _))
                      ::s/invalid))))
+(s/def :file/name ::trimmed-string)
+
+(s/def :version/name ::trimmed-string)
 
 (s/def ::artifact-new
   (s/coll-of :artifact/params))
-(s/def ::files
-  (s/keys :req-un [:files/project-id]))
+(s/def ::file-version-new
+  (s/keys :req [:artifact/id :version/name]))
+(s/def ::file-new
+  (s/keys :req [:file/name :artifact/id :version/name]))
 
 (defmulti spec
           "returns a spec and conformed data for a validating a request for a route. defaults to `nil`."
@@ -51,9 +55,13 @@
 (defmethod spec :default
   [_])
 
-(defmethod spec [:get :api/files]
+(defmethod spec [:post :api/project.file]
   [request]
-  [::files (get-in request [:nav/route :query-params])])
+  [::file-version-new (get-in request [:body :data])])
+
+(defmethod spec [:post :api/project.files]
+  [request]
+  [::file-new (get-in request [:body :data])])
 
 (defmethod spec [:post :api/artifacts]
   [request]

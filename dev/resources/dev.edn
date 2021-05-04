@@ -31,7 +31,7 @@
   {:base-url  #ig/ref :env/base-url
    :jwt-serde #ig/ref :serdes/jwt
    :nav       #ig/ref :services/nav
-   :user-repo #ig/ref :repositories/users}
+   :repo      #ig/ref :services/repositories}
 
   :com.ben-allred.audiophile.api.dev.handler/s3-client
   {}}}

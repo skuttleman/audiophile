@@ -51,7 +51,7 @@
   (->Resource (r/atom {:status :init}) opts->vow))
 
 (defmethod ig/init-key ::http-handler [_ {:keys [http-client method opts->params opts->request route]}]
-  (let [opts->params (or opts->params (constantly nil))
+  (let [opts->params (or opts->params :nav/params)
         opts->request (or opts->request identity)]
     (fn [opts]
       (http/request! http-client
