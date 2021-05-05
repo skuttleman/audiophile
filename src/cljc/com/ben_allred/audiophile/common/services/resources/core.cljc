@@ -56,10 +56,10 @@
         opts->request (or opts->request identity)]
     (fn [opts]
       (http/request! http-client
-                     (assoc (opts->request opts)
-                            :method method
-                            :nav/route route
-                            :nav/params (opts->params opts))))))
+                     (maps/assoc-defaults (opts->request opts)
+                                          :method method
+                                          :nav/route route
+                                          :nav/params (opts->params opts))))))
 
 (defmethod ig/init-key ::file-uploader [_ _]
   (fn [{:keys [files] :as opts}]

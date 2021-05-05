@@ -12,7 +12,7 @@
 
 (defn select-by [entity clause]
   (-> entity
-      (entities/select-fields #{:id :name :idx})
+      (entities/select-fields #{:id :idx :name :project-id})
       (entities/select* clause)
       (entities/join {:table  {:select   [:file-versions.file-id
                                           [(sql/max :file-versions.created-at) :created-at]]
@@ -30,15 +30,16 @@
                       [:= :fv.created-at :version.created-at]])
       (update :select into [[:fv.id "version/id"]
                             [:fv.name "version/name"]
-                            [:fv.artifact-id "version/artifact-id"]])
-      (entities/order-by [:files.idx :asc]
-                         [:version.created-at :desc])))
+                            [:fv.artifact-id "version/artifact-id"]])))
 
 (defn select-one [entity file-id]
   (select-by entity [:= :files.id file-id]))
 
 (defn select-for-user [entity project-id user-id]
-  (select-by entity (has-team-clause project-id user-id)))
+  (-> entity
+      (select-by (has-team-clause project-id user-id))
+      (entities/order-by [:files.idx :asc]
+                         [:version.created-at :desc])))
 
 (defn insert [entity file]
   (entities/insert-into entity (assoc file :idx (-> entity

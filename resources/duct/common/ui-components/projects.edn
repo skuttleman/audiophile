@@ -11,7 +11,13 @@
   :method      :get
   :route       :api/project}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file]
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#create]
+ {:http-client   #ig/ref :services/http
+  :method        :post
+  :route         :api/project.files
+  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#version]
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/project.file
@@ -34,8 +40,11 @@
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file]}
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#create]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#create]}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#version]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#version]}
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]}
@@ -65,9 +74,22 @@
   :teams        #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}
 
  :com.ben-allred.audiophile.common.views.roots.projects/one
+ {:files      #ig/ref :resources/project.files
+  :project    #ig/ref :resources/project
+  :team       #ig/ref :resources/team
+  :track-list #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/track-list}
+
+ :com.ben-allred.audiophile.common.views.roots.projects/track-list
+ {:file-form    #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/file-form
+  :store        #ig/ref :services/store
+  :version-form #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/version-form}
+
+ :com.ben-allred.audiophile.common.views.roots.projects/file-form
  {:artifacts #ig/ref :resources/artifacts
-  :files     #ig/ref :resources/project.files
-  :project   #ig/ref :resources/project
-  :file      #ig/ref :resources/project.file
-  :store     #ig/ref :services/store
-  :team      #ig/ref :resources/team}}
+  :file      #ig/ref :resources/project.file#create
+  :files     #ig/ref :resources/project.files}
+
+ :com.ben-allred.audiophile.common.views.roots.projects/version-form
+ {:artifacts    #ig/ref :resources/artifacts
+  :file-version #ig/ref :resources/project.file#version
+  :files        #ig/ref :resources/project.files}}

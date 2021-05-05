@@ -24,11 +24,13 @@
 (defn create!
   "Creates a project and returns the created entity."
   [repo project user-id]
-  (repos/transact! repo (fn [executor {entity :entity/projects}]
-                          (let [project-id (-> entity
-                                               (qprojects/insert (assoc project :created-by user-id))
-                                               (->> (repos/execute! executor))
-                                               colls/only!
-                                               :id)]
-                            (repos/execute! executor
-                                            (qprojects/select-one entity project-id))))))
+  (-> repo
+      (repos/transact! (fn [executor {entity :entity/projects}]
+                         (let [project-id (-> entity
+                                              (qprojects/insert (assoc project :created-by user-id))
+                                              (->> (repos/execute! executor))
+                                              colls/only!
+                                              :id)]
+                           (repos/execute! executor
+                                           (qprojects/select-one entity project-id)))))
+      colls/only!))

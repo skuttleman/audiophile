@@ -28,7 +28,7 @@
 (defn ^:private access-project! [executor projects project-id user-id]
   (when (empty? (-> projects
                     (access! user-id)
-                    (update :where conj [:= :projects-id project-id])
+                    (update :where conj [:= :projects.id project-id])
                     (->> (repos/execute! executor))))
     (throw (ex-info "User cannot access this project" (maps/->m project-id user-id)))))
 

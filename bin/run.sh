@@ -10,11 +10,11 @@ prod)
   ;;
 dev)
   echo "running with profile: ${PROFILE}"
-  WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development nf --env '' --procfile Procfile-dev start
+  WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-dev
   ;;
 dev-test)
   echo "running with profile: ${PROFILE}"
-  WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development nf --env '' --procfile Procfile-dev-test start
+  WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-dev-test
   ;;
 *)
   echo "unknown profile: ${PROFILE}"

@@ -18,21 +18,19 @@
 
 (defn stop-propagation [event]
   #?(:cljs
-     (when (.-stopPropagation event)
+     (when (some-> event .-stopPropagation)
        (.stopPropagation event)))
   event)
 
 (defn prevent-default [event]
   #?(:cljs
-     (when (.-preventDefault event)
+     (when (some-> event .-preventDefault)
        (.preventDefault event)))
   event)
 
 (defn target-value [event]
   #?(:cljs
-     (some-> event
-             (.-target)
-             (.-value))))
+     (some-> event .-target .-value)))
 
 (defn query-one [selector]
   #?(:cljs
@@ -49,13 +47,13 @@
 (defn focus [node]
   #?@(:cljs
       [(.focus node)
-       (when (.-setSelectionRange node)
+       (when (some-> node .-setSelectionRange)
          (let [length (-> node .-value .-length)]
            (.setSelectionRange node length length)))]))
 
 (defn event->key [e]
   #?(:cljs
-     (-> e .-keyCode code->key)))
+     (some-> e .-keyCode code->key)))
 
 (defn add-listener
   ([node event cb]

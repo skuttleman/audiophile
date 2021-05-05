@@ -57,45 +57,86 @@
                         (actions/modal! [:h2.subtitle title]
                                         view))))
 
-(defmethod vres/internal->remote ::create
+(defmethod vres/internal->remote ::file
   [_ data]
   (merge data (:artifact/details data)))
 
-(defn ^:private version-form [file *file _*artifacts _refresh-list _close-modal]
-  (let [form (vres/create ::create
-                          *file
-                          (form/create nil (constantly nil))
-                          {:nav/params {:route-params {:file-id    (:file/id file)
-                                                       :project-id (:file/project-id file)}}})]
-    (fn [_file _*file *artifacts refresh-list close-modal]
-      [comp/form {:form         form
-                  :disabled     (res/requesting? *artifacts)
-                  :on-submitted (fn [vow]
-                                  (v/peek vow (juxt close-modal refresh-list)))}
-       [in/input (forms/with-attrs {:label "Name"}
-                                   form
-                                   [:version/name])]
-       [in/uploader (-> {:label    "File"
-                         :resource *artifacts
-                         :display (if-let [filename (get-in @form [:artifact/details :artifact/filename])]
-                                    filename
-                                    "Select file…")}
-                        (forms/with-attrs form [:artifact/details]))]])))
+(defmethod ig/init-key ::version-form [_ {:keys [artifacts file-version files]}]
+  (fn [file-data _cb]
+    (let [project-id (:file/project-id file-data)
+          form (vres/create ::file
+                            file-version
+                            (form/create nil (constantly nil))
+                            {:nav/params {:route-params {:file-id    (:file/id file-data)
+                                                         :project-id project-id}}})
+          file-opts {:nav/params {:route-params {:project-id project-id}}}]
+      (fn [_file cb]
+        [comp/form {:form         form
+                    :disabled     (res/requesting? artifacts)
+                    :on-submitted (fn [vow]
+                                    (v/peek vow
+                                            (fn [_]
+                                              (res/request! files file-opts)
+                                              (when cb (cb nil)))
+                                            nil))}
+         [in/input (forms/with-attrs {:label "Version name"}
+                                     form
+                                     [:version/name])]
+         [in/uploader (-> {:label    "File"
+                           :resource artifacts
+                           :display  (if-let [filename (get-in @form [:artifact/details :artifact/filename])]
+                                       filename
+                                       "Select file…")}
+                          (forms/with-attrs form [:artifact/details]))]]))))
 
-(defn ^:private track-list [files store *file *artifacts cb]
-  [:div
-   [:button.button.is-white "New track"]
-   [:p "Tracks"]
-   [:ul
-    (for [file files]
-      ^{:key (:file/id file)}
-      [:li
-       [:span (:file/name file) " - " (:version/name file)]
-       [:button.button.is-white
-        {:on-click (clicker store
-                            "Upload new version"
-                            [version-form file *file *artifacts cb])}
-        "New version"]])]])
+(defmethod ig/init-key ::file-form [_ {:keys [artifacts file files]}]
+  (fn [project-id _cb]
+    (let [form (vres/create ::file
+                            file
+                            (form/create nil (constantly nil))
+                            {:nav/params {:route-params {:project-id project-id}}})
+          file-opts {:nav/params {:route-params {:project-id project-id}}}]
+      (fn [_project-id cb]
+        [comp/form {:form         form
+                    :disabled     (res/requesting? artifacts)
+                    :on-submitted (fn [vow]
+                                    (v/peek vow
+                                            (fn [e]
+                                              (res/request! files file-opts)
+                                              (when cb (cb e)))
+                                            nil))}
+         [in/input (forms/with-attrs {:label "Track name"}
+                                     form
+                                     [:file/name])]
+         [in/input (forms/with-attrs {:label "Version name"}
+                                     form
+                                     [:version/name])]
+         [in/uploader (-> {:label    "File"
+                           :resource artifacts
+                           :display  (if-let [filename (get-in @form [:artifact/details :artifact/filename])]
+                                       filename
+                                       "Select file…")}
+                          (forms/with-attrs form [:artifact/details]))]]))))
+
+(defmethod ig/init-key ::track-list [_ {:keys [file-form store version-form]}]
+  (fn [files project-id]
+    [:div
+     [:button.button.is-white
+      {:on-click (clicker store
+                          "Upload new track"
+                          [file-form project-id])}
+      "New track"]
+     [:p "Tracks"]
+     [:ul
+      (for [file files]
+        ^{:key (:file/id file)}
+        [:li
+         [:span (:file/name file) " - " (:version/name file)]
+         [:button.button.is-white
+          {:on-click (clicker store
+                              "Upload new version"
+                              [version-form file])}
+          "New version"]])]]))
 
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
@@ -106,14 +147,13 @@
      [:h2.subtitle (:project/name project)]
      [comp/with-resource [*team opts] team-view]]))
 
-(defmethod ig/init-key ::one [_ {:keys [artifacts file files project store team]}]
+(defmethod ig/init-key ::one [_ {:keys [files project team track-list]}]
   (fn [state]
     (let [project-id (get-in state [:page :route-params :project-id])
           opts {:nav/params {:route-params {:project-id project-id}}}]
       [:div
        [comp/with-resource [project opts] project-details team]
-       [comp/with-resource [files opts] track-list store file artifacts (fn [_]
-                                                                          (res/request! files opts))]])))
+       [comp/with-resource [files opts] track-list project-id]])))
 
 (defn create* [teams *projects _cb]
   (let [options (->> teams
@@ -146,5 +186,4 @@
   (fn [cb]
     [comp/with-resource [teams] create* projects (fn [result]
                                                    (res/request! all-projects)
-                                                   (when cb
-                                                     (cb result)))]))
+                                                   (when cb (cb result)))]))
