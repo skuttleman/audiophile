@@ -9,11 +9,17 @@
  [:duct/const :resources/user-details]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :user/details]
 
+ [:duct/const :resources/artifacts]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :artifacts/all]
+
  [:duct/const :resources/projects.all]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/all]
 
  [:duct/const :resources/project]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
+
+ [:duct/const :resources/project.file]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file]
 
  [:duct/const :resources/project.files]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
@@ -58,4 +64,16 @@
   :err-codes #ig/ref :ui/err-codes}
 
  :com.ben-allred.audiophile.common.services.resources.validated/opts->request
+ {}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :artifacts/all]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :artifacts/all]}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :artifacts/all]
+ {:http-client   #ig/ref :services/http
+  :method        :post
+  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.core/file-uploader
+  :route         :api/artifacts}
+
+ :com.ben-allred.audiophile.common.services.resources.core/file-uploader
  {}}

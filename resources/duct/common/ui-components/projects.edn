@@ -7,14 +7,20 @@
   :route       :api/projects}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]
- {:http-client  #ig/ref :services/http
-  :method       :get
-  :route        :api/project}
+ {:http-client #ig/ref :services/http
+  :method      :get
+  :route       :api/project}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file]
+ {:http-client   #ig/ref :services/http
+  :method        :post
+  :route         :api/project.file
+  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]
- {:http-client  #ig/ref :services/http
-  :method       :get
-  :route        :api/project.files}
+ {:http-client #ig/ref :services/http
+  :method      :get
+  :route       :api/project.files}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/create]
  {:http-client   #ig/ref :services/http
@@ -27,6 +33,9 @@
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file]}
 
  [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
  {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]}
@@ -56,6 +65,9 @@
   :teams        #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}
 
  :com.ben-allred.audiophile.common.views.roots.projects/one
- {:files   #ig/ref :resources/project.files
-  :project #ig/ref :resources/project
-  :team    #ig/ref :resources/team}}
+ {:artifacts #ig/ref :resources/artifacts
+  :files     #ig/ref :resources/project.files
+  :project   #ig/ref :resources/project
+  :file      #ig/ref :resources/project.file
+  :store     #ig/ref :services/store
+  :team      #ig/ref :resources/team}}

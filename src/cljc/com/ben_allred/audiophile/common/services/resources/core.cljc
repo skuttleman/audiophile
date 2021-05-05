@@ -1,10 +1,11 @@
 (ns com.ben-allred.audiophile.common.services.resources.core
   (:require
-    [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
+    [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.vow.core :as v]
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [com.ben-allred.vow.impl.protocol :as pv]
     [integrant.core :as ig])
   #?(:clj
@@ -62,12 +63,13 @@
 
 (defmethod ig/init-key ::file-uploader [_ _]
   (fn [{:keys [files] :as opts}]
-    #?(:clj  (assoc opts :multipart (map (fn [file]
-                                           {:part-name "files[]"
-                                            :name      (.getName file)
-                                            :content   file})
-                                         files))
-       :cljs (assoc opts :multipart-params (map (partial conj ["files[]"]) files)))))
+    (assoc opts
+           #?@(:clj  [:multipart (map (fn [file]
+                                        {:part-name "files[]"
+                                         :name      (.getName file)
+                                         :content   file})
+                                      files)]
+               :cljs [:multipart-params (map (partial conj ["files[]"]) files)]))))
 
 (defn request!
   ([resource]

@@ -24,12 +24,3 @@
 
 (defn insert [entity value]
   (entities/insert-into entity value))
-
-(defn select-project-user [entity project-id user-id]
-  (-> entity
-      (entities/select-fields #{:id})
-      (entities/select* [:and
-                         [:= :projects.id project-id]
-                         [:= :user-teams.user-id user-id]])
-      (entities/join {:table :user-teams}
-                     [:= :user-teams.team-id :projects.team-id])))

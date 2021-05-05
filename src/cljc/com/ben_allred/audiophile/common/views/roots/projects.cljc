@@ -6,12 +6,14 @@
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
+    [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
+    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.common.views.components.input-fields.dropdown :as dd]
-    [com.ben-allred.vow.core :as v]
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [integrant.core :as ig]))
 
 (def ^:private validator
@@ -49,19 +51,69 @@
             "Details"]])]
        [:p "You don't have any projects. Why not create one?"])]))
 
-(defn ^:private project-details [project team]
+(defn ^:private clicker [store title view]
+  (fn [_]
+    (ui-store/dispatch! store
+                        (actions/modal! [:h2.subtitle title]
+                                        view))))
+
+(defmethod vres/internal->remote ::create
+  [_ data]
+  (merge data (:artifact/details data)))
+
+(defn ^:private version-form [file *file _*artifacts _refresh-list _close-modal]
+  (let [form (vres/create ::create
+                          *file
+                          (form/create nil (constantly nil))
+                          {:nav/params {:route-params {:file-id    (:file/id file)
+                                                       :project-id (:file/project-id file)}}})]
+    (fn [_file _*file *artifacts refresh-list close-modal]
+      [comp/form {:form         form
+                  :disabled     (res/requesting? *artifacts)
+                  :on-submitted (fn [vow]
+                                  (v/peek vow (juxt close-modal refresh-list)))}
+       [in/input (forms/with-attrs {:label "Name"}
+                                   form
+                                   [:version/name])]
+       [in/uploader (-> {:label    "File"
+                         :resource *artifacts
+                         :display (if-let [filename (get-in @form [:artifact/details :artifact/filename])]
+                                    filename
+                                    "Select file…")}
+                        (forms/with-attrs form [:artifact/details]))]])))
+
+(defn ^:private track-list [files store *file *artifacts cb]
+  [:div
+   [:button.button.is-white "New track"]
+   [:p "Tracks"]
+   [:ul
+    (for [file files]
+      ^{:key (:file/id file)}
+      [:li
+       [:span (:file/name file) " - " (:version/name file)]
+       [:button.button.is-white
+        {:on-click (clicker store
+                            "Upload new version"
+                            [version-form file *file *artifacts cb])}
+        "New version"]])]])
+
+(defn ^:private team-view [team]
+  [:h3 [:em (:team/name team)]])
+
+(defn ^:private project-details [project *team]
   (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
     [:div
-     [:h1.subtitle (:project/name project)]
-     [comp/with-resource [team opts] log/pprint]]))
+     [:h2.subtitle (:project/name project)]
+     [comp/with-resource [*team opts] team-view]]))
 
-(defmethod ig/init-key ::one [_ {:keys [files project team]}]
+(defmethod ig/init-key ::one [_ {:keys [artifacts file files project store team]}]
   (fn [state]
     (let [project-id (get-in state [:page :route-params :project-id])
           opts {:nav/params {:route-params {:project-id project-id}}}]
       [:div
        [comp/with-resource [project opts] project-details team]
-       [comp/with-resource [files opts] log/pprint]])))
+       [comp/with-resource [files opts] track-list store file artifacts (fn [_]
+                                                                          (res/request! files opts))]])))
 
 (defn create* [teams *projects _cb]
   (let [options (->> teams

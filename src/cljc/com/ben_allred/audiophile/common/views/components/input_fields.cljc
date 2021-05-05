@@ -163,18 +163,17 @@
                                                        files)))])}]
               [:button.button (-> attrs
                                   (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
+                                  (assoc :type :button)
                                   #?(:cljs (assoc :on-click (comp (fn [_]
                                                                     (some-> @file-input .click))
                                                                   dom/prevent-default))))
-               (:display attrs "Select file…")
-               [log/pprint (:value attrs)]]]]))))))
+               (:display attrs "Select file…")]]]))))))
 
 (defn uploader [{:keys [multi? on-change resource] :as attrs}]
   [file (-> attrs
             (assoc :on-change (fn [file-set]
                                 (-> resource
                                     (res/request! {:files file-set :multi? multi?})
-                                    (v/then-> log/spy)
                                     (v/then on-change))))
             (update :disabled #(or % (res/requesting? resource))))])
 

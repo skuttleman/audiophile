@@ -2,6 +2,8 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.string :as string]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids])
   (:import
     (java.io File)))
@@ -51,26 +53,26 @@
 
 (defmulti spec
           "returns a spec and conformed data for a validating a request for a route. defaults to `nil`."
-          identity)
+          (fn [handler _] handler))
 (defmethod spec :default
-  [_])
+  [_ _])
 
 (defmethod spec [:post :api/project.file]
-  [request]
+  [_ request]
   [::file-version-new (get-in request [:body :data])])
 
 (defmethod spec [:post :api/project.files]
-  [request]
+  [_ request]
   [::file-new (get-in request [:body :data])])
 
 (defmethod spec [:post :api/artifacts]
-  [request]
-  [::artifact-new (get-in request [:params "files[]"])])
+  [_ request]
+  [::artifact-new (colls/force-sequential (get-in request [:params "files[]"]))])
 
 (defmethod spec [:post :api/projects]
-  [request]
+  [_ request]
   [::project-new (get-in request [:body :data])])
 
 (defmethod spec [:post :api/teams]
-  [request]
+  [_ request]
   [::team-new (get-in request [:body :data])])

@@ -16,6 +16,6 @@
    or throws a bad-request response. route specs are defined by defining a method on
    [[com.ben-allred.audiophile.api.handlers.validations.specs/spec]]"
   [handler request]
-  (if-let [[spec data] (specs/spec handler)]
+  (if-let [[spec data] (specs/spec handler request)]
     (assoc request :valid/data (check! spec data "Invalid request"))
     request))

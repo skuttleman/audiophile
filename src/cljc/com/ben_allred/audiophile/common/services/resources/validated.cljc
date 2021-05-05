@@ -3,6 +3,7 @@
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
     [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [integrant.core :as ig])
@@ -33,10 +34,12 @@
               (fn [errors]
                 (v/reject [error-k errors])))))
 
-(deftype ValidatedResource [id resource form]
+(deftype ValidatedResource [id resource form opts*]
   pres/IResource
   (request! [this opts]
-    (let [opts (assoc opts :form/value (internal->remote id @form))]
+    (let [opts (-> opts*
+                   (merge opts)
+                   (assoc :form/value (internal->remote id @form)))]
       (case (:target opts)
         :init (request* id
                         resource
@@ -90,9 +93,11 @@
 
 (defn create
   ([resource form]
-   (create :default resource form))
-  ([id resource form]
-   (->ValidatedResource id resource form)))
+   (create :default resource form nil))
+  ([resource form opts]
+   (create :default resource form opts))
+  ([id resource form opts]
+   (->ValidatedResource id resource form opts)))
 
 (defmethod ig/init-key ::opts->request [_ _]
   (fn [opts]

@@ -28,10 +28,10 @@
 
 (defmethod ig/init-key ::create-version [_ {:keys [repo]}]
   (fn [request]
-    (let [{:keys [file-id project-id]} (get-in request [:nav/route :route-params])
+    (let [{:keys [file-id]} (get-in request [:nav/route :route-params])
           user-id (get-in request [:auth/user :data :user :user/id])
           version (:valid/data request)]
-      [::http/ok (files/create-file-version repo project-id file-id version user-id)])))
+      [::http/ok (files/create-file-version repo file-id version user-id)])))
 
 (defmethod ig/init-key ::download [_ {:keys [repo]}]
   (constantly [::http/not-implemented]))

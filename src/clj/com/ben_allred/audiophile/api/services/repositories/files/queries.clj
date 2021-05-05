@@ -23,11 +23,14 @@
                      [:= :version.file-id :files.id])
       (entities/join {:table     :file-versions
                       :namespace :version
-                      :fields    #{:id :name :artifact-id}
+                      :fields    #{}
                       :alias     :fv}
                      [:and
                       [:= :fv.file-id :version.file-id]
                       [:= :fv.created-at :version.created-at]])
+      (update :select into [[:fv.id "version/id"]
+                            [:fv.name "version/name"]
+                            [:fv.artifact-id "version/artifact-id"]])
       (entities/order-by [:files.idx :asc]
                          [:version.created-at :desc])))
 
