@@ -42,6 +42,9 @@
  :com.ben-allred.audiophile.api.handlers.middleware/vector-response
  {}
 
+ :com.ben-allred.audiophile.api.handlers.middleware/with-headers
+ {}
+
  :com.ben-allred.audiophile.api.handlers.middleware/serde
  {:edn-serde     #ig/ref :serdes/edn
   :transit-serde #ig/ref :serdes/transit}

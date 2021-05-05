@@ -40,7 +40,7 @@
    (let [mime-type (serdes/mime-type serde)]
      (fn [request]
        (-> request
-           (update :headers assoc "content-type" mime-type "accept" mime-type)
+           (update :headers assoc :content-type mime-type :accept mime-type)
            (maps/update-maybe :body (partial serdes/serialize serde))
            handler
            (maps/update-maybe :body (partial serdes/deserialize serde)))))))

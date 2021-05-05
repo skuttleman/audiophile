@@ -42,21 +42,21 @@
   (fn [handler]
     (fn [request]
       (let [serde (serdes/find-serde serdes
-                                     (or (get-in request [:headers "accept"])
-                                         (get-in request [:headers "content-type"])
+                                     (or (get-in request [:headers :accept])
+                                         (get-in request [:headers :content-type])
                                          "application/edn"))
             {resp :body :as response} (-> request
                                           (maps/update-maybe :body (partial serdes/deserialize serde))
                                           handler)
             serde' (serdes/find-serde serdes
-                                      (or (get-in response [:headers "accept"])
-                                          (get-in response [:headers "content-type"])
+                                      (or (get-in response [:headers :accept])
+                                          (get-in response [:headers :content-type])
                                           "unknown/mime-type")
                                       serde)]
         (cond-> response
           (serializable? resp)
           (-> (update :body (partial serdes/serialize serde'))
-              (update-in [:headers "content-type"] #(or % (serdes/mime-type serde')))))))))
+              (update-in [:headers :content-type] #(or % (serdes/mime-type serde')))))))))
 
 (defmethod ig/init-key ::with-route [_ {:keys [nav]}]
   (fn [handler]
@@ -124,3 +124,11 @@
              (catch Throwable ex
                (log/error ex)
                err-response))))))
+
+(defmethod ig/init-key ::with-headers [_ _]
+  (fn [handler]
+    (fn [request]
+      (-> request
+          (maps/update-maybe :headers (partial maps/map-keys csk/->kebab-case-keyword))
+          handler
+          (maps/update-maybe :headers (partial maps/map-keys name))))))

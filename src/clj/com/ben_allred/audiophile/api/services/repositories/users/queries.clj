@@ -5,5 +5,4 @@
 (defn select-by [entity clause]
   (-> entity
       (update :fields (partial remove #{:mobile-number}))
-      (assoc :where clause)
-      entities/select*))
+      (entities/select* clause)))

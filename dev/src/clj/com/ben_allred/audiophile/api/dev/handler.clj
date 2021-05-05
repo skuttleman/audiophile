@@ -48,10 +48,10 @@
                              {:query-params (select-keys params #{:email :redirect-uri})}))
           ring/redirect))))
 
-(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav user-repo]}]
+(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav repo]}]
   (fn [request]
     (let [{:keys [email]} (get-in request [:nav/route :query-params])]
-      (auth/login! nav jwt-serde base-url user-repo email))))
+      (auth/login! nav jwt-serde base-url repo email))))
 
 (defn logging [app request]
   (if (or (string/starts-with? (:uri request "") "/api")

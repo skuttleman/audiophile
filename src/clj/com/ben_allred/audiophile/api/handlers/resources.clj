@@ -11,7 +11,7 @@
   (fn [{:keys [uri] :as request}]
     (some-> request
             (ring/resource-request "public")
-            (assoc-in [:headers "content-type"]
+            (assoc-in [:headers :content-type]
                       (cond
                         (string/ends-with? uri ".js") "application/javascript"
                         (string/ends-with? uri ".css") "text/css"
@@ -24,4 +24,4 @@
   (fn [_]
     [::http/ok
      (templates/html [app (ui-store/get-state store)])
-     {"content-type" "text/html"}]))
+     {:content-type "text/html"}]))

@@ -17,4 +17,5 @@
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-ex
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route]}}]
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]}}]
