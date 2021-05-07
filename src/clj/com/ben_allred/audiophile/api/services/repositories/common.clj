@@ -27,8 +27,7 @@
   (uri [_ key opts]
     (prepos/uri client key opts))
   (get [_ key opts]
-    (let [result (prepos/get client key opts)]
-      (update result :Body (partial serdes/deserialize stream-serde))))
+    (serdes/deserialize stream-serde (prepos/get client key opts)))
   (put! [_ key value opts]
     (prepos/put! client key (serdes/serialize stream-serde value) opts)))
 

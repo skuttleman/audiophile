@@ -17,11 +17,12 @@
                                   :Key    key}}))
   (put! [_ key content opts]
     (aws/invoke client {:op      :PutObject
-                        :request {:Bucket      bucket
-                                  :Key         key
-                                  :ContentType (:content-type opts)
-                                  :Metadata    (:metadata opts)
-                                  :Body        content}})))
+                        :request {:Bucket        bucket
+                                  :Key           key
+                                  :ContentType   (:content-type opts)
+                                  :ContentLength (:content-length opts)
+                                  :Metadata      (:metadata opts)
+                                  :Body          content}})))
 
 (defmethod ig/init-key ::client [_ {:keys [access-key bucket region secret-key]}]
   (let [client (aws/client {:api                  :s3
@@ -36,4 +37,4 @@
     (serialize [_ file _]
       (io/input-stream file))
     (deserialize [_ response _]
-      response)))
+      (:Body response))))

@@ -12,9 +12,9 @@
          (ring/abort! msg ::http/bad-request ex))))
 
 (defn validate!
-  "validates requests and either returns a request with conformed assoc'ed at :valid/data
-   or throws a bad-request response. route specs are defined by defining a method on
-   [[com.ben-allred.audiophile.api.handlers.validations.specs/spec]]"
+  "validates requests and either returns a request with the conformed value assoc'ed
+   at :valid/data or throws a bad-request response. route specs are defined by defining
+   a method on [[com.ben-allred.audiophile.api.handlers.validations.specs/spec]]"
   [handler request]
   (if-let [[spec data] (specs/spec handler request)]
     (assoc request :valid/data (check! spec data "Invalid request"))

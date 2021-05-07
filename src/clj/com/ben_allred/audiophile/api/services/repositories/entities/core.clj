@@ -44,10 +44,14 @@
     [(keyword (str (name (or alias table)) "." (name field)))
      (str (name (or alias namespace)) "/" (name field))]))
 
-(defn select-fields [entity field-set]
+(defn select-fields
+  "Filter fields on an entity before selection. Fields not on the entity are ignored."
+  [entity field-set]
   (update entity :fields (partial filter field-set)))
 
-(defn remove-fields [entity field-set]
+(defn remove-fields
+  "Remove fields from an entity before selection. Fields not on the entity are ignored."
+  [entity field-set]
   (update entity :fields (partial remove field-set)))
 
 (defn select*
@@ -74,7 +78,7 @@
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
 
-(defn join [query {:keys [fields] :as entity} on]
+(defn join [query {:keys [_alias fields _namespace _table] :as entity} on]
   (-> query
       (update :select into (map (->field entity)) fields)
       (update :join

@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.services.serdes.core
   (:require
-    #?@(:clj [[clj-jwt.core :as clj-jwt]
+    #?@(:clj [[buddy.sign.jwt :as jwt*]
               [clojure.java.io :as io]
               [jsonista.core :as jsonista]])
     [#?(:clj clojure.edn :cljs cljs.reader) :as edn*]
@@ -19,20 +19,57 @@
        (java.util Date)
        (org.joda.time DateTime))))
 
+(def ^:private object-mapper
+  #?(:clj     (jsonista/object-mapper
+                {:encode-key-fn keywords/str
+                 :decode-key-fn keyword})
+     :default nil))
+
+(defn edn#serialize [value]
+  (pr-str value))
+
+(defn edn#deserialize
+  ([value]
+   (edn#deserialize value nil))
+  ([value opts]
+   (u/silent!
+     (cond
+       (nil? value) nil
+       (string? value) (edn*/read-string opts value)
+       #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn*/read opts))])
+       :else (edn*/read opts value)))))
+
 (defmethod ig/init-key ::edn [_ _]
   (reify
     pserdes/ISerde
     (mime-type [_]
       "application/edn")
     (serialize [_ value _]
-      (pr-str value))
+      (edn#serialize value))
     (deserialize [_ value opts]
-      (u/silent!
-        (cond
-          (nil? value) nil
-          (string? value) (edn*/read-string opts value)
-          #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn*/read opts))])
-          :else (edn*/read opts value))))))
+      (edn#deserialize value opts))))
+
+(defn transit#serialize [value]
+  #?(:clj  (let [out (ByteArrayOutputStream. 4096)]
+             (-> out
+                 (trans/writer :json)
+                 (trans/write value))
+             (.toString out))
+     :cljs (-> :json
+               trans/writer
+               (trans/write value))))
+
+(defn transit#deserialize [value]
+  (u/silent!
+    #?(:clj  (-> value
+                 (cond->
+                   (not (instance? InputStream value))
+                   (-> .getBytes ByteArrayInputStream.))
+                 (trans/reader :json)
+                 trans/read)
+       :cljs (-> :json
+                 trans/reader
+                 (trans/read value)))))
 
 (defmethod ig/init-key ::transit [_ _]
   (reify
@@ -40,37 +77,27 @@
     (mime-type [_]
       "application/json+transit")
     (serialize [_ value _]
-      #?(:clj (let [out (ByteArrayOutputStream. 4096)]
-                (-> out
-                    (trans/writer :json)
-                    (trans/write value))
-                (.toString out))
-         :cljs (-> :json
-                   trans/writer
-                   (trans/write value))))
+      (transit#serialize value))
     (deserialize [_ value _]
-      (u/silent!
-        #?(:clj  (-> value
-                     (cond->
-                       (not (instance? InputStream value))
-                       (-> .getBytes ByteArrayInputStream.))
-                     (trans/reader :json)
-                     trans/read)
-           :cljs (-> :json
-                     trans/reader
-                     (trans/read value)))))))
+      (transit#deserialize value))))
 
-(defmethod ig/init-key ::json [_ {:keys [object-mapper]}]
+(defn json#serialize [value]
+  #?(:clj  (jsonista/write-value-as-string value object-mapper)
+     :cljs (js/JSON.stringify value)))
+
+(defn json#deserialize [value]
+  #?(:clj (jsonista/read-value value object-mapper)
+     :cljs (js/JSON.parse value)))
+
+(defmethod ig/init-key ::json [_ _]
   (reify
     pserdes/ISerde
     (mime-type [_]
       "application/json")
     (serialize [_ value _]
-      #?(:clj  (jsonista/write-value-as-string value object-mapper)
-         :cljs (js/JSON.stringify value)))
+      (json#serialize value))
     (deserialize [_ value _]
-      #?(:clj (jsonista/read-value value object-mapper)
-         :cljs (js/JSON.parse value)))))
+      (json#deserialize value))))
 
 (defmethod ig/init-key ::urlencode [_ _]
   (reify
@@ -82,7 +109,7 @@
     (deserialize [_ value _]
       (uri/split-query value))))
 
-(defmethod ig/init-key ::jwt [_ {:keys [algo data-serde expiration secret]}]
+(defmethod ig/init-key ::jwt [_ {:keys [data-serde expiration secret]}]
   (reify
     pserdes/ISerde
     (serialize [_ payload opts]
@@ -96,22 +123,13 @@
                            Date/from
                            .getTime
                            DateTime.)}
-                clj-jwt/jwt
-                (clj-jwt/sign algo secret)
-                clj-jwt/to-str))))
+                (jwt*/sign secret)))))
     (deserialize [_ token opts]
       #?(:clj
           (u/silent!
-            (some-> (let [jwt (clj-jwt/str->jwt token)]
-                      (when (clj-jwt/verify jwt algo secret)
-                        jwt))
-                    :claims
+            (some-> token
+                    (jwt*/unsign secret)
                     (update :data (partial pserdes/deserialize data-serde) opts)))))))
-
-(defmethod ig/init-key ::object-mapper [_ _]
-  #?(:clj (jsonista/object-mapper
-            {:encode-key-fn keywords/str
-             :decode-key-fn keyword})))
 
 (defn serialize
   ([serde value]

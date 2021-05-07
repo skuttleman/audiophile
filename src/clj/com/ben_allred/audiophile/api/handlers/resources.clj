@@ -5,6 +5,8 @@
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.http :as http]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::assets [_ _]
@@ -21,7 +23,8 @@
   (constantly [::http/ok {:a :ok}]))
 
 (defmethod ig/init-key ::ui [_ {:keys [store app]}]
-  (fn [_]
+  (fn [request]
     [::http/ok
-     (templates/html [app (ui-store/get-state store)])
+     (templates/html [app (maps/assoc-maybe (ui-store/get-state store)
+                                            :auth/user (:auth/user request))])
      {:content-type "text/html"}]))

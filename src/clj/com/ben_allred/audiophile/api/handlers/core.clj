@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.api.handlers.core
   (:require
     [clojure.string :as string]
+    [com.ben-allred.audiophile.api.handlers.validations.core :as validations]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.api.handlers.validations.core :as validations]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::router [_ route-table]

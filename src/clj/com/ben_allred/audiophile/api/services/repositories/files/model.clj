@@ -8,7 +8,7 @@
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
 
-(defmacro ^:private with-unexceptional [fut & body]
+(defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]
      (try (let [result# (do ~@body)]
             @future#
@@ -47,7 +47,7 @@
                              :name        (:version/name file)
                              :created-by  user-id})
       (->> (repos/execute! executor)))
-  (repos/execute! executor (qfiles/select-one files file-id)))
+  (colls/only! (repos/execute! executor (qfiles/select-one files file-id))))
 
 (defn create-artifact
   "Save an artifact to the repository and upload the content to the kv store.
@@ -55,16 +55,17 @@
   [repo artifact user-id]
   (repos/transact! repo (fn [executor {store :store/kv :entity/keys [artifacts]}]
                           (let [key (str "artifacts/" (uuids/random))]
-                            (with-unexceptional
+                            (with-async
                               (repos/put! store
                                           key
                                           (:tempfile artifact)
-                                          {:content-type (:content-type artifact)
-                                           :metadata     {:filename (:filename artifact)}})
+                                          {:content-type   (:content-type artifact)
+                                           :content-length (:size artifact)
+                                           :metadata       {:filename (:filename artifact)}})
                               {:artifact/id       (-> artifact
                                                       (select-keys #{:content-type :filename})
                                                       (assoc :uri (repos/uri store key)
-                                                             :content-size (:size artifact)
+                                                             :content-length (:size artifact)
                                                              :created-by user-id)
                                                       (->> (entities/insert-into artifacts))
                                                       (->> (repos/execute! executor))
@@ -105,9 +106,9 @@
   (repos/transact! repo
                    (fn [executor {:entity/keys [files file-versions projects]}]
                      (access-file! executor projects file-id user-id)
-                     (->> (create-version* executor
-                                           files
-                                           file-versions
-                                           version
-                                           user-id
-                                           file-id)))))
+                     (create-version* executor
+                                      files
+                                      file-versions
+                                      version
+                                      user-id
+                                      file-id))))

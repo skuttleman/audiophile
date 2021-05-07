@@ -17,7 +17,7 @@
             handler (::handlers/app system)]
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}
-                                 (ihttp/login system {:user {:user/id :user-id}})
+                                 (ihttp/login system {:user/id :user-id})
                                  (ihttp/get system :api/ws {:query-params {:content-type mime-type
                                                                            :accept       mime-type}})
                                  ihttp/as-ws

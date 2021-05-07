@@ -1,19 +1,13 @@
 (ns com.ben-allred.audiophile.api.dev.handler
   (:require
-    [clojure.edn :as edn*]
     [clojure.java.io :as io]
     [clojure.java.shell :as sh]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.api.handlers.auth :as auth]
+    [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig])
-  (:import
-    (java.nio.file Files LinkOption)
-    (java.nio.file.attribute BasicFileAttributes)
-    (java.util Date)))
+    [integrant.core :as ig]))
 
 (defmethod ig/init-key ::s3-client [_ _]
   (reify
@@ -21,37 +15,26 @@
     (uri [_ key _]
       (str "local://target/" key))
     (get [_ key _]
-      (Thread/sleep 1000)
-      (let [file (io/file (str "target/" key ".dat"))
-            attrs (when (.exists file)
-                    (Files/readAttributes (.toPath file) BasicFileAttributes (make-array LinkOption 0)))]
-        (if attrs
-          (assoc (edn*/read-string (slurp (str "target/" key ".edn")))
-                 :LastModified (Date/from (.toInstant (.creationTime attrs)))
-                 :Body (io/input-stream file))
+      (let [file (io/file (str "target/" key ".dat"))]
+        (if (.exists file)
+          (io/input-stream file)
           (throw (ex-info "could not stub S3Client#get" {:key key})))))
     (put! [_ key value opts]
-      (Thread/sleep 1000)
       (sh/sh "mkdir" "-p" "target/artifacts")
       (io/copy value (io/file (str "target/" key ".dat")))
+      (.close value)
       (spit (str "target/" key ".edn")
             (pr-str {:ContentType   (:content-type opts)
-                     :Metadata      (update (:metadata opts) :size str)
-                     :ContentLength (get-in opts [:metadata :size])})))))
+                     :Metadata      (:metadata opts)
+                     :ContentLength (:content-length opts)})))))
 
-(defmethod ig/init-key ::login [_ {:keys [base-url nav]}]
-  (fn [request]
-    (let [params (get-in request [:nav/route :query-params])]
-      (-> base-url
-          (str (nav/path-for nav
-                             :auth/callback
-                             {:query-params (select-keys params #{:email :redirect-uri})}))
-          ring/redirect))))
-
-(defmethod ig/init-key ::callback [_ {:keys [base-url jwt-serde nav repo]}]
-  (fn [request]
-    (let [{:keys [email]} (get-in request [:nav/route :query-params])]
-      (auth/login! nav jwt-serde base-url repo email))))
+(defmethod ig/init-key ::oauth [_ {:keys [base-url nav]}]
+  (reify
+    pauth/IOAuthProvider
+    (-redirect-uri [_ {:keys [email]}]
+      (str base-url (nav/path-for nav :auth/callback {:query-params {:mock-email email}})))
+    (-profile [_ opts]
+      {:email (:mock-email opts)})))
 
 (defn logging [app request]
   (if (or (string/starts-with? (:uri request "") "/api")
@@ -63,5 +46,5 @@
   (fn [request]
     (try (logging app request)
          (catch Throwable ex
-           (log/error ex "[DEV] uncaught exception!")
+           (log/error ex "[DEV] uncaught exception!" request)
            {:status 500}))))

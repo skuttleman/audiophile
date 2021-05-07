@@ -41,3 +41,6 @@
                           {:timeout ms
                            :ch      ch})))
         val))))
+
+(defn op-set [[op & args]]
+  [op (set args)])

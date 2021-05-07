@@ -2,7 +2,6 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
-    [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
@@ -46,7 +45,7 @@
                                          (get-in request [:headers :content-type])
                                          "application/edn"))
             {resp :body :as response} (-> request
-                                          (maps/update-maybe :body (partial serdes/deserialize serde))
+                                          (cond-> serde (maps/update-maybe :body (partial serdes/deserialize serde)))
                                           handler)
             serde' (serdes/find-serde serdes
                                       (or (get-in response [:headers :accept])
@@ -54,7 +53,7 @@
                                           "unknown/mime-type")
                                       serde)]
         (cond-> response
-          (serializable? resp)
+          (and serde' (serializable? resp))
           (-> (update :body (partial serdes/serialize serde'))
               (update-in [:headers :content-type] #(or % (serdes/mime-type serde')))))))))
 
@@ -101,11 +100,10 @@
         (handler request)))))
 
 (defmethod ig/init-key ::with-auth [_ {:keys [jwt-serde]}]
-  "parses the auth-token on the request"
   (fn [handler]
     (fn [request]
       (let [jwt (get-in request [:cookies "auth-token" :value])
-            user (serdes/deserialize jwt-serde jwt)]
+            user (:data (serdes/deserialize jwt-serde jwt))]
         (-> request
             (maps/assoc-maybe :auth/user user)
             handler)))))

@@ -51,7 +51,7 @@
 
 (defmethod ig/init-key ::->handler [_ {:keys [heartbeat-int-ms pubsub serdes]}]
   (fn [request channel]
-    (let [user-id (get-in request [:auth/user :data :user :user/id])
+    (let [user-id (get-in request [:auth/user :user/id])
           params (get-in request [:nav/route :query-params])
           deserializer (serdes/find-serde! serdes
                                            (or (:content-type params)

@@ -1,9 +1,9 @@
 {:paths   ["resources" "src/clj" "src/cljc" "src/cljs" "classes"]
  :deps    {bidi/bidi                           {:mvn/version "2.1.6"
                                                 :exclusions  [ring/ring-core]}
+           buddy/buddy-sign                    {:mvn/version "3.4.1"}
            camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}
            clj-http/clj-http                   {:mvn/version "3.9.1"}
-           clj-jwt/clj-jwt                     {:mvn/version "0.1.1"}
            com.ben-allred/collaj               {:mvn/version "0.8.0"}
            com.ben-allred/formation            {:mvn/version "0.6.2"
                                                 :exclusions  [nrepl/nrepl]}

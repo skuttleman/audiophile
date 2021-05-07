@@ -24,10 +24,7 @@
  {}
 
  :com.ben-allred.audiophile.common.services.serdes.core/json
- {:object-mapper #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/object-mapper}
-
- :com.ben-allred.audiophile.common.services.serdes.core/urlencode
  {}
 
- :com.ben-allred.audiophile.common.services.serdes.core/object-mapper
+ :com.ben-allred.audiophile.common.services.serdes.core/urlencode
  {}}

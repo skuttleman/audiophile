@@ -1,11 +1,13 @@
 (ns test.utils.mocks
-  #?(:clj
-     (:import
-       (clojure.lang IAtom IDeref))))
+  (:require
+    [com.ben-allred.audiophile.common.utils.logger :as log])
+  (:import
+    (clojure.lang IAtom IDeref)))
 
 (defprotocol IMock
   (init! [this] "set all mock behavior to initial behavior and reset calls")
-  (-set-mock! [this method f-or-val] "update an individual mock"))
+  (-set-mock! [this method f-or-val] "update an individual mock")
+  (-get-mock [this method] "return the current mock (if any) for a method"))
 
 (defn ^:private ->method [method f state n]
   (let [args (into [] (repeatedly n gensym))]
@@ -46,8 +48,10 @@
                                   sym))
                           (let [[this method val] (repeatedly gensym)]
                             (list '-set-mock! [this method val]
-                                  (list `swap! state `update :mocks `assoc method val)
-                                  this)))))]
+                                  (list `swap! state `update :mocks `assoc method val)))
+                          (let [[this method] (repeatedly gensym)]
+                            (list '-get-mock [this method]
+                                  (list `get-in (list `deref state) [:mocks method]))))))]
      `(let [~state (atom {:mocks ~defaults})]
         ~mock))))
 
@@ -55,10 +59,24 @@
   (satisfies? IMock x))
 
 (defn set-mock! [mock method f-or-val]
-  (-set-mock! mock method (if (fn? f-or-val) f-or-val (constantly f-or-val))))
+  (-set-mock! mock method (if (fn? f-or-val) f-or-val (constantly f-or-val)))
+  mock)
 
 (defn remove-mock! [mock method]
-  (-set-mock! mock method nil))
+  (-set-mock! mock method nil)
+  mock)
 
 (defn calls [mock method]
   (get @mock method))
+
+(defn use! [mock method & vals]
+  (when (seq vals)
+    (let [results (atom vals)
+          curr (-get-mock mock method)]
+      (-set-mock! mock method (fn [& _]
+                                (let [result (first @results)]
+                                  (when (empty? (swap! results rest))
+                                    (-set-mock! mock method curr))
+                                  (cond-> result
+                                    (instance? Throwable result) throw))))))
+  mock)

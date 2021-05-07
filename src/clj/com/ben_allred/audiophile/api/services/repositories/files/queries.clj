@@ -42,6 +42,9 @@
                          [:version.created-at :desc])))
 
 (defn insert [entity file]
-  (entities/insert-into entity (assoc file :idx (-> entity
-                                                    (select-by [:= :files.project-id (:project-id file)])
-                                                    (assoc :select [(sql/max :idx)])))))
+  (entities/insert-into entity
+                        (assoc file
+                               :idx (sql/coalesce (-> entity
+                                                      (select-by [:= :files.project-id (:project-id file)])
+                                                      (assoc :select [(sql/max :idx)]))
+                                                  0))))

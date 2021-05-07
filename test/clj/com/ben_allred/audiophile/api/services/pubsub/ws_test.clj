@@ -21,7 +21,7 @@
                                                                 [:serialized value])
                                                               (deserialize [_ value _]
                                                                 (second value)))}})
-        request {:auth/user {:data {:user {:user/id ::user-id}}}
+        request {:auth/user {:user/id ::user-id}
                  :nav/route {:query-params {:accept "foo/bar"}}}
         mock (mocks/->mock (reify pws/IChannel
                              (open? [_] ::open?)

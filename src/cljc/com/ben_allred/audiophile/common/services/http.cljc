@@ -98,7 +98,7 @@
       pres/IResource
       (request! [_ request]
         (let [serde (find-serde (:headers request) serdes)
-              mime-type (serdes/mime-type serde)
+              mime-type (when serde (serdes/mime-type serde))
               body (:body request)]
           (-> request
               (cond->
@@ -114,7 +114,7 @@
                 (and serde body)
                 (update :body (partial serdes/serialize serde)))
               (->> (pres/request! http-client))
-              (v/then-> (deserialize* serde serdes))
+              (v/then-> (cond-> serde (deserialize* serde serdes)))
               (v/then (response* (:response? request))
                       (comp v/reject
                             (response* (:response? request))))))))))

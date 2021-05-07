@@ -22,5 +22,5 @@
       {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
       [:div.layout--inset
        [comp/with-resource [user-resource {:spinner/size :large}] root store components-table state]]]
-     [toasts (:toasts state)]
-     [modals (:modals state)]]))
+     [modals (:modals state)]
+     [toasts (:toasts state)]]))

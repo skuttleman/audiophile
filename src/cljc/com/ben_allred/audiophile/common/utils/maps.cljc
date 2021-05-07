@@ -81,18 +81,14 @@
 
 (defmacro ->m
   "Compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol.
-   Also allows vectors of key/value pairs. Optionally handles a map literal as first arg.
+   Optional tries to add any other value on to the returned map via conj.
   (->m foo bar [baz :also]) => {:foo foo :bar bar baz :also}"
-  [m? & kvs]
-  (let [[m kvs] (if (map? m?)
-                  [m? kvs]
-                  [{} (cons m? kvs)])]
-    (loop [m (transient m) [x :as kvs] kvs]
-      (cond
-        (empty? kvs) (persistent! m)
-        (symbol? x) (recur (assoc! m (keyword x) x) (next kvs))
-        (or (map-entry? x) (vector? x)) (recur (conj! m x) (next kvs))
-        :else (throw (ex-info "must pass symbols, map entries, or vector tuples" {:bad-value x}))))))
+  [& kvs]
+  (loop [m (transient {}) [x :as kvs] kvs]
+    (cond
+      (empty? kvs) (persistent! m)
+      (symbol? x) (recur (assoc! m (keyword x) x) (next kvs))
+      :else (recur (conj! m x) (next kvs)))))
 
 (defn extract-keys
   "Takes a map and a sequence of keys and returns a vector with a map

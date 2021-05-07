@@ -4,12 +4,3 @@
   (mime-type [_])
   (serialize [this value opts])
   (deserialize [this value opts]))
-
-(extend-protocol ISerde
-  nil
-  (mime-type [_]
-    nil)
-  (serialize [_ value _]
-    value)
-  (deserialize [_ value _]
-    value))

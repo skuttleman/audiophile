@@ -15,6 +15,9 @@
 (defn max [field]
   (sql*/call :max field))
 
+(defn coalesce [& args]
+  (apply sql*/call :coalesce args))
+
 (defn format
   ([query]
    (format query nil))

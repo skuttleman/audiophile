@@ -5,11 +5,7 @@
    "db/migrations"}]
 
  :duct.profile/dev
- {[:duct/const :routes/table]
-  ^:promote {[:get :auth/login]    #ig/ref :com.ben-allred.audiophile.api.dev.handler/login
-             [:get :auth/callback] #ig/ref :com.ben-allred.audiophile.api.dev.handler/callback}
-
-  [:duct/const :api/handler]
+ {[:duct/const :api/handler]
   #ig/ref :com.ben-allred.audiophile.api.dev.handler/app
 
   [:duct/const :services/s3-client]
@@ -22,16 +18,12 @@
   :com.ben-allred.audiophile.api.dev.handler/app
   {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}
 
-  ;; components
-  :com.ben-allred.audiophile.api.dev.handler/login
-  {:base-url #ig/ref :env/base-url
-   :nav      #ig/ref :services/nav}
-
-  :com.ben-allred.audiophile.api.dev.handler/callback
-  {:base-url  #ig/ref :env/base-url
-   :jwt-serde #ig/ref :serdes/jwt
-   :nav       #ig/ref :services/nav
-   :repo      #ig/ref :services/repositories}
+  [:duct/const :services/oauth]
+  #ig/ref :com.ben-allred.audiophile.api.dev.handler/oauth
 
   :com.ben-allred.audiophile.api.dev.handler/s3-client
-  {}}}
+  {}
+
+  :com.ben-allred.audiophile.api.dev.handler/oauth
+  {:nav      #ig/ref :services/nav
+   :base-url #ig/ref :env/base-url}}}

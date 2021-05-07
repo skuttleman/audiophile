@@ -19,7 +19,7 @@
             handler (-> (::handlers/app system)
                         (ihttp/with-serde system :serdes/edn))
             response (-> {}
-                         (ihttp/login system {:user user})
+                         (ihttp/login system user)
                          (ihttp/get system :auth/details)
                          handler)]
         (testing "returns the user details"
@@ -55,7 +55,7 @@
               (is (= (dissoc user :user/mobile-number :user/created-at)
                      (-> jwt-serde
                          (serdes/deserialize (get-in cookies ["auth-token" :value]))
-                         (get-in [:data :user])
+                         :data
                          (dissoc :user/created-at)))))))
 
         (testing "when the auth provider interactions fail"

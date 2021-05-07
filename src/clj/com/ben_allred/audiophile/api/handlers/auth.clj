@@ -54,16 +54,17 @@
     (redirect nav
               (nav/path-for nav :ui/home)
               base-url
-              (serdes/serialize jwt-serde {:user user}))
+              (serdes/serialize jwt-serde user))
     (logout! nav base-url :login-failed)))
 
 (defmethod ig/init-key ::login [_ {:keys [nav oauth]}]
-  (fn [_]
-    (ring/redirect (or (first (unsafe! "generating a redirect url to the auth provider"
-                                (auth/redirect-uri oauth)))
-                       (nav/path-for nav
-                                     :ui/home
-                                     {:query-params {:error-msg :login-failed}})))))
+  (fn [request]
+    (let [params (get-in request [:nav/route :query-params])]
+      (ring/redirect (or (first (unsafe! "generating a redirect url to the auth provider"
+                                  (auth/redirect-uri oauth params)))
+                         (nav/path-for nav
+                                       :ui/home
+                                       {:query-params {:error-msg :login-failed}}))))))
 
 (defmethod ig/init-key ::logout [_ {:keys [base-url nav]}]
   (fn [_]
@@ -78,6 +79,6 @@
 
 (defmethod ig/init-key ::details [_ _]
   (fn [request]
-    (if-let [user (get-in request [:auth/user :data :user])]
+    (if-let [user (:auth/user request)]
       [::http/ok {:data user}]
       (token->cookie {:status ::http/no-content} "" {:max-age 0}))))
