@@ -10,17 +10,20 @@
      (:import
        (clojure.lang IDeref))))
 
-(defn ^:private ->toast [store level f]
-  (fn [x]
-    (when-let [body (when f (f x))]
-      (ui-store/dispatch! store (actions/toast! level body)))))
+(defn ^:private ->toast [store level f linger-ms lag-ms]
+  (fn [result]
+    (when-let [body (when f (f result))]
+      (let [action (if (and linger-ms lag-ms)
+                     (actions/toast! level body linger-ms lag-ms)
+                     (actions/toast! level body))]
+        (ui-store/dispatch! store action)))))
 
-(deftype ToastResource [resource store success-fn error-fn]
+(deftype ToastResource [resource store success-fn error-fn linger-ms lag-ms]
   pres/IResource
   (request! [_ opts]
     (-> (pres/request! resource opts)
-        (v/peek (->toast store :success success-fn)
-                (->toast store :error error-fn))))
+        (v/peek (->toast store :success success-fn linger-ms lag-ms)
+                (->toast store :error error-fn linger-ms lag-ms))))
   (status [_]
     (pres/status resource))
 
@@ -33,7 +36,7 @@
     @resource))
 
 (defmethod ig/init-key ::resource [_ {:keys [error-fn resource store success-fn]}]
-  (->ToastResource resource store success-fn error-fn))
+  (->ToastResource resource store success-fn error-fn nil nil))
 
 (defmethod ig/init-key ::result-fn [_ {:keys [msg]}]
   (constantly msg))

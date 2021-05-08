@@ -1,5 +1,7 @@
 (ns com.ben-allred.audiophile.common.utils.maps
-  #?(:cljs (:require-macros com.ben-allred.audiophile.common.utils.maps))
+  #?(:cljs
+     (:require-macros
+       com.ben-allred.audiophile.common.utils.maps))
   (:refer-clojure :exclude [flatten])
   (:require
     [medley.core :as medley]))

@@ -157,6 +157,3 @@
                     (ex-info "kaboom!" {}))
         (testing "fails"
           (is (thrown? Throwable (teams/create! tx {} user-id))))))))
-
-(comment
-  (clojure.test/run-tests))

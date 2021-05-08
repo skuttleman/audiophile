@@ -32,12 +32,14 @@
                             :success (resolve value)
                             :error (reject error)
                             (let [watch-key (gensym)]
-                              (add-watch state watch-key (fn [_ _ _ {:keys [status value error]}]
-                                                           (when (case status
-                                                                   :success [(resolve value)]
-                                                                   :error [(reject error)]
-                                                                   nil)
-                                                             (remove-watch state watch-key))))))))
+                              (add-watch state
+                                         watch-key
+                                         (fn [_ _ _ {:keys [status value error]}]
+                                           (when (case status
+                                                   :success [(resolve value)]
+                                                   :error [(reject error)]
+                                                   nil)
+                                             (remove-watch state watch-key))))))))
               on-success
               on-error)))
 

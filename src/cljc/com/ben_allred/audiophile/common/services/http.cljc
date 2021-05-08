@@ -129,14 +129,17 @@
             (cond-> route (assoc :url (nav/path-for nav route params)))
             (->> (pres/request! http-client)))))))
 
-(defmethod ig/init-key ::client [_ {:keys [middlewares]}]
+(defn create [->request middlewares]
   (reduce (fn [client middleware]
             (middleware client))
           (reify
             pres/IResource
             (request! [_ request]
-              (client/request request)))
+              (->request request)))
           middlewares))
+
+(defmethod ig/init-key ::client [_ {:keys [middlewares]}]
+  (create client/request middlewares))
 
 (defmethod ig/init-key ::stub [_ {:keys [result result-fn]}]
   (reify

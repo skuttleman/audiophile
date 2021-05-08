@@ -58,17 +58,17 @@
 (defn serialize* [routes page opts]
   (let [{:keys [query-params]} opts
         qp (uri/join-query query-params)]
-    (-> (apply bidi/path-for
-               routes
-               page
-               (mapcat (fn [[k v]]
-                         [k (str (cond-> v
-                                   (keyword? v) name))])
-                       (-> opts
-                           (assoc :handler page)
-                           internal->params
-                           :route-params)))
-        (cond-> (seq qp) (str "?" qp)))))
+    (cond-> (apply bidi/path-for
+                   routes
+                   page
+                   (mapcat (fn [[k v]]
+                             [k (str (cond-> v
+                                       (keyword? v) name))])
+                           (-> opts
+                               (assoc :handler page)
+                               internal->params
+                               :route-params)))
+      (seq qp) (str "?" qp))))
 
 (defn deserialize* [routes path]
   (let [[path' query-string] (string/split path #"\?")

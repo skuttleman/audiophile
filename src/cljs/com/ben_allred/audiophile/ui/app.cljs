@@ -30,15 +30,6 @@
             ui-store/get-state
             (dissoc :internal/resource-state))])
 
-(defmethod ig/init-key :duct/const [_ component]
-  component)
-
-(defmethod ig/init-key :duct.core/project-ns [_ ns]
-  ns)
-
-(defmethod ig/init-key :duct.core/environment [_ env]
-  env)
-
 (def ^:private config
   (cfg/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
 

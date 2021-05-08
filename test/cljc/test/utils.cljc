@@ -1,16 +1,25 @@
 (ns test.utils
+  #?(:cljs
+     (:require-macros
+       test.utils))
   (:require
     [clojure.core.async :as async]
     [com.ben-allred.vow.core :as v]))
 
-(defmacro async [cb ch]
-  `(let [~cb (constantly nil)]
-     (async/<!! ~ch)))
+(defmacro async [cb body]
+  (if (:ns &env)
+    `(clojure.test/async ~cb ~body)
+    (cons `do (butlast (rest body)))))
 
 (defn prom->ch [prom]
   (let [ch (async/promise-chan)]
     (v/peek prom #(async/go (async/>! ch %)))
     ch))
+
+(defmacro <p! [prom]
+  (if (:ns &env)
+    `(async/<! (prom->ch ~prom))
+    `(async/<!! (prom->ch ~prom))))
 
 (defn ^:private <!* [ch ms]
   (async/go

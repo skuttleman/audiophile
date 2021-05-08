@@ -1,13 +1,18 @@
 (ns test.utils.mocks
+  #?(:cljs
+     (:require-macros
+       test.utils.mocks))
   (:require
     [com.ben-allred.audiophile.common.utils.logger :as log])
-  (:import
-    (clojure.lang IAtom IDeref)))
+  #?(:clj
+     (:import
+       (clojure.lang IDeref))))
 
 (defprotocol IMock
   (init! [this] "set all mock behavior to initial behavior and reset calls")
   (-set-mock! [this method f-or-val] "update an individual mock")
-  (-get-mock [this method] "return the current mock (if any) for a method"))
+  (-get-mock [this method] "return the current mock (if any) for a method")
+  (-calls [this]))
 
 (defn ^:private ->method [method f state n]
   (let [args (into [] (repeatedly n gensym))]
@@ -38,10 +43,7 @@
                            x))
                        reify)
                   (concat
-                    (list `IDeref
-                          (list deref '[_]
-                                (list :calls (list `deref state)))
-                          `IMock
+                    (list `IMock
                           (let [sym (gensym)]
                             (list 'init! [sym]
                                   (list `swap! state `assoc :mocks defaults :calls nil)
@@ -51,7 +53,9 @@
                                   (list `swap! state `update :mocks `assoc method val)))
                           (let [[this method] (repeatedly gensym)]
                             (list '-get-mock [this method]
-                                  (list `get-in (list `deref state) [:mocks method]))))))]
+                                  (list `get-in (list `deref state) [:mocks method])))
+                          (list '-calls '[_]
+                                (list :calls (list `deref state))))))]
      `(let [~state (atom {:mocks ~defaults})]
         ~mock))))
 
@@ -67,7 +71,7 @@
   mock)
 
 (defn calls [mock method]
-  (get @mock method))
+  (get (-calls mock) method))
 
 (defn use! [mock method & vals]
   (when (seq vals)
@@ -78,5 +82,5 @@
                                   (when (empty? (swap! results rest))
                                     (-set-mock! mock method curr))
                                   (cond-> result
-                                    (instance? Throwable result) throw))))))
+                                    (instance? #?(:cljs js/Error :default Throwable) result) throw))))))
   mock)

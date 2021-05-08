@@ -23,7 +23,7 @@
        (init! [_]
          (reset! state init-state))
        (-set-stub [_ f]
-         (swap! assoc update :f f))
+         (swap! state assoc :f f))
        (calls [_]
          (:calls @state))
 

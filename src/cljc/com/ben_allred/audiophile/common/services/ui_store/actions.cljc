@@ -2,30 +2,37 @@
   (:require
     [clojure.core.async :as async]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps])
   #?(:clj
      (:import
        (java.util Date))))
 
-(defn remove-toast! [id]
-  (fn [store]
-    (async/go
-      (ui-store/dispatch! store [:toasts/hide! {:id id}])
-      (async/<! (async/timeout 1000))
-      (ui-store/dispatch! store [:toasts/remove! {:id id}]))))
+(defn remove-toast!
+  ([id]
+   (remove-toast! id 1000))
+  ([id lag-ms]
+   (fn [store]
+     (async/go
+       (ui-store/dispatch! store [:toasts/hide! {:id id}])
+       (async/<! (async/timeout lag-ms))
+       (ui-store/dispatch! store [:toasts/remove! {:id id}])))))
 
-(defn toast! [level body]
-  (fn [store]
-    (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))]
-      (ui-store/dispatch! store
-                          [:toasts/add! {:id    id
-                                         :level level
-                                         :body  (delay
-                                                  (async/go
-                                                    (ui-store/dispatch! store [:toasts/display! {:id id}])
-                                                    (async/<! (async/timeout 6000))
-                                                    (ui-store/dispatch! store (remove-toast! id)))
-                                                  body)}]))))
+(defn toast!
+  ([level body]
+   (toast! level body 6000 1000))
+  ([level body linger-ms lag-ms]
+   (fn [store]
+     (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))]
+       (ui-store/dispatch! store
+                           [:toasts/add! {:id    id
+                                          :level level
+                                          :body  (delay
+                                                   (async/go
+                                                     (ui-store/dispatch! store [:toasts/display! {:id id}])
+                                                     (async/<! (async/timeout linger-ms))
+                                                     (ui-store/dispatch! store (remove-toast! id lag-ms)))
+                                                   body)}])))))
 
 (defn remove-banner! [id]
   [:banners/remove! {:id id}])

@@ -12,10 +12,8 @@
   pui-store/IStore
   (get-state [_]
     (get-state))
-  (dispatch! [this action]
-    (if (fn? action)
-      (action this)
-      (dispatch action))))
+  (dispatch! [_ action]
+    (dispatch action)))
 
 (defn create-store [reducer]
   (let [{:keys [get-state dispatch]}
@@ -34,4 +32,6 @@
   (pui-store/get-state store))
 
 (defn dispatch! [store action]
-  (pui-store/dispatch! store action))
+  (if (fn? action)
+    (action store)
+    (pui-store/dispatch! store action)))

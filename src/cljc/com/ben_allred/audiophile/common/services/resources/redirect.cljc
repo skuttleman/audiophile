@@ -11,16 +11,15 @@
        (clojure.lang IDeref))))
 
 (defn ^:private ->redirect [nav page params]
-  (fn [result]
+  (fn [_]
     (when page
-      (nav/navigate! nav page params))
-    result))
+      (nav/navigate! nav page params))))
 
 (deftype RedirectResource [resource nav routes]
   pres/IResource
   (request! [_ opts]
     (-> (pres/request! resource opts)
-        (v/then (->redirect nav
+        (v/peek (->redirect nav
                             (:success/page routes)
                             (:success/params routes))
                 (->redirect nav

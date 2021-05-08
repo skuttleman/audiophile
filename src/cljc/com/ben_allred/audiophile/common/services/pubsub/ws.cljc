@@ -11,7 +11,7 @@
     [com.ben-allred.ws-client-cljc.core :as ws*]
     [integrant.core :as ig]))
 
-(defn ^:private handle-msg [store msg]
+(defn handle-msg [store msg]
   (some-> msg
           (match/match
             [msg-type event-id data] [:ws/message [msg-type {:id   event-id
@@ -22,15 +22,18 @@
             event (log/warn "unknown msg" event))
           (->> (ui-store/dispatch! store))))
 
+(defn ws-uri [nav serde base-url]
+  (let [params {:query-params {:content-type (serdes/mime-type serde)}}]
+    (-> base-url
+        str
+        uri/parse
+        (assoc :path nil :query nil :fragment nil)
+        (update :scheme {"http" "ws" "https" "wss"})
+        uri/stringify
+        (str (nav/path-for nav :api/ws params)))))
+
 (defmethod ig/init-key ::handler [_ {:keys [base-url nav reconnect-ms serde store user-details]}]
-  (let [params {:query-params {:content-type (serdes/mime-type serde)}}
-        url (-> #?(:cljs (.-location js/window) :default base-url)
-                str
-                uri/parse
-                (assoc :path nil :query nil :fragment nil)
-                (update :scheme {"http" "ws" "https" "wss"})
-                uri/stringify
-                (str (nav/path-for nav :api/ws params)))
+  (let [url (ws-uri nav serde #?(:cljs (.-location js/window) :default base-url))
         vol (volatile! nil)]
     (-> user-details
         (v/then (fn [details]
@@ -44,7 +47,7 @@
                                                :out-xform    (map (partial serdes/serialize serde))})]
                       (vreset! vol ws)
                       (async/go-loop []
-                        (when-let [msg (some-> ws async/<!)]
+                        (when-let [msg (async/<! ws)]
                           (handle-msg store msg)
                           (recur))))))))
     vol))

@@ -1,14 +1,15 @@
 (ns ^:unit com.ben-allred.audiophile.common.services.resources.multi-test
   (:require
     [clojure.core.async :as async]
-    [clojure.test :refer [are #?(:cljs async) deftest is testing]]
+    [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.multi :as multi]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.vow.core :as v]
-    [test.utils :as tu #?@(:clj [:refer [async]])])
+    [test.utils :refer [async] :as tu])
   #?(:clj
-     (:import (clojure.lang IDeref))))
+     (:import
+       (clojure.lang IDeref))))
 
 (defn ->resource [status value result]
   (reify pres/IResource
@@ -35,7 +36,7 @@
             (testing "returns expected request result"
               (is (= [:success {:res-1 :result-1
                                 :res-2 :result-2}]
-                     (async/<! (tu/prom->ch (res/request! multi))))))
+                     (tu/<p! (res/request! multi)))))
 
             (testing "has expected value"
               (is (= {:res-1 :value-1
@@ -52,10 +53,9 @@
                 multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
             (testing "does not return a result"
               (is (= [:success ::timeout]
-                     (async/<! (-> [(res/request! multi)
-                                    (v/sleep ::timeout 100)]
-                                   v/first
-                                   tu/prom->ch)))))
+                     (tu/<p! (-> [(res/request! multi)
+                                  (v/sleep ::timeout 100)]
+                                 v/first)))))
 
             (testing "has expected value"
               (is (nil? @multi)))
@@ -69,10 +69,9 @@
                 multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
             (testing "does not return a result"
               (is (= [:success ::timeout]
-                     (async/<! (-> [(res/request! multi)
-                                    (v/sleep ::timeout 100)]
-                                   v/first
-                                   tu/prom->ch)))))
+                     (tu/<p! (-> [(res/request! multi)
+                                  (v/sleep ::timeout 100)]
+                                 v/first)))))
 
             (testing "has expected value"
               (is (nil? @multi)))
@@ -85,12 +84,12 @@
                 res-2 (->resource :error :value-2 :result-2)
                 multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
             (testing "returns expected request result"
-              (is (= [:error :result-2] (async/<! (tu/prom->ch (res/request! multi))))))
+              (is (= [:error :result-2] (tu/<p! (res/request! multi)))))
 
             (testing "has expected value"
               (is (= :value-2 @multi)))
 
             (testing "is not success"
-              (is (res/error? multi)))
+              (is (res/error? multi)))))
 
-            (done)))))))
+        (done)))))

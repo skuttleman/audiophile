@@ -12,25 +12,16 @@
 
 (deftype CachedResource [state resource]
   pres/IResource
-  (request! [_ opts]
-    (if (res/requested? resource)
-      @state
-      (reset! state (res/request! resource opts))))
+  (request! [this opts]
+    (locking this
+      (or @state
+          (reset! state (res/request! resource opts)))))
   (status [_]
     (res/status resource))
 
   pv/IPromise
   (then [_ on-success on-error]
-    (let [watch-key (gensym)]
-      (v/then (v/create (fn [resolve reject]
-                          (case (res/status resource)
-                            :success (resolve @resource)
-                            :error (reject @resource)
-                            (add-watch state watch-key (fn [_ _ _ value]
-                                                         (remove-watch state watch-key)
-                                                         (resolve value))))))
-              on-success
-              on-error)))
+    (v/then resource on-success on-error))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]

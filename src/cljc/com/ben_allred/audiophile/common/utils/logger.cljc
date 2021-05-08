@@ -1,15 +1,27 @@
 (ns com.ben-allred.audiophile.common.utils.logger
   #?(:cljs
      (:require-macros
-       [com.ben-allred.audiophile.common.utils.logger]))
+       com.ben-allred.audiophile.common.utils.logger))
   (:require
-    [taoensso.timbre :as log*]
-    [clojure.pprint :as pp]))
+    [clojure.pprint :as pp]
+    [taoensso.timbre :as log*]))
 
 (def ^:const ANSI_RESET "\u001B[0m")
 (def ^:const ANSI_YELLOW "\u001B[33m")
 
 (def ^:dynamic *ctx* nil)
+
+(defn ^:private log* [form level args]
+  `(when-not (:disabled? *ctx*) ;; TBD - ctx
+     (log*/log! ~level :p ~args {:?line ~(:line (meta form))})))
+
+(defn spy* [form level expr f separator]
+  (let [sym (gensym)
+        pr (gensym)]
+    (list `let [sym expr
+                pr `(~f ~sym)]
+          (log* form level (list (str ANSI_YELLOW expr ANSI_RESET) separator pr))
+          sym)))
 
 (defmacro with-ctx [ctx & body]
   (if (:ns &env)
@@ -17,65 +29,56 @@
     `(binding [*ctx* (merge *ctx* ~ctx)]
        ~@body)))
 
+(defmacro trace [& args]
+  (log* &form :trace args))
+
+(defmacro debug [& args]
+  (log* &form :debug args))
+
+(defmacro info [& args]
+  (log* &form :info args))
+
+(defmacro warn [& args]
+  (log* &form :warn args))
+
+(defmacro error [& args]
+  (log* &form :error args))
+
+(defmacro fatal [& args]
+  (log* &form :fatal args))
+
+(defmacro report [& args]
+  (log* &form :report args))
+
+(defmacro spy
+  ([expr]
+   `(spy :info ~expr))
+  ([level expr]
+   (spy* &form level expr identity "=>")))
+
+(defmacro spy-tap
+  ([f expr]
+   `(spy-tap :info ~f ~expr))
+  ([level f expr]
+   (spy* &form level expr f (str "(\uD83C\uDF7A " f ") =>"))))
+
 (defmacro log [level line & args]
   `(when-not (:disabled? *ctx*) ;; TBD - ctx
      (log*/log! ~level :p ~args {:?line ~line})))
 
-(defmacro trace [& args]
-  `(log :trace ~(:line (meta &form)) ~@args))
-
-(defmacro debug [& args]
-  `(log :debug ~(:line (meta &form)) ~@args))
-
-(defmacro info [& args]
-  `(log :info ~(:line (meta &form)) ~@args))
-
-(defmacro warn [& args]
-  `(log :warn ~(:line (meta &form)) ~@args))
-
-(defmacro error [& args]
-  `(log :error ~(:line (meta &form)) ~@args))
-
-(defmacro fatal [& args]
-  `(log :fatal ~(:line (meta &form)) ~@args))
-
-(defmacro report [& args]
-  `(log :report ~(:line (meta &form)) ~@args))
-
-(defmacro spy
-  ([form]
-   `(let [val# ~form]
-      (log :info ~(:line (meta &form)) ~(str ANSI_YELLOW form ANSI_RESET) "=>" val#)
-      val#))
-  ([level form]
-   `(let [val# ~form]
-      (log ~level ~(:line (meta &form)) ~(str ANSI_YELLOW form ANSI_RESET) "=>" val#)
-      val#)))
-
-(defmacro spy-tap
-  ([f form]
-   `(let [val# ~form]
-      (log :info ~(:line (meta &form)) '(~f ~form) "=>" (~f val#))
-      val#))
-  ([level f form]
-   `(let [val# ~form]
-      (log ~level ~(:line (meta &form)) '(~f ~form) "=>" (~f val#))
-      val#)))
-
 (defmacro spy-on
   ([f]
-   `(fn [& args#]
-      (let [result# (apply ~f args#)]
-        (log :info ~(:line (meta &form)) (cons '~f args#) "=>" result#)
-        result#)))
+   `(spy-on :info ~f))
   ([level f]
    `(fn [& args#]
       (let [result# (apply ~f args#)]
-        (log ~level ~(:line (meta &form)) (cons '~f args#) "=>" result#)
+        (when-not (:disabled? *ctx*)
+          (log*/log! ~level :p (cons '~f args#) {:?line ~(:line (meta &form))}))
         result#))))
 
-(defn pprint [value]
-  "reagent component for displaying clojure data in the browser - debug only"
+(defn pprint
+  "Reagent component for displaying clojure data in the browser - debug only"
+  [value]
   [:pre (with-out-str (pp/pprint value))])
 
 (defn ^:private clean [data]
