@@ -4,11 +4,14 @@
     [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]))
 
 (defn ^:private has-team-clause [project-id user-id]
-  [:exists {:select [:id]
-            :from   [:projects]
-            :join   [:user-teams [:= :projects.team-id :user-teams.team-id]]
-            :where  [:and [:= :projects.id project-id]
-                     [:= :user-teams.user-id user-id]]}])
+  [:and
+   [:= :files.project-id project-id]
+   [:exists {:select [:id]
+                  :from   [:projects]
+                  :join   [:user-teams [:= :projects.team-id :user-teams.team-id]]
+                  :where  [:and
+                           [:= :projects.id :files.project-id]
+                           [:= :user-teams.user-id user-id]]}]])
 
 (defn select-by [entity clause]
   (-> entity

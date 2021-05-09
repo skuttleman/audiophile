@@ -77,17 +77,24 @@
                        [:fv.artifact-id "version/artifact-id"]}
                      (set select)))
               (is (= [:files] from))
-              (is (= [:exists {:select [:id]
-                               :from   [:projects]
-                               :join   [:user-teams [:= #{:projects.team-id :user-teams.team-id}]]
-                               :where  [:and
-                                        #{[:= #{:projects.id project-id}]
-                                          [:= #{:user-teams.user-id user-id}]}]}]
-                     (-> where
-                         (update-in [1 :join 1] tu/op-set)
-                         (update-in [1 :where 1] tu/op-set)
-                         (update-in [1 :where 2] tu/op-set)
-                         (update-in [1 :where] tu/op-set))))
+              (let [[clause & clauses] where
+                    clauses' (into {} (map (juxt tu/op-set identity)) clauses)]
+                (is (= :and clause))
+                (is (contains? clauses' [:= #{:files.project-id project-id}]))
+                (is (= [:exists {:select [:id]
+                                 :from   [:projects]
+                                 :join   [:user-teams [:= #{:projects.team-id :user-teams.team-id}]]
+                                 :where  [:and
+                                          #{[:= #{:projects.id :files.project-id}]
+                                            [:= #{:user-teams.user-id user-id}]}]}]
+                       (-> clauses'
+                           (dissoc [:= #{:files.project-id project-id}])
+                           colls/only!
+                           val
+                           (update-in [1 :join 1] tu/op-set)
+                           (update-in [1 :where 1] tu/op-set)
+                           (update-in [1 :where 2] tu/op-set)
+                           (update-in [1 :where] tu/op-set)))))
               (is (= [[{:select   #{:file-versions.file-id
                                     [(sql/max :file-versions.created-at) :created-at]}
                         :from     [:file-versions]

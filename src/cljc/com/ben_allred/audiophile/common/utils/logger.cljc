@@ -16,12 +16,11 @@
      (log*/log! ~level :p ~args {:?line ~(:line (meta form))})))
 
 (defn spy* [form level expr f separator]
-  (let [sym (gensym)
-        pr (gensym)]
-    (list `let [sym expr
-                pr `(~f ~sym)]
-          (log* form level (list (str ANSI_YELLOW expr ANSI_RESET) separator pr))
-          sym)))
+  (let [pr (gensym "pr")]
+    `(let [val# ~expr
+           ~pr (~f val#)]
+       ~(log* form level (list (str ANSI_YELLOW expr ANSI_RESET) separator pr))
+       ~pr)))
 
 (defmacro with-ctx [ctx & body]
   (if (:ns &env)
