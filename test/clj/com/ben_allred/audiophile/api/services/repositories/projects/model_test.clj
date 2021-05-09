@@ -7,18 +7,18 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [test.utils :as tu]
-    [test.utils.mocks :as mocks]
+    [test.utils.stubs :as stubs]
     [test.utils.repositories :as trepos]))
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           user-id (uuids/random)]
       (testing "when querying for projects"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:some :result}])
         (let [result (projects/query-all tx user-id)
-              [{:keys [select from where]}] (colls/only! (mocks/calls tx :execute!))]
+              [{:keys [select from where]}] (colls/only! (stubs/calls tx :execute!))]
           (testing "sends a query to the repository"
             (is (= #{[:projects.team-id "project/team-id"]
                      [:projects.name "project/name"]
@@ -43,15 +43,15 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           [project-id user-id] (repeatedly uuids/random)]
       (testing "when querying for a single project"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:some :result}])
 
         (let [result (projects/query-by-id tx project-id user-id)]
           (testing "sends a query to the repository"
-            (let [[{:keys [from select where]}] (colls/only! (mocks/calls tx :execute!))]
+            (let [[{:keys [from select where]}] (colls/only! (stubs/calls tx :execute!))]
               (is (= [:projects] from))
               (is (= #{[:projects.team-id "project/team-id"]
                        [:projects.name "project/name"]
@@ -83,16 +83,16 @@
 
 (deftest create!-test
   (testing "create!"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           [project-id user-id] (repeatedly uuids/random)]
       (testing "when creating a project"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id project-id}]
                     [{:transmogrified :value}])
         (let [result (projects/create! tx
                                        {:created-at :whenever :other :junk}
                                        user-id)
-              [[insert] [select] & more] (mocks/calls tx :execute!)]
+              [[insert] [select] & more] (stubs/calls tx :execute!)]
           (is (empty? more))
           (testing "saves to the repository"
             (is (= {:insert-into :projects
@@ -118,13 +118,13 @@
             (is (= {:transmogrified :value} result)))))
 
       (testing "when saving to the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "kaboom!" {}))
         (testing "fails"
           (is (thrown? Throwable (projects/create! tx {} user-id)))))
 
       (testing "when querying the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id project-id}]
                     (ex-info "kaboom!" {}))
         (testing "fails"

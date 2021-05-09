@@ -6,6 +6,7 @@
 
  :com.ben-allred.audiophile.common.services.http/client
  {:middlewares [#ig/ref :com.ben-allred.audiophile.common.services.http/base
+                #ig/ref :com.ben-allred.audiophile.common.services.http/with-logging
                 #ig/ref :com.ben-allred.audiophile.common.services.http/with-headers
                 #ig/ref :com.ben-allred.audiophile.common.services.http/with-serde]}
 
@@ -16,6 +17,9 @@
  {}
 
  :com.ben-allred.audiophile.common.services.http/base
+ {}
+
+ :com.ben-allred.audiophile.common.services.http/with-logging
  {:log-ctx {:id :HTTP}}
 
  :com.ben-allred.audiophile.common.services.pubsub.core/pubsub

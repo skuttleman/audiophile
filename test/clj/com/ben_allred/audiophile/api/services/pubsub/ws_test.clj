@@ -7,7 +7,7 @@
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]
-    [test.utils.mocks :as mocks]))
+    [test.utils.stubs :as stubs]))
 
 (deftest ->handler-test
   (let [pubsub (ig/init-key ::pubsub/pubsub {})
@@ -23,17 +23,17 @@
                                                                 (second value)))}})
         request {:auth/user {:user/id ::user-id}
                  :nav/route {:query-params {:accept "foo/bar"}}}
-        mock (mocks/->mock (reify pws/IChannel
+        stub (stubs/create (reify pws/IChannel
                              (open? [_] ::open?)
                              (send! [_ _])
                              (close! [_] ::close!)))]
     (testing "->handler"
-      (let [handler (->handler request mock)]
+      (let [handler (->handler request stub)]
         (testing "#on-open"
           (ws/on-open handler)
           (Thread/sleep 300)
           (testing "establishes a heartbeat"
-            (let [msgs (frequencies (map first (mocks/calls mock :send!)))]
+            (let [msgs (frequencies (map first (stubs/calls stub :send!)))]
               (is (<= 2 (get msgs [:conn/ping])))))
 
           (testing "subscribes to broadcasts"
@@ -41,7 +41,7 @@
             (let [msgs (into #{}
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
-                             (mocks/calls mock :send!))]
+                             (stubs/calls stub :send!))]
               (is (contains? msgs [:event/broadcast "event-id" {:some :event}]))))
 
           (testing "subscribes to user-level messages"
@@ -49,35 +49,35 @@
             (let [msgs (into #{}
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
-                             (mocks/calls mock :send!))]
+                             (stubs/calls stub :send!))]
               (is (contains? msgs [:event/user "event-id" {:some :event} {:user/id ::user-id}]))))
 
           (testing "is not subscribed to other topics"
-            (mocks/init! mock)
+            (stubs/init! stub)
             (ws/send-user! pubsub ::unknown "event-id" {:some :event})
             (let [msgs (into #{}
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
-                             (mocks/calls mock :send!))]
+                             (stubs/calls stub :send!))]
               (is (empty? msgs)))))
         (testing "#on-message"
           (testing "responds to keep-alive message"
             (ws/on-message handler [:serialized [:conn/ping]])
-            (let [msgs (into #{} (map first) (mocks/calls mock :send!))]
+            (let [msgs (into #{} (map first) (stubs/calls stub :send!))]
               (is (contains? msgs [:conn/pong])))))
 
         (testing "#on-close"
           (ws/on-close handler)
-          (mocks/init! mock)
-          (mocks/set-mock! mock :open? false)
+          (stubs/init! stub)
+          (stubs/set-stub! stub :open? false)
           (testing "unsubscribes from topics"
             (ws/broadcast! pubsub "event-id" {:another :event})
             (ws/send-user! pubsub ::user-id "event-id" {:another :event})
-            (is (empty? (mocks/calls mock :send!))))
+            (is (empty? (stubs/calls stub :send!))))
 
           (testing "stops sending heartbeats"
             (Thread/sleep 300)
-            (is (empty? (mocks/calls mock :send!)))))))))
+            (is (empty? (stubs/calls stub :send!)))))))))
 
 (deftest ->channel-test
   (let [->channel (ig/init-key ::ws/->channel
@@ -89,24 +89,24 @@
                                                     (deserialize [_ value _]
                                                       [:deserialized value]))}})
         request {:nav/route {:query-params {:accept "foo/bar"}}}
-        mock (mocks/->mock (reify pws/IChannel
+        stub (stubs/create (reify pws/IChannel
                              (open? [_] ::open?)
                              (send! [_ _])
                              (close! [_] ::close!)))]
     (testing "->channel"
-      (let [channel (->channel request mock)]
+      (let [channel (->channel request stub)]
         (testing "#open?"
           (is (= ::open? (ws/open? channel))))
 
         (testing "#send!"
           (ws/send! channel ::msg)
-          (let [[[msg] :as calls] (mocks/calls mock :send!)]
+          (let [[[msg] :as calls] (stubs/calls stub :send!)]
             (testing "send the serialized message"
               (is (= 1 (count calls)))
               (is (= [:serialized ::msg] msg)))
 
             (testing "when the underlying channel throws an exception"
-              (mocks/set-mock! mock :send! (fn [_] (throw (Exception.))))
+              (stubs/set-stub! stub :send! (fn [_] (throw (Exception.))))
               (testing "returns nil"
                 (is (nil? (ws/send! channel ::msg)))))))
 
@@ -114,6 +114,6 @@
           (is (= ::close! (ws/close! channel)))
 
           (testing "when the underlying channel throws an exception"
-            (mocks/set-mock! mock :close! (fn [] (throw (Exception.))))
+            (stubs/set-stub! stub :close! (fn [] (throw (Exception.))))
             (testing "returns nil"
               (is (nil? (ws/close! channel))))))))))

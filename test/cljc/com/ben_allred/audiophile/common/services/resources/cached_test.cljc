@@ -8,14 +8,14 @@
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [test.utils :refer [async] :as tu]
-    [test.utils.mocks :as mocks])
+    [test.utils.stubs :as stubs])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
 
 (deftest cached-resource-test
   (testing "CachedResource"
-    (let [resource (mocks/->mock (reify
+    (let [resource (stubs/create (reify
                                    pres/IResource
                                    (request! [_ opts]
                                      [::vow opts])
@@ -35,15 +35,15 @@
             (let [cached (cached/->CachedResource (atom nil) resource)
                   result (res/request! cached ::opts)]
               (testing "requests the underlying resources"
-                (is (= ::opts (ffirst (mocks/calls resource :request!)))))
+                (is (= ::opts (ffirst (stubs/calls resource :request!)))))
 
               (testing "returns the results"
                 (is (= [::vow ::opts] result)))
 
               (testing "returns cached results on subsequent calls"
-                (mocks/init! resource)
+                (stubs/init! resource)
                 (is (= [::vow ::opts] (res/request! cached ::new-opts)))
-                (is (empty? (mocks/calls resource :request!))))))
+                (is (empty? (stubs/calls resource :request!))))))
 
           (testing "#status"
             (let [cached (cached/->CachedResource (atom nil) resource)]

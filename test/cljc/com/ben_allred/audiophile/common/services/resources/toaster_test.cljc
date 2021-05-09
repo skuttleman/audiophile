@@ -10,7 +10,7 @@
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [test.utils :refer [async] :as tu]
-    [test.utils.mocks :as mocks])
+    [test.utils.stubs :as stubs])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -18,14 +18,14 @@
 (defn ^:private display! [vow store]
   (-> vow
       (v/peek (fn [_]
-                (let [[_ {:keys [body]}] (ffirst (mocks/calls store :dispatch!))]
+                (let [[_ {:keys [body]}] (ffirst (stubs/calls store :dispatch!))]
                   @body)))
       (v/then #(v/sleep % 75)
               #(v/sleep (v/reject %) 75))))
 
 (deftest toast-resource-test
   (testing "ToastResource"
-    (let [resource (mocks/->mock (reify
+    (let [resource (stubs/create (reify
                                    pres/IResource
                                    (request! [_ _]
                                      (v/create (fn [_ _])))
@@ -38,7 +38,7 @@
                                    IDeref
                                    (#?(:cljs -deref :default deref) [_]
                                      ::value)))
-          store (mocks/->mock (reify
+          store (stubs/create (reify
                                 pui-store/IStore
                                 (dispatch! [_ _])))]
       (async done
@@ -51,11 +51,11 @@
                                                     5
                                                     5)]
               (testing "when the underlying resource succeeds"
-                (mocks/init! store)
-                (mocks/set-mock! resource :request! v/resolve)
+                (stubs/init! store)
+                (stubs/set-stub! resource :request! v/resolve)
                 (let [result (tu/<p! (-> (res/request! redirect ::opts)
                                          (display! store)))
-                      actions (map first (mocks/calls store :dispatch!))]
+                      actions (map first (stubs/calls store :dispatch!))]
                   (testing "updates the store"
                     (is (= [:toasts/add!
                             :toasts/display!
@@ -75,11 +75,11 @@
                     (is (= [:success ::opts] result)))))
 
               (testing "when the underlying resource fails"
-                (mocks/init! store)
-                (mocks/set-mock! resource :request! v/reject)
+                (stubs/init! store)
+                (stubs/set-stub! resource :request! v/reject)
                 (let [result (tu/<p! (-> (res/request! redirect ::opts)
                                          (display! store)))
-                      actions (map first (mocks/calls store :dispatch!))]
+                      actions (map first (stubs/calls store :dispatch!))]
                   (testing "updates the store"
                     (is (= [:toasts/add!
                             :toasts/display!

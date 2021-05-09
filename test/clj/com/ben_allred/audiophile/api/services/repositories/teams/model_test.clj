@@ -3,22 +3,22 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.repositories.teams.model :as teams]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
-    [test.utils.mocks :as mocks]
-    [test.utils.repositories :as trepos]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
-    [test.utils :as tu]))
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [test.utils.repositories :as trepos]
+    [test.utils :as tu]
+    [test.utils.stubs :as stubs]))
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           user-id (uuids/random)]
       (testing "when querying teams"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:some :results}
                      {:for :you}])
         (let [result (teams/query-all tx user-id)
-              [{:keys [from select where]}] (colls/only! (mocks/calls tx :execute!))]
+              [{:keys [from select where]}] (colls/only! (stubs/calls tx :execute!))]
           (testing "sends a query to the repository"
             (is (= #{[:teams.name "team/name"]
                      [:teams.type "team/type"]
@@ -42,20 +42,20 @@
             (is (= [{:some :results} {:for :you}] result)))))
 
       (testing "when querying the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "Bad" {}))
         (testing "fails")))))
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when querying teams"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:some :result}]
                     [{:with :team}])
         (let [result (teams/query-by-id tx team-id user-id)
-              [[select-team] [select-members]] (colls/only! 2 (mocks/calls tx :execute!))]
+              [[select-team] [select-members]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "queries the team from the repository"
             (let [{:keys [from select where]} select-team]
               (is (= #{[:teams.name "team/name"]
@@ -99,23 +99,23 @@
             (is (= {:some :result :team/members [{:with :team}]} result)))))
 
       (testing "when querying the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "Bad" {}))
         (testing "fails")))))
 
 (deftest create!-test
   (testing "create!"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when creating a team"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id team-id}]
                     [{:user :team}]
                     [{:transmogrified :value}])
         (let [result (teams/create! tx
                                     {:created-at :whenever :other :junk}
                                     user-id)
-              [[insert-team] [insert-user-team] [select]] (colls/only! 3 (mocks/calls tx :execute!))]
+              [[insert-team] [insert-user-team] [select]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
                     :values      [{:created-at :whenever
@@ -145,13 +145,13 @@
             (is (= {:transmogrified :value} result)))))
 
       (testing "when saving to the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "kaboom!" {}))
         (testing "fails"
           (is (thrown? Throwable (teams/create! tx {} user-id)))))
 
       (testing "when querying the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id team-id}]
                     []
                     (ex-info "kaboom!" {}))

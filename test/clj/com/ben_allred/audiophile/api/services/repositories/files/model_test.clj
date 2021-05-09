@@ -7,24 +7,24 @@
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [test.utils :as tu]
-    [test.utils.mocks :as mocks]
+    [test.utils.stubs :as stubs]
     [test.utils.repositories :as trepos]))
 
 (deftest create-artifact-test
   (testing "create-artifact"
-    (let [store (trepos/mock-kv-store)
-          tx (trepos/mock-transactor store)]
+    (let [store (trepos/stub-kv-store)
+          tx (trepos/stub-transactor store)]
       (testing "when the content saves to the kv-store"
         (let [[artifact-id user-id] (repeatedly uuids/random)]
-          (mocks/set-mock! tx :execute! [{:id artifact-id}])
+          (stubs/set-stub! tx :execute! [{:id artifact-id}])
           (let [result (files/create-artifact tx
                                               {:filename     "file.name"
                                                :size         12345
                                                :content-type "content/type"
                                                :tempfile     "…content…"}
                                               user-id)
-                [store-k & stored] (colls/only! (mocks/calls store :put!))
-                [query] (colls/only! (mocks/calls tx :execute!))]
+                [store-k & stored] (colls/only! (stubs/calls store :put!))
+                [query] (colls/only! (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
               (is (= ["…content…" {:content-type   "content/type"
                                    :content-length 12345
@@ -46,13 +46,13 @@
                      result))))))
 
       (testing "when the store throws an exception"
-        (mocks/use! store :put!
+        (stubs/use! store :put!
                     (ex-info "Store" {}))
         (testing "fails"
           (is (thrown? Throwable (files/create-artifact tx {} (uuids/random))))))
 
       (testing "when the store throws an exception"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "Executor" {}))
         (testing "fails"
           (is (thrown? Throwable (files/create-artifact tx {} (uuids/random)))))))))
@@ -60,11 +60,11 @@
 (deftest query-many-test
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
-          tx (trepos/mock-transactor)]
+          tx (trepos/stub-transactor)]
       (testing "when querying files"
-        (mocks/set-mock! tx :execute! [{:some :result}])
+        (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (files/query-many tx project-id user-id)
-              [query] (colls/only! (mocks/calls tx :execute!))]
+              [query] (colls/only! (stubs/calls tx :execute!))]
           (testing "sends a query to the repository"
             (let [{:keys [select from where join order-by]} query]
               (is (= #{[:files.name "file/name"]
@@ -122,9 +122,9 @@
 (deftest create-file-test
   (testing "create-file"
     (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
-          tx (trepos/mock-transactor)]
+          tx (trepos/stub-transactor)]
       (testing "when creating a file"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id project-id}]
                     [{:id file-id}]
                     nil
@@ -135,7 +135,7 @@
                                          :version/name "version"
                                          :artifact/id  artifact-id}
                                         user-id)
-              [[access-query] [file-insert] [version-insert] [query] & more] (mocks/calls tx :execute!)]
+              [[access-query] [file-insert] [version-insert] [query] & more] (stubs/calls tx :execute!)]
           (is (empty? more))
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
@@ -233,7 +233,7 @@
                    result)))))
 
       (testing "when the executor throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "Executor" {}))
         (testing "fails"
           (is (thrown? Throwable (files/create-file tx
@@ -244,9 +244,9 @@
 (deftest create-file-version-test
   (testing "create-file-version"
     (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
-          tx (trepos/mock-transactor)]
+          tx (trepos/stub-transactor)]
       (testing "when creating a version"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id project-id}]
                     nil
                     [{:id file-id :other :data}])
@@ -256,7 +256,7 @@
                                                  :version/name "version"
                                                  :artifact/id  artifact-id}
                                                 user-id)
-              [[access-query] [version-insert] [query] & more] (mocks/calls tx :execute!)]
+              [[access-query] [version-insert] [query] & more] (stubs/calls tx :execute!)]
           (is (empty? more))
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
@@ -323,7 +323,7 @@
                    result)))))
 
       (testing "when the executor throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "Executor" {}))
         (testing "fails"
           (is (thrown? Throwable (files/create-file-version tx

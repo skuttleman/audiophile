@@ -24,38 +24,19 @@
   [_ data]
   data)
 
-(defn ^:private request* [id resource form opts success-k error-k]
-  (-> resource
-      (pres/request! opts)
-      (v/then (partial remote->internal id))
-      (v/then (fn [value]
-                (forms/init! form value)
-                [success-k value])
-              (fn [errors]
-                (v/reject [error-k errors])))))
-
 (deftype ValidatedResource [id resource form opts*]
   pres/IResource
   (request! [this opts]
     (let [opts (-> opts*
                    (merge opts)
                    (assoc :form/value (internal->remote id @form)))]
-      (case (:target opts)
-        :init (request* id
-                        resource
-                        form
-                        opts
-                        :remote/initialized
-                        :remote/init.error)
-        (if-let [errors (forms/errors this)]
-          (do (forms/touch! form)
-              (v/reject [:local/rejected errors]))
-          (request* id
-                    resource
-                    form
-                    opts
-                    :remote/accepted
-                    :remote/rejected)))))
+      (if-let [errors (forms/errors this)]
+        (do (forms/touch! form)
+            (v/reject [:local/rejected errors]))
+        (-> resource
+            (pres/request! opts)
+            (v/then (partial remote->internal id))
+            (v/peek (partial forms/init! form))))))
   (status [_]
     (pres/status resource))
 

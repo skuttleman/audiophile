@@ -8,7 +8,7 @@
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [com.ben-allred.vow.core :as v]
-    [test.utils.mocks :as mocks]))
+    [test.utils.stubs :as stubs]))
 
 (deftest auth-provider-test
   (testing "GoogleOAuthProvider"
@@ -35,14 +35,14 @@
                    query)))))
 
       (testing "#profile"
-        (let [http-client (mocks/->mock (reify pres/IResource
+        (let [http-client (stubs/create (reify pres/IResource
                                           (request! [_ opts]
                                             (if (= :get (:method opts))
                                               (v/resolve {:profile :info})
                                               (v/resolve {:access_token token})))))
               provider (goog/->GoogleOAuthProvider http-client cfg)
               result (auth/profile provider)
-              [[token-req] [profile-req] :as calls] (mocks/calls http-client :request!)]
+              [[token-req] [profile-req] :as calls] (stubs/calls http-client :request!)]
           (is (= 2 (count calls)))
 
           (testing "responds with the user profile"
@@ -65,13 +65,13 @@
             (is (= (:profile-uri cfg) (:url profile-req))))
 
           (testing "when generating the token fails"
-            (mocks/set-mock! http-client :request! (v/reject {:an :error}))
+            (stubs/set-stub! http-client :request! (v/reject {:an :error}))
             (testing "throws an exception"
               (let [ex (is (thrown? Throwable (auth/profile provider)))]
                 (is (= {:an :error} (:error (ex-data ex)))))))
 
           (testing "when fetching the profile fails"
-            (mocks/set-mock! http-client :request! (fn [opts]
+            (stubs/set-stub! http-client :request! (fn [opts]
                                                      (if (= :get (:method opts))
                                                        (v/reject {:an :error})
                                                        (v/resolve {:access_token token}))))

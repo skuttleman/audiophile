@@ -12,9 +12,6 @@
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [integrant.core :as ig]))
 
-(defn ^:private ->serde [content-type serdes default-serde]
-  (serdes/find-serde serdes content-type default-serde))
-
 (defn ^:private find-serde [{:keys [accept content-type]} serdes]
   (serdes/find-serde serdes (or content-type accept "")))
 
@@ -30,9 +27,7 @@
          :as   response} (-> (ex-data ch-response)
                              (or ch-response)
                              (update :headers (partial maps/map-keys keyword)))
-        serde (try (find-serde headers serdes)
-                   (catch #?(:cljs :default :default Throwable) _
-                     serde))]
+        serde (or (find-serde headers serdes) serde)]
     (-> response
         (update :status #(http/code->status % %))
         (update :body #(cond->> %
@@ -47,37 +42,42 @@
          #?(:clj (assoc :cookies (cook/get-cookies cs)))
          (update :headers (partial maps/map-keys keyword))))))
 
-(defmethod ig/init-key ::base [_ {:keys [log-ctx]}]
+(defmethod ig/init-key ::base [_ _]
   (fn [http-client]
     (reify
       pres/IResource
       (request! [_ request]
         (v/create (fn [resolve reject]
                     (async/go
-                      (log/with-ctx (assoc log-ctx :sub :request)
-                        (v/peek (try
-                                  (log/info (select-keys request #{:method :url}))
-                                  (let [val (-> request
-                                                (->> (pres/request! http-client))
-                                                #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
-                                    (if (http/success? val)
-                                      (v/resolve val)
-                                      (v/reject val)))
-                                  (catch #?(:cljs :default :default Throwable) ex
-                                    (v/reject (ex-data ex))))
-                                (fn [result]
-                                  (log/with-ctx {:sub :response}
-                                    (log/info (-> request
-                                                  (select-keys #{:method :url})
-                                                  (assoc :status (:status result)))))
-                                  (resolve result))
-                                (fn [result]
-                                  (log/with-ctx {:sub :response}
-                                    (log/error (-> request
-                                                   (select-keys #{:method :url})
-                                                   (assoc :status (:status result)
-                                                          :body (:body result)))))
-                                  (reject result)))))))))))
+                      (try
+                        (let [val (-> request
+                                      (->> (pres/request! http-client))
+                                      #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
+                          (if (http/success? val)
+                            (resolve val)
+                            (reject val)))
+                        (catch #?(:cljs :default :default Throwable) ex
+                          (reject (ex-data ex)))))))))))
+
+(defmethod ig/init-key ::with-logging [_ {:keys [log-ctx]}]
+  (fn [http-client]
+    (reify
+      pres/IResource
+      (request! [_ request]
+        (log/with-ctx (assoc log-ctx :sub :request)
+          (log/info (select-keys request #{:method :url}))
+          (v/peek (pres/request! http-client request)
+                  (fn [result]
+                    (log/with-ctx {:sub :response}
+                      (log/info (-> request
+                                    (select-keys #{:method :url})
+                                    (assoc :status (:status result))))))
+                  (fn [result]
+                    (log/with-ctx {:sub :response}
+                      (log/error (-> request
+                                     (select-keys #{:method :url})
+                                     (assoc :status (:status result)
+                                            :body (:body result))))))))))))
 
 (defmethod ig/init-key ::with-headers [_ _]
   (fn [http-client]
@@ -99,7 +99,8 @@
       (request! [_ request]
         (let [serde (find-serde (:headers request) serdes)
               mime-type (when serde (serdes/mime-type serde))
-              body (:body request)]
+              body (:body request)
+              deserde #(deserialize* % serde serdes)]
           (-> request
               (cond->
                 (not mime-type)
@@ -114,10 +115,10 @@
                 (and serde body)
                 (update :body (partial serdes/serialize serde)))
               (->> (pres/request! http-client))
-              (v/then-> (cond-> serde (deserialize* serde serdes)))
-              (v/then (response* (:response? request))
+              (v/then (comp (response* (:response? request)) deserde)
                       (comp v/reject
-                            (response* (:response? request))))))))))
+                            (response* (:response? request))
+                            deserde))))))))
 
 (defmethod ig/init-key ::with-nav [_ {:keys [nav]}]
   (fn [http-client]

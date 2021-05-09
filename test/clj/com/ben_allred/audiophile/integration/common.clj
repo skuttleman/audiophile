@@ -7,7 +7,7 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    [test.utils.mocks :as mocks]))
+    [test.utils.stubs :as stubs]))
 
 (def ^:private config-base
   (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-test"]))]
@@ -23,27 +23,27 @@
   ([base opts]
    (-> base
        (assoc [:duct/const :services/oauth]
-              (mocks/->mock (reify
+              (stubs/create (reify
                               pauth/IOAuthProvider
                               (-redirect-uri [_ _])
                               (-profile [_ _]))))
        (cond->
          (not (:db/enabled? opts))
          (assoc [:duct/const :services/transactor]
-                (mocks/->mock (reify
+                (stubs/create (reify
                                 prepos/ITransact
                                 (transact! [this f] (f this nil))
                                 prepos/IExecute
                                 (execute! [_ _ _]))))))))
 
-(defn setup-mock [config mock-k method f-or-val]
-  (update config [:duct/const mock-k] mocks/set-mock! method f-or-val))
+(defn setup-stub [config stub-k method f-or-val]
+  (update config [:duct/const stub-k] stubs/set-stub! method f-or-val))
 
-(defn setup-mocks [config & args]
+(defn setup-stub [config & args]
   (->> args
        (partition 3)
        (reduce (fn [cfg [k m f]]
-                 (setup-mock cfg k m f))
+                 (setup-stub cfg k m f))
                config)))
 
 (defmacro with-config [[sym keys f & f-args] opts & body]

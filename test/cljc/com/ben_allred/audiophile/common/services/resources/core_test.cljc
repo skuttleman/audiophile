@@ -5,7 +5,7 @@
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.vow.core :as v]
     [test.utils :refer [async] :as tu]
-    [test.utils.stubs :as stubs]))
+    [test.utils.spies :as spies]))
 
 (deftest resource-test
   (testing "Resource"
@@ -25,28 +25,28 @@
               (is (= [:error ::opts] result)))))
 
         (testing "#status"
-          (let [opts->vow (stubs/create)
+          (let [opts->vow (spies/create)
                 resource (res/->Resource (atom {:status :init}) opts->vow)]
             (testing "when the resource has not been requested"
               (testing "has the correct status"
                 (is (= :init (res/status resource)))))
 
             (testing "when the resource has not finished the request"
-              (stubs/set-stub! opts->vow (v/create (fn [_ _])))
+              (spies/set-stub! opts->vow (v/create (fn [_ _])))
               (res/request! resource ::opts)
 
               (testing "has the correct status"
                 (is (= :requesting (res/status resource)))))
 
             (testing "when the resource request succeeds"
-              (stubs/set-stub! opts->vow (v/resolve {:data :data}))
+              (spies/set-stub! opts->vow (v/resolve {:data :data}))
               (tu/<p! (res/request! resource ::opts))
 
               (testing "has the correct status"
                 (is (= :success (res/status resource)))))
 
             (testing "when the resource request fails"
-              (stubs/set-stub! opts->vow (v/reject {:errors :errors}))
+              (spies/set-stub! opts->vow (v/reject {:errors :errors}))
               (tu/<p! (res/request! resource ::opts))
 
               (testing "has the correct status"
@@ -78,7 +78,7 @@
                          (tu/<p! prom))))))))
 
         (testing "#deref"
-          (let [opts->vow (stubs/create (v/create (fn [_ _])))
+          (let [opts->vow (spies/create (v/create (fn [_ _])))
                 resource (res/->Resource (atom {:status :init}) opts->vow)]
             (testing "when the resource has not resolved"
               (testing "returns nil"
@@ -87,14 +87,14 @@
                 (is (nil? @resource))))
 
             (testing "when the resource succeeds"
-              (stubs/set-stub! opts->vow (v/resolve {:data ::data}))
+              (spies/set-stub! opts->vow (v/resolve {:data ::data}))
               (tu/<p! (res/request! resource ::opts))
 
               (testing "returns data"
                 (is (= ::data @resource))))
 
             (testing "when the resource succeeds"
-              (stubs/set-stub! opts->vow (v/reject {:errors ::errors}))
+              (spies/set-stub! opts->vow (v/reject {:errors ::errors}))
               (tu/<p! (res/request! resource ::opts))
 
               (testing "returns errors"

@@ -1,41 +1,40 @@
 (ns ^:unit com.ben-allred.audiophile.common.services.pubsub.ws-test
   (:require
     [clojure.test :refer [deftest is testing]]
-    [com.ben-allred.audiophile.common.services.pubsub.ws :as ws]
-    [com.ben-allred.audiophile.common.services.ui-store.protocols :as pui-store]
-    [test.utils.mocks :as mocks]
-    [integrant.core :as ig]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]))
+    [com.ben-allred.audiophile.common.services.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.services.ui-store.protocols :as pui-store]
+    [test.utils.stubs :as stubs]))
 
 (deftest handle-msg-test
   (testing "handle-msg"
-    (let [store (mocks/->mock (reify
+    (let [store (stubs/create (reify
                                 pui-store/IStore
                                 (dispatch! [_ _])))]
       (testing "handles default message"
         (ws/handle-msg store [::msg-type ::event-id ::data])
-        (let [[event] (peek (mocks/calls store :dispatch!))]
+        (let [[event] (peek (stubs/calls store :dispatch!))]
           (is (= [:ws/message [::msg-type {:id   ::event-id
                                            :data ::data}]]
                  event))))
 
       (testing "handles contextual message"
         (ws/handle-msg store [::msg-type ::event-id ::data ::ctx])
-        (let [[event] (peek (mocks/calls store :dispatch!))]
+        (let [[event] (peek (stubs/calls store :dispatch!))]
           (is (= [:ws/message [::msg-type {:id   ::event-id
                                            :data ::data
                                            :ctx  ::ctx}]]
                  event))))
 
       (testing "ignores other messages"
-        (mocks/init! store)
+        (stubs/init! store)
         (ws/handle-msg store [:foo "here"])
         (ws/handle-msg store :bar)
         (ws/handle-msg store 13)
         (ws/handle-msg store {:another :thing})
 
-        (is (empty? (mocks/calls store :dispatch!)))))))
+        (is (empty? (stubs/calls store :dispatch!)))))))
 
 (deftest ws-uri-test
   (testing "ws-uri"

@@ -1,7 +1,7 @@
 (ns test.utils.repositories
   (:require
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
-    [test.utils.mocks :as mocks]))
+    [test.utils.stubs :as stubs]))
 
 (def ^:private opts
   {:entity/artifacts
@@ -39,18 +39,18 @@
     :table     :users
     :namespace :user}})
 
-(defn mock-kv-store []
-  (mocks/->mock (reify
+(defn stub-kv-store []
+  (stubs/create (reify
                   prepos/IKVStore
                   (uri [_ key _]
                     (str "test://uri/" key))
                   (put! [_ _ _ _]))))
 
-(defn mock-transactor
+(defn stub-transactor
   ([]
-   (mock-transactor nil))
+   (stub-transactor nil))
   ([kv-store]
-   (mocks/->mock (reify
+   (stubs/create (reify
                    prepos/ITransact
                    (transact! [this f]
                      (f this (assoc opts :store/kv kv-store)))

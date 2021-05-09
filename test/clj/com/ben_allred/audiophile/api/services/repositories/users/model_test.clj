@@ -4,20 +4,20 @@
     [com.ben-allred.audiophile.api.services.repositories.users.model :as users]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
-    [test.utils.mocks :as mocks]
+    [test.utils.stubs :as stubs]
     [test.utils.repositories :as trepos]
     [test.utils :as tu]))
 
 (deftest query-by-email-test
   (testing "query-by-email"
-    (let [tx (trepos/mock-transactor)
+    (let [tx (trepos/stub-transactor)
           user-id (uuids/random)]
       (testing "when querying for a user"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     [{:id user-id :some :details}])
         (let [result (users/query-by-email tx "user@domain.tld")]
           (testing "sends the query to the repository"
-            (let [[{:keys [from select where]}] (colls/only! (mocks/calls tx :execute!))]
+            (let [[{:keys [from select where]}] (colls/only! (stubs/calls tx :execute!))]
               (is (= #{[:users.id "user/id"]
                        [:users.first-name "user/first-name"]
                        [:users.last-name "user/last-name"]
@@ -33,7 +33,7 @@
             (is (= {:id user-id :some :details} result)))))
 
       (testing "when the repository throws"
-        (mocks/use! tx :execute!
+        (stubs/use! tx :execute!
                     (ex-info "Nope" {}))
         (testing "fails"
           (is (thrown? Throwable (users/query-by-email tx "user@domain.tld"))))))))

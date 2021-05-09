@@ -10,7 +10,7 @@
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [test.utils.mocks :as mocks]))
+    [test.utils.stubs :as stubs]))
 
 (deftest auth-details-test
   (testing "GET /auth/details"
@@ -33,7 +33,7 @@
       (let [user (int/seed-user system "joe@example.com")
             handler (-> (::handlers/app system)
                         (ihttp/with-serde system :serdes/edn))]
-        (mocks/set-mock! (int/component system :services/oauth)
+        (stubs/set-stub! (int/component system :services/oauth)
                          :-profile
                          (fn [opts]
                            (if (= "secret-pin-12345" (:code opts))
@@ -61,7 +61,7 @@
         (testing "when the auth provider interactions fail"
           (-> system
               (int/component :services/oauth)
-              (mocks/set-mock! :-token nil))
+              (stubs/set-stub! :-token nil))
           (testing "redirects with token cookie"
             (let [response (-> {}
                                (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})

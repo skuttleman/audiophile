@@ -12,14 +12,14 @@
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [test.utils :refer [async] :as tu]
-    [test.utils.mocks :as mocks])
+    [test.utils.stubs :as stubs])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
 
 (deftest redirect-resource-test
   (testing "RedirectResource"
-    (let [resource (mocks/->mock (reify
+    (let [resource (stubs/create (reify
                                    pres/IResource
                                    (request! [_ _]
                                      (v/create (fn [_ _])))
@@ -32,7 +32,7 @@
                                    IDeref
                                    (#?(:cljs -deref :default deref) [_]
                                      ::value)))
-          nav (mocks/->mock (reify
+          nav (stubs/create (reify
                               nav/IHistory
                               (-navigate! [_ _])
 
@@ -48,22 +48,22 @@
             (testing "#request!"
               (let [redirect (redirect/->RedirectResource resource nav routes)]
                 (testing "when the underlying resource succeeds"
-                  (mocks/init! nav)
-                  (mocks/set-mock! resource :request! v/resolve)
+                  (stubs/init! nav)
+                  (stubs/set-stub! resource :request! v/resolve)
                   (let [result (tu/<p! (res/request! redirect ::opts))]
                     (testing "redirects"
-                      (let [args (colls/only! (mocks/calls nav :serialize))]
+                      (let [args (colls/only! (stubs/calls nav :serialize))]
                         (is (= [:success/page :success/params] args))))
 
                     (testing "returns the result"
                       (is (= [:success ::opts] result)))))
 
                 (testing "when the underlying resource fails"
-                  (mocks/init! nav)
-                  (mocks/set-mock! resource :request! v/reject)
+                  (stubs/init! nav)
+                  (stubs/set-stub! resource :request! v/reject)
                   (let [result (tu/<p! (res/request! redirect ::opts))]
                     (testing "redirects"
-                      (let [args (colls/only! (mocks/calls nav :serialize))]
+                      (let [args (colls/only! (stubs/calls nav :serialize))]
                         (is (= [:error/page :error/params] args))))
 
                     (testing "returns the result"
