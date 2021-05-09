@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [hiccup.core :as hiccup]))
 
-(defn layout [app]
+(defn layout [app env]
   [:html {:lang "en"}
    [:head
     [:meta {:charset "UTF-8"}]
@@ -24,10 +24,12 @@
     [:title "Audiophile"]]
    [:body
     [:div#root app]
+    [:script {:type "application/javascript"}
+     (str "window.ENV = '" (pr-str env) "';")]
     [:script {:src "/js/main.js"}]]])
 
 (defn render
   "Takes a nested hiccup tree of body elements and wraps it with a standard layout"
-  [view]
+  [view user]
   (str "<!doctype html>"
-       (hiccup/html nil (layout view))))
+       (hiccup/html nil (layout view {:auth/user user}))))

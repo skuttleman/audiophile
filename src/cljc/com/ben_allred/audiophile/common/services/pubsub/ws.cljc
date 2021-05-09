@@ -32,26 +32,22 @@
         uri/stringify
         (str (nav/path-for nav :api/ws params)))))
 
-(defmethod ig/init-key ::handler [_ {:keys [base-url nav reconnect-ms serde store user-details]}]
+(defmethod ig/init-key ::handler [_ {:keys [base-url nav reconnect-ms serde store]}]
   (let [url (ws-uri nav serde #?(:cljs (.-location js/window) :default base-url))
-        vol (volatile! nil)]
-    (-> user-details
-        (v/then (fn [details]
-                  (when (and details (nil? @vol))
-                    (let [ws (ws*/keep-alive! url
-                                              {:reconnect-ms reconnect-ms
-                                               :in-buf-or-n  100
-                                               :in-xform     (comp (map (partial serdes/deserialize serde))
-                                                                   (remove (comp #{:conn/ping :conn/pong} first)))
-                                               :out-buf-or-n 100
-                                               :out-xform    (map (partial serdes/serialize serde))})]
-                      (vreset! vol ws)
-                      (async/go-loop []
-                        (when-let [msg (async/<! ws)]
-                          (handle-msg store msg)
-                          (recur))))))))
-    vol))
+        {:auth/keys [user]} (ui-store/get-state store)]
+    (when user
+      (let [ws (ws*/keep-alive! url
+                                {:reconnect-ms reconnect-ms
+                                 :in-buf-or-n  100
+                                 :in-xform     (comp (map (partial serdes/deserialize serde))
+                                                     (remove (comp #{:conn/ping :conn/pong} first)))
+                                 :out-buf-or-n 100
+                                 :out-xform    (map (partial serdes/serialize serde))})]
+        (async/go-loop []
+          (when-let [msg (async/<! ws)]
+            (handle-msg store msg)
+            (recur)))
+        ws))))
 
 (defmethod ig/halt-key! ::handler [_ ws]
-  (some-> ws deref async/close!)
-  (vreset! ws ::disco))
+  (some-> ws async/close!))

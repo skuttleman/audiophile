@@ -15,18 +15,19 @@
   (dispatch! [_ action]
     (dispatch action)))
 
-(defn create-store [reducer]
+(defn create-store [reducer init]
   (let [{:keys [get-state dispatch]}
         (collaj/create-custom-store
           r/atom
           reducer
+          (merge (reducer) init)
           #?(:cljs (ecollaj/with-log-middleware
                      #(log/info "Action dispatched:" %)
                      #(log/info "New state:" %))))]
     (->Store get-state dispatch)))
 
-(defmethod ig/init-key ::store [_ _]
-  (create-store reducers/reducer))
+(defmethod ig/init-key ::store [_ {:keys [env]}]
+  (create-store reducers/reducer env))
 
 (defn get-state [store]
   (pui-store/get-state store))

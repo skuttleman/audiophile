@@ -84,7 +84,10 @@
 (defmacro ->m
   "Compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol.
    Optional tries to add any other value on to the returned map via conj.
-  (->m foo bar [baz :also]) => {:foo foo :bar bar baz :also}"
+
+   ```clojure
+   (->m foo bar [baz :also]) => {:foo foo :bar bar baz :also}
+   ```"
   [& kvs]
   (loop [m (transient {}) [x :as kvs] kvs]
     (cond

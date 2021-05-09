@@ -3,6 +3,7 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.templates.html :as html]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps])
   (:import
     (java.util Map$Entry)))
@@ -60,5 +61,5 @@
    (html [:div.class [(fn [x] [:span#id {:attr :foo} x]) \"XXX\"]])
    ;; => [:div.class [:span#id \"XXX\"]]
    ```"
-  [tree]
-  (html/render (render tree)))
+  [tree user]
+  (html/render (render tree) user))

@@ -52,29 +52,15 @@
 
 (defmacro spy
   ([expr]
-   `(spy :info ~expr))
+   (spy* &form :info expr `identity "=>"))
   ([level expr]
-   (spy* &form level expr identity "=>")))
+   (spy* &form level expr `identity "=>")))
 
 (defmacro spy-tap
   ([f expr]
-   `(spy-tap :info ~f ~expr))
+   (spy* &form :info expr f (str "(\uD83C\uDF7A " f ") =>")))
   ([level f expr]
    (spy* &form level expr f (str "(\uD83C\uDF7A " f ") =>"))))
-
-(defmacro log [level line & args]
-  `(when-not (:disabled? *ctx*) ;; TBD - ctx
-     (log*/log! ~level :p ~args {:?line ~line})))
-
-(defmacro spy-on
-  ([f]
-   `(spy-on :info ~f))
-  ([level f]
-   `(fn [& args#]
-      (let [result# (apply ~f args#)]
-        (when-not (:disabled? *ctx*)
-          (log*/log! ~level :p (cons '~f args#) {:?line ~(:line (meta &form))}))
-        result#))))
 
 (defn pprint
   "Reagent component for displaying clojure data in the browser - debug only"

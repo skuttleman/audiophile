@@ -7,4 +7,7 @@
 
   :com.ben-allred.audiophile.common.services.navigation.core/nav
   {:routes #ig/ref :nav/routes
-   :store  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store}}]
+   :store  #ig/ref :services/store}
+
+  [:com.ben-allred.audiophile.ui.app/env :services.ui/env]
+  {:edn #ig/ref :serdes/edn}}]

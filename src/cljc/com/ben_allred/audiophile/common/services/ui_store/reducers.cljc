@@ -3,6 +3,10 @@
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.collaj.reducers :as rcollaj]))
 
+(defn ^:private ident*
+  ([] nil)
+  ([state _] state))
+
 (defn ^:private page
   ([] nil)
   ([state [type route]]
@@ -43,15 +47,8 @@
      :modals/remove-all! (empty state)
      state)))
 
-(defn user-details
-  ([] nil)
-  ([state [type data]]
-   (case type
-     :user-details/received data
-     state)))
-
 (def reducer
-  (rcollaj/combine (maps/->m {:auth/user user-details}
+  (rcollaj/combine (maps/->m {:auth/user ident*}
                              banners
                              modals
                              page

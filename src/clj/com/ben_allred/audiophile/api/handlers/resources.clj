@@ -23,8 +23,10 @@
   (constantly [::http/ok {:a :ok}]))
 
 (defmethod ig/init-key ::ui [_ {:keys [store app]}]
-  (fn [request]
+  (fn [{user :auth/user page :nav/route}]
     [::http/ok
      (templates/html [app (maps/assoc-maybe (ui-store/get-state store)
-                                            :auth/user (:auth/user request))])
+                                            :auth/user user
+                                            :page page)]
+                     user)
      {:content-type "text/html"}]))
