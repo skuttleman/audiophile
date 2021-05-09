@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
+    [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [integrant.core :as ig]))
 
 (defn root* [login-form state]
@@ -23,8 +24,9 @@
 (defmethod ig/init-key ::login-form [_ {:keys [nav]}]
   (constantly
     [:div.buttons
-     [:button.button.is-primary
-      {:on-click (fn [_]
+     [in/plain-button
+      {:class ["is-primary"]
+       :on-click (fn [_]
                    (nav/goto! nav :auth/login))}
       "Login"]]))
 

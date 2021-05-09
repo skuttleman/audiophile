@@ -121,8 +121,9 @@
 (defmethod ig/init-key ::track-list [_ {:keys [file-form store version-form]}]
   (fn [files project-id]
     [:div
-     [:button.button.is-white
-      {:on-click (clicker store
+     [in/plain-button
+      {:class ["is-white"]
+       :on-click (clicker store
                           "Upload new track"
                           [file-form project-id])}
       "New track"]
@@ -132,8 +133,9 @@
         ^{:key (:file/id file)}
         [:li
          [:span (:file/name file) " - " (:version/name file)]
-         [:button.button.is-white
-          {:on-click (clicker store
+         [in/plain-button
+          {:class ["is-white"]
+           :on-click (clicker store
                               "Upload new version"
                               [version-form file])}
           "New version"]])]]))

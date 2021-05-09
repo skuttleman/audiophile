@@ -5,7 +5,8 @@
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]))
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.views.components.input-fields :as in]))
 
 (def ^:private level->class
   {:error "is-danger"})
@@ -57,8 +58,9 @@
                            dom/prevent-default)}]
         (into fields)
         (conj (cond-> [:div.buttons
-                       [:button.button.is-primary
-                        {:type     :submit
+                       [in/plain-button
+                        {:class    ["is-primary"]
+                         :type     :submit
                          :disabled disabled}
                         (:submit/text attrs "Submit")]]
                 disabled

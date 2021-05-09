@@ -31,7 +31,7 @@
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
 
  [:duct/const :ui/err-codes]
- {:user-not-found "Authentication failed.User not found."}
+ {:login-failed "Authentication failed. Please try again."}
 
  :com.ben-allred.audiophile.common.services.ui-store.core/store
  {:env #ig/ref :services.ui/env}

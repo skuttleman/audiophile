@@ -32,10 +32,8 @@
                     0 "Select…"
                     1 "1 Item Selected"
                     (str selected-count " Items Selected")))]
-    [:button.button
-     (-> attrs
-         (select-keys #{:class :disabled :on-blur :on-click :ref})
-         (assoc :type :button))
+    [in/plain-button
+     (select-keys attrs #{:class :disabled :on-blur :on-click :ref})
      content
      [:span
       {:style {:margin-left "10px"}}

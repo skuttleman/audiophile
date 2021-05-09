@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small? visited?]} & body]
@@ -128,17 +129,25 @@
                #?@(:cljs [:on-change #(on-change (not value))])}
               (merge (select-keys attrs #{:class :id :on-blur :ref})))]]))))
 
+(defn plain-button [{:keys [disabled] :as attrs} & content]
+  (let [disabled #?(:cljs disabled :default true)]
+    (-> attrs
+        (maps/assoc-defaults :type :button)
+        (assoc :disabled disabled)
+        (cond-> disabled (update :class (fnil conj []) "is-disabled"))
+        (->> (conj [:button.button]))
+        (into content))))
+
 (def ^{:arglists '([attrs true-display false-display])} button
   (with-auto-focus
     (with-id
       (fn [{:keys [disabled on-change value] :as attrs} true-display false-display]
         [form-field
          attrs
-         [:button.button
-          (-> {:type     :button
-               :disabled #?(:clj true :cljs disabled)
-               #?@(:cljs [:on-click #(on-change (not value))])}
-              (merge (select-keys attrs #{:class :id :on-blur :ref})))
+         [plain-button
+          (-> attrs
+              (select-keys #{:class :id :on-blur :ref})
+              #?(:cljs (assoc :on-click #(on-change (not value)))))
           (if value true-display false-display)]]))))
 
 (def ^{:arglists '([attrs])} file
@@ -161,10 +170,9 @@
                                                          (aset "files" nil)
                                                          (aset "value" nil))
                                                        files)))])}]
-              [:button.button (-> attrs
-                                  (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
-                                  (assoc :type :button)
-                                  #?(:cljs (assoc :on-click (comp (fn [_]
+              [plain-button (-> attrs
+                                (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
+                                #?(:cljs (assoc :on-click (comp (fn [_]
                                                                     (some-> @file-input .click))
                                                                   dom/prevent-default))))
                (:display attrs "Select file…")]]]))))))

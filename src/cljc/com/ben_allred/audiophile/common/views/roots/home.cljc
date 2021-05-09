@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
+    [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [integrant.core :as ig]))
 
 (defn logout [{:keys [nav] :as attrs}]
@@ -32,13 +33,15 @@
         {:style {:align-content :flex-start}}
         [projects-tile
          state
-         [:button.button.is-primary
-          {:on-click (clicker store project-form "Create project")}
+         [in/plain-button
+          {:class ["is-primary"]
+           :on-click (clicker store project-form "Create project")}
           "Create one"]]
         [teams-tile
          state
-         [:button.button.is-primary
-          {:on-click (clicker store team-form "Create team")}
+         [in/plain-button
+          {:class ["is-primary"]
+           :on-click (clicker store team-form "Create team")}
           "Create one"]]]]
       (nav/navigate! nav :ui/login))))
 

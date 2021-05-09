@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.ui.dev.core
   (:require
+    [clojure.core.async :as async]
     [clojure.pprint :as pp]
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
@@ -21,10 +22,14 @@
 
 (defn ^:export init []
   (pp/pprint config)
-  (app/init (reset! sys (try (ig/init config)
-                             (catch :default ex
-                               (log/error ex "ERROR!!!")
-                               config)))))
+  (let [ms (if @sys 0 2500)]
+    (reset! sys (try (ig/init config)
+                     (catch :default ex
+                       (log/error ex "ERROR!!!")
+                       config)))
+    (async/go
+      (async/<! (async/timeout ms))
+      (app/init @sys))))
 
 (defn ^:export halt []
   (some-> sys deref ig/halt!))

@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
+    [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.common.views.components.tiles :as tiles]
     [integrant.core :as ig]))
 
@@ -24,8 +25,9 @@
      [tiles/tile
       [:div.layout--space-between
        [:div (:header frame)]
-       [:button.button.is-white.is-light
-        {:on-click close!}
+       [in/plain-button
+        {:class ["is-white" "is-light"]
+         :on-click close!}
         [comp/icon :times]]]
       [:div (some-> (:body frame) (conj close!))]]]))
 
