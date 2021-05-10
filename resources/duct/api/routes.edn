@@ -64,14 +64,17 @@
   :nav      #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.api.handlers.auth/callback
- {:base-url  #ig/ref :env/base-url
-  :jwt-serde #ig/ref :serdes/jwt
-  :nav       #ig/ref :services/nav
-  :oauth     #ig/ref :services/oauth
-  :repo      #ig/ref :services/repositories}
+ {:base-url #ig/ref :env/base-url
+  :nav      #ig/ref :services/nav
+  :oauth    #ig/ref :com.ben-allred.audiophile.api.services.auth.interactor/auth-provider
+  :serde    #ig/ref :serdes/jwt}
 
  :com.ben-allred.audiophile.api.handlers.auth/details
  {}
+
+ :com.ben-allred.audiophile.api.services.auth.interactor/auth-provider
+ {:oauth #ig/ref :services/oauth
+  :repo  #ig/ref :services/repositories}
 
  :com.ben-allred.audiophile.api.handlers.projects/fetch-all
  {:repo #ig/ref :services/repositories}

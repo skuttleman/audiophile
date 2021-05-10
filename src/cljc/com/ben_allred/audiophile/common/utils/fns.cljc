@@ -1,7 +1,10 @@
 (ns com.ben-allred.audiophile.common.utils.fns
   #?(:cljs
      (:require-macros
-       com.ben-allred.audiophile.common.utils.fns)))
+       com.ben-allred.audiophile.common.utils.fns))
+  #?(:clj
+     (:import
+       (clojure.lang MultiFn))))
 
 (defn sidecar!
   "takes a sequence of fns and returns a function that calls all of them with the same args, but only returns
@@ -27,3 +30,8 @@
   [& forms]
   `(fn [arg#]
      (->> arg# ~@forms)))
+
+(defn ->multi-fn [dispatch-fn]
+  (let [nm (name (gensym "multi-fn"))]
+    #?(:cljs    (->MultiFn nm dispatch-fn :default (atom (make-hierarchy)) (atom {}) (atom {}) (atom {}) (atom {}))
+       :default (MultiFn. nm dispatch-fn :default (ref (make-hierarchy))))))

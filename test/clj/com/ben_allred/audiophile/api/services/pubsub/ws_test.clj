@@ -103,12 +103,7 @@
           (let [[[msg] :as calls] (stubs/calls stub :send!)]
             (testing "send the serialized message"
               (is (= 1 (count calls)))
-              (is (= [:serialized ::msg] msg)))
-
-            (testing "when the underlying channel throws an exception"
-              (stubs/set-stub! stub :send! (fn [_] (throw (Exception.))))
-              (testing "returns nil"
-                (is (nil? (ws/send! channel ::msg)))))))
+              (is (= [:serialized ::msg] msg)))))
 
         (testing "#close!"
           (is (= ::close! (ws/close! channel)))

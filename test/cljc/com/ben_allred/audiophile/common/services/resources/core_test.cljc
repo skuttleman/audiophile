@@ -25,14 +25,14 @@
               (is (= [:error ::opts] result)))))
 
         (testing "#status"
-          (let [opts->vow (spies/create)
+          (let [opts->vow (spies/create (v/resolve))
                 resource (res/->Resource (atom {:status :init}) opts->vow)]
             (testing "when the resource has not been requested"
               (testing "has the correct status"
                 (is (= :init (res/status resource)))))
 
             (testing "when the resource has not finished the request"
-              (spies/set-stub! opts->vow (v/create (fn [_ _])))
+              (spies/set-stub! opts->vow (v/sleep 100))
               (res/request! resource ::opts)
 
               (testing "has the correct status"
@@ -46,6 +46,7 @@
                 (is (= :success (res/status resource)))))
 
             (testing "when the resource request fails"
+              (tu/<p! (v/sleep 100))
               (spies/set-stub! opts->vow (v/reject {:errors :errors}))
               (tu/<p! (res/request! resource ::opts))
 

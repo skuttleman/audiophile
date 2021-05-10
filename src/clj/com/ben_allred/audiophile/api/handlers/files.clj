@@ -9,9 +9,8 @@
 (defmethod ig/init-key ::upload [_ {:keys [repo]}]
   (fn [request]
     (let [artifact-data (colls/only! (:valid/data request))
-          user-id (get-in request [:auth/user :user/id])
-          artifact (files/create-artifact repo artifact-data user-id)]
-      [::http/ok {:data artifact}])))
+          user-id (get-in request [:auth/user :user/id])]
+      [::http/ok {:data (files/create-artifact repo artifact-data user-id)}])))
 
 (defmethod ig/init-key ::fetch-all [_ {:keys [repo]}]
   (fn [request]

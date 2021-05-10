@@ -150,11 +150,12 @@
   ([serdes type]
    (find-serde serdes type nil))
   ([serdes type default]
-   (loop [[[_ serde] :as serdes] (seq serdes)]
-     (cond
-       (empty? serdes) default
-       (string/starts-with? type (mime-type serde)) serde
-       :else (recur (rest serdes))))))
+   (when type
+     (loop [[[_ serde] :as serdes] (seq serdes)]
+       (cond
+         (empty? serdes) default
+         (string/starts-with? type (mime-type serde)) serde
+         :else (recur (rest serdes)))))))
 
 (defn find-serde! [serdes type]
   (let [default-serde (or (:default serdes)
