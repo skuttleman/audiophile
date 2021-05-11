@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.api.services.repositories.users.queries
+(ns com.ben-allred.audiophile.api.services.repositories.users
   (:require
     [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]))
 

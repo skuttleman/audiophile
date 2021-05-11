@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.handlers.files
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.files.model :as files]
+    [com.ben-allred.audiophile.api.services.interactors.files :as files]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]

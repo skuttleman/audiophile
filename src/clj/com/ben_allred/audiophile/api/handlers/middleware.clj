@@ -116,17 +116,6 @@
             (maps/assoc-maybe :auth/user user)
             handler)))))
 
-(defmethod ig/init-key ::with-ex [_ {:keys [err-msg]}]
-  (let [err-response ^::ex {:status 500 :body {:errors [{:message (or err-msg "an unexpected error occurred")}]}}]
-    (fn [handler]
-      (fn [request]
-        (try (handler request)
-             (catch Throwable ex
-               (log/error ex)
-               (if-let [response (:response (ex-data ex))]
-                 (vary-meta (->response response) assoc ::ex true)
-                 err-response)))))))
-
 (defmethod ig/init-key ::with-headers [_ _]
   (fn [handler]
     (fn [request]

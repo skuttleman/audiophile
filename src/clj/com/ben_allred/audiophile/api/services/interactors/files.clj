@@ -1,12 +1,13 @@
-(ns com.ben-allred.audiophile.api.services.repositories.files.model
+(ns com.ben-allred.audiophile.api.services.interactors.files
   (:require
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
-    [com.ben-allred.audiophile.api.services.repositories.files.queries :as qfiles]
+    [com.ben-allred.audiophile.api.services.repositories.files :as files]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.api.services.interactors.common :as int]))
 
 (defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]
@@ -47,12 +48,14 @@
                              :name        (:version/name file)
                              :created-by  user-id})
       (->> (repos/execute! executor)))
-  (colls/only! (repos/execute! executor (qfiles/select-one files file-id))))
+  (colls/only! (repos/execute! executor (files/select-one files file-id))))
 
 (defn create-artifact
   "Save an artifact to the repository and upload the content to the kv store.
    If write to kv store fails, repository will be rolled back. Otherwise, cleanup TBD"
   [repo artifact user-id]
+  (when-not user-id
+    (int/missing-user-ctx!))
   (repos/transact! repo (fn [executor {store :store/kv :entity/keys [artifacts]}]
                           (let [key (str "artifacts/" (uuids/random))]
                             (with-async
@@ -76,19 +79,23 @@
 (defn query-many
   "Query files for a project"
   [repo project-id user-id]
+  (when-not user-id
+    (int/missing-user-ctx!))
   (repos/transact! repo
                    repos/->exec!
                    (fns/=> :entity/files
-                           (qfiles/select-for-user project-id user-id))))
+                           (files/select-for-user project-id user-id))))
 
 (defn create-file
   "Save a new file with a version to the repository."
   [repo project-id file user-id]
+  (when-not user-id
+    (int/missing-user-ctx!))
   (repos/transact! repo
                    (fn [executor {:entity/keys [files file-versions projects]}]
                      (access-project! executor projects project-id user-id)
                      (-> files
-                         (qfiles/insert {:name       (:file/name file)
+                         (files/insert {:name        (:file/name file)
                                          :project-id project-id
                                          :created-by user-id})
                          (->> (repos/execute! executor))
@@ -103,6 +110,8 @@
 (defn create-file-version
   "Create a new version of an existing file"
   [repo file-id version user-id]
+  (when-not user-id
+    (int/missing-user-ctx!))
   (repos/transact! repo
                    (fn [executor {:entity/keys [files file-versions projects]}]
                      (access-file! executor projects file-id user-id)

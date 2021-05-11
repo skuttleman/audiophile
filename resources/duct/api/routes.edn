@@ -2,26 +2,25 @@
  #ig/ref :routes/table
 
  [:duct/const :routes/table]
- {^:auth/user [:get :api/project.files]  #ig/ref :com.ben-allred.audiophile.api.handlers.files/fetch-all
-  ^:auth/user [:get :api/project]        #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch
-  ^:auth/user [:get :api/projects]       #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch-all
-  ^:auth/user [:get :api/team]           #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch
-  ^:auth/user [:get :api/teams]          #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
-  ^:auth/user [:get :api/ws]             #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
-  ^:auth/user [:post :api/artifacts]     #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
-  ^:auth/user [:post :api/project.file]  #ig/ref :com.ben-allred.audiophile.api.handlers.files/create-version
-  ^:auth/user [:post :api/project.files] #ig/ref :com.ben-allred.audiophile.api.handlers.files/create
-  ^:auth/user [:post :api/projects]      #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
-  ^:auth/user [:post :api/teams]         #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create
-  [:get :auth/callback]                  #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
-  [:get :auth/details]                   #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
-  [:get :auth/login]                     #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
-  [:get :auth/logout]                    #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
-  [:get :resources/css]                  #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :resources/health]               #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
-  [:get :resources/js]                   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :ui/home]                        #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
-  [:get :ui/not-found]                   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
+ {[:get :api/project.files]  #ig/ref :com.ben-allred.audiophile.api.handlers.files/fetch-all
+  [:get :api/project]        #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch
+  [:get :api/projects]       #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch-all
+  [:get :api/team]           #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch
+  [:get :api/teams]          #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
+  [:get :api/ws]             #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  [:get :auth/callback]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
+  [:get :auth/details]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
+  [:get :auth/login]         #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
+  [:get :auth/logout]        #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
+  [:get :resources/css]      #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :resources/health]   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
+  [:get :resources/js]       #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :ui/home]            #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
+  [:post :api/artifacts]     #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
+  [:post :api/project.file]  #ig/ref :com.ben-allred.audiophile.api.handlers.files/create-version
+  [:post :api/project.files] #ig/ref :com.ben-allred.audiophile.api.handlers.files/create
+  [:post :api/projects]      #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
+  [:post :api/teams]         #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create}
 
  :com.ben-allred.audiophile.api.handlers.resources/health
  {}
@@ -32,9 +31,6 @@
  :com.ben-allred.audiophile.api.handlers.resources/ui
  {:store #ig/ref :services/store
   :app   #ig/ref :com.ben-allred.audiophile.common.views.core/app}
-
- :com.ben-allred.audiophile.api.handlers.middleware/with-ex
- {}
 
  :com.ben-allred.audiophile.api.handlers.middleware/with-auth
  {:jwt-serde #ig/ref :serdes/jwt}

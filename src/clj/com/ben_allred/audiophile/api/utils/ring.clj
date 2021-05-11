@@ -37,11 +37,6 @@
   ([k v params]
    {k (maps/assoc-defaults params :value v :http-only true :path "/")}))
 
-(defn abort!
-  "Throws an exception that contains response data that can be caught by route middleware."
-  ([msg]
-   (abort! msg ::http/bad-request))
-  ([msg status]
-   (abort! msg status nil))
-  ([msg status cause]
-   (throw (ex-info msg {:response [status {:errors [{:message msg}]}]} cause))))
+(defn error
+  [status msg]
+  [status {:errors [{:message msg}]}])

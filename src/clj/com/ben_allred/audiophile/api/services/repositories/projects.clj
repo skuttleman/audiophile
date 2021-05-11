@@ -1,5 +1,6 @@
-(ns com.ben-allred.audiophile.api.services.repositories.projects.queries
-  (:require [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]))
+(ns com.ben-allred.audiophile.api.services.repositories.projects
+  (:require
+    [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]))
 
 (defn ^:private has-team-clause [user-id]
   [:exists {:select [:user-id]
@@ -22,5 +23,5 @@
                      [:= :projects.id project-id]
                      (has-team-clause user-id)]))
 
-(defn insert [entity value]
-  (entities/insert-into entity value))
+(defn insert [entity value user-id]
+  (entities/insert-into entity (assoc value :created-by user-id)))

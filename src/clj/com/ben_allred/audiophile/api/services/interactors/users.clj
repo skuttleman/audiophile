@@ -1,7 +1,7 @@
-(ns com.ben-allred.audiophile.api.services.repositories.users.model
+(ns com.ben-allred.audiophile.api.services.interactors.users
   (:require
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.api.services.repositories.users.queries :as qusers]
+    [com.ben-allred.audiophile.api.services.repositories.users :as users]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.logger :as log]))
@@ -12,5 +12,5 @@
   (-> repo
       (repos/transact! repos/->exec!
                        (fns/=> :entity/users
-                               (qusers/select-by [:= :users.email email])))
+                               (users/select-by [:= :users.email email])))
       colls/only!))

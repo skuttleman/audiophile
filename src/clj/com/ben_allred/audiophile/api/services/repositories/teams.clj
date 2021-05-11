@@ -1,5 +1,6 @@
-(ns com.ben-allred.audiophile.api.services.repositories.teams.queries
-  (:require [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]))
+(ns com.ben-allred.audiophile.api.services.repositories.teams
+  (:require
+    [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]))
 
 (defn ^:private has-team-clause [user-id]
   [:exists {:select [:user-id]

@@ -2,7 +2,7 @@
   (:require
     [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.api.services.repositories.users.model :as users]
+    [com.ben-allred.audiophile.api.services.interactors.users :as users]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [integrant.core :as ig]))

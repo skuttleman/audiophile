@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.handlers.projects
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.projects.model :as projects]
+    [com.ben-allred.audiophile.api.services.interactors.projects :as projects]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))

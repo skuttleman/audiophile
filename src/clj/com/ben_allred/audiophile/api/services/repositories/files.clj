@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.api.services.repositories.files.queries
+(ns com.ben-allred.audiophile.api.services.repositories.files
   (:require
     [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
     [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]))
@@ -7,11 +7,11 @@
   [:and
    [:= :files.project-id project-id]
    [:exists {:select [:id]
-                  :from   [:projects]
-                  :join   [:user-teams [:= :projects.team-id :user-teams.team-id]]
-                  :where  [:and
-                           [:= :projects.id :files.project-id]
-                           [:= :user-teams.user-id user-id]]}]])
+             :from   [:projects]
+             :join   [:user-teams [:= :projects.team-id :user-teams.team-id]]
+             :where  [:and
+                      [:= :projects.id :files.project-id]
+                      [:= :user-teams.user-id user-id]]}]])
 
 (defn select-by [entity clause]
   (-> entity

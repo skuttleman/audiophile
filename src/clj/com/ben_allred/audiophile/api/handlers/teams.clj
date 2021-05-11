@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.handlers.teams
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.teams.model :as teams]
+    [com.ben-allred.audiophile.api.services.interactors.teams :as teams]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
