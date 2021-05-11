@@ -23,10 +23,9 @@
    (cond-> value (not response?) :body)))
 
 (defn ^:private deserialize* [ch-response serde serdes]
-  (let [{:keys [headers]
-         :as   response} (-> (ex-data ch-response)
-                             (or ch-response)
-                             (update :headers (partial maps/map-keys keyword)))
+  (let [{:keys [headers] :as response} (update ch-response
+                                               :headers
+                                               (partial maps/map-keys keyword))
         serde (or (find-serde headers serdes) serde)]
     (-> response
         (update :status #(http/code->status % %))

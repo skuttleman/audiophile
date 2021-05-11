@@ -56,8 +56,7 @@
  {}
 
  :com.ben-allred.audiophile.api.handlers.auth/login
- {:nav   #ig/ref :services/nav
-  :oauth #ig/ref :services/oauth}
+ {:oauth #ig/ref :services/oauth}
 
  :com.ben-allred.audiophile.api.handlers.auth/logout
  {:base-url #ig/ref :env/base-url
@@ -66,14 +65,15 @@
  :com.ben-allred.audiophile.api.handlers.auth/callback
  {:base-url #ig/ref :env/base-url
   :nav      #ig/ref :services/nav
-  :oauth    #ig/ref :com.ben-allred.audiophile.api.services.auth.interactor/auth-provider
+  :oauth    #ig/ref :com.ben-allred.audiophile.api.services.auth.core/auth-provider
   :serde    #ig/ref :serdes/jwt}
 
  :com.ben-allred.audiophile.api.handlers.auth/details
  {}
 
- :com.ben-allred.audiophile.api.services.auth.interactor/auth-provider
- {:oauth #ig/ref :services/oauth
+ :com.ben-allred.audiophile.api.services.auth.core/auth-provider
+ {:nav   #ig/ref :services/nav
+  :oauth #ig/ref :services/oauth
   :repo  #ig/ref :services/repositories}
 
  :com.ben-allred.audiophile.api.handlers.projects/fetch-all
