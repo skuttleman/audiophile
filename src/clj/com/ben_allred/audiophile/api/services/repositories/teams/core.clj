@@ -4,7 +4,6 @@
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.common :as crepos]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
     [com.ben-allred.audiophile.api.services.repositories.teams.queries :as q]
     [com.ben-allred.audiophile.api.services.repositories.users.queries :as qu]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
@@ -30,15 +29,9 @@
                  colls/only!)]
     (assoc team
            :team/members
-           (repos/execute! executor
-                           (-> users
-                               (assoc :alias :member)
-                               (entities/select-fields #{:id :first-name :last-name})
-                               (qu/select-by [:= :user-teams.team-id team-id])
-                               (entities/join (-> user-teams
-                                                  (assoc :namespace :member)
-                                                  (entities/select-fields #{:team-id}))
-                                              [:= :user-teams.user-id :member.id]))))))
+           (repos/execute! executor (qu/select-team users
+                                                    user-teams
+                                                    team-id)))))
 
 (defn ^:private create* [executor {:entity/keys [teams user-teams]} team user-id]
   (when-not user-id
@@ -49,7 +42,7 @@
                     colls/only!
                     :id)]
     (-> user-teams
-        (entities/insert-into {:user-id user-id :team-id team-id})
+        (q/insert-user-team team-id user-id)
         (->> (repos/execute! executor)))
     (-> teams
         (q/select-one team-id)

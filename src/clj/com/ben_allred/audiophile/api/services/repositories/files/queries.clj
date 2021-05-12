@@ -13,6 +13,20 @@
                       [:= :projects.id :files.project-id]
                       [:= :user-teams.user-id user-id]]}]])
 
+
+(defn access! [entity user-id]
+  (-> entity
+      (entities/select-fields #{:id})
+      (entities/select* [:and
+                         [:= :user-teams.user-id user-id]])
+      (entities/join {:table :user-teams}
+                     [:= :user-teams.team-id :projects.team-id])))
+
+(defn with-file-access [query file-id]
+  (-> query
+      (entities/join {:table :files} [:= :files.project-id :projects.id])
+      (update :where conj [:= :files.id file-id])))
+
 (defn select-by [entity clause]
   (-> entity
       (entities/select-fields #{:id :idx :name :project-id})
@@ -51,3 +65,17 @@
                                                       (select-by [:= :files.project-id (:project-id file)])
                                                       (assoc :select [(sql/max :idx)]))
                                                   0))))
+
+(defn insert-artifact [entity uri artifact user-id]
+  (-> artifact
+      (select-keys #{:content-type :filename})
+      (assoc :uri uri
+             :content-length (:size artifact)
+             :created-by user-id)
+      (->> (entities/insert-into entity))))
+
+(defn insert-version [entity version file-id user-id]
+  (entities/insert-into entity {:artifact-id (:artifact/id version)
+                                :file-id     file-id
+                                :name        (:version/name version)
+                                :created-by  user-id}))

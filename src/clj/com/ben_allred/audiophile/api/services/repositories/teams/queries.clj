@@ -25,3 +25,6 @@
 
 (defn insert [entity value]
   (entities/insert-into entity value))
+
+(defn insert-user-team [entity team-id user-id]
+  (entities/insert-into entity {:user-id user-id :team-id team-id}))

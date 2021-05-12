@@ -3,7 +3,6 @@
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.api.services.repositories.entities.core :as entities]
     [com.ben-allred.audiophile.api.services.repositories.files.queries :as q]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
@@ -19,35 +18,23 @@
             (future-cancel future#)
             (throw ex#)))))
 
-(defn ^:private access! [entity user-id]
-  (-> entity
-      (entities/select-fields #{:id})
-      (entities/select* [:and
-                         [:= :user-teams.user-id user-id]])
-      (entities/join {:table :user-teams}
-                     [:= :user-teams.team-id :projects.team-id])))
-
 (defn ^:private access-project! [executor projects project-id user-id]
   (when (empty? (-> projects
-                    (access! user-id)
+                    (q/access! user-id)
                     (update :where conj [:= :projects.id project-id])
                     (->> (repos/execute! executor))))
     (throw (ex-info "User cannot access this project" (maps/->m project-id user-id)))))
 
 (defn ^:private access-file! [executor projects file-id user-id]
   (when (empty? (-> projects
-                    (access! user-id)
-                    (entities/join {:table :files} [:= :files.project-id :projects.id])
-                    (update :where conj [:= :files.id file-id])
+                    (q/access! user-id)
+                    (q/with-file-access file-id)
                     (->> (repos/execute! executor))))
     (throw (ex-info "User cannot access this file" (maps/->m file-id user-id)))))
 
 (defn ^:private create-version* [executor files file-versions file user-id file-id]
   (-> file-versions
-      (entities/insert-into {:artifact-id (:artifact/id file)
-                             :file-id     file-id
-                             :name        (:version/name file)
-                             :created-by  user-id})
+      (q/insert-version file file-id user-id)
       (->> (repos/execute! executor)))
   (colls/only! (repos/execute! executor (q/select-one files file-id))))
 
@@ -62,15 +49,11 @@
                   {:content-type   (:content-type artifact)
                    :content-length (:size artifact)
                    :metadata       {:filename (:filename artifact)}})
-      {:artifact/id       (-> artifact
-                              (select-keys #{:content-type :filename})
-                              (assoc :uri (repos/uri store key)
-                                     :content-length (:size artifact)
-                                     :created-by user-id)
-                              (->> (entities/insert-into artifacts))
-                              (->> (repos/execute! executor))
-                              colls/only!
-                              :id)
+      {:artifact/id       (->> user-id
+                               (q/insert-artifact artifacts (repos/uri store key) artifact)
+                               (repos/execute! executor)
+                               colls/only!
+                               :id)
        :artifact/filename (:filename artifact)})))
 
 (defn ^:private query-for-project* [{entity :entity/files} project-id user-id]
