@@ -1,6 +1,18 @@
 {[:duct/const :services/repositories]
  #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/repo
 
+ [:duct/const :interactors/files]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.files.core/model
+
+ [:duct/const :interactors/projects]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.projects.core/model
+
+ [:duct/const :interactors/teams]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.teams.core/model
+
+ [:duct/const :interactors/users]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.users.core/model
+
  [:duct/const :stores/s3]
  #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/store
 
@@ -20,4 +32,16 @@
   :stream-serde #ig/ref :com.ben-allred.audiophile.api.services.resources.s3/stream-serde}
 
  :com.ben-allred.audiophile.api.services.resources.s3/stream-serde
- {}}
+ {}
+
+ :com.ben-allred.audiophile.api.services.repositories.files.core/model
+ {:repo #ig/ref :services/repositories}
+
+ :com.ben-allred.audiophile.api.services.repositories.projects.core/model
+ {:repo #ig/ref :services/repositories}
+
+ :com.ben-allred.audiophile.api.services.repositories.teams.core/model
+ {:repo #ig/ref :services/repositories}
+
+ :com.ben-allred.audiophile.api.services.repositories.users.core/model
+ {:repo #ig/ref :services/repositories}}

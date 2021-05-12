@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.api.services.auth.core
   (:require
     [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.api.services.interactors.users :as users]
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
+    [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
+    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
 (defmacro ^:private safely! [ctx & body]
@@ -24,19 +24,19 @@
   (first (safely! "fetching user profile from the OAuth provider"
                   (pauth/-profile oauth params))))
 
-(defn ^:private fetch-user [email user-repo]
+(defn ^:private fetch-user [email interactor]
   (first (safely! "querying the user from the database"
                   (when email
-                    (users/query-by-email user-repo email)))))
+                    (int/query-one interactor {:user/email email})))))
 
 (defn ^:private request->params [request]
   (get-in request [:nav/route :query-params]))
 
-(defn ^:private params->user [repo oauth params]
+(defn ^:private params->user [interactor oauth params]
   (some-> params
           (fetch-profile oauth)
           :email
-          (fetch-user repo)))
+          (fetch-user interactor)))
 
 (defn ^:private home-path
   ([nav]
@@ -75,7 +75,7 @@
        ring/redirect
        add-auth-token)))
 
-(deftype AuthInteractor [nav oauth repo]
+(deftype AuthInteractor [nav oauth interactor]
   pauth/IOAuthProvider
   (-redirect-uri [_ request]
     (some->> request
@@ -84,10 +84,10 @@
   (-profile [_ request]
     (some->> request
              request->params
-             (params->user repo oauth))))
+             (params->user interactor oauth))))
 
-(defmethod ig/init-key ::auth-provider [_ {:keys [nav oauth repo]}]
-  (->AuthInteractor nav oauth repo))
+(defmethod ig/init-key ::auth-provider [_ {:keys [nav oauth interactor]}]
+  (->AuthInteractor nav oauth interactor))
 
 (defn redirect-uri
   ([provider]

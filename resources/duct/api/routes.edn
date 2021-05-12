@@ -68,42 +68,42 @@
  {}
 
  :com.ben-allred.audiophile.api.services.auth.core/auth-provider
- {:nav   #ig/ref :services/nav
-  :oauth #ig/ref :services/oauth
-  :repo  #ig/ref :services/repositories}
+ {:nav        #ig/ref :services/nav
+  :oauth      #ig/ref :services/oauth
+  :interactor #ig/ref :interactors/users}
 
  :com.ben-allred.audiophile.api.handlers.projects/fetch-all
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/projects}
 
  :com.ben-allred.audiophile.api.handlers.projects/fetch
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/projects}
 
  :com.ben-allred.audiophile.api.handlers.projects/create
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/projects}
 
  :com.ben-allred.audiophile.api.handlers.teams/fetch
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/teams}
 
  :com.ben-allred.audiophile.api.handlers.teams/fetch-all
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/teams}
 
  :com.ben-allred.audiophile.api.handlers.teams/create
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/teams}
 
  :com.ben-allred.audiophile.api.handlers.files/upload
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.handlers.files/fetch-all
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.handlers.files/create
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.handlers.files/create-version
- {:repo #ig/ref :services/repositories}
+ {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.handlers.files/download
- {}
+ {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.services.pubsub.ws/handler
  {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel

@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.services.pubsub.ws
   (:require
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.api.services.interactors.common :as int]
+    [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]

@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.handlers.validations.core
   (:require
     [com.ben-allred.audiophile.api.handlers.validations.specs :as specs]
-    [com.ben-allred.audiophile.api.services.interactors.common :as int]
+    [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [spec-tools.core :as st]))
 

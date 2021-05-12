@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.handlers.core
   (:require
     [com.ben-allred.audiophile.api.handlers.validations.core :as validations]
-    [com.ben-allred.audiophile.api.services.interactors.common :as int]
+    [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.http :as http]

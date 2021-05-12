@@ -4,7 +4,7 @@
     [clojure.core.async.impl.protocols :as async.protocols]
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.dev.migrations :as mig]
-    [com.ben-allred.audiophile.api.services.interactors.common :as int]
+    [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.api.services.pubsub.ws :as ws]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
