@@ -1,11 +1,10 @@
 (ns com.ben-allred.audiophile.api.services.pubsub.ws
   (:require
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.api.services.interactors.core :as int]
+    [com.ben-allred.audiophile.api.handlers.validations.core :as validations]
     [com.ben-allred.audiophile.api.services.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [immutant.web.async :as web.async]
@@ -53,15 +52,11 @@
   (pubsub/unsubscribe! pubsub ch-id))
 
 (defmethod ig/init-key ::->handler [_ {:keys [heartbeat-int-ms pubsub serdes]}]
-  (fn [request channel]
-    (let [user-id (get-in request [:auth/user :user/id])
-          params (get-in request [:nav/route :query-params])
-          deserializer (serdes/find-serde serdes
-                                          (or (:content-type params)
-                                              (:accept params)))
+  (fn [params channel]
+    (let [deserializer (serdes/find-serde serdes (:content-type params))
           ctx {:ch-id            (uuids/random)
                :heartbeat-int-ms heartbeat-int-ms
-               :user-id          user-id
+               :user-id          (:user/id params)
                :pubsub           pubsub
                :state            (ref nil)}]
       (reify
@@ -99,11 +94,8 @@
     (close* channel)))
 
 (defmethod ig/init-key ::->channel [_ {:keys [serdes]}]
-  (fn [request channel]
-    (let [params (get-in request [:nav/route :query-params])
-          serializer (serdes/find-serde! serdes
-                                         (or (:accept params)
-                                             (:content-type params)))]
+  (fn [params channel]
+    (let [serializer (serdes/find-serde! serdes (:accept params))]
       (->SerdeChannel channel serializer))))
 
 (deftype Channel [ch]
@@ -134,13 +126,11 @@
 
 (defmethod ig/init-key ::handler [_ cfg]
   (fn [request]
-    (when-not (:auth/user request)
-      (int/missing-user-ctx!))
-    (when (:websocket? request)
-      (->> cfg
-           (->handler-fn request)
-           ch-map
-           (web.async/as-channel request)))))
+    (validations/validate! :api.ws/connect request)
+    (->> cfg
+         (->handler-fn request)
+         ch-map
+         (web.async/as-channel request))))
 
 (defn broadcast!
   "Broadcast an event to all connections"

@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
     [test.utils :as tu]))
@@ -17,7 +18,7 @@
             handler (::handlers/app system)]
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}
-                                 (ihttp/login system {:user/id :user-id})
+                                 (ihttp/login system {:user/id (uuids/random)})
                                  (ihttp/get system :api/ws {:query-params {:content-type mime-type
                                                                            :accept       mime-type}})
                                  ihttp/as-ws

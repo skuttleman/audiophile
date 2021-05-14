@@ -32,6 +32,11 @@
 (s/def :file/name ::trimmed-string)
 (s/def :version/name ::trimmed-string)
 
+;; ws
+(s/def :ws/accept ::trimmed-string)
+(s/def :ws/content-type ::trimmed-string)
+(s/def :ws/websocket? true?)
+
 ;; API
 (s/def :api.common/auth
   (s/keys :req [:user/id]))
@@ -57,6 +62,9 @@
 (s/def :api.version/create
   (s/merge :api.common/file-id
            (s/keys :req [:artifact/id :version/name])))
+(s/def :api.ws/connect
+  (s/merge :api.common/auth
+           (s/keys :req-un [:ws/accept :ws/content-type :ws/websocket?])))
 
 (defmulti spec
           "returns a spec and conformed data for a validating a request for a route. defaults to `nil`."
@@ -87,6 +95,12 @@
 (defmethod spec [:get :api/teams]
   [_ request]
   {:user/id (get-in request [:auth/user :user/id])})
+
+(defmethod spec [:get :api/ws]
+  [_ request]
+  (-> request
+      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (merge (:headers request) (get-in request [:nav/route :query-params]))))
 
 (defmethod spec [:post :api/artifacts]
   [_ request]

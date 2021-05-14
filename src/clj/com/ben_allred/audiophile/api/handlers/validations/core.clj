@@ -11,10 +11,13 @@
   [handler request]
   (specs/spec handler request))
 
+(defn validate! [spec data]
+  (try
+    (st/select-spec spec (st/conform! spec data))
+    (catch Throwable _
+      (int/invalid-input!))))
+
 (defmethod ig/init-key ::with-spec [_ {:keys [handler spec]}]
   (vary-meta (fn [data]
-               (handler (try
-                          (st/select-spec spec (st/conform! (log/spy spec) (log/spy data)))
-                          (catch Throwable _
-                            (int/invalid-input!)))))
+               (handler (validate! spec data)))
              assoc ::embedded? true))

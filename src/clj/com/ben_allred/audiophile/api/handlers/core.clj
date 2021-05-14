@@ -38,7 +38,7 @@
   (fn [_ request]
     (try (cond-> (handler (validations/select-input route request))
            (::validations/embedded? (meta handler)) (->> (hash-map :data)
-                                            (vector ::http/ok)))
+                                                         (vector ::http/ok)))
 
          (catch Throwable ex
            (ex->response ex)))))

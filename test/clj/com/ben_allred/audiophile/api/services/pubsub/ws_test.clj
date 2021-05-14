@@ -21,8 +21,8 @@
                                                                 [:serialized value])
                                                               (deserialize [_ value _]
                                                                 (second value)))}})
-        request {:auth/user {:user/id ::user-id}
-                 :nav/route {:query-params {:accept "foo/bar"}}}
+        request {:user/id      ::user-id
+                 :content-type "foo/bar"}
         stub (stubs/create (reify pws/IChannel
                              (open? [_] ::open?)
                              (send! [_ _])
@@ -88,7 +88,7 @@
                                                       [:serialized value])
                                                     (deserialize [_ value _]
                                                       [:deserialized value]))}})
-        request {:nav/route {:query-params {:accept "foo/bar"}}}
+        request {:accept "foo/bar"}
         stub (stubs/create (reify pws/IChannel
                              (open? [_] ::open?)
                              (send! [_ _])
