@@ -6,18 +6,15 @@
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::fetch-all [_ {:keys [interactor]}]
-  (fn [request]
-    (let [user-id (get-in request [:auth/user :user/id])]
-      [::http/ok {:data (int/query-many interactor {:user/id user-id})}])))
+  (fn [data]
+    (int/query-many interactor data)))
 
 (defmethod ig/init-key ::fetch [_ {:keys [interactor]}]
-  (fn [request]
-    (let [user-id (get-in request [:auth/user :user/id])
-          team-id (get-in request [:nav/route :route-params :team-id])]
-      [::http/ok {:data (int/query-one interactor {:user/id user-id
-                                                   :team/id team-id})}])))
+  (fn [data]
+    (int/query-one interactor data)))
 
 (defmethod ig/init-key ::create [_ {:keys [interactor]}]
-  (fn [{team :valid/data :as request}]
-    (let [user-id (get-in request [:auth/user :user/id])]
-      [::http/ok {:data (int/create! interactor team {:user/id user-id})}])))
+  (fn [data]
+    (int/create! interactor
+                 data
+                 (select-keys data #{:user/id}))))

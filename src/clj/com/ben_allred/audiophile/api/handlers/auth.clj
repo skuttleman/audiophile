@@ -8,7 +8,16 @@
     [integrant.core :as ig]))
 
 (def ^:private ^:const expire-token-response
-  (auth/add-auth-token {:status ::http/no-content}))
+  (auth/with-token {:status ::http/no-content}))
+
+(defn ^:private redirect!
+  ([nav base-url]
+   (redirect! nav base-url nil))
+  ([nav base-url token]
+   (-> nav
+       (auth/->redirect-url base-url (when-not token :login-failed))
+       ring/redirect
+       (auth/with-token token))))
 
 (defmethod ig/init-key ::login [_ {:keys [oauth]}]
   (fn [request]
@@ -16,14 +25,13 @@
 
 (defmethod ig/init-key ::logout [_ {:keys [base-url nav]}]
   (fn [_]
-    (auth/logout nav base-url)))
+    (redirect! nav base-url)))
 
 (defmethod ig/init-key ::callback [_ {:keys [base-url nav oauth serde]}]
   (fn [request]
-    (if-let [token (some->> (auth/profile oauth request)
-                            (serdes/serialize serde))]
-      (auth/login nav base-url token)
-      (auth/logout nav base-url :login-failed))))
+    (let [token (some->> (auth/profile oauth request)
+                         (serdes/serialize serde))]
+      (redirect! nav base-url token))))
 
 (defmethod ig/init-key ::details [_ _]
   (fn [request]

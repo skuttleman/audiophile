@@ -12,8 +12,11 @@
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
     [integrant.core :as ig]))
 
-(defn ^:private find-serde [{:keys [accept content-type]} serdes]
-  (serdes/find-serde serdes (or content-type accept "")))
+(defn ^:private find-serde
+  ([headers serdes]
+   (find-serde headers serdes nil))
+  ([{:keys [accept content-type]} serdes default-mime-type]
+   (serdes/find-serde serdes (or content-type accept default-mime-type ""))))
 
 (defn ^:private response*
   ([response?]
@@ -96,20 +99,15 @@
     (reify
       pres/IResource
       (request! [_ request]
-        (let [serde (find-serde (:headers request) serdes)
-              mime-type (when serde (serdes/mime-type serde))
+        (let [serde (find-serde (:headers request) serdes "application/edn")
+              mime-type (serdes/mime-type serde)
               body (:body request)
               deserde #(deserialize* % serde serdes)]
           (-> request
+              (update :headers maps/assoc-defaults :accept mime-type)
               (cond->
-                (not mime-type)
-                (update :headers maps/assoc-defaults :accept "application/edn")
-
-                (and body mime-type)
-                (update :headers (fn [headers]
-                                   (-> headers
-                                       (assoc :content-type mime-type)
-                                       (maps/assoc-defaults :accept mime-type))))
+                body
+                (update :headers assoc :content-type mime-type)
 
                 (and serde body)
                 (update :body (partial serdes/serialize serde)))

@@ -38,42 +38,28 @@
           :email
           (fetch-user interactor)))
 
-(defn ^:private home-path
-  ([nav]
-   (home-path nav nil))
-  ([nav error-msg]
-   (nav/path-for nav
-                 :ui/home
-                 (when error-msg
-                   {:query-params {:error-msg error-msg}}))))
+(defn ^:private home-path [nav error-msg]
+  (nav/path-for nav
+                :ui/home
+                (when error-msg
+                  {:query-params {:error-msg error-msg}})))
 
-(defn add-auth-token
+(defn with-token
   "Adds a cookie to a response"
   ([response]
-   (add-auth-token response nil))
+   (with-token response nil))
   ([response value]
    (let [[value cookie] (if value
                           [value]
                           ["" {:max-age 0}])]
      (assoc response :cookies (ring/->cookie "auth-token" value cookie)))))
 
-(defn login
-  "Redirects user to UI app with an auth token cookie"
-  [nav base-url token]
-  (-> base-url
-      (str (home-path nav))
-      ring/redirect
-      (add-auth-token token)))
-
-(defn logout
-  "Redirects user to UI app without an auth token cookie"
+(defn ->redirect-url
+  "Generates redirect url"
   ([nav base-url]
-   (logout nav base-url nil))
+   (->redirect-url nav base-url nil))
   ([nav base-url error-msg]
-   (-> base-url
-       (str (home-path nav error-msg))
-       ring/redirect
-       add-auth-token)))
+   (str base-url (home-path nav error-msg))))
 
 (deftype AuthInteractor [nav oauth interactor]
   pauth/IOAuthProvider

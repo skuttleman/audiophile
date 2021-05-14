@@ -22,6 +22,10 @@
   [_]
   (ring/error ::http/bad-request "invalid request"))
 
+(defmethod ex->response int/NOT_IMPLEMENTED
+  [_]
+  (ring/error ::http/not-implemented "not implemented"))
+
 (defn ^:private route-dispatch [route-table request]
   (let [route (get-in request [:nav/route :handler])]
     (->> [[(:request-method request) route]
@@ -32,10 +36,12 @@
 
 (defn ^:private handler->method [route handler]
   (fn [_ request]
-    (try
-      (handler (validations/validate! route request))
-      (catch Throwable ex
-        (ex->response ex)))))
+    (try (cond-> (handler (validations/select-input route request))
+           (::validations/embedded? (meta handler)) (->> (hash-map :data)
+                                            (vector ::http/ok)))
+
+         (catch Throwable ex
+           (ex->response ex)))))
 
 (defmethod ig/init-key ::router [_ route-table]
   (let [multi (fns/->multi-fn route-dispatch)]

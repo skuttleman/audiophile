@@ -2,11 +2,11 @@
  #ig/ref :routes/table
 
  [:duct/const :routes/table]
- {[:get :api/project.files]  #ig/ref :com.ben-allred.audiophile.api.handlers.files/fetch-all
-  [:get :api/project]        #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch
-  [:get :api/projects]       #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch-all
-  [:get :api/team]           #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch
-  [:get :api/teams]          #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
+ {[:get :api/project.files]  #ig/ref :api.handler/project.files#get
+  [:get :api/project]        #ig/ref :api.handler/project#get
+  [:get :api/projects]       #ig/ref :api.handler/projects#get
+  [:get :api/team]           #ig/ref :api.handler/team#get
+  [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :api/ws]             #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
   [:get :auth/callback]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
   [:get :auth/details]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
@@ -16,11 +16,52 @@
   [:get :resources/health]   #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
   [:get :resources/js]       #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
   [:get :ui/home]            #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui
-  [:post :api/artifacts]     #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
-  [:post :api/project.file]  #ig/ref :com.ben-allred.audiophile.api.handlers.files/create-version
-  [:post :api/project.files] #ig/ref :com.ben-allred.audiophile.api.handlers.files/create
-  [:post :api/projects]      #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
-  [:post :api/teams]         #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create}
+  [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
+  [:post :api/project.file]  #ig/ref :api.handler/project.file#post
+  [:post :api/project.files] #ig/ref :api.handler/project.files#post
+  [:post :api/projects]      #ig/ref :api.handler/projects#post
+  [:post :api/teams]         #ig/ref :api.handler/teams#post}
+
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/project.files#get]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/fetch-all
+  :spec    :api.common/project-id}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/project#get]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch
+  :spec    :api.common/project-id}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/projects#get]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.projects/fetch-all
+  :spec    :api.common/auth}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/team#get]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch
+  :spec    :api.common/team-id}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/teams#get]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
+  :spec    :api.common/auth}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/artifacts#post]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
+  :spec    :api.artifact/create}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/project.file#post]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/create-version
+  :spec    :api.version/create}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/project.files#post]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/create
+  :spec    :api.file/create}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/projects#post]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.projects/create
+  :spec    :api.project/create}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/teams#post]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create
+  :spec    :api.team/create}
 
  :com.ben-allred.audiophile.api.handlers.resources/health
  {}
