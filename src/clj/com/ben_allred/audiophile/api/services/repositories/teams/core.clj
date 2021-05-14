@@ -15,13 +15,9 @@
                   {:entity-fn (crepos/->entity-fn entity)}))
 
 (defn ^:private query-all* [{entity :entity/teams} user-id]
-  (when-not user-id
-    (int/missing-user-ctx!))
   (q/select-for-user entity user-id))
 
 (defn ^:private query-by-id* [executor {:entity/keys [teams user-teams users]} team-id user-id]
-  (when-not user-id
-    (int/missing-user-ctx!))
   (let [team (-> executor
                  (exec* teams (q/select-one-for-user teams
                                                      team-id
@@ -34,8 +30,6 @@
                                                     team-id)))))
 
 (defn ^:private create* [executor {:entity/keys [teams user-teams]} team user-id]
-  (when-not user-id
-    (int/missing-user-ctx!))
   (let [team-id (-> teams
                     (q/insert (assoc team :created-by user-id))
                     (->> (repos/execute! executor))

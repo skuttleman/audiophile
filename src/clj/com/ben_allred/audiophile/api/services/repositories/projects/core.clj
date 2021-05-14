@@ -8,18 +8,12 @@
     [integrant.core :as ig]))
 
 (defn ^:private query-all* [{entity :entity/projects} user-id]
-  (when-not user-id
-    (int/missing-user-ctx!))
   (q/select-for-user entity user-id))
 
 (defn ^:private query-by-id* [{entity :entity/projects} project-id user-id]
-  (when-not user-id
-    (int/missing-user-ctx!))
   (q/select-one-for-user entity project-id user-id))
 
 (defn ^:private create* [executor {entity :entity/projects} project user-id]
-  (when-not user-id
-    (int/missing-user-ctx!))
   (let [project-id (-> entity
                        (q/insert project user-id)
                        (->> (repos/execute! executor))

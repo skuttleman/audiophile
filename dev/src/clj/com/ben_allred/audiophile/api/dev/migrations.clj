@@ -65,7 +65,9 @@
                               (-> "migrations.edn"
                                   duct/resource
                                   (duct/read-config uduct/readers)
-                                  (duct/prep-config [:duct.profile/base :duct.profile/migrations])
+                                  (duct/prep-config [:duct.profile/base
+                                                     :duct.profile/dev
+                                                     :duct.profile/migrations])
                                   (ig/init [::migrator ::repos/transactor])))]
     (try
       (case command

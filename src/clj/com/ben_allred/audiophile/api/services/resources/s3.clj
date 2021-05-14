@@ -5,6 +5,7 @@
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
 (deftype S3Client [client bucket invoke]

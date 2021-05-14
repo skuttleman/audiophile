@@ -159,7 +159,6 @@
 
 (defn find-serde! [serdes type]
   (let [default-serde (or (:default serdes)
-                          (:edn serdes)
                           (some-> serdes first val)
                           (throw (ex-info "could not find serializer" {})))]
     (find-serde serdes type default-serde)))

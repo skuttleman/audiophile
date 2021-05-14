@@ -15,7 +15,9 @@
     (-> "test.edn"
         duct/resource
         (duct/read-config uduct/readers)
-        (duct/prep-config [:duct.profile/base :duct.profile/test]))))
+        (duct/prep-config [:duct.profile/base
+                           :duct.profile/dev
+                           :duct.profile/test]))))
 
 (defn ^:private mocked-cfg
   ([base]
@@ -61,7 +63,7 @@
            (ig/halt! system#))))))
 
 (defn seed-user [system email]
-  (->> (get-in (get system [:duct/const :test/seed-data]) [0 :values])
+  (->> (get-in system [[:duct/const :test/seed-data] 0 :values])
        (filter (comp #{email} :email))
        first
        (into {}
