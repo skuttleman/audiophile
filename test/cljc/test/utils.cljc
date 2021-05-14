@@ -16,11 +16,6 @@
     (v/peek prom #(async/go (async/>! ch %)))
     ch))
 
-(defmacro <p! [prom]
-  (if (:ns &env)
-    `(async/<! (prom->ch ~prom))
-    `(async/<!! (prom->ch ~prom))))
-
 (defn ^:private <!* [ch ms]
   (async/go
     (let [[val] (async/alts! [ch (async/go
@@ -50,6 +45,11 @@
                           {:timeout ms
                            :ch      ch})))
         val))))
+
+(defmacro <p! [prom]
+  (if (:ns &env)
+    `(async/<! (<!ms (prom->ch ~prom)))
+    `(<!!ms (prom->ch ~prom))))
 
 (defn op-set [[op & args]]
   [op (set args)])

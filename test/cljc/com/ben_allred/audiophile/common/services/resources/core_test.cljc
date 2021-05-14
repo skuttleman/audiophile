@@ -26,7 +26,7 @@
 
         (testing "#status"
           (testing "when the resource has not been requested"
-            (let [opts->vow (spies/create)
+            (let [opts->vow (spies/create (v/resolve))
                   resource (res/->Resource (atom {:status :init}) opts->vow)]
               (testing "has the correct status"
                 (is (= :init (res/status resource)))))
@@ -47,13 +47,13 @@
                 (testing "has the correct status"
                   (is (= :success (res/status resource))))))
 
-            #_(testing "when the resource request fails"
-                (let [opts->vow (spies/create (v/reject {:errors :errors}))
-                      resource (res/->Resource (atom {:status :init}) opts->vow)]
-                  (tu/<p! (res/request! resource ::opts))
+            (testing "when the resource request fails"
+              (let [opts->vow (spies/create (v/reject {:errors :errors}))
+                    resource (res/->Resource (atom {:status :init}) opts->vow)]
+                (tu/<p! (res/request! resource ::opts))
 
-                  (testing "has the correct status"
-                    (is (= :error (res/status resource))))))))
+                (testing "has the correct status"
+                  (is (= :error (res/status resource))))))))
 
         (testing "#then"
           (testing "when the request succeeds"

@@ -20,8 +20,8 @@
       (v/peek (fn [_]
                 (let [[_ {:keys [body]}] (ffirst (stubs/calls store :dispatch!))]
                   @body)))
-      (v/then #(v/sleep % 75)
-              #(v/sleep (v/reject %) 75))))
+      (v/then #(v/sleep % 150)
+              #(v/sleep (v/reject %) 150))))
 
 (deftest toast-resource-test
   (testing "ToastResource"

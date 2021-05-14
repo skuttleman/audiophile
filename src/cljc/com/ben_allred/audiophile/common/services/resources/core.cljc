@@ -12,6 +12,14 @@
      (:import
        (clojure.lang IDeref))))
 
+(defn ^:private ->watch-fn [resolve reject]
+  (fn [watch-key state _ {:keys [status value error]}]
+    (when (case status
+            :success [(resolve value)]
+            :error [(reject error)]
+            nil)
+      (remove-watch state watch-key))))
+
 (deftype Resource [state opts->vow]
   pres/IResource
   (request! [_ opts]
@@ -26,22 +34,13 @@
 
   pv/IPromise
   (then [_ on-success on-error]
-    (let [{:keys [status value error]} @state]
-      (v/then (v/create (fn [resolve reject]
-                          (case status
-                            :success (resolve value)
-                            :error (reject error)
-                            (let [watch-key (gensym)]
-                              (add-watch state
-                                         watch-key
-                                         (fn [_ _ _ {:keys [status value error]}]
-                                           (when (case status
-                                                   :success [(resolve value)]
-                                                   :error [(reject error)]
-                                                   nil)
-                                             (remove-watch state watch-key))))))))
-              on-success
-              on-error)))
+    (v/then (v/create (fn [resolve reject]
+                        (let [watch-key (gensym)
+                              watcher (->watch-fn resolve reject)]
+                          (add-watch state watch-key watcher)
+                          (watcher watch-key state nil @state))))
+            on-success
+            on-error))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
