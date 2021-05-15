@@ -48,19 +48,16 @@
                           x))
                       reify)
                  (concat
-                   (list `IStub
-                         (let [sym (gensym)]
-                           (list 'init! [sym]
-                                 (list `swap! state `dissoc :stubs :calls)
-                                 sym))
-                         (let [[this method val] (repeatedly gensym)]
-                           (list '-set-stub! [this method val]
-                                 (list `swap! state `update :stubs `assoc method val)))
-                         (let [[this method] (repeatedly gensym)]
-                           (list '-get-stub [this method]
-                                 (list `get-in (list `deref state) [:stubs method])))
-                         (list '-calls '[_]
-                               (list :calls (list `deref state))))))]
+                   [`IStub
+                    (list* 'init! `([this#]
+                                    (swap! ~state dissoc :stubs :calls)
+                                    this#))
+                    (list* '-set-stub! `([this# method# val#]
+                                         (swap! ~state update :stubs assoc method# val#)))
+                    (list* '-get-stub `([this# method#]
+                                        (get-in (deref ~state) [:stubs method#])))
+                    (list* '-calls `([this#]
+                                     (:calls (deref ~state))))]))]
     `(let [~state (atom {:stubs nil})]
        ~stub)))
 

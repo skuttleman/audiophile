@@ -10,7 +10,6 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 - Install [JDK](https://docs.oracle.com/en/java/javase/16/install/overview-jdk-installation.html#GUID-8677A77F-231A-40F7-98B9-1FD0B48C346A)
 - Install [Clojure runtime](https://clojure.org/guides/getting_started)
 - Install [Sass](https://sass-lang.com/install)
-- Install [foreman](https://www.npmjs.com/package/foreman)
 
 ### Run application in dev mode
 
@@ -25,7 +24,7 @@ $ bin/run.sh dev
 You can override which ports the servers listen on.
 
 ```bash
-$ PORT=3000 NREPL_PORT=7000 UI_NREPL_PORT=7100 npm start
+$ PORT=3000 NREPL_PORT=7000 UI_NREPL_PORT=7100 bin/run.sh dev
 ```
 
 Visit `http://localhost:{PORT:-3000}` in your browser to use app.

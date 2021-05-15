@@ -9,7 +9,7 @@
 (defmacro async [cb body]
   (if (:ns &env)
     `(clojure.test/async ~cb ~body)
-    (cons `do (butlast (rest body)))))
+    (list* `do (butlast (rest body)))))
 
 (defn prom->ch [prom]
   (let [ch (async/promise-chan)]
