@@ -15,7 +15,7 @@
 (deftest auth-details-test
   (testing "GET /auth/details"
     (int/with-config [system [::handlers/app]]
-      (let [user (int/seed-user system "joe@example.com")
+      (let [user (int/lookup-user system "joe@example.com")
             handler (-> (::handlers/app system)
                         (ihttp/with-serde system :serdes/edn))
             response (-> {}
@@ -30,7 +30,7 @@
 (deftest auth-callback-test
   (testing "GET /auth/callback"
     (int/with-config [system [::handlers/app]] {:db/enabled? true}
-      (let [user (int/seed-user system "joe@example.com")
+      (let [user (int/lookup-user system "joe@example.com")
             handler (-> (::handlers/app system)
                         (ihttp/with-serde system :serdes/edn))]
         (stubs/set-stub! (int/component system :services/oauth)
@@ -52,7 +52,7 @@
               (is (http/redirect? response))
               (is (= (str base-url "/")
                      (get-in response [:headers "Location"])))
-              (is (= (dissoc user :user/mobile-number :user/created-at)
+              (is (= user
                      (-> jwt-serde
                          (serdes/deserialize (get-in cookies ["auth-token" :value]))
                          :data

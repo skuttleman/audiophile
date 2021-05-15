@@ -3,8 +3,8 @@
      (:require-macros
        com.ben-allred.audiophile.ui.services.config))
   (:require
-    #?(:clj [duct.core :as duct])
-    [com.ben-allred.audiophile.common.utils.duct :as uduct]
+    #?@(:clj [[com.ben-allred.audiophile.common.utils.duct :as uduct]
+              [duct.core :as duct]])
     [integrant.core :as ig]))
 
 (defmacro load-config [file profiles]

@@ -1,7 +1,33 @@
 [{:insert-into :users
-  :values      [{:id            #uuid "a41152f5-4f29-4e0f-aba9-c48ae0ab9676"
-                 :first-name    "Joe"
+  :values      [{:first-name    "Joe"
                  :last-name     "Example"
                  :handle        "handly"
                  :email         "joe@example.com"
-                 :mobile-number "1234567890"}]}]
+                 :mobile-number "1234567890"}]}
+ {:insert-into :teams
+  :values      [{:name       "Team Seed"
+                 :type       #audiophile/sql-call [:cast "PERSONAL" :team_type]
+                 :created-by #audiophile/fk [:users :email "joe@example.com"]}]}
+ {:insert-into :user-teams
+  :values      [{:user-id #audiophile/fk [:users :email "joe@example.com"]
+                 :team-id #audiophile/fk [:teams :name "Team Seed"]}]}
+ {:insert-into :projects
+  :values      [{:name       "Project Seed"
+                 :team-id    #audiophile/fk [:teams :name "Team Seed"]
+                 :created-by #audiophile/fk [:users :email "joe@example.com"]}]}
+ {:insert-into :artifacts
+  :values      [{:uri            "local://target/artifacts/some-key"
+                 :filename       "example.mp3"
+                 :content-type   "audio/mp3"
+                 :content-length 123
+                 :created-by     #audiophile/fk [:users :email "joe@example.com"]}]}
+ {:insert-into :files
+  :values      [{:project-id #audiophile/fk [:projects :name "Project Seed"]
+                 :idx        0
+                 :name       "File Seed"
+                 :created-by #audiophile/fk [:users :email "joe@example.com"]}]}
+ {:insert-into :file-versions
+  :values      [{:file-id     #audiophile/fk [:files :name "File Seed"]
+                 :artifact-id #audiophile/fk [:artifacts :filename "example.mp3"]
+                 :name        "File Version Seed"
+                 :created-by  #audiophile/fk [:users :email "joe@example.com"]}]}]

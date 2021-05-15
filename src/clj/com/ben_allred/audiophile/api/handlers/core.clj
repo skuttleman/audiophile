@@ -36,10 +36,13 @@
 
 (defn ^:private handler->method [route handler]
   (fn [_ request]
-    (try (cond-> (handler (validations/select-input route request))
-           (::validations/embedded? (meta handler)) (->> (hash-map :data)
-                                                         (vector ::http/ok)))
-
+    (try (let [result (handler (validations/select-input route request))]
+           (cond-> result
+             (::validations/embedded? (meta handler))
+             (cond->
+               (some? result) (->> (hash-map :data)
+                                   (vector ::http/ok))
+               (nil? result) (->> (vector ::http/not-found)))))
          (catch Throwable ex
            (ex->response ex)))))
 

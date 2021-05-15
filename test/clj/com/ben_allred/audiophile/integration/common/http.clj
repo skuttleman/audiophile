@@ -2,9 +2,11 @@
   (:refer-clojure :exclude [get])
   (:require
     [clojure.core.async :as async]
+    [clojure.java.io :as io]
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.integration.common :as int]))
 
@@ -12,12 +14,12 @@
   ([request system]
    (login request system nil))
   ([request system user]
-   (let [serde (clojure.core/get system [:duct/const :serdes/jwt])
+   (let [serde (int/component system :serdes/jwt)
          token (serdes/serialize serde user)]
      (assoc-in request [:headers "cookie"] (str "auth-token=" token)))))
 
 (defn ^:private go [request system method page params]
-  (let [nav (clojure.core/get system [:duct/const :services/nav])
+  (let [nav (int/component system :services/nav)
         [uri query-string] (string/split (nav/path-for nav page params) #"\?")]
     (maps/assoc-maybe request
                       :request-method method
@@ -29,6 +31,27 @@
    (get request system page nil))
   ([request system page params]
    (go request system :get page params)))
+
+(defn post
+  ([request system page]
+   (post request system page nil))
+  ([request system page params]
+   (go request system :post page params)))
+
+(defn body-data [payload]
+  {:body {:data payload}})
+
+(defn upload
+  ([request res]
+   (upload request res "content/type"))
+  ([request res content-type]
+   (let [file (io/as-file res)]
+     (assoc-in request
+               [:params "files[]"]
+               {:filename     (.getName file)
+                :content-type content-type
+                :tempfile     file
+                :size         (.length file)}))))
 
 (defn as-ws [request]
   (assoc request :websocket? true))

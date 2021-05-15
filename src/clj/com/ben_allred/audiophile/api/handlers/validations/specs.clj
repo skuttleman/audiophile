@@ -46,6 +46,9 @@
 (s/def :api.common/project-id
   (s/merge :api.common/auth
            (s/keys :req [:project/id])))
+(s/def :api.common/team-id
+  (s/merge :api.common/auth
+           (s/keys :req [:team/id])))
 
 (s/def :api.artifact/create
   (s/merge :api.common/auth

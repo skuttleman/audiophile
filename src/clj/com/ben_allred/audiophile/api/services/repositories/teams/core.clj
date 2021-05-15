@@ -1,12 +1,12 @@
 (ns com.ben-allred.audiophile.api.services.repositories.teams.core
   (:require
-    [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.common :as crepos]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.teams.queries :as q]
     [com.ben-allred.audiophile.api.services.repositories.users.queries :as qu]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
 (defn ^:private exec* [executor entity query]
@@ -19,15 +19,16 @@
 
 (defn ^:private query-by-id* [executor {:entity/keys [teams user-teams users]} team-id user-id]
   (let [team (-> executor
-                 (exec* teams (q/select-one-for-user teams
-                                                     team-id
-                                                     user-id))
+                 (exec* teams (log/spy (q/select-one-for-user teams
+                                                              team-id
+                                                              user-id)))
                  colls/only!)]
-    (assoc team
-           :team/members
-           (repos/execute! executor (qu/select-team users
-                                                    user-teams
-                                                    team-id)))))
+    (when team
+      (assoc team
+             :team/members
+             (repos/execute! executor (qu/select-team users
+                                                      user-teams
+                                                      team-id))))))
 
 (defn ^:private create* [executor {:entity/keys [teams user-teams]} team user-id]
   (let [team-id (-> teams

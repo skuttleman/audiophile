@@ -3,8 +3,11 @@
   (:require
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [honeysql.core :as sql*]
+    [honeysql.types :as ht]
     honeysql-postgres.format
     honeysql-postgres.helpers))
+
+(def call ht/read-sql-call)
 
 (defn cast [value type]
   (sql*/call :cast value type))

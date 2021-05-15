@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
     [com.ben-allred.audiophile.api.services.env :as env]
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
     [duct.core :as duct]
@@ -62,13 +63,39 @@
          (finally
            (ig/halt! system#))))))
 
-(defn seed-user [system email]
-  (->> (get-in system [[:duct/const :test/seed-data] 0 :values])
-       (filter (comp #{email} :email))
-       first
-       (into {}
-             (map (fn [[k v]]
-                    [(keyword "user" (name k)) v])))))
+(defn ^:private lookup* [system query]
+  (let [tx (get system [:duct/const :services/transactor])]
+    (first (repos/transact! tx repos/->exec! (constantly query)))))
+
+(defn lookup-user [system email]
+  (lookup* system {:select [[:id "user/id"]
+                            [:email "user/email"]
+                            [:first-name "user/first-name"]
+                            [:last-name "user/last-name"]
+                            [:handle "user/handle"]]
+                   :from   [:users]
+                   :where  [:= :email email]}))
+
+(defn lookup-project [system name]
+  (lookup* system {:select [[:id "project/id"]
+                            [:team-id "project/team-id"]]
+                   :from   [:projects]
+                   :where  [:= :name name]}))
+
+(defn lookup-artifact [system filename]
+  (lookup* system {:select [[:id "artifact/id"]]
+                   :from   [:artifacts]
+                   :where  [:= :filename filename]}))
+
+(defn lookup-file [system filename]
+  (lookup* system {:select [[:id "file/id"]]
+                   :from   [:files]
+                   :where  [:= :name filename]}))
+
+(defn lookup-team [system name]
+  (lookup* system {:select [[:id "team/id"]]
+                   :from   [:teams]
+                   :where  [:= :name name]}))
 
 (defn component [system k]
   (second (ig/find-derived-1 system k)))
