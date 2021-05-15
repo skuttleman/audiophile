@@ -10,28 +10,25 @@
 (def ^:private ^:const expire-token-response
   (auth/with-token {:status ::http/no-content}))
 
-(defn ^:private redirect!
-  ([nav base-url]
-   (redirect! nav base-url nil))
-  ([nav base-url token]
-   (-> nav
-       (auth/->redirect-url base-url (when-not token :login-failed))
-       ring/redirect
-       (auth/with-token token))))
-
 (defmethod ig/init-key ::login [_ {:keys [oauth]}]
   (fn [request]
     (ring/redirect (auth/redirect-uri oauth request))))
 
 (defmethod ig/init-key ::logout [_ {:keys [base-url nav]}]
   (fn [_]
-    (redirect! nav base-url)))
+    (-> nav
+        (auth/->redirect-url base-url)
+        ring/redirect
+        auth/with-token)))
 
 (defmethod ig/init-key ::callback [_ {:keys [base-url nav oauth serde]}]
   (fn [request]
     (let [token (some->> (auth/profile oauth request)
                          (serdes/serialize serde))]
-      (redirect! nav base-url token))))
+      (-> nav
+          (auth/->redirect-url base-url (when-not token :login-failed))
+          ring/redirect
+          (auth/with-token token)))))
 
 (defmethod ig/init-key ::details [_ _]
   (fn [request]

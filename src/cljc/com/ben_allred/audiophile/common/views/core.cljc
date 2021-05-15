@@ -5,8 +5,8 @@
     [integrant.core :as ig]))
 
 (defn root [components-table state]
-  (let [handler (get-in state [:page :handler])
-        component (get components-table handler comp/not-found)]
+  (let [handle (get-in state [:nav/route :handle])
+        component (get components-table handle comp/not-found)]
     [component state]))
 
 (defmethod ig/init-key ::app [_ {:keys [banners components-table header modals toasts]}]
@@ -15,7 +15,7 @@
      [banners (:banners state)]
      [header state]
      [:div.main.layout--inset
-      {:class [(str "page-" (some-> state (get-in [:page :handler]) name))]}
+      {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
       [:div.layout--inset
        [root components-table state]]]
      [modals (:modals state)]

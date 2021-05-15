@@ -19,7 +19,7 @@
       [:div.has-text-centered "Assign follow up tasks to get changes made"]]]]
    [:div.gutters.layout--xxl
     [:div "Login to get started"]
-    [login-form (:page state)]]])
+    [login-form (:nav/route state)]]])
 
 (defmethod ig/init-key ::login-form [_ {:keys [nav]}]
   (constantly
@@ -32,7 +32,7 @@
 
 (defmethod ig/init-key ::root [_ {:keys [nav login-form]}]
   (fn [state]
-    (let [redirect-uri (get-in state [:page :query-params :redirect-uri])]
+    (let [redirect-uri (get-in state [:nav/route :query-params :redirect-uri])]
       (if (:auth/user state)
         (nav/-navigate! nav (or redirect-uri "/"))
         [root* login-form state]))))

@@ -38,11 +38,11 @@
   (f/validator {:email (f/required "email is required")}))
 
 (defmethod ig/init-key ::login-form [_ {:keys [login-resource]}]
-  (fn [_page]
+  (fn [_route]
     (let [form (vres/create login-resource (forms.std/create nil validator))]
-      (fn [page]
+      (fn [route]
         [comp/form {:form        form
-                    :page        page
+                    :route       route
                     :submit/text "Login"}
          [in/input (forms/with-attrs {:label       "email"
                                       :auto-focus? true}

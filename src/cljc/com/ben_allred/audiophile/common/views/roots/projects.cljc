@@ -151,7 +151,7 @@
 
 (defmethod ig/init-key ::one [_ {:keys [files project team track-list]}]
   (fn [state]
-    (let [project-id (get-in state [:page :route-params :project-id])
+    (let [project-id (get-in state [:nav/route :route-params :project-id])
           opts {:nav/params {:route-params {:project-id project-id}}}]
       [:div
        [comp/with-resource [project opts] project-details team]

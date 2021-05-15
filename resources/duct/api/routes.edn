@@ -93,7 +93,7 @@
  {}
 
  :com.ben-allred.audiophile.api.handlers.auth/login
- {:oauth #ig/ref :services/oauth}
+ {:oauth #ig/ref :com.ben-allred.audiophile.api.services.auth.core/auth-provider}
 
  :com.ben-allred.audiophile.api.handlers.auth/logout
  {:base-url #ig/ref :env/base-url

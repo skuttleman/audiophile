@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.common.services.navigation.core
   (:require
     [bidi.bidi :as bidi]
+    [clojure.set :as set]
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
@@ -50,22 +51,22 @@
     nil)
 
   pserdes/ISerde
-  (serialize [_ page opts]
-    (pserdes/serialize router page opts))
+  (serialize [_ handle opts]
+    (pserdes/serialize router handle opts))
   (deserialize [_ path opts]
     (pserdes/deserialize router path opts)))
 
-(defn serialize* [routes page opts]
+(defn serialize* [routes handle opts]
   (let [{:keys [query-params]} opts
         qp (uri/join-query query-params)]
     (cond-> (apply bidi/path-for
                    routes
-                   page
+                   handle
                    (mapcat (fn [[k v]]
                              [k (str (cond-> v
                                        (keyword? v) name))])
                            (-> opts
-                               (assoc :handler page)
+                               (assoc :handle handle)
                                internal->params
                                :route-params)))
       (seq qp) (str "?" qp))))
@@ -76,6 +77,7 @@
     (some-> routes
             (bidi/match-route path')
             (assoc :path path')
+            (set/rename-keys {:handler :handle})
             (cond->
               (seq qp) (assoc :query-params qp)
               query-string (assoc :query-string query-string))
@@ -87,20 +89,20 @@
   (-replace! [_ _])
 
   pserdes/ISerde
-  (serialize [_ page opts]
-    (serialize* routes page opts))
+  (serialize [_ handle opts]
+    (serialize* routes handle opts))
   (deserialize [_ path _]
     (deserialize* routes path)))
 
 (defmethod ig/init-key ::router [_ {:keys [routes]}]
   (->Router routes))
 
-(defn ^:private on-nav [-nav store pushy page]
-  (let [page' (maps/update-maybe page :query-params dissoc :error-msg)]
-    (if-let [err (get-in page [:query-params :error-msg])]
+(defn ^:private on-nav [-nav store pushy handle]
+  (let [route (maps/update-maybe handle :query-params dissoc :error-msg)]
+    (if-let [err (get-in handle [:query-params :error-msg])]
       (do (ui-store/dispatch! store (actions/server-err! err))
-          (pushy/replace-token! pushy (serdes/serialize -nav (:handler page') page')))
-      (ui-store/dispatch! store [:router/updated page']))))
+          (pushy/replace-token! pushy (serdes/serialize -nav (:handle route) route)))
+      (ui-store/dispatch! store [:router/updated route]))))
 
 (defmethod ig/init-key ::nav [_ {:keys [routes store]}]
   (let [router (->Router routes)
@@ -114,30 +116,30 @@
   (-stop! nav))
 
 (defn path-for
-  ([nav page]
-   (path-for nav page nil))
-  ([nav page params]
-   (serdes/serialize nav page params)))
+  ([nav handle]
+   (path-for nav handle nil))
+  ([nav handle params]
+   (serdes/serialize nav handle params)))
 
 (defn navigate!
   "push a path + params to the browser's history"
-  ([nav page]
-   (navigate! nav page nil))
-  ([nav page params]
-   (-navigate! nav (path-for nav page params))))
+  ([nav handle]
+   (navigate! nav handle nil))
+  ([nav handle params]
+   (-navigate! nav (path-for nav handle params))))
 
 (defn replace!
-  ([nav page]
-   (replace! nav page nil))
-  ([nav page params]
-   (-replace! nav (path-for nav page params))))
+  ([nav handle]
+   (replace! nav handle nil))
+  ([nav handle params]
+   (-replace! nav (path-for nav handle params))))
 
 (defn goto!
   "send the browser to a location with a page rebuild"
-  ([nav page]
-   (goto! nav page nil))
-  ([nav page params]
-   (dom/assign! (path-for nav page params))))
+  ([nav handle]
+   (goto! nav handle nil))
+  ([nav handle params]
+   (dom/assign! (path-for nav handle params))))
 
 (defn match-route [nav path]
   (serdes/deserialize nav path))

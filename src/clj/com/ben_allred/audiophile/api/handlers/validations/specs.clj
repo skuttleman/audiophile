@@ -2,9 +2,7 @@
   (:require
     [clojure.spec.alpha :as s]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids])
+    [com.ben-allred.audiophile.common.utils.logger :as log])
   (:import
     (java.io File)))
 

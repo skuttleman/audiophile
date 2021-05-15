@@ -41,9 +41,9 @@
                                 "/path")))]
       (async done
         (async/go
-          (let [routes {:success/page   :success/page
+          (let [routes {:success/handle :success/handle
                         :success/params :success/params
-                        :error/page     :error/page
+                        :error/handle   :error/handle
                         :error/params   :error/params}]
             (testing "#request!"
               (let [redirect (redirect/->RedirectResource resource nav routes)]
@@ -53,7 +53,7 @@
                   (let [result (tu/<p! (res/request! redirect ::opts))]
                     (testing "redirects"
                       (let [args (colls/only! (stubs/calls nav :serialize))]
-                        (is (= [:success/page :success/params] args))))
+                        (is (= [:success/handle :success/params] args))))
 
                     (testing "returns the result"
                       (is (= [:success ::opts] result)))))
@@ -64,7 +64,7 @@
                   (let [result (tu/<p! (res/request! redirect ::opts))]
                     (testing "redirects"
                       (let [args (colls/only! (stubs/calls nav :serialize))]
-                        (is (= [:error/page :error/params] args))))
+                        (is (= [:error/handle :error/params] args))))
 
                     (testing "returns the result"
                       (is (= [:error ::opts] result)))))))

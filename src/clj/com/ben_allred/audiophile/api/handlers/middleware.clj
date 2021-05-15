@@ -101,7 +101,7 @@
   (fn [handler]
     (fn [request]
       (if (some-> request
-                  (get-in [:nav/route :handler])
+                  (get-in [:nav/route :handle])
                   ((some-fn #{:resources/health}
                             (comp #{"auth" "api"} namespace))))
         (with-logging handler request)

@@ -2,15 +2,11 @@
   (:require
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]))
 
-(def ^:const MISSING_USER_CONTEXT :interactor/MISSING_USER_CTX)
 (def ^:const INVALID_INPUT :interactor/INVALID_INPUT)
 (def ^:const NOT_IMPLEMENTED :interactor/NOT_IMPLEMENTED)
 
 (defn ^:private throw-reason! [code]
   (throw (ex-info (name code) {:interactor/reason code})))
-
-(defn missing-user-ctx! []
-  (throw-reason! MISSING_USER_CONTEXT))
 
 (defn invalid-input! []
   (throw-reason! INVALID_INPUT))

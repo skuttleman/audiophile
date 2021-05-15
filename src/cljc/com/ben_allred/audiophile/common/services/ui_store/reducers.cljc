@@ -7,7 +7,7 @@
   ([] nil)
   ([state _] state))
 
-(defn ^:private page
+(defn ^:private route
   ([] nil)
   ([state [type route]]
    (case type
@@ -48,8 +48,8 @@
      state)))
 
 (def reducer
-  (rcollaj/combine (maps/->m {:auth/user ident*}
+  (rcollaj/combine (maps/->m {:auth/user ident*
+                              :nav/route route}
                              banners
                              modals
-                             page
                              toasts)))

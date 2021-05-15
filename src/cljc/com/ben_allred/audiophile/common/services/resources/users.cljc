@@ -5,8 +5,8 @@
     [integrant.core :as ig]))
 
 (defmethod ig/init-key ::login [_ {:keys [nav]}]
-  (fn [{value :form/value :keys [page]}]
+  (fn [{value :form/value :keys [route]}]
     (let [params {:email        (:email value)
-                  :redirect-uri (get-in page [:query-params :redirect-uri] "/")}]
+                  :redirect-uri (get-in route [:query-params :redirect-uri] "/")}]
       (nav/goto! nav :auth/login {:query-params params})
       (v/resolve))))

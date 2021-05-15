@@ -42,7 +42,7 @@
  [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]
  {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :teams/create]
   :nav      #ig/ref :services/nav
-  :routes   {:success/page :ui/home}}
+  :routes   {:success/handle :ui/home}}
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :teams/all]
  {:resource #ig/ref :resources/teams.all

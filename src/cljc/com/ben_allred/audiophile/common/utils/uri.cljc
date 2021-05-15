@@ -29,11 +29,12 @@
     (string/join \& (map (fn [[k v]]
                            (if (vector? v)
                              (join-query (map (fn [v] [k v]) v))
-                             (apply str
-                                    (url-encode (name k))
-                                    (when-not (boolean? v)
-                                      [\=
-                                       (url-encode (name v))]))))
+                             (when (some? v)
+                               (apply str
+                                      (url-encode (name k))
+                                      (when-not (boolean? v)
+                                        [\=
+                                         (url-encode (name v))])))))
                          arg))))
 
 (defn split-query

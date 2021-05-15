@@ -14,10 +14,6 @@
   (log/error ex "An unknown error occurred")
   (ring/error ::http/internal-server-error "an unknown error occurred"))
 
-(defmethod ex->response int/MISSING_USER_CONTEXT
-  [_]
-  (ring/error ::http/unauthorized "not authenticated"))
-
 (defmethod ex->response int/INVALID_INPUT
   [_]
   (ring/error ::http/bad-request "invalid request"))
@@ -27,7 +23,7 @@
   (ring/error ::http/not-implemented "not implemented"))
 
 (defn ^:private route-dispatch [route-table request]
-  (let [route (get-in request [:nav/route :handler])]
+  (let [route (get-in request [:nav/route :handle])]
     (->> [[(:request-method request) route]
           [:any route]
           [(:request-method request) :ui/home]]

@@ -23,7 +23,9 @@
           (->> (ui-store/dispatch! store))))
 
 (defn ws-uri [nav serde base-url]
-  (let [params {:query-params {:content-type (serdes/mime-type serde)}}]
+  (let [mime-type (serdes/mime-type serde)
+        params {:query-params {:content-type mime-type
+                               :accept       mime-type}}]
     (-> base-url
         str
         uri/parse

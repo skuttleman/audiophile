@@ -18,25 +18,25 @@
          token (serdes/serialize serde user)]
      (assoc-in request [:headers "cookie"] (str "auth-token=" token)))))
 
-(defn ^:private go [request system method page params]
+(defn ^:private go [request system method handle params]
   (let [nav (int/component system :services/nav)
-        [uri query-string] (string/split (nav/path-for nav page params) #"\?")]
+        [uri query-string] (string/split (nav/path-for nav handle params) #"\?")]
     (maps/assoc-maybe request
                       :request-method method
                       :uri uri
                       :query-string query-string)))
 
 (defn get
-  ([request system page]
-   (get request system page nil))
-  ([request system page params]
-   (go request system :get page params)))
+  ([request system handle]
+   (get request system handle nil))
+  ([request system handle params]
+   (go request system :get handle params)))
 
 (defn post
-  ([request system page]
-   (post request system page nil))
-  ([request system page params]
-   (go request system :post page params)))
+  ([request system handle]
+   (post request system handle nil))
+  ([request system handle params]
+   (go request system :post handle params)))
 
 (defn body-data [payload]
   {:body {:data payload}})

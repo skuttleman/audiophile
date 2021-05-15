@@ -41,8 +41,9 @@
 
 (defn form [{:keys [buttons disabled form on-submitted] :as attrs} & fields]
   (let [resource? (satisfies? pres/IResource form)
-        ready? (when resource?
-                 (res/ready? form))
+        ready? (if resource?
+                 (res/ready? form)
+                 true)
         disabled (or disabled
                      (not ready?)
                      (->> (forms/errors form)
@@ -63,7 +64,7 @@
                          :type     :submit
                          :disabled disabled}
                         (:submit/text attrs "Submit")]]
-                disabled
+                (not ready?)
                 (conj [:div {:style {:margin-bottom "8px"}} [spinner nil]])
 
                 buttons

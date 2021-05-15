@@ -49,7 +49,7 @@
   (fn [_state]
     (let [shown? (r/atom false)]
       (fn [state]
-        (let [handler (get-in state [:page :handler])]
+        (let [handle (get-in state [:nav/route :handle])]
           [:header.header
            [:nav.navbar
             {:role "navigation" :aria-label "main navigation"}
@@ -80,7 +80,7 @@
                             :class    ["navbar-item"]}]]]
                  [:ul.navbar-start.oversize.tabs
                   [:li
-                   {:class [(when (= :ui/home handler) "is-active")]}
+                   {:class [(when (= :ui/home handle) "is-active")]}
                    [:a.navbar-item {:href (nav/path-for nav :ui/home)} "Home"]]]]]
                [:div.navbar-end.oversize
                 [:div.navbar-item

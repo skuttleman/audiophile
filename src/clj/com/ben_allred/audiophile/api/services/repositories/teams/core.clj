@@ -19,9 +19,9 @@
 
 (defn ^:private query-by-id* [executor {:entity/keys [teams user-teams users]} team-id user-id]
   (let [team (-> executor
-                 (exec* teams (log/spy (q/select-one-for-user teams
-                                                              team-id
-                                                              user-id)))
+                 (exec* teams (q/select-one-for-user teams
+                                                     team-id
+                                                     user-id))
                  colls/only!)]
     (when team
       (assoc team

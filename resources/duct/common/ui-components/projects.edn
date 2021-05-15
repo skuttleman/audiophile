@@ -61,7 +61,7 @@
  [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
  {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :projects/create]
   :nav      #ig/ref :services/nav
-  :routes   {:success/page :ui/home}}
+  :routes   {:success/handle :ui/home}}
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
  {:resource #ig/ref :resources/projects.all

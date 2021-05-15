@@ -189,8 +189,8 @@
                      (request! [_ _])))
           nav (reify
                 pserdes/ISerde
-                (serialize [_ page params]
-                  [page params]))]
+                (serialize [_ handle params]
+                  [handle params]))]
       (async done
         (async/go
           (testing "#request!"
@@ -199,10 +199,10 @@
               (testing "when sending a request"
                 (stubs/use! client :request!
                             (v/resolve "result"))
-                (let [result (tu/<p! (res/request! resource {:nav/route  ::page
+                (let [result (tu/<p! (res/request! resource {:nav/route  ::handle
                                                              :nav/params ::params}))]
                   (testing "calculates the url"
-                    (is (= {:url [::page ::params]}
+                    (is (= {:url [::handle ::params]}
                            (ffirst (stubs/calls client :request!)))))
 
                   (testing "returns the response"

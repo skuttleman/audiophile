@@ -19,7 +19,7 @@
     (let [routes ["" [[["/test/" [uuids/regex :project-id] "/route"] :test/route]]]
           id (uuids/random)]
       (testing "deserializes url to params"
-        (is (= {:handler      :test/route
+        (is (= {:handle       :test/route
                 :route-params {:project-id id}
                 :query-params {:query true
                                :foo   "bar"}
