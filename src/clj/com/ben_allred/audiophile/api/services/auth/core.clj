@@ -30,7 +30,8 @@
                     (int/query-one interactor {:user/email email})))))
 
 (defn ^:private request->params [request]
-  (get-in request [:nav/route :query-params]))
+  (or (get-in request [:nav/route :query-params])
+      {}))
 
 (defn ^:private params->user [interactor oauth params]
   (some-> params

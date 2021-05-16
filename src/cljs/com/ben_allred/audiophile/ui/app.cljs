@@ -27,9 +27,7 @@
     com.ben-allred.audiophile.common.views.roots.teams))
 
 (defn ^:private app [app* store]
-  [app* (-> store
-            ui-store/get-state
-            (dissoc :internal/resource-state))])
+  [app* (ui-store/get-state store)])
 
 (def ^:private config
   (cfg/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))

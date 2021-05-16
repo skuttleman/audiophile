@@ -14,10 +14,10 @@
 
 (def reload!
   (let [reload* (rel/wrap-reload identity {:dirs ["src/clj"
-                                                   "src/cljc"
-                                                   "test/clj"
-                                                   "test/cljc"
-                                                   "dev/src/clj"]})]
+                                                  "src/cljc"
+                                                  "test/clj"
+                                                  "test/cljc"
+                                                  "dev/src/clj"]})]
     (fn []
       (reload* nil)
       (require 'com.ben-allred.audiophile.api.services.pubsub.ws :reload)
