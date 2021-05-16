@@ -8,6 +8,7 @@
 
 (def ^:const ANSI_RESET "\u001B[0m")
 (def ^:const ANSI_YELLOW "\u001B[33m")
+(def ^:const ANSI_GREEN "\u001B[32;1m")
 
 (def ^:dynamic *ctx* nil)
 
@@ -20,7 +21,7 @@
     `(let [val# ~expr
            ~pr (~f val#)]
        ~(log* form level (list (str ANSI_YELLOW expr ANSI_RESET) separator pr))
-       ~pr)))
+       val#)))
 
 (defmacro with-ctx [ctx & body]
   (if (:ns &env)
@@ -53,7 +54,12 @@
   ([expr]
    (spy* &form :info expr `identity "=>"))
   ([level expr]
-   (spy* &form level expr `identity "=>")))
+   (spy* &form level expr `identity "=>"))
+  ([level msg expr]
+   (let [pr (gensym "pr")]
+     `(let [~pr ~expr]
+        ~(log* &form level (list `(str ~ANSI_GREEN ~msg ~ANSI_RESET) "=>" pr))
+        ~pr))))
 
 (defmacro spy-tap
   ([f expr]

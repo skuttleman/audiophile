@@ -32,27 +32,29 @@
                    :client_secret client-secret
                    :redirect_uri redirect-uri)})
 
-(defn ^:private token* [http-client {:keys [token-uri] :as cfg} opts]
-  (->> opts
-       (token-request cfg)
-       (http/post http-client token-uri)))
+(defn ^:private token* [identifier http-client {:keys [token-uri] :as cfg} opts]
+  (-> opts
+      (->> (token-request cfg)
+           (http/post http-client token-uri))
+      (v/then-> (->> (log/spy :info (str identifier " token response"))))))
 
 (defn ^:private profile-request [tokens]
   {:query-params (select-keys tokens #{:access_token})
    :headers      {:content-type "application/json"
                   :accept       "application/json"}})
 
-(defn ^:private profile* [http-client {:keys [profile-uri] :as cfg} opts]
-  (-> (token* http-client cfg opts)
-      (v/then-> (->> profile-request (http/get http-client profile-uri)))
+(defn ^:private profile* [identifier http-client {:keys [profile-uri] :as cfg} opts]
+  (-> (token* identifier http-client cfg opts)
+      (v/then-> (->> profile-request (http/get http-client profile-uri))
+                (->> (log/spy :info (str identifier " profile response"))))
       v/deref!))
 
 (deftype GoogleOAuthProvider [http-client cfg]
   pauth/IOAuthProvider
   (-redirect-uri [_ opts]
     (redirect-uri* cfg opts))
-  (-profile [_ opts]
-    (profile* http-client cfg opts)))
+  (-profile [this opts]
+    (profile* (.getSimpleName (class this)) http-client cfg opts)))
 
 (defmethod ig/init-key ::oauth-provider [_ {:keys [cfg http-client]}]
   (->GoogleOAuthProvider http-client cfg))
