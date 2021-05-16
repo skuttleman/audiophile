@@ -1,5 +1,5 @@
 {:duct.profile/base
- #duct/include "duct/base.ui.edn"
+ #duct/include "duct/ui/base.edn"
 
  :duct.profile/prod
  {}}
