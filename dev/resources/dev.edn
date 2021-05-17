@@ -40,7 +40,7 @@
 
   [:com.ben-allred.audiophile.api.core/server :http/server#ui :duct/daemon]
   {:handler     #ig/ref :api.dev/handler#ui
-   :server-port #duct/env ["UI_PORT" Int :or 3010]}
+   :server-port #ig/ref :env/server-port#ui}
 
   :com.ben-allred.audiophile.api.dev.handler/s3-client
   {}

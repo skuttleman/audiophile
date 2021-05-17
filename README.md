@@ -24,10 +24,10 @@ $ bin/run.sh dev
 You can override which ports the servers listen on.
 
 ```bash
-$ PORT=3000 NREPL_PORT=7000 UI_NREPL_PORT=7100 bin/run.sh dev
+$ PORT=3000 UI_PORT=8080 NREPL_PORT=7000 UI_NREPL_PORT=7100 bin/run.sh dev
 ```
 
-Visit `http://localhost:{PORT:-3000}` in your browser to use app.
+Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
 
 api nREPL listens at `localhost {NREPL_PORT:-7000}` (can be overridden with NREPL_PORT env var)
 ui nREPL listens at `localhost {UI_NREPL_PORT:-7100}` (can be overridden with UI_NREPL_PORT env var)

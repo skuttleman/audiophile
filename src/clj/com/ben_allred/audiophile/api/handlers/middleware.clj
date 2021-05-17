@@ -50,9 +50,13 @@
                                                   "unknown/mime-type")
                                               request-serde)]
         (cond-> response
-          (and response-serde (serializable? (:body response)))
-          (-> (update :body (partial serdes/serialize response-serde))
-              (assoc-in [:headers :content-type] (serdes/mime-type response-serde))))))))
+          (serializable? (:body response))
+          (-> (update :body (if response-serde
+                              (partial serdes/serialize response-serde)
+                              str))
+              (assoc-in [:headers :content-type] (if response-serde
+                                                   (serdes/mime-type response-serde)
+                                                   "text/plain"))))))))
 
 (defmethod ig/init-key ::with-route [_ {:keys [nav]}]
   (fn [handler]

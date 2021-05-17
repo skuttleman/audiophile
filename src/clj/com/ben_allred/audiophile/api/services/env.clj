@@ -3,7 +3,8 @@
     [clojure.java.io :as io]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.core :as u]
-    [integrant.core :as ig])
+    [integrant.core :as ig]
+    com.ben-allred.audiophile.ui.services.config)
   (:import
     (java.net InetAddress)))
 
