@@ -20,14 +20,14 @@
 (defn query-one [accessor opts]
   (pint/query-one accessor opts))
 
-(defn create! [accessor data opts]
-  (pint/create! accessor data opts))
+(defn create! [accessor opts]
+  (pint/create! accessor opts))
 
-(defn create-artifact! [interactor artifact opts]
-  (pint/create-artifact! interactor artifact opts))
+(defn create-artifact! [interactor opts]
+  (pint/create-artifact! interactor opts))
 
-(defn create-file! [interactor project-id file opts]
-  (pint/create-file! interactor project-id file opts))
+(defn create-file! [interactor opts]
+  (pint/create-file! interactor opts))
 
-(defn create-file-version! [interactor file-id version opts]
-  (pint/create-file-version! interactor file-id version opts))
+(defn create-file-version! [interactor opts]
+  (pint/create-file-version! interactor opts))

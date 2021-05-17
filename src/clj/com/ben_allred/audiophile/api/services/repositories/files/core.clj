@@ -78,12 +78,12 @@
     (repos/transact! repo repos/->exec! query-for-project* (:project/id opts) (:user/id opts)))
 
   pint/IFileAccessor
-  (create-artifact! [_ artifact opts]
-    (repos/transact! repo create-artifact* artifact (:user/id opts)))
-  (create-file! [_ project-id file opts]
-    (repos/transact! repo create-file* project-id file (:user/id opts)))
-  (create-file-version! [_ file-id version opts]
-    (repos/transact! repo create-file-version* file-id version (:user/id opts))))
+  (create-artifact! [_ opts]
+    (repos/transact! repo create-artifact* opts (:user/id opts)))
+  (create-file! [_ opts]
+    (repos/transact! repo create-file* (:project/id opts) opts (:user/id opts)))
+  (create-file-version! [_ opts]
+    (repos/transact! repo create-file-version* (:file/id opts) opts (:user/id opts))))
 
 (defmethod ig/init-key ::model [_ {:keys [repo]}]
   (->FileAccessor repo))

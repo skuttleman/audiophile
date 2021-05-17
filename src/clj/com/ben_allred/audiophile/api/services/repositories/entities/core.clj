@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
@@ -13,14 +14,10 @@
                   column (csk/->kebab-case-keyword (:column_name row))]
               (update entities
                       table
-                      (fn [entity]
-                        (-> entity
-                            (update :fields
-                                    (fnil conj #{})
-                                    column)
-                            (cond->
-                              (= "USER-DEFINED" (:data_type row))
-                              (assoc-in [:casts column] (keyword (:udt_name row)))))))))
+                      (fns/=> (update :fields (fnil conj #{}) column)
+                              (cond->
+                                (= "USER-DEFINED" (:data_type row))
+                                (assoc-in [:casts column] (keyword (:udt_name row))))))))
           {}
           (repos/transact! tx (fn [executor _]
                                 (repos/execute! executor
@@ -63,16 +60,21 @@
     :from   [(from entity)]
     :entity entity}))
 
+(defn ^:private valid-column? [{ns :namespace :keys [fields]} normalized-k ns-k]
+  (and (contains? fields normalized-k)
+       (or (nil? ns-k)
+           (= (name ns) ns-k))))
+
 (defn insert-into
   "Generates a query for inserting rows into a database table"
-  [{:keys [casts fields table]} input]
+  [{:keys [casts fields table] :as entity} input]
   {:insert-into table
    :values      (for [value (colls/force-sequential input)]
                   (into {}
                         (keep (fn [[k v]]
                                 (let [k' (keyword (name k))
                                       cast (get casts k')]
-                                  (when (contains? fields k')
+                                  (when (valid-column? entity k' (namespace k))
                                     [k' (cond-> v
                                           cast (-> name (sql/cast cast)))]))))
                         value))

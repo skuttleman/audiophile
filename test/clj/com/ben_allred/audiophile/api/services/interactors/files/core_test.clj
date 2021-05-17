@@ -23,8 +23,8 @@
                                              {:filename     "file.name"
                                               :size         12345
                                               :content-type "content/type"
-                                              :tempfile     "…content…"}
-                                             {:user/id user-id})
+                                              :tempfile     "…content…"
+                                              :user/id      user-id})
                 [store-k & stored] (colls/only! (stubs/calls store :put!))
                 [query] (colls/only! (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
@@ -51,13 +51,13 @@
         (stubs/use! store :put!
                     (ex-info "Store" {}))
         (testing "fails"
-          (is (thrown? Throwable (int/create-artifact! repo {} {:user/id (uuids/random)})))))
+          (is (thrown? Throwable (int/create-artifact! repo {:user/id (uuids/random)})))))
 
       (testing "when the store throws an exception"
         (stubs/use! tx :execute!
                     (ex-info "Executor" {}))
         (testing "fails"
-          (is (thrown? Throwable (int/create-artifact! repo {} {:user/id (uuids/random)}))))))))
+          (is (thrown? Throwable (int/create-artifact! repo {:user/id (uuids/random)}))))))))
 
 (deftest query-many-test
   (testing "query-many"
@@ -135,11 +135,11 @@
                     nil
                     [{:id file-id :other :data}])
         (let [result (int/create-file! repo
-                                       project-id
-                                       {:file/name    "file name"
+                                       {:project/id   project-id
+                                        :file/name    "file name"
                                         :version/name "version"
-                                        :artifact/id  artifact-id}
-                                       {:user/id user-id})
+                                        :artifact/id  artifact-id
+                                        :user/id      user-id})
               [[access-query] [file-insert] [version-insert] [query] & more] (stubs/calls tx :execute!)]
           (is (empty? more))
           (testing "checks for access permission"
@@ -242,9 +242,8 @@
                     (ex-info "Executor" {}))
         (testing "fails"
           (is (thrown? Throwable (int/create-file! repo
-                                                   (uuids/random)
-                                                   {}
-                                                   {:user/id (uuids/random)}))))))))
+                                                   {:project/id (uuids/random)
+                                                    :user/id    (uuids/random)}))))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
@@ -257,11 +256,11 @@
                     nil
                     [{:id file-id :other :data}])
         (let [result (int/create-file-version! repo
-                                               file-id
-                                               {:file/name    "file name"
+                                               {:file/id      file-id
+                                                :file/name    "file name"
                                                 :version/name "version"
-                                                :artifact/id  artifact-id}
-                                               {:user/id user-id})
+                                                :artifact/id  artifact-id
+                                                :user/id      user-id})
               [[access-query] [version-insert] [query] & more] (stubs/calls tx :execute!)]
           (is (empty? more))
           (testing "checks for access permission"
@@ -333,6 +332,5 @@
                     (ex-info "Executor" {}))
         (testing "fails"
           (is (thrown? Throwable (int/create-file-version! repo
-                                                           (uuids/random)
-                                                           {}
-                                                           {:user/id (uuids/random)}))))))))
+                                                           {:file/id (uuids/random)
+                                                            :user/id (uuids/random)}))))))))

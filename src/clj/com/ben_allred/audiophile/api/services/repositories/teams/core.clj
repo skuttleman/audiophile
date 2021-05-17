@@ -50,8 +50,8 @@
     (repos/transact! repo repos/->exec! query-all* (:user/id opts)))
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) (:user/id opts)))
-  (create! [_ team opts]
-    (repos/transact! repo create* team (:user/id opts))))
+  (create! [_ opts]
+    (repos/transact! repo create* opts (:user/id opts))))
 
 (defmethod ig/init-key ::model [_ {:keys [repo]}]
   (->TeamAccessor repo))

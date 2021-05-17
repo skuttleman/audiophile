@@ -118,8 +118,9 @@
                     [{:user :team}]
                     [{:transmogrified :value}])
         (let [result (int/create! repo
-                                  {:created-at :whenever :other :junk}
-                                  {:user/id user-id})
+                                  {:created-at :whenever
+                                   :other      :junk
+                                   :user/id    user-id})
               [[insert-team] [insert-user-team] [select]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
@@ -153,7 +154,7 @@
         (stubs/use! tx :execute!
                     (ex-info "kaboom!" {}))
         (testing "fails"
-          (is (thrown? Throwable (int/create! tx {} {:user/id user-id})))))
+          (is (thrown? Throwable (int/create! tx {:user/id user-id})))))
 
       (testing "when querying the repository throws"
         (stubs/use! tx :execute!
@@ -161,4 +162,4 @@
                     []
                     (ex-info "kaboom!" {}))
         (testing "fails"
-          (is (thrown? Throwable (int/create! tx {} {:user/id user-id}))))))))
+          (is (thrown? Throwable (int/create! tx {:user/id user-id}))))))))

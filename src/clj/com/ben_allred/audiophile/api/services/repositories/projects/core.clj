@@ -29,8 +29,8 @@
     (repos/transact! repo repos/->exec! query-all* (:user/id opts)))
   (query-one [_ opts]
     (colls/only! (repos/transact! repo repos/->exec! query-by-id* (:project/id opts) (:user/id opts))))
-  (create! [_ project opts]
-    (repos/transact! repo create* project (:user/id opts))))
+  (create! [_ opts]
+    (repos/transact! repo create* opts (:user/id opts))))
 
 (defmethod ig/init-key ::model [_ {:keys [repo]}]
   (->ProjectAccessor repo))

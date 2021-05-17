@@ -95,8 +95,9 @@
                     [{:id project-id}]
                     [{:transmogrified :value}])
         (let [result (int/create! repo
-                                  {:created-at :whenever :other :junk}
-                                  {:user/id user-id})
+                                  {:created-at :whenever
+                                   :other      :junk
+                                   :user/id user-id})
               [[insert] [select] & more] (stubs/calls tx :execute!)]
           (is (empty? more))
           (testing "saves to the repository"
@@ -126,11 +127,11 @@
         (stubs/use! tx :execute!
                     (ex-info "kaboom!" {}))
         (testing "fails"
-          (is (thrown? Throwable (int/create! repo {} {:user/id user-id})))))
+          (is (thrown? Throwable (int/create! repo {:user/id user-id})))))
 
       (testing "when querying the repository throws"
         (stubs/use! tx :execute!
                     [{:id project-id}]
                     (ex-info "kaboom!" {}))
         (testing "fails"
-          (is (thrown? Throwable (int/create! repo {} {:user/id user-id}))))))))
+          (is (thrown? Throwable (int/create! repo {:user/id user-id}))))))))

@@ -6,24 +6,19 @@
 
 (defmethod ig/init-key ::upload [_ {:keys [interactor]}]
   (fn [data]
-    (int/create-artifact! interactor
-                          data
-                          (select-keys data #{:user/id}))))
+    (int/create-artifact! interactor data)))
 
 (defmethod ig/init-key ::fetch-all [_ {:keys [interactor]}]
   (fn [data]
     (int/query-many interactor data)))
 
 (defmethod ig/init-key ::create [_ {:keys [interactor]}]
-  (fn [{project-id :project/id user-id :user/id :as data}]
-    (int/create-file! interactor project-id data {:user/id user-id})))
+  (fn [data]
+    (int/create-file! interactor data)))
 
 (defmethod ig/init-key ::create-version [_ {:keys [interactor]}]
   (fn [data]
-    (int/create-file-version! interactor
-                              (:file/id data)
-                              data
-                              (select-keys data #{:user/id}))))
+    (int/create-file-version! interactor data)))
 
 (defmethod ig/init-key ::download [_ {:keys [interactor]}]
   (fn [_]

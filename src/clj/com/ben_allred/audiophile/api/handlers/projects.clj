@@ -14,6 +14,4 @@
 
 (defmethod ig/init-key ::create [_ {:keys [interactor]}]
   (fn [project]
-    (int/create! interactor
-                 project
-                 (select-keys project #{:user/id}))))
+    (int/create! interactor project)))
