@@ -63,8 +63,11 @@
          (finally
            (ig/halt! system#))))))
 
+(defn component [system k]
+  (second (ig/find-derived-1 system k)))
+
 (defn ^:private lookup* [system query]
-  (let [tx (get system [:duct/const :services/transactor])]
+  (let [tx (component system :services/transactor)]
     (first (repos/transact! tx repos/->exec! (constantly query)))))
 
 (defn lookup-user [system email]
@@ -96,6 +99,3 @@
   (lookup* system {:select [[:id "team/id"]]
                    :from   [:teams]
                    :where  [:= :name name]}))
-
-(defn component [system k]
-  (second (ig/find-derived-1 system k)))

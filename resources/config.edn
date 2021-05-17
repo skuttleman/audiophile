@@ -13,7 +13,9 @@
                                    #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
                       :router     #ig/ref :api.prod/router}
 
-                     [:com.ben-allred.audiophile.api.handlers.core/router :api.prod/router]
-                     #audiophile/merge
+                     [:duct.custom/merge :routes/table]
                      [#ig/ref :routes/table#api
-                      #ig/ref :routes/table#ui]}}
+                      #ig/ref :routes/table#ui]
+
+                     [:com.ben-allred.audiophile.api.handlers.core/router :api.prod/router]
+                     #ig/ref :routes/table}}

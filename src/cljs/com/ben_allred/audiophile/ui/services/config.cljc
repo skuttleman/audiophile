@@ -22,3 +22,6 @@
 
 (defmethod ig/init-key :duct.core/environment [_ env]
   env)
+
+(defmethod ig/init-key :duct.custom/merge [_ ms]
+  (reduce merge ms))
