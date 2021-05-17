@@ -183,18 +183,20 @@
 
 (deftest with-nav-test
   (testing "with-nav"
-    (let [client (stubs/create
+    (let [->url #(str "/" %1 "/" %2)
+          client (stubs/create
                    (reify
                      pres/IResource
                      (request! [_ _])))
           nav (reify
                 pserdes/ISerde
                 (serialize [_ handle params]
-                  [handle params]))]
+                  (->url handle params)))]
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((ig/init-key ::client/with-nav {:nav nav})
+            (let [resource ((ig/init-key ::client/with-nav {:nav nav
+                                                            :env {:api-base "api://base"}})
                             client)]
               (testing "when sending a request"
                 (stubs/use! client :request!
@@ -202,7 +204,7 @@
                 (let [result (tu/<p! (res/request! resource {:nav/route  ::handle
                                                              :nav/params ::params}))]
                   (testing "calculates the url"
-                    (is (= {:url [::handle ::params]}
+                    (is (= {:url (str "api://base" (->url ::handle ::params))}
                            (ffirst (stubs/calls client :request!)))))
 
                   (testing "returns the response"

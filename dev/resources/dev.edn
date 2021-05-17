@@ -1,29 +1,50 @@
 {:duct.profile/base
  #audiophile/merge
- [#duct/include "duct/api/base.edn"
-  {[:duct/const :resources/migration-path]
-   "db/migrations"}]
+     [#duct/include "duct/api/base.edn"
+      {[:duct/const :resources/migration-path]
+       "db/migrations"}]
 
  :duct.profile/dev
- {[:duct/const :api/handler]
-  #ig/ref :com.ben-allred.audiophile.api.dev.handler/app
-
-  [:duct/const :services/s3-client]
+ {[:duct/const :services/s3-client]
   #ig/ref :com.ben-allred.audiophile.api.dev.handler/s3-client
-
-  [:com.ben-allred.audiophile.api.core/server :duct/daemon]
-  {:handler     #ig/ref :api/handler
-   :server-port #ig/ref :env/server-port}
-
-  :com.ben-allred.audiophile.api.dev.handler/app
-  {:app #ig/ref :com.ben-allred.audiophile.api.handlers.core/app}
 
   [:duct/const :services/oauth]
   #ig/ref :com.ben-allred.audiophile.api.dev.handler/oauth
+
+  [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#api]
+  {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-cors
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+   :router     #ig/ref :api/router#api}
+
+  [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#ui]
+  {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+   :router     #ig/ref :api/router#ui}
+
+  [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#api]
+  {:app #ig/ref :api/handler#api}
+
+  [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#ui]
+  {:app #ig/ref :api/handler#ui}
+
+  [:com.ben-allred.audiophile.api.core/server :http/server#api :duct/daemon]
+  {:handler     #ig/ref :api.dev/handler#api
+   :server-port #ig/ref :env/server-port#api}
+
+  [:com.ben-allred.audiophile.api.core/server :http/server#ui :duct/daemon]
+  {:handler     #ig/ref :api.dev/handler#ui
+   :server-port #duct/env ["UI_PORT" Int :or 3010]}
 
   :com.ben-allred.audiophile.api.dev.handler/s3-client
   {}
 
   :com.ben-allred.audiophile.api.dev.handler/oauth
   {:nav      #ig/ref :services/nav
-   :base-url #ig/ref :env/base-url}}}
+   :base-url #ig/ref :env/base-url#ui}}}

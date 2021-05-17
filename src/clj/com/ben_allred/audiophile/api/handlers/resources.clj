@@ -22,11 +22,12 @@
 (defmethod ig/init-key ::health [_ _]
   (constantly [::http/ok {:a :ok}]))
 
-(defmethod ig/init-key ::ui [_ {:keys [store app]}]
+(defmethod ig/init-key ::ui [_ {:keys [app base-url store]}]
   (fn [{user :auth/user route :nav/route}]
     [::http/ok
      (templates/html [app (maps/assoc-maybe (ui-store/get-state store)
                                             :auth/user user
                                             :nav/route route)]
-                     user)
+                     {:auth/user user
+                      :api-base  base-url})
      {:content-type "text/html"}]))

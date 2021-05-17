@@ -34,8 +34,8 @@
         uri/stringify
         (str (nav/path-for nav :api/ws params)))))
 
-(defmethod ig/init-key ::handler [_ {:keys [base-url nav reconnect-ms serde store]}]
-  (let [url (ws-uri nav serde #?(:cljs (.-location js/window) :default base-url))
+(defmethod ig/init-key ::handler [_ {:keys [env nav reconnect-ms serde store]}]
+  (let [url (ws-uri nav serde (:api-base env))
         {:auth/keys [user]} (ui-store/get-state store)]
     (when user
       (let [ws (ws*/keep-alive! url

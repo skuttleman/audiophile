@@ -2,7 +2,6 @@
   (:require
     [clojure.java.io :as io]
     [clojure.java.shell :as sh]
-    [clojure.string :as string]
     [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
@@ -36,15 +35,9 @@
     (-profile [_ opts]
       {:email (:mock-email opts)})))
 
-(defn logging [app request]
-  (if (or (string/starts-with? (:uri request "") "/api")
-          (string/starts-with? (:uri request "") "/auth"))
-    (log/spy :debug (app (log/spy :debug request)))
-    (app request)))
-
 (defmethod ig/init-key ::app [_ {:keys [app]}]
   (fn [request]
-    (try (logging app request)
+    (try (app request)
          (catch Throwable ex
            (log/error ex "[DEV] uncaught exception!" request)
            {:status 500}))))

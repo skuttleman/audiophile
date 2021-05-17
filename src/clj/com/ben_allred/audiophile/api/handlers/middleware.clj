@@ -2,6 +2,7 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
+    [clojure.string :as string]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
@@ -86,26 +87,18 @@
             time
             (:status response))))
 
-(defn ^:private with-logging [handler request]
-  (let [start (System/nanoTime)
-        response (handler request)
-        end (System/nanoTime)
-        elapsed (- end start)
-        msg (log-msg request response elapsed)]
-    (if (::ex (meta response))
-      (log/warn msg)
-      (log/info msg))
-    response))
-
 (defmethod ig/init-key ::with-logging [_ _]
   (fn [handler]
     (fn [request]
-      (if (some-> request
-                  (get-in [:nav/route :handle])
-                  ((some-fn #{:resources/health}
-                            (comp #{"auth" "api"} namespace))))
-        (with-logging handler request)
-        (handler request)))))
+      (let [start (System/nanoTime)
+            response (handler request)
+            end (System/nanoTime)
+            elapsed (- end start)
+            msg (log-msg request response elapsed)]
+        (if (::ex (meta response))
+          (log/warn msg)
+          (log/info msg))
+        response))))
 
 (defmethod ig/init-key ::with-auth [_ {:keys [jwt-serde]}]
   (fn [handler]
@@ -123,3 +116,20 @@
           (maps/update-maybe :headers (partial maps/map-keys csk/->kebab-case-keyword))
           handler
           (maps/update-maybe :headers (partial maps/map-keys name))))))
+
+(defmethod ig/init-key ::with-cors [_ _]
+  (fn [handler]
+    (fn [{:keys [headers] :as request}]
+      (let [origin (:origin headers)
+            req-headers (:access-control-request-headers headers)
+            response-headers (cond-> {:access-control-allow-credentials "true"
+                                      :access-control-allow-methods     "GET,POST,PUT,PATCH,DELETE,HEAD"}
+                               origin (assoc :access-control-allow-origin origin)
+                               req-headers (assoc :access-control-allow-headers (if (string? req-headers)
+                                                                                  req-headers
+                                                                                  (string/join "," req-headers))))]
+        (if (= :options (:method request))
+          [::http/no-content nil response-headers]
+          (-> request
+              handler
+              (update :headers merge response-headers)))))))

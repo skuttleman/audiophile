@@ -15,7 +15,7 @@
   (testing "GET /api/ws"
     (int/with-config [system [::handlers/app]]
       (let [mime-type (serdes/mime-type (get system [:duct/const :serdes/edn]))
-            handler (::handlers/app system)]
+            handler (int/component system [::handlers/app :api/handler#api])]
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}
                                  (ihttp/login system {:user/id (uuids/random)})

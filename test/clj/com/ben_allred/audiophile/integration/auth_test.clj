@@ -16,7 +16,8 @@
   (testing "GET /auth/details"
     (int/with-config [system [::handlers/app]]
       (let [user (int/lookup-user system "joe@example.com")
-            handler (-> (::handlers/app system)
+            handler (-> system
+                        (int/component [::handlers/app :api/handler#ui])
                         (ihttp/with-serde system :serdes/edn))
             response (-> {}
                          (ihttp/login system user)
@@ -31,7 +32,8 @@
   (testing "GET /auth/callback"
     (int/with-config [system [::handlers/app]] {:db/enabled? true}
       (let [user (int/lookup-user system "joe@example.com")
-            handler (-> (::handlers/app system)
+            handler (-> system
+                        (int/component [::handlers/app :api/handler#ui])
                         (ihttp/with-serde system :serdes/edn))]
         (stubs/set-stub! (int/component system :services/oauth)
                          :-profile
@@ -40,12 +42,13 @@
                              {:email (:user/email user)}
                              (throw (ex-info "fail" {})))))
         (testing "when the auth provider interactions succeed"
-          (let [handler (-> (::handlers/app system)
+          (let [handler (-> system
+                            (int/component [::handlers/app :api/handler#ui])
                             (ihttp/with-serde system :serdes/edn))
                 response (-> {}
                              (ihttp/get system :auth/callback {:query-params {:code "secret-pin-12345"}})
                              handler)
-                base-url (int/component system :env/base-url)
+                base-url (int/component system :env/base-url#ui)
                 jwt-serde (int/component system :serdes/jwt)
                 cookies (ring/decode-cookies response)]
             (testing "redirects with token cookie"
@@ -66,7 +69,7 @@
             (let [response (-> {}
                                (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
                                handler)
-                  base-url (int/component system :env/base-url)
+                  base-url (int/component system :env/base-url#ui)
                   cookies (ring/decode-cookies response)
                   location (get-in response [:headers "Location"])]
               (is (http/redirect? response))

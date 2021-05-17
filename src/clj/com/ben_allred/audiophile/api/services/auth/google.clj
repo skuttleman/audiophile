@@ -32,21 +32,21 @@
                    :client_secret client-secret
                    :redirect_uri redirect-uri)})
 
-(defn ^:private token* [identifier http-client {:keys [token-uri] :as cfg} opts]
+(defn ^:private token* [provider http-client {:keys [token-uri] :as cfg} opts]
   (-> opts
       (->> (token-request cfg)
            (http/post http-client token-uri))
-      (v/then-> (->> (log/spy :info (str identifier " token response"))))))
+      (v/then-> (->> (log/spy :info (str provider " token response"))))))
 
 (defn ^:private profile-request [tokens]
   {:query-params (select-keys tokens #{:access_token})
    :headers      {:content-type "application/json"
                   :accept       "application/json"}})
 
-(defn ^:private profile* [identifier http-client {:keys [profile-uri] :as cfg} opts]
-  (-> (token* identifier http-client cfg opts)
+(defn ^:private profile* [provider http-client {:keys [profile-uri] :as cfg} opts]
+  (-> (token* provider http-client cfg opts)
       (v/then-> (->> profile-request (http/get http-client profile-uri))
-                (->> (log/spy :info (str identifier " profile response"))))
+                (->> (log/spy :info (str provider " profile response"))))
       v/deref!))
 
 (deftype GoogleOAuthProvider [http-client cfg]

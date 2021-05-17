@@ -7,17 +7,5 @@
  #duct/include "duct/api/serdes.edn"
  #duct/include "duct/api/services.edn"
  #duct/include "duct/api/ui-components.edn"
- {[:duct/const :api/handler]
-  #ig/ref :com.ben-allred.audiophile.api.handlers.core/app
-
-  :com.ben-allred.audiophile.api.handlers.core/app
-  {:router     #ig/ref :com.ben-allred.audiophile.api.handlers.core/router
-   :middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]}
-
-  [:duct/const :services.ui/env]
+ {[:duct/const :services.ui/env]
   {}}]

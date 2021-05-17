@@ -30,6 +30,6 @@
 
 (defn render
   "Takes a nested hiccup tree of body elements and wraps it with a standard layout"
-  [view user]
+  [view env]
   (str "<!doctype html>"
-       (hiccup/html nil (layout view {:auth/user user}))))
+       (hiccup/html nil (layout view env))))

@@ -61,5 +61,5 @@
    (html [:div.class [(fn [x] [:span#id {:attr :foo} x]) \"XXX\"]])
    ;; => [:div.class [:span#id \"XXX\"]]
    ```"
-  [tree user]
-  (html/render (render tree) user))
+  [tree env]
+  (html/render (render tree) env))

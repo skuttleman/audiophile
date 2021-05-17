@@ -39,7 +39,7 @@
                 :client-secret #ig/ref :env.goauth/client-secret
                 :scopes        #ig/ref :env.goauth/scopes
                 :auth-uri      #ig/ref :env.goauth/auth-uri
-                :redirect-uri  #ig/ref :env.goauth/redirect-uri
+                :redirect-uri  #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback-url
                 :token-uri     #ig/ref :env.goauth/token-uri
                 :profile-uri   #ig/ref :env.goauth/profile-uri}
   :http-client #ig/ref :services/http}

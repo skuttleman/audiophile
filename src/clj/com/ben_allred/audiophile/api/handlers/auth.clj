@@ -21,6 +21,9 @@
         ring/redirect
         auth/with-token)))
 
+(defmethod ig/init-key ::callback-url [_ {:keys [base-url auth-callback]}]
+  (str base-url auth-callback))
+
 (defmethod ig/init-key ::callback [_ {:keys [base-url nav oauth serde]}]
   (fn [request]
     (let [token (some->> (auth/profile oauth request)

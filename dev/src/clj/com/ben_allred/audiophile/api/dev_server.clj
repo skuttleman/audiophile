@@ -38,7 +38,7 @@
          duct/resource
          (duct/read-config uduct/readers)
          (duct/prep-config [:duct.profile/base :duct.profile/dev])
-         (ig/init [:com.ben-allred.audiophile.api.core/server])))))
+         (ig/init [:duct/daemon])))))
 
 (defn -main [& _]
   (duct/load-hierarchy)

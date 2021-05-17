@@ -1,6 +1,6 @@
 #audiophile/merge
 [#duct/include "dev.edn"
- {:duct.profile/test {[:duct/const :routes/table]
+ {:duct.profile/test {[:duct/const :routes/table#api]
                       ^:promote {[:get :api/ws] #ig/ref :com.ben-allred.audiophile.integration.common.components/ws-handler}
 
                       [:duct/const :services/transactor]

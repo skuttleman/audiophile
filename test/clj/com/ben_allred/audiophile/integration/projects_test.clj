@@ -14,7 +14,7 @@
   (testing "GET /api/projects"
     (int/with-config [system [::handlers/app]] {:db/enabled? true}
       (let [handler (-> system
-                        ::handlers/app
+                        (int/component [::handlers/app :api/handler#api])
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
@@ -53,7 +53,7 @@
     (int/with-config [system [::handlers/app]] {:db/enabled? true}
       (let [project-id (:project/id (int/lookup-project system "Project Seed"))
             handler (-> system
-                        ::handlers/app
+                        (int/component [::handlers/app :api/handler#api])
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
@@ -87,7 +87,7 @@
   (testing "POST /api/projects"
     (int/with-config [system [::handlers/app]] {:db/enabled? true}
       (let [handler (-> system
-                        ::handlers/app
+                        (int/component [::handlers/app :api/handler#api])
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
