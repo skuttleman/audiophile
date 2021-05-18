@@ -6,8 +6,12 @@
   #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
 
   :com.ben-allred.audiophile.common.services.navigation.core/nav
-  {:routes #ig/ref :nav/routes
-   :store  #ig/ref :services/store}
+  {:base-urls #ig/ref :services.ui/base-urls
+   :routes    #ig/ref :nav/routes
+   :store     #ig/ref :services/store}
 
   [:com.ben-allred.audiophile.ui.app/env :services.ui/env]
-  {:edn #ig/ref :serdes/edn}}]
+  {:edn #ig/ref :serdes/edn}
+
+  [:com.ben-allred.audiophile.ui.app/base-urls :services.ui/base-urls]
+  {:env #ig/ref :services.ui/env}}]

@@ -24,7 +24,7 @@ $ bin/run.sh dev
 You can override which ports the servers listen on.
 
 ```bash
-$ PORT=3000 UI_PORT=8080 NREPL_PORT=7000 UI_NREPL_PORT=7100 bin/run.sh dev
+$ API_PORT=3000 AUTH_PORT=3100 UI_PORT=8080 NREPL_PORT=7000 UI_NREPL_PORT=7100 bin/run.sh dev
 ```
 
 Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.

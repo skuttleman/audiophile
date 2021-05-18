@@ -2,7 +2,6 @@
   (:require
     [clojure.string :as string]
     [clojure.test :refer [are deftest is testing use-fixtures]]
-    [com.ben-allred.audiophile.api.handlers.core :as handlers]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
@@ -14,10 +13,10 @@
 
 (deftest auth-details-test
   (testing "GET /auth/details"
-    (int/with-config [system [::handlers/app]]
+    (int/with-config [system [:api/handler#auth]]
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
-                        (int/component [::handlers/app :api/handler#ui])
+                        (int/component :api/handler#auth)
                         (ihttp/with-serde system :serdes/edn))
             response (-> {}
                          (ihttp/login system user)
@@ -30,10 +29,10 @@
 
 (deftest auth-callback-test
   (testing "GET /auth/callback"
-    (int/with-config [system [::handlers/app]] {:db/enabled? true}
+    (int/with-config [system [:api/handler#auth]] {:db/enabled? true}
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
-                        (int/component [::handlers/app :api/handler#ui])
+                        (int/component :api/handler#auth)
                         (ihttp/with-serde system :serdes/edn))]
         (stubs/set-stub! (int/component system :services/oauth)
                          :-profile
@@ -42,10 +41,7 @@
                              {:email (:user/email user)}
                              (throw (ex-info "fail" {})))))
         (testing "when the auth provider interactions succeed"
-          (let [handler (-> system
-                            (int/component [::handlers/app :api/handler#ui])
-                            (ihttp/with-serde system :serdes/edn))
-                response (-> {}
+          (let [response (-> {}
                              (ihttp/get system :auth/callback {:query-params {:code "secret-pin-12345"}})
                              handler)
                 base-url (int/component system :env/base-url#ui)

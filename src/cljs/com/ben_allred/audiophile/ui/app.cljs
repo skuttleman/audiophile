@@ -35,6 +35,10 @@
 (defmethod ig/init-key ::env [_ {:keys [edn]}]
   (some->> (.-ENV dom/window) (serdes/deserialize edn)))
 
+(defmethod ig/init-key ::base-urls [_ {:keys [env]}]
+  {:api  (:api-base env)
+   :auth (:auth-base env)})
+
 (defn init
   "runs when the browser page has loaded"
   ([]

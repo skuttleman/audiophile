@@ -117,14 +117,14 @@
                             (response* (:response? request))
                             deserde))))))))
 
-(defmethod ig/init-key ::with-nav [_ {:keys [env nav]}]
+(defmethod ig/init-key ::with-nav [_ {:keys [nav]}]
   (fn [http-client]
     (reify
       pres/IResource
       (request! [_ {:nav/keys [route params] :as request}]
         (-> request
             (dissoc :nav/route :nav/params)
-            (cond-> route (assoc :url (str (:api-base env) (nav/path-for nav route params))))
+            (cond-> route (assoc :url (nav/path-for nav route params)))
             (->> (pres/request! http-client)))))))
 
 (defn create [->request middlewares]

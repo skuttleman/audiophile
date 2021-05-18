@@ -5,24 +5,31 @@
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :api/ws]             #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  [:get :resources/health]   #ig/ref [:com.ben-allred.audiophile.api.handlers.resources/health :health/api]
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
   [:post :api/project.file]  #ig/ref :api.handler/project.file#post
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
   [:post :api/projects]      #ig/ref :api.handler/projects#post
   [:post :api/teams]         #ig/ref :api.handler/teams#post}
 
- [:duct/const :routes/table#ui]
+ [:duct/const :routes/table#auth]
  {[:get :auth/callback]    #ig/ref :com.ben-allred.audiophile.api.handlers.auth/callback
   [:get :auth/details]     #ig/ref :com.ben-allred.audiophile.api.handlers.auth/details
   [:get :auth/login]       #ig/ref :com.ben-allred.audiophile.api.handlers.auth/login
   [:get :auth/logout]      #ig/ref :com.ben-allred.audiophile.api.handlers.auth/logout
-  [:get :resources/css]    #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
-  [:get :resources/health] #ig/ref :com.ben-allred.audiophile.api.handlers.resources/health
+  [:get :resources/health] #ig/ref [:com.ben-allred.audiophile.api.handlers.resources/health :health/auth]}
+
+ [:duct/const :routes/table#ui]
+ {[:get :resources/css]    #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
   [:get :resources/js]     #ig/ref :com.ben-allred.audiophile.api.handlers.resources/assets
+  [:get :resources/health] #ig/ref [:com.ben-allred.audiophile.api.handlers.resources/health :health/ui]
   [:get :ui/home]          #ig/ref :com.ben-allred.audiophile.api.handlers.resources/ui}
 
  [:com.ben-allred.audiophile.api.handlers.core/router :api/router#api]
  #ig/ref :routes/table#api
+
+ [:com.ben-allred.audiophile.api.handlers.core/router :api/router#auth]
+ #ig/ref :routes/table#auth
 
  [:com.ben-allred.audiophile.api.handlers.core/router :api/router#ui]
  #ig/ref :routes/table#ui
@@ -67,16 +74,23 @@
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create
   :spec    :api.team/create}
 
- :com.ben-allred.audiophile.api.handlers.resources/health
- {}
+ [:com.ben-allred.audiophile.api.handlers.resources/health :health/api]
+ #{}
+
+ [:com.ben-allred.audiophile.api.handlers.resources/health :health/auth]
+ #{}
+
+ [:com.ben-allred.audiophile.api.handlers.resources/health :health/ui]
+ #{}
 
  :com.ben-allred.audiophile.api.handlers.resources/assets
  {}
 
  :com.ben-allred.audiophile.api.handlers.resources/ui
- {:app      #ig/ref :com.ben-allred.audiophile.common.views.core/app
-  :base-url #ig/ref :env/base-url#ui
-  :store    #ig/ref :services/store}
+ {:app       #ig/ref :com.ben-allred.audiophile.common.views.core/app
+  :api-base  #ig/ref :env/base-url#api
+  :auth-base #ig/ref :env/base-url#auth
+  :store     #ig/ref :services/store}
 
  :com.ben-allred.audiophile.api.handlers.middleware/with-auth
  {:jwt-serde #ig/ref :serdes/jwt}
@@ -108,7 +122,7 @@
   :nav      #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.api.handlers.auth/callback-url
- {:base-url      #ig/ref :env/base-url#api
+ {:base-url      #ig/ref :env/base-url#auth
   :redirect-path "/auth/callback"}
 
  :com.ben-allred.audiophile.api.handlers.auth/callback

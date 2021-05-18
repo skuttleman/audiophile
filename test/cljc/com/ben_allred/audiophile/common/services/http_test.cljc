@@ -195,8 +195,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((ig/init-key ::client/with-nav {:nav nav
-                                                            :env {:api-base "api://base"}})
+            (let [resource ((ig/init-key ::client/with-nav {:nav nav})
                             client)]
               (testing "when sending a request"
                 (stubs/use! client :request!
@@ -204,7 +203,7 @@
                 (let [result (tu/<p! (res/request! resource {:nav/route  ::handle
                                                              :nav/params ::params}))]
                   (testing "calculates the url"
-                    (is (= {:url (str "api://base" (->url ::handle ::params))}
+                    (is (= {:url (->url ::handle ::params)}
                            (ffirst (stubs/calls client :request!)))))
 
                   (testing "returns the response"

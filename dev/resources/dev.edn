@@ -21,6 +21,15 @@
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
    :router     #ig/ref :api/router#api}
 
+  [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#auth]
+  {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-cors
+                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+   :router     #ig/ref :api/router#auth}
+
   [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#ui]
   {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
                 #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
@@ -31,12 +40,19 @@
   [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#api]
   {:app #ig/ref :api/handler#api}
 
+  [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#auth]
+  {:app #ig/ref :api/handler#auth}
+
   [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#ui]
   {:app #ig/ref :api/handler#ui}
 
   [:com.ben-allred.audiophile.api.core/server :http/server#api :duct/daemon]
   {:handler     #ig/ref :api.dev/handler#api
    :server-port #ig/ref :env/server-port#api}
+
+  [:com.ben-allred.audiophile.api.core/server :http/server#auth :duct/daemon]
+  {:handler     #ig/ref :api.dev/handler#auth
+   :server-port #ig/ref :env/server-port#auth}
 
   [:com.ben-allred.audiophile.api.core/server :http/server#ui :duct/daemon]
   {:handler     #ig/ref :api.dev/handler#ui
@@ -47,4 +63,4 @@
 
   :com.ben-allred.audiophile.api.dev.handler/oauth
   {:nav      #ig/ref :services/nav
-   :base-url #ig/ref :env/base-url#ui}}}
+   :base-url #ig/ref :env/base-url#auth}}}

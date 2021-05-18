@@ -9,10 +9,13 @@
     (let [routes ["" [[["/test/" [uuids/regex :project-id] "/route"] :test/route]]]
           id (uuids/random)]
       (testing "serializes params to url"
-        (is (= (str "/test/" id "/route?query&foo=bar")
-               (nav/serialize* routes :test/route {:route-params {:project-id id}
-                                                   :query-params {:query true
-                                                                  :foo   :bar}})))))))
+        (is (= (str "test://base/test/" id "/route?query&foo=bar")
+               (nav/serialize* {:test "test://base"}
+                               routes
+                               :test/route
+                               {:route-params {:project-id id}
+                                :query-params {:query true
+                                               :foo   :bar}})))))))
 
 (deftest deserialize*-test
   (testing "deserialize*"

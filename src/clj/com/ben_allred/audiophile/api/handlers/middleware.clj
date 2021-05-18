@@ -132,8 +132,8 @@
                                req-headers (assoc :access-control-allow-headers (if (string? req-headers)
                                                                                   req-headers
                                                                                   (string/join "," req-headers))))]
-        (if (= :options (:method request))
-          [::http/no-content nil response-headers]
+        (if (= :options (:request-method request))
+          (->response [::http/ok nil response-headers])
           (-> request
               handler
               (update :headers merge response-headers)))))))

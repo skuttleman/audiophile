@@ -15,6 +15,7 @@
 
                      [:duct.custom/merge :routes/table]
                      [#ig/ref :routes/table#api
+                      #ig/ref :routes/table#auth
                       #ig/ref :routes/table#ui]
 
                      [:com.ben-allred.audiophile.api.handlers.core/router :api.prod/router]

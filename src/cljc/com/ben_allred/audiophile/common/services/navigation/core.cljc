@@ -56,9 +56,10 @@
   (deserialize [_ path opts]
     (pserdes/deserialize router path opts)))
 
-(defn serialize* [routes handle opts]
+(defn serialize* [base-urls routes handle opts]
   (let [{:keys [query-params]} opts
-        qp (uri/join-query query-params)]
+        qp (uri/join-query query-params)
+        base-url (get base-urls (keyword (namespace handle)))]
     (cond-> (apply bidi/path-for
                    routes
                    handle
@@ -69,6 +70,7 @@
                                (assoc :handle handle)
                                internal->params
                                :route-params)))
+      base-url (->> (str base-url))
       (seq qp) (str "?" qp))))
 
 (defn deserialize* [routes path]
@@ -83,19 +85,19 @@
               query-string (assoc :query-string query-string))
             params->internal)))
 
-(deftype Router [routes]
+(deftype Router [base-urls routes]
   IHistory
   (-navigate! [_ _])
   (-replace! [_ _])
 
   pserdes/ISerde
   (serialize [_ handle opts]
-    (serialize* routes handle opts))
+    (serialize* base-urls routes handle opts))
   (deserialize [_ path _]
     (deserialize* routes path)))
 
-(defmethod ig/init-key ::router [_ {:keys [routes]}]
-  (->Router routes))
+(defmethod ig/init-key ::router [_ {:keys [base-urls routes]}]
+  (->Router base-urls routes))
 
 (defn ^:private on-nav [-nav store pushy handle]
   (let [route (maps/update-maybe handle :query-params dissoc :error-msg)]
@@ -104,8 +106,8 @@
           (pushy/replace-token! pushy (serdes/serialize -nav (:handle route) route)))
       (ui-store/dispatch! store [:router/updated route]))))
 
-(defmethod ig/init-key ::nav [_ {:keys [routes store]}]
-  (let [router (->Router routes)
+(defmethod ig/init-key ::nav [_ {:keys [base-urls routes store]}]
+  (let [router (->Router base-urls routes)
         pushy (volatile! nil)]
     (vreset! pushy (pushy/pushy #(on-nav router store @pushy %)
                                 #(serdes/deserialize router %)))

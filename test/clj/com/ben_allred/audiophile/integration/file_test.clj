@@ -2,7 +2,6 @@
   (:require
     [clojure.java.io :as io]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.api.handlers.core :as handlers]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -13,9 +12,9 @@
 
 (deftest upload-artifact-test
   (testing "POST /api/artifacts"
-    (int/with-config [system [::handlers/app]] {:db/enabled? true}
+    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component [::handlers/app :api/handler#api])
+                        (int/component :api/handler#api)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
@@ -41,9 +40,9 @@
 
 (deftest fetch-all-files-test
   (testing "GET /api/projects/:project-id/files"
-    (int/with-config [system [::handlers/app]] {:db/enabled? true}
+    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component [::handlers/app :api/handler#api])
+                        (int/component :api/handler#api)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with files"
           (let [user (int/lookup-user system "joe@example.com")
@@ -100,9 +99,9 @@
 
 (deftest create-files-test
   (testing "POST /api/projects/:project-id/files"
-    (int/with-config [system [::handlers/app]] {:db/enabled? true}
+    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component [::handlers/app :api/handler#api])
+                        (int/component :api/handler#api)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
@@ -169,9 +168,9 @@
 
 (deftest create-file-versions-test
   (testing "POST /api/files/:file-id"
-    (int/with-config [system [::handlers/app]] {:db/enabled? true}
+    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component [::handlers/app :api/handler#api])
+                        (int/component :api/handler#api)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
