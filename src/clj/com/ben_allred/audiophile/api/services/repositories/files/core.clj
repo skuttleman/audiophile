@@ -38,7 +38,7 @@
       (->> (repos/execute! executor)))
   (colls/only! (repos/execute! executor (q/select-one files file-id))))
 
-(defn ^:private create-artifact* [executor {store :store/kv :entity/keys [artifacts]} artifact user-id]
+(defn ^:private create-artifact* [executor {store :store/kv :models/keys [artifacts]} artifact user-id]
   (let [key (str "artifacts/" (uuids/random))]
     (with-async
       (repos/put! store
@@ -54,10 +54,10 @@
                                :id)
        :artifact/filename (:filename artifact)})))
 
-(defn ^:private query-for-project* [{entity :entity/files} project-id user-id]
-  (q/select-for-user entity project-id user-id))
+(defn ^:private query-for-project* [{model :models/files} project-id user-id]
+  (q/select-for-user model project-id user-id))
 
-(defn ^:private create-file* [executor {:entity/keys [files file-versions projects]} project-id file user-id]
+(defn ^:private create-file* [executor {:models/keys [files file-versions projects]} project-id file user-id]
   (access-project! executor projects project-id user-id)
   (-> files
       (q/insert {:name       (:file/name file)
@@ -68,7 +68,7 @@
       :id
       (->> (create-version* executor files file-versions file user-id))))
 
-(defn ^:private create-file-version* [executor {:entity/keys [files file-versions projects]} file-id version user-id]
+(defn ^:private create-file-version* [executor {:models/keys [files file-versions projects]} file-id version user-id]
   (access-file! executor projects file-id user-id)
   (create-version* executor files file-versions version user-id file-id))
 

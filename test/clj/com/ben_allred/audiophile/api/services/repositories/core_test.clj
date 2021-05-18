@@ -32,7 +32,7 @@
           id (uuids/random)
           result-set (->StubResultSet "user/id" id)]
       (testing "#with-column"
-        (let [builder-fn (->builder-fn {:entity-fn (fn [[k v]] [v k])})
+        (let [builder-fn (->builder-fn {:model-fn (fn [[k v]] [v k])})
               row (transient {})
               builder (builder-fn result-set nil)
               result (persistent! (result-set/with-column builder row 1))]

@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.api.services.repositories.entities.sql
+(ns com.ben-allred.audiophile.api.services.repositories.models.sql
   (:refer-clojure :exclude [cast count format max])
   (:require
     [com.ben-allred.audiophile.common.utils.logger :as log]

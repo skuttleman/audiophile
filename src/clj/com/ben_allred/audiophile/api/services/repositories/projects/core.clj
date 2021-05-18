@@ -7,20 +7,20 @@
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [integrant.core :as ig]))
 
-(defn ^:private query-all* [{entity :entity/projects} user-id]
-  (q/select-for-user entity user-id))
+(defn ^:private query-all* [{model :models/projects} user-id]
+  (q/select-for-user model user-id))
 
-(defn ^:private query-by-id* [{entity :entity/projects} project-id user-id]
-  (q/select-one-for-user entity project-id user-id))
+(defn ^:private query-by-id* [{model :models/projects} project-id user-id]
+  (q/select-one-for-user model project-id user-id))
 
-(defn ^:private create* [executor {entity :entity/projects} project user-id]
-  (let [project-id (-> entity
+(defn ^:private create* [executor {model :models/projects} project user-id]
+  (let [project-id (-> model
                        (q/insert project user-id)
                        (->> (repos/execute! executor))
                        colls/only!
                        :id)]
     (-> executor
-        (repos/execute! (q/select-one entity project-id))
+        (repos/execute! (q/select-one model project-id))
         colls/only!)))
 
 (deftype ProjectAccessor [repo]

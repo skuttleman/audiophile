@@ -1,0 +1,37 @@
+{[:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/artifacts]
+ {:models     #ig/ref :resources/models
+  :namespace  :artifact
+  :table-name :artifacts}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/file-versions]
+ {:models     #ig/ref :resources/models
+  :namespace  :file-version
+  :table-name :file-versions}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/files]
+ {:models     #ig/ref :resources/models
+  :namespace  :file
+  :table-name :files}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/projects]
+ {:models     #ig/ref :resources/models
+  :namespace  :project
+  :table-name :projects}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/teams]
+ {:models     #ig/ref :resources/models
+  :namespace  :team
+  :table-name :teams}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/user-teams]
+ {:models     #ig/ref :resources/models
+  :namespace  :user-team
+  :table-name :user-teams}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/model :models/users]
+ {:models     #ig/ref :resources/models
+  :namespace  :user
+  :table-name :users}
+
+ [:com.ben-allred.audiophile.api.services.repositories.models.core/models :resources/models]
+ {:tx #ig/ref :services/transactor}}

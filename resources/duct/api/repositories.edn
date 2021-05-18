@@ -17,13 +17,13 @@
  #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/store
 
  :com.ben-allred.audiophile.api.services.repositories.common/repo
- {:opts {:entity/artifacts     #ig/ref :entities/artifacts
-         :entity/file-versions #ig/ref :entities/file-versions
-         :entity/files         #ig/ref :entities/files
-         :entity/projects      #ig/ref :entities/projects
-         :entity/teams         #ig/ref :entities/teams
-         :entity/user-teams    #ig/ref :entities/user-teams
-         :entity/users         #ig/ref :entities/users
+ {:opts {:models/artifacts     #ig/ref :models/artifacts
+         :models/file-versions #ig/ref :models/file-versions
+         :models/files         #ig/ref :models/files
+         :models/projects      #ig/ref :models/projects
+         :models/teams         #ig/ref :models/teams
+         :models/user-teams    #ig/ref :models/user-teams
+         :models/users         #ig/ref :models/users
          :store/kv             #ig/ref :stores/s3}
   :tx   #ig/ref :services/transactor}
 

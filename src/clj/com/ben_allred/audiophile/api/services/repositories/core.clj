@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.services.repositories.core
   (:refer-clojure :exclude [get])
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]
+    [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [hikari-cp.core :as hikari]
@@ -44,13 +44,13 @@
   (rs! [_ mrs] (persistent! mrs)))
 
 (defmethod ig/init-key ::->builder-fn [_ _]
-  (fn [{:keys [entity-fn result-xform]}]
+  (fn [{:keys [model-fn result-xform]}]
     (let [xform (or result-xform identity)
-          entity-fn (cond->> (fn [[k v]]
+          model-fn (cond->> (fn [[k v]]
                                [(keyword k) v])
-                      entity-fn (comp entity-fn))
+                      model-fn (comp model-fn))
           ->row! (fn [t k v]
-                   (conj! t (entity-fn [k v])))]
+                   (conj! t (model-fn [k v])))]
       (fn [^ResultSet rs _opts]
         (let [meta (.getMetaData rs)
               col-cnt (.getColumnCount meta)

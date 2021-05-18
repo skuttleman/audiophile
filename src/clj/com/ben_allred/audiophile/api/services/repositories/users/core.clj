@@ -7,8 +7,8 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
-(defn ^:private query-by-email* [{entity :entity/users} email]
-  (q/select-by entity [:= :users.email email]))
+(defn ^:private query-by-email* [{model :models/users} email]
+  (q/select-by model [:= :users.email email]))
 
 (deftype UserAccessor [repo]
   pint/IAccessor

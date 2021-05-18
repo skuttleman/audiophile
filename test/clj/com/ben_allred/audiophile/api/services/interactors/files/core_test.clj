@@ -3,7 +3,7 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]
+    [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
     [com.ben-allred.audiophile.api.services.repositories.files.core :as rfiles]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]

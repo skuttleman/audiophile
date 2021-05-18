@@ -9,15 +9,15 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
-(defn ^:private exec* [executor entity query]
+(defn ^:private exec* [executor model query]
   (repos/execute! executor
                   query
-                  {:entity-fn (crepos/->entity-fn entity)}))
+                  {:model-fn (crepos/->model-fn model)}))
 
-(defn ^:private query-all* [{entity :entity/teams} user-id]
-  (q/select-for-user entity user-id))
+(defn ^:private query-all* [{model :models/teams} user-id]
+  (q/select-for-user model user-id))
 
-(defn ^:private query-by-id* [executor {:entity/keys [teams user-teams users]} team-id user-id]
+(defn ^:private query-by-id* [executor {:models/keys [teams user-teams users]} team-id user-id]
   (let [team (-> executor
                  (exec* teams (q/select-one-for-user teams
                                                      team-id
@@ -30,7 +30,7 @@
                                                       user-teams
                                                       team-id))))))
 
-(defn ^:private create* [executor {:entity/keys [teams user-teams]} team user-id]
+(defn ^:private create* [executor {:models/keys [teams user-teams]} team user-id]
   (let [team-id (-> teams
                     (q/insert (assoc team :created-by user-id))
                     (->> (repos/execute! executor))

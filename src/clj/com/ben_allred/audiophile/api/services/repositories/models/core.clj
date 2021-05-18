@@ -1,18 +1,18 @@
-(ns com.ben-allred.audiophile.api.services.repositories.entities.core
+(ns com.ben-allred.audiophile.api.services.repositories.models.core
   (:require
     [camel-snake-kebab.core :as csk]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.api.services.repositories.entities.sql :as sql]
+    [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
-(defmethod ig/init-key ::entities [_ {:keys [tx]}]
-  (reduce (fn [entities row]
+(defmethod ig/init-key ::models [_ {:keys [tx]}]
+  (reduce (fn [models row]
             (let [table (csk/->kebab-case-keyword (:table_name row))
                   column (csk/->kebab-case-keyword (:column_name row))]
-              (update entities
+              (update models
                       table
                       (fns/=> (update :fields (fnil conj #{}) column)
                               (cond->
@@ -27,8 +27,8 @@
                                                           [:= :table-schema "public"]
                                                           [:not= :table-name "db_migrations"]]})))))
 
-(defmethod ig/init-key ::entity [_ {:keys [entities namespace table-name]}]
-  (-> entities
+(defmethod ig/init-key ::model [_ {:keys [models namespace table-name]}]
+  (-> models
       (get table-name)
       (assoc :table table-name :namespace namespace)))
 
@@ -42,23 +42,22 @@
      (str (name (or alias namespace)) "/" (name field))]))
 
 (defn select-fields
-  "Filter fields on an entity before selection. Fields not on the entity are ignored."
-  [entity field-set]
-  (update entity :fields (partial filter field-set)))
+  "Filter fields on a model before selection. Fields not on the model are ignored."
+  [model field-set]
+  (update model :fields (partial filter field-set)))
 
 (defn remove-fields
-  "Remove fields from an entity before selection. Fields not on the entity are ignored."
-  [entity field-set]
-  (update entity :fields (partial remove field-set)))
+  "Remove fields from a model before selection. Fields not on the model are ignored."
+  [model field-set]
+  (update model :fields (partial remove field-set)))
 
 (defn select*
   "Generates a query for selecting from a database table"
-  ([entity clause]
-   (assoc (select* entity) :where clause))
-  ([{:keys [fields] :as entity}]
-   {:select (mapv (->field entity) fields)
-    :from   [(from entity)]
-    :entity entity}))
+  ([model clause]
+   (assoc (select* model) :where clause))
+  ([{:keys [fields] :as model}]
+   {:select (mapv (->field model) fields)
+    :from   [(from model)]}))
 
 (defn ^:private valid-column? [{ns :namespace :keys [fields]} normalized-k ns-k]
   (and (contains? fields normalized-k)
@@ -67,25 +66,25 @@
 
 (defn insert-into
   "Generates a query for inserting rows into a database table"
-  [{:keys [casts fields table] :as entity} input]
+  [{:keys [casts fields table] :as model} input]
   {:insert-into table
    :values      (for [value (colls/force-sequential input)]
                   (into {}
                         (keep (fn [[k v]]
                                 (let [k' (keyword (name k))
                                       cast (get casts k')]
-                                  (when (valid-column? entity k' (namespace k))
+                                  (when (valid-column? model k' (namespace k))
                                     [k' (cond-> v
                                           cast (-> name (sql/cast cast)))]))))
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
 
-(defn join [query {:keys [_alias fields _namespace _table] :as entity} on]
+(defn join [query {:keys [_alias fields _namespace _table] :as model} on]
   (-> query
-      (update :select into (map (->field entity)) fields)
+      (update :select into (map (->field model)) fields)
       (update :join
               (fnil conj [])
-              (from entity)
+              (from model)
               on)))
 
 (defn order-by [query & clauses]

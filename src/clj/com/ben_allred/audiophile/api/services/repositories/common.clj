@@ -6,11 +6,11 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
-(defn ->entity-fn [entity]
+(defn ->model-fn [model]
   (fn [[k v]]
     (let [k' (keyword (name k))]
       [k (cond-> v
-           (contains? (:casts entity) k')
+           (contains? (:casts model) k')
            keyword)])))
 
 (deftype Repository [tx opts*]

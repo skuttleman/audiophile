@@ -4,37 +4,37 @@
     [test.utils.stubs :as stubs]))
 
 (def ^:private opts
-  {:entity/artifacts
+  {:models/artifacts
    {:fields    #{:filename :created-by :id :content-type :uri :content-size :created-at}
     :table     :artifacts
     :namespace :artifact}
 
-   :entity/files
+   :models/files
    {:fields    #{:name :created-by :id :idx :project-id :created-at}
     :table     :files
     :namespace :file}
 
-   :entity/file-versions
+   :models/file-versions
    {:fields    #{:file-id :artifact-id :name :created-by :id :created-at}
     :table     :file-versions
     :namespace :file-version}
 
-   :entity/projects
+   :models/projects
    {:fields    #{:team-id :name :created-by :id :created-at}
     :table     :projects
     :namespace :project}
 
-   :entity/teams
+   :models/teams
    {:fields    #{:type :name :created-by :id :created-at}
     :table     :teams
     :namespace :team}
 
-   :entity/user-teams
+   :models/user-teams
    {:fields    #{:team-id :user-id}
     :table     :user-teams
     :namespace :user-team}
 
-   :entity/users
+   :models/users
    {:fields    #{:id :first-name :last-name :handle :email :mobile-number :created-at}
     :table     :users
     :namespace :user}})
