@@ -18,7 +18,7 @@
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}
                                  (ihttp/login system {:user/id (uuids/random)})
-                                 (ihttp/get system :api/ws {:query-params {:content-type mime-type
+                                 (ihttp/get system :ws/connection {:query-params {:content-type mime-type
                                                                            :accept       mime-type}})
                                  ihttp/as-ws
                                  handler)]
@@ -29,7 +29,7 @@
 
         (testing "when the request is not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/ws {:query-params {:content-type mime-type
+                             (ihttp/get system :ws/connection {:query-params {:content-type mime-type
                                                                        :accept       mime-type}})
                              ihttp/as-ws
                              handler)]

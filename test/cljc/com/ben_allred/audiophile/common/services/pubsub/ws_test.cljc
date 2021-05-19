@@ -46,5 +46,5 @@
                   (serialize [_ value opts]
                     (str "/" value "?content-type=" (get-in opts [:query-params :content-type]))))
           nav (nav/->LinkedNavigator nil serde)]
-      (is (= "wss://uri.base/:api/ws?content-type=charlie/chaplain"
+      (is (= "wss://uri.base/:ws/connection?content-type=charlie/chaplain"
              (ws/ws-uri nav serde base-url))))))

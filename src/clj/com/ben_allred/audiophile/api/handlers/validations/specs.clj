@@ -97,7 +97,7 @@
   [_ request]
   {:user/id (get-in request [:auth/user :user/id])})
 
-(defmethod spec [:get :api/ws]
+(defmethod spec [:get :ws/connection]
   [_ request]
   (-> request
       (assoc :user/id (get-in request [:auth/user :user/id]))

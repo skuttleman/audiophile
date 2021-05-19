@@ -32,7 +32,7 @@
         (assoc :path nil :query nil :fragment nil)
         (update :scheme {"http" "ws" "https" "wss"})
         uri/stringify
-        (str (nav/path-for nav :api/ws params)))))
+        (str (nav/path-for nav :ws/connection params)))))
 
 (defmethod ig/init-key ::handler [_ {:keys [env nav reconnect-ms serde store]}]
   (let [url (ws-uri nav serde (:api-base env))

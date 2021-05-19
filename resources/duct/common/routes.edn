@@ -10,7 +10,7 @@
 
    ;; API
    ["/api"
-    [["/ws" :api/ws]
+    [["/ws" :ws/connection]
      ["/artifacts" :api/artifacts]
      ["/files"
       [[["/" #audiophile/uuid-param :file-id] :api/project.file]]]

@@ -4,7 +4,7 @@
   [:get :api/projects]       #ig/ref :api.handler/projects#get
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
-  [:get :api/ws]             #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  [:get :ws/connection]      #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
   [:get :resources/health]   #ig/ref [:com.ben-allred.audiophile.api.handlers.resources/health :health/api]
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
   [:post :api/project.file]  #ig/ref :api.handler/project.file#post
@@ -106,7 +106,8 @@
 
  :com.ben-allred.audiophile.api.handlers.middleware/serde
  {:edn-serde     #ig/ref :serdes/edn
-  :transit-serde #ig/ref :serdes/transit}
+  :transit-serde #ig/ref :serdes/transit
+  :json-serde    #ig/ref :serdes/json}
 
  :com.ben-allred.audiophile.api.handlers.middleware/with-route
  {:nav #ig/ref :services/nav}

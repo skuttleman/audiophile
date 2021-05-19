@@ -1,4 +1,4 @@
-api: PORT=3000 clj -A:dev -m com.ben-allred.audiophile.api.dev-server
+api: API_PORT=3000 AUTH_PORT=3100 UI_PORT=8080 clj -A:dev -m com.ben-allred.audiophile.api.dev-server
 api-test: clj -A:test -M:test --watch --reporter kaocha.report/documentation
 sass: sass --watch src/scss/main.scss resources/public/css/main.css
 ui: clj -A:cljs-dev:shadow-cljs watch dev | grep --color=never -v DEBUG

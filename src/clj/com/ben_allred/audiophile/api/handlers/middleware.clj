@@ -45,8 +45,8 @@
                          (cond-> request-serde (maps/update-maybe :body (partial serdes/deserialize request-serde)))
                          handler)
             response-serde (serdes/find-serde serdes
-                                              (or (get-in request [:headers :accept])
-                                                  (get-in response [:headers :content-type])
+                                              (or (get-in response [:headers :content-type])
+                                                  (get-in request [:headers :accept])
                                                   "unknown/mime-type")
                                               request-serde)]
         (cond-> response
