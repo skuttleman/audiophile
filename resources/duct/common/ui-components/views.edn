@@ -5,13 +5,18 @@
   :modals           #ig/ref :com.ben-allred.audiophile.common.views.components.modal/modals
   :toasts           #ig/ref :com.ben-allred.audiophile.common.views.components.toast/toasts}
 
+ [:duct/const :ui.components/table]
+ {:ui/home    #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
+  :ui/login   #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root
+  :ui/project #ig/ref :views.roots/projects#one}
+
  :com.ben-allred.audiophile.common.views.roots.home/root
  {:nav           #ig/ref :services/nav
-  :project-form  #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/create
-  :projects-tile #ig/ref [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
+  :project-form  #ig/ref :views.projects/create
+  :projects-tile #ig/ref :tiles/projects#all
   :store         #ig/ref :services/store
-  :team-form     #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/create
-  :teams-tile    #ig/ref [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :teams/all]}
+  :team-form     #ig/ref :views.teams/create
+  :teams-tile    #ig/ref :tiles/teams#all}
 
  :com.ben-allred.audiophile.common.views.roots.login/root
  {:nav        #ig/ref :services/nav
@@ -21,4 +26,14 @@
  {:nav #ig/ref :services/nav}
 
  :com.ben-allred.audiophile.common.views.roots.home/header
- {:nav #ig/ref :services/nav}}
+ {:nav #ig/ref :services/nav}
+
+ :com.ben-allred.audiophile.common.views.components.modal/modals
+ {:store #ig/ref :services/store}
+
+ :com.ben-allred.audiophile.common.views.components.toast/toasts
+ {:store #ig/ref :services/store}
+
+ :com.ben-allred.audiophile.common.views.components.toast/banners
+ {:store     #ig/ref :services/store
+  :err-codes #ig/ref :ui/err-codes}}

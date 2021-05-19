@@ -1,4 +1,25 @@
-{:com.ben-allred.audiophile.common.views.roots.projects/list
+{[:duct/const :resources/project.file#create]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#create]
+
+ [:duct/const :resources/project.file#version]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#version]
+
+ [:duct/const :resources/project.files]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
+
+ [:duct/const :resources/project]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
+
+ [:duct/const :resources/projects.all]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/all]
+
+ [:duct/const :views.projects/create]
+ #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/create
+
+ [:duct/const :views.roots/projects#one]
+ #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/one
+
+ :com.ben-allred.audiophile.common.views.roots.projects/list
  {:nav #ig/ref :services/nav}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/all]
@@ -63,7 +84,7 @@
   :nav      #ig/ref :services/nav
   :routes   {:success/handle :ui/home}}
 
- [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :projects/all]
+ [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :tiles/projects#all]
  {:resource #ig/ref :resources/projects.all
   :title    "Your Projects"
   :view     #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/list}
@@ -71,7 +92,7 @@
  :com.ben-allred.audiophile.common.views.roots.projects/create
  {:all-projects #ig/ref :resources/projects.all
   :projects     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
-  :teams        #ig/ref [:com.ben-allred.audiophile.common.services.resources.cached/resource :teams/all]}
+  :teams        #ig/ref :resources/teams#all}
 
  :com.ben-allred.audiophile.common.views.roots.projects/one
  {:files      #ig/ref :resources/project.files

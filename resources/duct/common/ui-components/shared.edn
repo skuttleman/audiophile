@@ -1,34 +1,8 @@
-{[:duct/const :ui.components/table]
- {:ui/home    #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
-  :ui/login   #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root
-  :ui/project #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/one}
-
- [:duct/const :services/store]
+{[:duct/const :services/store]
  #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
 
  [:duct/const :resources/artifacts]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :artifacts/all]
-
- [:duct/const :resources/projects.all]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/all]
-
- [:duct/const :resources/project]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
-
- [:duct/const :resources/project.file#create]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#create]
-
- [:duct/const :resources/project.file#version]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#version]
-
- [:duct/const :resources/project.files]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
-
- [:duct/const :resources/teams.all]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
-
- [:duct/const :resources/team]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
 
  [:duct/const :ui/err-codes]
  {:login-failed "Authentication failed. Please try again."}
@@ -44,16 +18,6 @@
 
  [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
  {:msg "An error occurred."}
-
- :com.ben-allred.audiophile.common.views.components.modal/modals
- {:store #ig/ref :services/store}
-
- :com.ben-allred.audiophile.common.views.components.toast/toasts
- {:store #ig/ref :services/store}
-
- :com.ben-allred.audiophile.common.views.components.toast/banners
- {:store     #ig/ref :services/store
-  :err-codes #ig/ref :ui/err-codes}
 
  :com.ben-allred.audiophile.common.services.resources.validated/opts->request
  {}
