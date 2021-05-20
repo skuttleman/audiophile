@@ -1,12 +1,9 @@
 (ns test.utils.spies
+  (:require
+    [test.utils.protocols :as pu])
   #?(:clj
      (:import
        (clojure.lang IFn))))
-
-(defprotocol IStub
-  (init! [this] "resets the calls and reverts any changes made with -set-stub")
-  (-set-stub [this f] "changes the underlying function used for the stub")
-  (calls [this] "returns an ordered sequence of calls to the stub"))
 
 (defn ^:private invoke* [state args]
   (swap! state update :calls (fnil conj []) args)
@@ -19,11 +16,15 @@
    (let [init-state {:f (if (fn? f-or-val) f-or-val (constantly f-or-val))}
          state (atom init-state)]
      (reify
-       IStub
+       pu/IInit
        (init! [_]
          (reset! state init-state))
-       (-set-stub [_ f]
+
+       pu/ISpy
+       (set-spy! [_ f]
          (swap! state assoc :f f))
+
+       pu/IReport
        (calls [_]
          (:calls @state))
 
@@ -76,8 +77,14 @@
           (applyTo [_ args]
             (invoke* state args)))))))
 
-(defn stub? [x]
-  (satisfies? IStub x))
+(defn spy? [x]
+  (satisfies? pu/ISpy x))
 
-(defn set-stub! [stub f-or-val]
-  (-set-stub stub (if (fn? f-or-val) f-or-val (constantly f-or-val))))
+(defn set-spy! [spy f-or-val]
+  (pu/set-spy! spy (if (fn? f-or-val) f-or-val (constantly f-or-val))))
+
+(defn init! [spy]
+  (pu/init! spy))
+
+(defn calls [spy]
+  (pu/calls spy))

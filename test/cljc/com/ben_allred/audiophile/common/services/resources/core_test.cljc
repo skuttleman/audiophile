@@ -90,14 +90,14 @@
                 (is (nil? @resource))))
 
             (testing "when the resource succeeds"
-              (spies/set-stub! opts->vow (v/resolve {:data ::data}))
+              (spies/set-spy! opts->vow (v/resolve {:data ::data}))
               (tu/<p! (res/request! resource ::opts))
 
               (testing "returns data"
                 (is (= ::data @resource))))
 
             (testing "when the resource succeeds"
-              (spies/set-stub! opts->vow (v/reject {:errors ::errors}))
+              (spies/set-spy! opts->vow (v/reject {:errors ::errors}))
               (tu/<p! (res/request! resource ::opts))
 
               (testing "returns errors"

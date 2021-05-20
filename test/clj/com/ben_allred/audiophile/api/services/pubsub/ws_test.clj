@@ -14,13 +14,16 @@
         ->handler (ig/init-key ::ws/->handler
                                {:heartbeat-int-ms 100
                                 :pubsub           pubsub
-                                :serdes           {:foo/bar (reify pserdes/ISerde
-                                                              (mime-type [_]
-                                                                "foo/bar")
+                                :serdes           {:foo/bar (reify
+                                                              pserdes/ISerde
                                                               (serialize [_ value _]
                                                                 [:serialized value])
                                                               (deserialize [_ value _]
-                                                                (second value)))}})
+                                                                (second value))
+
+                                                              pserdes/IMime
+                                                              (mime-type [_]
+                                                                "foo/bar"))}})
         request {:user/id      ::user-id
                  :content-type "foo/bar"}
         stub (stubs/create (reify pws/IChannel
@@ -81,13 +84,16 @@
 
 (deftest ->channel-test
   (let [->channel (ig/init-key ::ws/->channel
-                               {:serdes {:foo/bar (reify pserdes/ISerde
-                                                    (mime-type [_]
-                                                      "foo/bar")
+                               {:serdes {:foo/bar (reify
+                                                    pserdes/ISerde
                                                     (serialize [_ value _]
                                                       [:serialized value])
                                                     (deserialize [_ value _]
-                                                      [:deserialized value]))}})
+                                                      [:deserialized value])
+
+                                                    pserdes/IMime
+                                                    (mime-type [_]
+                                                      "foo/bar"))}})
         request {:accept "foo/bar"}
         stub (stubs/create (reify pws/IChannel
                              (open? [_] ::open?)

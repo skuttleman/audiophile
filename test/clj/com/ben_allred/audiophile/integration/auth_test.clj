@@ -35,7 +35,7 @@
                         (int/component :api/handler#auth)
                         (ihttp/with-serde system :serdes/edn))]
         (stubs/set-stub! (int/component system :services/oauth)
-                         :-profile
+                         :profile
                          (fn [opts]
                            (if (= "secret-pin-12345" (:code opts))
                              {:email (:user/email user)}

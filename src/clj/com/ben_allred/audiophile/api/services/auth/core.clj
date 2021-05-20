@@ -15,14 +15,14 @@
 
 (defn ^:private redirect-uri* [nav oauth params]
   (or (first (safely! "generating a redirect url to the auth provider"
-                      (pauth/-redirect-uri oauth params)))
+                      (pauth/redirect-uri oauth params)))
       (nav/path-for nav
                     :ui/home
                     {:query-params {:error-msg :login-failed}})))
 
 (defn ^:private fetch-profile [params oauth]
   (first (safely! "fetching user profile from the OAuth provider"
-                  (pauth/-profile oauth params))))
+                  (pauth/profile oauth params))))
 
 (defn ^:private fetch-user [email interactor]
   (first (safely! "querying the user from the database"
@@ -64,11 +64,11 @@
 
 (deftype AuthInteractor [nav oauth interactor]
   pauth/IOAuthProvider
-  (-redirect-uri [_ request]
+  (redirect-uri [_ request]
     (some->> request
              request->params
              (redirect-uri* nav oauth)))
-  (-profile [_ request]
+  (profile [_ request]
     (some->> request
              request->params
              (params->user interactor oauth))))
@@ -80,10 +80,10 @@
   ([provider]
    (redirect-uri provider nil))
   ([provider opts]
-   (pauth/-redirect-uri provider opts)))
+   (pauth/redirect-uri provider opts)))
 
 (defn profile
   ([provider]
    (profile provider nil))
   ([provider opts]
-   (pauth/-profile provider opts)))
+   (pauth/profile provider opts)))

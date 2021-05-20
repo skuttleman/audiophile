@@ -30,9 +30,9 @@
 (defmethod ig/init-key ::oauth [_ {:keys [base-url nav]}]
   (reify
     pauth/IOAuthProvider
-    (-redirect-uri [_ {:keys [email]}]
+    (redirect-uri [_ {:keys [email]}]
       (str base-url (nav/path-for nav :auth/callback {:query-params {:mock-email email}})))
-    (-profile [_ opts]
+    (profile [_ opts]
       {:email (:mock-email opts)})))
 
 (defmethod ig/init-key ::app [_ {:keys [app]}]

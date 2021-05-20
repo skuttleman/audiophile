@@ -2,7 +2,7 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.services.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.resources.redirect :as redirect]
@@ -33,8 +33,8 @@
                                    (#?(:cljs -deref :default deref) [_]
                                      ::value)))
           nav (stubs/create (reify
-                              nav/IHistory
-                              (-navigate! [_ _])
+                              pnav/IHistory
+                              (navigate! [_ _])
 
                               pserdes/ISerde
                               (serialize [_ _ _]

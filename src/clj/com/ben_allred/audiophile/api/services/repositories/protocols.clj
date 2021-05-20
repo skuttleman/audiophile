@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [format get]))
 
 (defprotocol ITransact
-  "Opens a database transaction and invokes `f` with an `IExecute`
-   implementation and a map of additional transaction details. Returns the result of `f`."
+  "Opens a database transaction and invokes `f` with an [[IExecute]]
+   implementation and a map of additional transaction options. Returns the result of `f`."
   (transact! [this f]))
 
 (defprotocol IExecute

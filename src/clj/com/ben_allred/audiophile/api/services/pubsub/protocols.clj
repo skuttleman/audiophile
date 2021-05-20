@@ -2,9 +2,9 @@
 
 (defprotocol IChannel
   "A WebSocket channel"
-  (open? [this] "is the connection open?")
-  (send! [this msg] "send to a topic")
-  (close! [this] "when open, closes the connection"))
+  (open? [this] "Is the connection open?")
+  (send! [this msg] "Send to a topic")
+  (close! [this] "When open, closes the connection"))
 
 (defprotocol IHandler
   "Handles WebSocket events"

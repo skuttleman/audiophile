@@ -34,5 +34,5 @@
   (fn [state]
     (let [redirect-uri (get-in state [:nav/route :query-params :redirect-uri])]
       (if (:auth/user state)
-        (nav/-navigate! nav (or redirect-uri "/"))
+        (nav/navigate! nav (or redirect-uri "/"))
         [root* login-form state]))))

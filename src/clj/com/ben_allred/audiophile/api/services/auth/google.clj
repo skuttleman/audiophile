@@ -51,9 +51,9 @@
 
 (deftype GoogleOAuthProvider [http-client cfg]
   pauth/IOAuthProvider
-  (-redirect-uri [_ opts]
+  (redirect-uri [_ opts]
     (redirect-uri* cfg opts))
-  (-profile [this opts]
+  (profile [this opts]
     (profile* (.getSimpleName (class this)) http-client cfg opts)))
 
 (defmethod ig/init-key ::oauth-provider [_ {:keys [cfg http-client]}]

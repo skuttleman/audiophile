@@ -10,14 +10,20 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 - Install [JDK](https://docs.oracle.com/en/java/javase/16/install/overview-jdk-installation.html#GUID-8677A77F-231A-40F7-98B9-1FD0B48C346A)
 - Install [Clojure runtime](https://clojure.org/guides/getting_started)
 - Install [Sass](https://sass-lang.com/install)
+- Install [Foreman](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html)
 
-### Run application in dev mode
+### Install
 
 ```bash
 $ git clone git@github.com:skuttleman/audiophile.git
 $ cd audiophile
 $ cp bin/pre-commit.sh .git/hooks/pre-commit
 $ npm install
+```
+
+### Run application in dev mode
+
+```bash
 $ bin/run.sh dev
 ```
 

@@ -41,10 +41,12 @@
     (let [base-url "https://uri.base"
           serde (reify
                   pserdes/ISerde
-                  (mime-type [_]
-                    "charlie/chaplain")
                   (serialize [_ value opts]
-                    (str "/" value "?content-type=" (get-in opts [:query-params :content-type]))))
+                    (str "/" value "?content-type=" (get-in opts [:query-params :content-type])))
+
+                  pserdes/IMime
+                  (mime-type [_]
+                    "charlie/chaplain"))
           nav (nav/->LinkedNavigator nil serde)]
       (is (= "wss://uri.base/:ws/connection?content-type=charlie/chaplain"
              (ws/ws-uri nav serde base-url))))))

@@ -2,6 +2,7 @@
   (:require
     [clojure.java.io :as io]
     [clojure.string :as string]
+    [com.ben-allred.audiophile.api.dev.protocols :as pdev]
     [com.ben-allred.audiophile.api.services.env :as env]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
@@ -10,31 +11,26 @@
     [integrant.core :as ig]
     [migratus.core :as migratus]))
 
-(defprotocol IMigrate
-  (-migrate [this] "run migrations")
-  (-rollback [this n] "rollback n migrations")
-  (-create [this name] "create a new migration"))
-
 (deftype Migrator [cfg]
-  IMigrate
-  (-migrate [_]
+  pdev/IMigrate
+  (migrate [_]
     (migratus/migrate cfg))
-  (-rollback [_ n]
+  (rollback [_ n]
     (loop [rollbacks n]
       (when (pos? rollbacks)
         (migratus/rollback cfg)
         (recur (dec rollbacks)))))
-  (-create [_ name]
+  (create [_ name]
     (migratus/create cfg name)))
 
 (defn migrate! [migrator]
-  (-migrate migrator))
+  (pdev/migrate migrator))
 
 (defn rollback!
   ([migrator]
    (rollback! migrator 1))
   ([migrator n]
-   (-rollback migrator n)))
+   (pdev/rollback migrator n)))
 
 (defn redo! [migrator]
   (rollback! migrator)
@@ -49,7 +45,7 @@
     (repos/transact! transactor repos/->exec! (constantly seed-sql))))
 
 (defn create! [migrator name]
-  (-create migrator name))
+  (pdev/create migrator name))
 
 (defmethod ig/init-key ::migrator [_ {:keys [datasource migrations-res-path]}]
   (->Migrator {:store                :database

@@ -3,16 +3,11 @@
      (:require-macros
        test.utils.stubs))
   (:require
-    [com.ben-allred.audiophile.common.utils.logger :as log])
+    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [test.utils.protocols :as pu])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
-
-(defprotocol IStub
-  (init! [this] "set all stub behavior to initial behavior and reset calls")
-  (-set-stub! [this method f-or-val] "update an individual stub")
-  (-get-stub [this method] "return the current stub (if any) for a method")
-  (-calls [this]))
 
 (defn ^:private ->method [method f state n]
   (let [args (into [] (repeatedly n gensym))]
@@ -48,41 +43,43 @@
                           x))
                       reify)
                  (concat
-                   [`IStub
+                   [`pu/IInit
                     (list* 'init! `([this#]
                                     (swap! ~state dissoc :stubs :calls)
                                     this#))
-                    (list* '-set-stub! `([this# method# val#]
+                    `pu/IStub
+                    (list* 'set-stub! `([this# method# val#]
                                          (swap! ~state update :stubs assoc method# val#)))
-                    (list* '-get-stub `([this# method#]
+                    (list* 'get-stub `([this# method#]
                                         (get-in (deref ~state) [:stubs method#])))
-                    (list* '-calls `([this#]
+                    `pu/IReport
+                    (list* 'calls `([this#]
                                      (:calls (deref ~state))))]))]
     `(let [~state (atom {:stubs nil})]
        ~stub)))
 
 (defn stub? [x]
-  (satisfies? IStub x))
+  (satisfies? pu/IStub x))
 
 (defn set-stub! [stub method f-or-val]
-  (-set-stub! stub method (if (fn? f-or-val) f-or-val (constantly f-or-val)))
+  (pu/set-stub! stub method (if (fn? f-or-val) f-or-val (constantly f-or-val)))
   stub)
 
 (defn remove-stub! [stub method]
-  (-set-stub! stub method nil)
+  (pu/set-stub! stub method nil)
   stub)
 
 (defn calls [stub method]
-  (get (-calls stub) method))
+  (get (pu/calls stub) method))
 
 (defn use! [stub method & vals]
   (when (seq vals)
     (let [results (atom vals)
-          curr (-get-stub stub method)]
-      (-set-stub! stub method (fn [& args]
+          curr (pu/get-stub stub method)]
+      (pu/set-stub! stub method (fn [& args]
                                 (let [result (first @results)]
                                   (when (empty? (swap! results rest))
-                                    (-set-stub! stub method curr))
+                                    (pu/set-stub! stub method curr))
                                   (cond
                                     (instance? #?(:cljs js/Error :default Throwable) result)
                                     (throw result)
@@ -93,3 +90,6 @@
                                     :else
                                     result))))))
   stub)
+
+(defn init! [stub]
+  (pu/init! stub))

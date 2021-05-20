@@ -42,12 +42,14 @@
 (defmethod ig/init-key ::edn [_ _]
   (reify
     pserdes/ISerde
-    (mime-type [_]
-      "application/edn")
     (serialize [_ value _]
       (edn#serialize value))
     (deserialize [_ value opts]
-      (edn#deserialize value opts))))
+      (edn#deserialize value opts))
+
+    pserdes/IMime
+    (mime-type [_]
+      "application/edn")))
 
 (defn transit#serialize [value]
   #?(:clj  (let [out (ByteArrayOutputStream. 4096)]
@@ -74,12 +76,14 @@
 (defmethod ig/init-key ::transit [_ _]
   (reify
     pserdes/ISerde
-    (mime-type [_]
-      "application/json+transit")
     (serialize [_ value _]
       (transit#serialize value))
     (deserialize [_ value _]
-      (transit#deserialize value))))
+      (transit#deserialize value))
+
+    pserdes/IMime
+    (mime-type [_]
+      "application/json+transit")))
 
 (defn json#serialize [value]
   #?(:clj  (jsonista/write-value-as-string value object-mapper)
@@ -92,22 +96,26 @@
 (defmethod ig/init-key ::json [_ _]
   (reify
     pserdes/ISerde
-    (mime-type [_]
-      "application/json")
     (serialize [_ value _]
       (json#serialize value))
     (deserialize [_ value _]
-      (json#deserialize value))))
+      (json#deserialize value))
+
+    pserdes/IMime
+    (mime-type [_]
+      "application/json")))
 
 (defmethod ig/init-key ::urlencode [_ _]
   (reify
     pserdes/ISerde
-    (mime-type [_]
-      "application/x-www-form-urlencoded")
     (serialize [_ value _]
       (uri/join-query value))
     (deserialize [_ value _]
-      (uri/split-query value))))
+      (uri/split-query value))
+
+    pserdes/IMime
+    (mime-type [_]
+      "application/x-www-form-urlencoded")))
 
 (defmethod ig/init-key ::jwt [_ {:keys [data-serde expiration secret]}]
   (reify

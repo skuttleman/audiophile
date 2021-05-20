@@ -3,6 +3,7 @@
     [bidi.bidi :as bidi]
     [clojure.set :as set]
     [clojure.string :as string]
+    [com.ben-allred.audiophile.common.services.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
@@ -28,25 +29,18 @@
                                  (maps/update-maybe :project-id str)
                                  (maps/update-maybe :team-id str))))
 
-(defprotocol IHistory
-  "This can only be implemented in browser targeted cljs builds"
-  (-start! [this] "start monitoring and reacting to the browser history state")
-  (-stop! [this] "stop interacting with the browser history state")
-  (-navigate! [this path] "push a new state to the browser history")
-  (-replace! [this path] "replace the current browser history state"))
-
 (deftype LinkedNavigator [pushy router]
-  IHistory
-  (-start! [_]
+  pnav/IHistory
+  (start! [_]
     (pushy/start! pushy)
     nil)
-  (-stop! [_]
+  (stop! [_]
     (pushy/stop! pushy)
     nil)
-  (-navigate! [_ path]
+  (navigate! [_ path]
     (pushy/set-token! pushy path)
     nil)
-  (-replace! [_ path]
+  (replace! [_ path]
     (pushy/replace-token! pushy path)
     nil)
 
@@ -86,9 +80,9 @@
             params->internal)))
 
 (deftype Router [base-urls routes]
-  IHistory
-  (-navigate! [_ _])
-  (-replace! [_ _])
+  pnav/IHistory
+  (navigate! [_ _])
+  (replace! [_ _])
 
   pserdes/ISerde
   (serialize [_ handle opts]
@@ -112,10 +106,10 @@
     (vreset! pushy (pushy/pushy #(on-nav router store @pushy %)
                                 #(serdes/deserialize router %)))
     (doto (->LinkedNavigator @pushy router)
-      -start!)))
+      pnav/start!)))
 
 (defmethod ig/halt-key! ::nav [_ nav]
-  (-stop! nav))
+  (pnav/stop! nav))
 
 (defn path-for
   ([nav handle]
@@ -128,13 +122,13 @@
   ([nav handle]
    (navigate! nav handle nil))
   ([nav handle params]
-   (-navigate! nav (path-for nav handle params))))
+   (pnav/navigate! nav (path-for nav handle params))))
 
 (defn replace!
   ([nav handle]
    (replace! nav handle nil))
   ([nav handle params]
-   (-replace! nav (path-for nav handle params))))
+   (pnav/replace! nav (path-for nav handle params))))
 
 (defn goto!
   "send the browser to a location with a page rebuild"

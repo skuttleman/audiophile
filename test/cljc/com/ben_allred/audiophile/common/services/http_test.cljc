@@ -137,12 +137,14 @@
 (defn ^:private ->serde [k]
   (reify
     pserdes/ISerde
-    (mime-type [_]
-      (str "application/" k))
     (serialize [_ value _]
       [(keyword k "serialized") value])
     (deserialize [_ value _]
-      [(keyword k "deserialized") value])))
+      [(keyword k "deserialized") value])
+
+    pserdes/IMime
+    (mime-type [_]
+      (str "application/" k))))
 
 (defn ^:private ->stub [serde body]
   {:headers {:content-type (some-> serde serdes/mime-type)}

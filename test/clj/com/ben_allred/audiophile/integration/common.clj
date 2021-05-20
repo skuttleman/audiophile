@@ -28,8 +28,8 @@
        (assoc [:duct/const :services/oauth]
               (stubs/create (reify
                               pauth/IOAuthProvider
-                              (-redirect-uri [_ _])
-                              (-profile [_ _]))))
+                              (redirect-uri [_ _])
+                              (profile [_ _]))))
        (cond->
          (not (:db/enabled? opts))
          (assoc [:duct/const :services/transactor]
