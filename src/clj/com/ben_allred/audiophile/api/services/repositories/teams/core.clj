@@ -14,8 +14,8 @@
                   query
                   {:model-fn (crepos/->model-fn model)}))
 
-(defn ^:private query-all* [{model :models/teams} user-id]
-  (q/select-for-user model user-id))
+(defn ^:private query-all* [executor {model :models/teams} user-id]
+  (exec* executor model (q/select-for-user model user-id)))
 
 (defn ^:private query-by-id* [executor {:models/keys [teams user-teams users]} team-id user-id]
   (let [team (-> executor
@@ -47,7 +47,7 @@
 (deftype TeamAccessor [repo]
   pint/IAccessor
   (query-many [_ opts]
-    (repos/transact! repo repos/->exec! query-all* (:user/id opts)))
+    (repos/transact! repo query-all* (:user/id opts)))
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) (:user/id opts)))
   (create! [_ opts]

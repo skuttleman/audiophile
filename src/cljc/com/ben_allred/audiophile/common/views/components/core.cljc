@@ -4,6 +4,8 @@
     [com.ben-allred.audiophile.common.services.resources.core :as res]
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
+    [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
+    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]))
@@ -20,11 +22,11 @@
 (defn spinner [{:keys [size]}]
   [(keyword (str "div.loader." (name (or size :small))))])
 
-(defn with-resource [[resource opts] _component & _args]
-  (res/request! resource opts)
+(defn with-resource [[*resource opts] _component & _args]
+  (res/request! *resource opts)
   (fn [_resource component & args]
-    (let [status (res/status resource)
-          data @resource]
+    (let [status (res/status *resource)
+          data @*resource]
       (case status
         :success (into [component data] args)
         :error [:div.error "an error occurred"]
@@ -69,3 +71,9 @@
 
                 buttons
                 (into buttons))))))
+
+(defn modal-opener [store title view]
+  (fn [_]
+    (ui-store/dispatch! store
+                        (actions/modal! [:h2.subtitle title]
+                                        view))))

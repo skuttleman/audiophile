@@ -82,25 +82,25 @@
 
         (testing "#deref"
           (let [opts->vow (spies/create (v/create (fn [_ _])))
-                resource (res/->Resource (atom {:status :init}) opts->vow)]
+                *resource (res/->Resource (atom {:status :init}) opts->vow)]
             (testing "when the resource has not resolved"
               (testing "returns nil"
-                (is (nil? @resource))
-                (res/request! resource ::opts)
-                (is (nil? @resource))))
+                (is (nil? @*resource))
+                (res/request! *resource ::opts)
+                (is (nil? @*resource))))
 
             (testing "when the resource succeeds"
               (spies/set-spy! opts->vow (v/resolve {:data ::data}))
-              (tu/<p! (res/request! resource ::opts))
+              (tu/<p! (res/request! *resource ::opts))
 
               (testing "returns data"
-                (is (= ::data @resource))))
+                (is (= ::data @*resource))))
 
             (testing "when the resource succeeds"
               (spies/set-spy! opts->vow (v/reject {:errors ::errors}))
-              (tu/<p! (res/request! resource ::opts))
+              (tu/<p! (res/request! *resource ::opts))
 
               (testing "returns errors"
-                (is (= ::errors @resource))))))
+                (is (= ::errors @*resource))))))
 
         (done)))))

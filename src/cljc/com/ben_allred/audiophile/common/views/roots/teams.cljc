@@ -37,9 +37,9 @@
                                     form
                                     [:team/name])]]])))
 
-(defmethod ig/init-key ::create [_ {:keys [all-teams teams]}]
+(defmethod ig/init-key ::create [_ {:keys [*all-teams *teams]}]
   (fn [cb]
-    [create* teams (fn [result]
-                     (res/request! all-teams)
+    [create* *teams (fn [result]
+                     (res/request! *all-teams)
                      (when cb
                        (cb result)))]))

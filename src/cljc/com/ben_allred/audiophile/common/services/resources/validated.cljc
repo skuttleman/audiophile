@@ -24,53 +24,53 @@
   [_ data]
   data)
 
-(deftype ValidatedResource [id resource form opts*]
+(deftype ValidatedResource [id *resource *form opts*]
   pres/IResource
   (request! [this opts]
     (let [opts (-> opts*
                    (merge opts)
-                   (assoc :form/value (internal->remote id @form)))]
+                   (assoc :form/value (internal->remote id @*form)))]
       (if-let [errors (forms/errors this)]
-        (do (forms/touch! form)
+        (do (forms/touch! *form)
             (v/reject [:local/rejected errors]))
-        (-> resource
+        (-> *resource
             (pres/request! opts)
             (v/then (partial remote->internal id))
-            (v/peek (partial forms/init! form))))))
+            (v/peek (partial forms/init! *form))))))
   (status [_]
-    (pres/status resource))
+    (pres/status *resource))
 
   pforms/IInit
   (init! [_ value]
-    (forms/init! form value))
+    (forms/init! *form value))
 
   pforms/IChange
   (change! [_ path value]
-    (forms/change! form path value))
+    (forms/change! *form path value))
 
   pforms/ITrack
   (touch! [_]
-    (forms/touch! form))
+    (forms/touch! *form))
   (touch! [_ path]
-    (forms/touch! form path))
+    (forms/touch! *form path))
   (touched? [_]
-    (forms/touched? form))
+    (forms/touched? *form))
   (touched? [_ path]
-    (forms/touched? form path))
+    (forms/touched? *form path))
 
   pforms/IValidate
   (errors [_]
-    (forms/errors form))
+    (forms/errors *form))
 
   pv/IPromise
   (then [_ on-success on-error]
-    (-> resource
+    (-> *resource
         (v/then (partial remote->internal id))
         (v/then on-success on-error)))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
-    @form))
+    @*form))
 
 (defn create
   ([resource form]

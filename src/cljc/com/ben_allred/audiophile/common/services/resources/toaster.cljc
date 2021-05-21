@@ -18,22 +18,22 @@
                      (actions/toast! level body))]
         (ui-store/dispatch! store action)))))
 
-(deftype ToastResource [resource store success-fn error-fn linger-ms lag-ms]
+(deftype ToastResource [*resource store success-fn error-fn linger-ms lag-ms]
   pres/IResource
   (request! [_ opts]
-    (-> (pres/request! resource opts)
+    (-> (pres/request! *resource opts)
         (v/peek (->toast store :success success-fn linger-ms lag-ms)
                 (->toast store :error error-fn linger-ms lag-ms))))
   (status [_]
-    (pres/status resource))
+    (pres/status *resource))
 
   pv/IPromise
   (then [_ on-success on-error]
-    (v/then resource on-success on-error))
+    (v/then *resource on-success on-error))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
-    @resource))
+    @*resource))
 
 (defmethod ig/init-key ::resource [_ {:keys [error-fn resource store success-fn]}]
   (->ToastResource resource store success-fn error-fn nil nil))

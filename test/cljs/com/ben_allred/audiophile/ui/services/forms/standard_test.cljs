@@ -7,49 +7,49 @@
 (deftest ^:unit standard-form-test
   (testing "StandardForm"
     (testing "when using a form without a validator"
-      (let [form (forms.std/create {:bar {:quux "init"}})]
+      (let [*form (forms.std/create {:bar {:quux "init"}})]
         (testing "has no error"
-          (is (nil? (forms/errors form))))
+          (is (nil? (forms/errors *form))))
 
         (testing "tracks touch state"
-          (is (not (forms/touched? form)))
-          (is (not (forms/touched? form [:bar :quux]))))
+          (is (not (forms/touched? *form)))
+          (is (not (forms/touched? *form [:bar :quux]))))
 
         (testing "and when changing the form"
-          (forms/change! form [:foo] "foo")
-          (forms/change! form [:bar :baz] "bar/baz")
-          (forms/touch! form [:none])
+          (forms/change! *form [:foo] "foo")
+          (forms/change! *form [:bar :baz] "bar/baz")
+          (forms/touch! *form [:none])
 
           (testing "has data"
             (is (= {:foo "foo"
                     :bar {:baz  "bar/baz"
                           :quux "init"}}
-                   @form)))
+                   @*form)))
 
           (testing "has no error"
-            (is (nil? (forms/errors form))))
+            (is (nil? (forms/errors *form))))
 
           (testing "tracks touch state"
-            (is (forms/touched? form))
-            (is (forms/touched? form [:none]))
-            (is (forms/touched? form [:bar :baz]))
-            (is (forms/touched? form [:foo]))
-            (is (not (forms/touched? form [:bar :quux]))))
+            (is (forms/touched? *form))
+            (is (forms/touched? *form [:none]))
+            (is (forms/touched? *form [:bar :baz]))
+            (is (forms/touched? *form [:foo]))
+            (is (not (forms/touched? *form [:bar :quux]))))
 
           (testing "and when initializing the form"
-            (forms/init! form {:new :value})
+            (forms/init! *form {:new :value})
 
             (testing "has data"
               (is (= {:new :value}
-                     @form)))
+                     @*form)))
 
             (testing "tracks touch state"
-              (is (not (forms/touched? form)))
-              (is (not (forms/touched? form [:new])))
-              (is (not (forms/touched? form [:none])))
-              (is (not (forms/touched? form [:bar :baz])))
-              (is (not (forms/touched? form [:foo])))
-              (is (not (forms/touched? form [:bar :quux]))))))))
+              (is (not (forms/touched? *form)))
+              (is (not (forms/touched? *form [:new])))
+              (is (not (forms/touched? *form [:none])))
+              (is (not (forms/touched? *form [:bar :baz])))
+              (is (not (forms/touched? *form [:foo])))
+              (is (not (forms/touched? *form [:bar :quux]))))))))
 
 
     (testing "when using a form with a validator"

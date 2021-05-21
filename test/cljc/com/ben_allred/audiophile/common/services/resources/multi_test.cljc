@@ -30,66 +30,66 @@
     (async done
       (async/go
         (testing "when all resources succeed"
-          (let [res-1 (->resource :success :value-1 :result-1)
-                res-2 (->resource :success :value-2 :result-2)
-                multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
+          (let [*res-1 (->resource :success :value-1 :result-1)
+                *res-2 (->resource :success :value-2 :result-2)
+                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
             (testing "returns expected request result"
               (is (= [:success {:res-1 :result-1
                                 :res-2 :result-2}]
-                     (tu/<p! (res/request! multi)))))
+                     (tu/<p! (res/request! *multi)))))
 
             (testing "has expected value"
               (is (= {:res-1 :value-1
                       :res-2 :value-2}
-                     @multi)))
+                     @*multi)))
 
             (testing "is successful"
-              (is (res/success? multi))
-              (is (= :success (res/status multi))))))
+              (is (res/success? *multi))
+              (is (= :success (res/status *multi))))))
 
         (testing "when one resource is requesting"
-          (let [res-1 (->resource :success :value-1 :result-1)
-                res-2 (->resource :requesting :req :req)
-                multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
+          (let [*res-1 (->resource :success :value-1 :result-1)
+                *res-2 (->resource :requesting :req :req)
+                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
             (testing "does not return a result"
               (is (= [:success ::timeout]
-                     (tu/<p! (-> [(res/request! multi)
+                     (tu/<p! (-> [(res/request! *multi)
                                   (v/sleep ::timeout 100)]
                                  v/first)))))
 
             (testing "has expected value"
-              (is (nil? @multi)))
+              (is (nil? @*multi)))
 
             (testing "is requesting"
-              (is (res/requesting? multi)))))
+              (is (res/requesting? *multi)))))
 
         (testing "when one resource has not been requested"
-          (let [res-1 (->resource :success :value-1 :result-1)
-                res-2 (->resource :init :init :init)
-                multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
+          (let [*res-1 (->resource :success :value-1 :result-1)
+                *res-2 (->resource :init :init :init)
+                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
             (testing "does not return a result"
               (is (= [:success ::timeout]
-                     (tu/<p! (-> [(res/request! multi)
+                     (tu/<p! (-> [(res/request! *multi)
                                   (v/sleep ::timeout 100)]
                                  v/first)))))
 
             (testing "has expected value"
-              (is (nil? @multi)))
+              (is (nil? @*multi)))
 
             (testing "has not been fully requested"
-              (is (not (res/requested? multi))))))
+              (is (not (res/requested? *multi))))))
 
         (testing "when one resource has erred"
-          (let [res-1 (->resource :success :value-1 :result-1)
-                res-2 (->resource :error :value-2 :result-2)
-                multi (multi/->multi-resource {:res-1 res-1 :res-2 res-2})]
+          (let [*res-1 (->resource :success :value-1 :result-1)
+                *res-2 (->resource :error :value-2 :result-2)
+                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
             (testing "returns expected request result"
-              (is (= [:error :result-2] (tu/<p! (res/request! multi)))))
+              (is (= [:error :result-2] (tu/<p! (res/request! *multi)))))
 
             (testing "has expected value"
-              (is (= :value-2 @multi)))
+              (is (= :value-2 @*multi)))
 
             (testing "is not success"
-              (is (res/error? multi)))))
+              (is (res/error? *multi)))))
 
         (done)))))

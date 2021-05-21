@@ -25,6 +25,7 @@
             (testing "returns teams"
               (is (http/success? response))
               (assert/is? {:team/id   team-id
+                           :team/type :PERSONAL
                            :team/name "Team Seed"}
                           (-> response
                               (get-in [:body :data])

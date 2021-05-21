@@ -11,8 +11,8 @@
  {}
 
  :com.ben-allred.audiophile.common.views.roots.teams/create
- {:all-teams #ig/ref :resources/teams.all
-  :teams     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]}
+ {:*all-teams #ig/ref :resources/teams.all
+  :*teams     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/all]
  {:http-client #ig/ref :services/http

@@ -31,11 +31,11 @@
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
-    (loop [vals {} [[k res] :as resources] (seq resources)]
+    (loop [vals {} [[k *res] :as resources] (seq resources)]
       (if (empty? resources)
         vals
-        (let [status (pres/status res)
-              value @res]
+        (let [status (pres/status *res)
+              value @*res]
           (case status
             :error value
             :success (recur (assoc vals k value) (rest resources))

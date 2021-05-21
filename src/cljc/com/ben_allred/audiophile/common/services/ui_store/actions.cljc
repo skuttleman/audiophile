@@ -68,7 +68,8 @@
    (modal! header body nil))
   ([header body buttons]
    (fn [store]
-     (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))]
+     (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))
+           body (cond-> body (not (vector? body)) vector)]
        (ui-store/dispatch! store [:modals/add! id (maps/->m header body buttons)])
        (async/go
          (async/<! (async/timeout 10))

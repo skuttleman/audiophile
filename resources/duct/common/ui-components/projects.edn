@@ -90,14 +90,14 @@
   :view     #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/list}
 
  :com.ben-allred.audiophile.common.views.roots.projects/create
- {:all-projects #ig/ref :resources/projects.all
-  :projects     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
-  :teams        #ig/ref :resources/teams#all}
+ {:*all-projects #ig/ref :resources/projects.all
+  :*teams        #ig/ref :resources/teams#all
+  :projects      #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]}
 
  :com.ben-allred.audiophile.common.views.roots.projects/one
- {:files      #ig/ref :resources/project.files
-  :project    #ig/ref :resources/project
-  :team       #ig/ref :resources/team
+ {:*files     #ig/ref :resources/project.files
+  :*project   #ig/ref :resources/project
+  :*team      #ig/ref :resources/team
   :track-list #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/track-list}
 
  :com.ben-allred.audiophile.common.views.roots.projects/track-list
@@ -106,11 +106,11 @@
   :version-form #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/version-form}
 
  :com.ben-allred.audiophile.common.views.roots.projects/file-form
- {:artifacts #ig/ref :resources/artifacts
-  :file      #ig/ref :resources/project.file#create
-  :files     #ig/ref :resources/project.files}
+ {:*artifacts #ig/ref :resources/artifacts
+  :*file      #ig/ref :resources/project.file#create
+  :*files     #ig/ref :resources/project.files}
 
  :com.ben-allred.audiophile.common.views.roots.projects/version-form
- {:artifacts    #ig/ref :resources/artifacts
-  :file-version #ig/ref :resources/project.file#version
-  :files        #ig/ref :resources/project.files}}
+ {:*artifacts    #ig/ref :resources/artifacts
+  :*file-version #ig/ref :resources/project.file#version
+  :*files        #ig/ref :resources/project.files}}

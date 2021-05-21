@@ -10,22 +10,22 @@
      (:import
        (clojure.lang IDeref))))
 
-(deftype CachedResource [state resource]
+(deftype CachedResource [state *resource]
   pres/IResource
   (request! [this opts]
     (locking this
       (or @state
-          (reset! state (res/request! resource opts)))))
+          (reset! state (res/request! *resource opts)))))
   (status [_]
-    (res/status resource))
+    (res/status *resource))
 
   pv/IPromise
   (then [_ on-success on-error]
-    (v/then resource on-success on-error))
+    (v/then *resource on-success on-error))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
-    @resource))
+    @*resource))
 
 (defmethod ig/init-key ::resource [_ {:keys [resource]}]
   (->CachedResource (r/atom nil) resource))

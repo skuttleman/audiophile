@@ -15,10 +15,10 @@
     (when handle
       (nav/navigate! nav handle params))))
 
-(deftype RedirectResource [resource nav routes]
+(deftype RedirectResource [*resource nav routes]
   pres/IResource
   (request! [_ opts]
-    (-> (pres/request! resource opts)
+    (-> (pres/request! *resource opts)
         (v/peek (->redirect nav
                             (:success/handle routes)
                             (:success/params routes))
@@ -26,15 +26,15 @@
                             (:error/handle routes)
                             (:error/params routes)))))
   (status [_]
-    (pres/status resource))
+    (pres/status *resource))
 
   pv/IPromise
   (then [_ on-success on-error]
-    (v/then resource on-success on-error))
+    (v/then *resource on-success on-error))
 
   IDeref
   (#?(:cljs -deref :default deref) [_]
-    @resource))
+    @*resource))
 
 (defmethod ig/init-key ::resource [_ {:keys [nav resource routes]}]
   (->RedirectResource resource nav routes))

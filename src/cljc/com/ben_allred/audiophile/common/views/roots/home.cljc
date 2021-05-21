@@ -18,11 +18,6 @@
           (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
    "Logout"])
 
-(defn ^:private clicker [store view title]
-  (fn [_]
-    (ui-store/dispatch! store
-                        (actions/modal! [:h2.subtitle title]
-                                        [view]))))
 
 (defmethod ig/init-key ::root [_ {:keys [nav project-form projects-tile store team-form teams-tile]}]
   (fn [state]
@@ -30,18 +25,22 @@
       [:div
        [:p "Welcome, " (get-in state [:auth/user :user/first-name])]
        [:div.level.layout--space-below.layout--xxl.gutters
-        {:style {:align-content :flex-start}}
+        {:style {:align-items :flex-start}}
         [projects-tile
          state
          [in/plain-button
           {:class ["is-primary"]
-           :on-click (clicker store project-form "Create project")}
+           :on-click (comp/modal-opener store
+                                        "Create project"
+                                        project-form)}
           "Create one"]]
         [teams-tile
          state
          [in/plain-button
           {:class ["is-primary"]
-           :on-click (clicker store team-form "Create team")}
+           :on-click (comp/modal-opener store
+                                        "Create team"
+                                        team-form)}
           "Create one"]]]]
       (nav/navigate! nav :ui/login))))
 
