@@ -61,10 +61,9 @@
 (defn insert [model file]
   (models/insert-into model
                       (assoc file
-                             :idx (sql/coalesce (-> model
-                                                    (select-by [:= :files.project-id (:project-id file)])
-                                                    (assoc :select [(sql/max :idx)]))
-                                                0))))
+                             :idx (-> model
+                                      (models/select* [:= :files.project-id (:project-id file)])
+                                      (assoc :select [(sql/count :idx)])))))
 
 (defn insert-artifact [model uri artifact user-id]
   (-> artifact

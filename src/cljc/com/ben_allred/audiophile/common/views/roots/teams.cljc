@@ -14,15 +14,25 @@
 (def ^:private validator
   (constantly nil))
 
+(def ^:private team-type->icon
+  {:PERSONAL      ["Personal Team" :user]
+   :COLLABORATIVE ["Collaborative Team" :users]})
+
 (defmethod ig/init-key ::list [_ _]
   (fn [teams _state]
     [:div
      [:p [:strong "Your teams"]]
      (if (seq teams)
        [:ul
-        (for [{team-name :team/name :team/keys [id type]} teams]
+        (for [{team-name :team/name :team/keys [id type]} teams
+              :let [[title icon] (team-type->icon type)]]
           ^{:key id}
-          [:li "• " team-name (str " - " type)])]
+          [:li {:style {:display :flex}}
+           [:div {:style {:display         :flex
+                          :justify-content :center
+                          :width           "32px"}}
+            [comp/icon {:title title} icon]]
+           team-name])]
        [:p "You don't have any teams. Why not create one?"])]))
 
 (defn create* [*teams _cb]
@@ -40,6 +50,6 @@
 (defmethod ig/init-key ::create [_ {:keys [*all-teams *teams]}]
   (fn [cb]
     [create* *teams (fn [result]
-                     (res/request! *all-teams)
-                     (when cb
-                       (cb result)))]))
+                      (res/request! *all-teams)
+                      (when cb
+                        (cb result)))]))

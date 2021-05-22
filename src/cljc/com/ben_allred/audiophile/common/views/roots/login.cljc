@@ -12,11 +12,11 @@
     [:h2.subtitle "Collaborate on audio files"]
     [:div.columns.layout--space-between.layout--space-below
      [:div.column.has-background-info
-      [:div.has-text-centered "Leave feedback about a file version"]]
+      [:div.has-text-centered {:style {:color :white}} "Leave feedback about a file version"]]
      [:div.column.has-background-info
-      [:div.has-text-centered "Get notified of conversations while you're away"]]
+      [:div.has-text-centered {:style {:color :white}} "Get notified of conversations while you're away"]]
      [:div.column.has-background-info
-      [:div.has-text-centered "Assign follow up tasks to get changes made"]]]]
+      [:div.has-text-centered {:style {:color :white}} "Assign follow up tasks to get changes made"]]]]
    [:div.gutters.layout--xxl
     [:div "Login to get started"]
     [login-form (:nav/route state)]]])

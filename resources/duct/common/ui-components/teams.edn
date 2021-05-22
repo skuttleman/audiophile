@@ -55,5 +55,5 @@
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :tiles/teams#all]
  {:resource #ig/ref :resources/teams.all
-  :title    "Your Teams"
+  :title    "Your teams"
   :view     #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/list}}

@@ -8,6 +8,7 @@
     [com.ben-allred.audiophile.common.services.resources.validated :as vres]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.utils.strings :as strings]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.common.views.components.input-fields.dropdown :as dd]
@@ -44,9 +45,8 @@
         (for [{:project/keys [id name]} projects]
           ^{:key id}
           [:li.layout--space-between
-           [:span "• " name]
            [:a.link {:href (nav/path-for nav :ui/project {:route-params {:project-id id}})}
-            "Details"]])]
+            [:span name]]])]
        [:p "You don't have any projects. Why not create one?"])]))
 
 (defmethod vres/internal->remote ::file
@@ -113,32 +113,41 @@
 (defmethod ig/init-key ::track-list [_ {:keys [file-form store version-form]}]
   (fn [files project-id]
     [:div
-     [in/plain-button
-      {:class    ["is-white"]
-       :on-click (comp/modal-opener store
-                                    "Upload new track"
-                                    [file-form project-id])}
-      "New track"]
-     [:p "Tracks"]
-     [:ul
-      (for [file files]
-        ^{:key (:file/id file)}
-        [:li
-         [:span (:file/name file) " - " (:version/name file)]
-         [in/plain-button
-          {:class    ["is-white"]
-           :on-click (comp/modal-opener store
-                                        "Upload new version"
-                                        [version-form file])}
-          "New version"]])]]))
+     [:div.buttons
+      [in/plain-button
+       {:class    ["is-primary"]
+        :on-click (comp/modal-opener store
+                                     "Upload new track"
+                                     [file-form project-id])}
+       "New track"]]
+     (if (seq files)
+       [:table.table.is-striped.is-fullwidth
+        [:tbody
+         (for [[idx file] (map-indexed vector files)]
+           ^{:key (:file/id file)}
+           [:tr
+            [:td {:style {:white-space :nowrap}}
+             [:em (strings/format "%02d" (inc idx))]]
+            [:td {:style {:width "99%"}}
+             [:span [:strong (:file/name file)] " - " (:version/name file)]]
+            [:td
+             [in/plain-button
+              {:class    ["is-outlined"]
+               :on-click (comp/modal-opener store
+                                            "Upload new version"
+                                            [version-form file])}
+              "Upload new version"]]])]]
+       [:div "This projects doesn't have any tracks. You should upload one."])]))
 
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
 
+
 (defn ^:private project-details [project *team]
   (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
-    [:div
+    [:div {:style {:display :flex}}
      [:h2.subtitle (:project/name project)]
+     [:div {:style {:width "16px"}}]
      [comp/with-resource [*team opts] team-view]]))
 
 (defmethod ig/init-key ::one [_ {:keys [*files *project *team track-list]}]
@@ -155,7 +164,7 @@
                      (apply concat)
                      (map (juxt :team/id identity)))
         *form (vres/create *projects (form/create {:project/team-id (ffirst options)}
-                                                 validator))
+                                                  validator))
         options-by-id (into {} options)]
     (fn [_teams _*projects cb]
       [:div

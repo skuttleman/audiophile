@@ -23,7 +23,6 @@
   (fn [state]
     (if (:auth/user state)
       [:div
-       [:p "Welcome, " (get-in state [:auth/user :user/first-name])]
        [:div.level.layout--space-below.layout--xxl.gutters
         {:style {:align-items :flex-start}}
         [projects-tile

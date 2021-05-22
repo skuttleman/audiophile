@@ -164,33 +164,13 @@
               (is (= "file name" (:name value)))
               (is (= project-id (:project-id value)))
               (is (= user-id (:created-by value)))
-              (let [[sql-fn [query fallback]] (-> value
-                                                  :idx
-                                                  ((juxt :name :args)))
-                    {:keys [select from where join]} query]
-                (is (= :coalesce sql-fn))
-                (is (zero? fallback))
-                (is (= #{(sql/max :idx)} (set select)))
+              (let [query (:idx value)
+                    {:keys [select from where]} query]
+                (is (= #{(sql/count :idx)} (set select)))
                 (is (= [:files] from))
                 (is (= [:= #{:files.project-id project-id}]
-                       (tu/op-set where)))
-                (is (= [[{:select   #{:file-versions.file-id
-                                      [(sql/max :file-versions.created-at) :created-at]}
-                          :from     [:file-versions]
-                          :group-by [:file-versions.file-id]}
-                         :version]
-                        [:= #{:version.file-id :files.id}]
+                       (tu/op-set where))))))
 
-                        [:file-versions :fv]
-                        [:and
-                         #{[:= #{:fv.file-id :version.file-id}]
-                           [:= #{:fv.created-at :version.created-at}]}]]
-                       (-> join
-                           (update-in [0 0 :select] set)
-                           (update 1 tu/op-set)
-                           (update-in [3 1] tu/op-set)
-                           (update-in [3 2] tu/op-set)
-                           (update 3 tu/op-set)))))))
 
           (testing "saves version data to the repository"
             (is (= {:insert-into :file-versions

@@ -6,15 +6,16 @@
 
 (defn tile [heading body & tabs]
   [:div.tile
-   ^{:data-foo "bar"} [:div]
-   [:div {:data-foo "bar"}]
    [:div.panel {:style {:min-width        "400px"
                         :background-color "#fcfcfc"}}
     (when heading
       [:div.panel-heading
        heading])
     (when (seq tabs)
-      (into [:div.panel-tabs {:style {:padding "8px 0"}}] tabs))
+      (into [:div.panel-tabs
+             {:style {:padding         "8px"
+                      :justify-content :flex-start}}]
+            tabs))
     [:div.panel-block
      body]]])
 

@@ -33,7 +33,10 @@
         [spinner {:size (:spinner/size opts)}]))))
 
 (defn not-found [_]
-  [:div "not found"])
+  [:div {:style {:display         :flex
+                 :align-items     :center
+                 :justify-content :center}}
+   [:img {:src "https://i.imgur.com/HYpqZvg.jpg"}]])
 
 (defn icon
   ([icon-class]

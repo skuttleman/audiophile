@@ -86,7 +86,7 @@
 
  [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :tiles/projects#all]
  {:resource #ig/ref :resources/projects.all
-  :title    "Your Projects"
+  :title    "Your projects"
   :view     #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/list}
 
  :com.ben-allred.audiophile.common.views.roots.projects/create
