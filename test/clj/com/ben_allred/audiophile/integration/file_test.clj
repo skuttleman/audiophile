@@ -182,7 +182,7 @@
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system
-                                         :api/project.file
+                                         :api/file
                                          {:route-params {:file-id file-id}})
                              handler)]
             (testing "creates the file version"
@@ -190,6 +190,25 @@
               (assert/is? {:version/name "version name"
                            :version/id   uuid?}
                           (get-in response [:body :data])))
+
+            (testing "and when querying for the file"
+              (let [response (-> {}
+                                 (ihttp/login system user)
+                                 (ihttp/get system
+                                            :api/file
+                                            {:route-params {:file-id file-id}})
+                                 handler)
+                    {versions :file/versions :as data} (get-in response [:body :data])]
+                (testing "includes the new file"
+                  (assert/is? {:file/name       "File Seed"
+                               :file/project-id project-id}
+                               data)
+                  (assert/has? {:file-version/name "version name"
+                                :file-version/id   uuid?}
+                               versions)
+                  (assert/has? {:file-version/name "File Version Seed"
+                                :file-version/id   uuid?}
+                               versions))))
 
             (testing "and when querying for project files"
               (let [response (-> {}
@@ -213,7 +232,7 @@
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system
-                                         :api/project.file
+                                         :api/file
                                          {:route-params {:file-id file-id}})
                              handler)]
             (testing "returns an error"
@@ -226,7 +245,7 @@
                               :artifact/id  artifact-id}
                              ihttp/body-data
                              (ihttp/post system
-                                         :api/project.file
+                                         :api/file
                                          {:route-params {:file-id file-id}})
                              handler)]
             (testing "returns an error"

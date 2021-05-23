@@ -31,3 +31,6 @@
 
 (defn create-file-version! [interactor opts]
   (pint/create-file-version! interactor opts))
+
+(defn get-artifact [interactor opts]
+  (pint/get-artifact interactor opts))

@@ -41,7 +41,7 @@
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#version]
  {:http-client   #ig/ref :services/http
   :method        :post
-  :route         :api/project.file
+  :route         :api/file
   :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
 
  [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]
@@ -102,6 +102,7 @@
 
  :com.ben-allred.audiophile.common.views.roots.projects/track-list
  {:file-form    #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/file-form
+  :nav          #ig/ref :services/nav
   :store        #ig/ref :services/store
   :version-form #ig/ref :com.ben-allred.audiophile.common.views.roots.projects/version-form}
 

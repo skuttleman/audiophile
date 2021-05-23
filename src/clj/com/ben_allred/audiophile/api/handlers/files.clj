@@ -12,6 +12,10 @@
   (fn [data]
     (int/query-many interactor data)))
 
+(defmethod ig/init-key ::fetch [_ {:keys [interactor]}]
+  (fn [data]
+    (int/query-one interactor data)))
+
 (defmethod ig/init-key ::create [_ {:keys [interactor]}]
   (fn [data]
     (int/create-file! interactor data)))
@@ -21,5 +25,5 @@
     (int/create-file-version! interactor data)))
 
 (defmethod ig/init-key ::download [_ {:keys [interactor]}]
-  (fn [_]
-    (int/not-implemented!)))
+  (fn [data]
+    (int/get-artifact interactor data)))

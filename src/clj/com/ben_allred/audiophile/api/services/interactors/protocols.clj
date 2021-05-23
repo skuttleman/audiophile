@@ -17,4 +17,6 @@
   (create-file! [this opts]
     "Save a new file with a version to the repository.")
   (create-file-version! [this opts]
-    "Create a new version of an existing file"))
+    "Create a new version of an existing file")
+  (get-artifact [this opts]
+    "Get artifact data"))

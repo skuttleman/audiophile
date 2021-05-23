@@ -27,7 +27,9 @@
 (s/def :artifact/id uuid?)
 (s/def :artifact/size nat-int?)
 (s/def :artifact/tempfile #(instance? File %))
+(s/def :file/id uuid?)
 (s/def :file/name ::trimmed-string)
+(s/def :version/id uuid?)
 (s/def :version/name ::trimmed-string)
 
 ;; ws
@@ -66,6 +68,9 @@
 (s/def :api.ws/connect
   (s/merge :api.common/auth
            (s/keys :req-un [:ws/accept :ws/content-type :ws/websocket?])))
+(s/def :res.version/download
+  (s/merge :api.common/auth
+           (s/keys :req [:artifact/id])))
 
 (defmulti spec
           "returns a spec and conformed data for a validating a request for a route. defaults to `nil`."
@@ -73,6 +78,11 @@
 (defmethod spec :default
   [_ request]
   request)
+
+(defmethod spec [:get :api/file]
+  [_ request]
+  {:user/id (get-in request [:auth/user :user/id])
+   :file/id (get-in request [:nav/route :route-params :file-id])})
 
 (defmethod spec [:get :api/project.files]
   [_ request]
@@ -109,7 +119,7 @@
       (get-in [:params "files[]"])
       (assoc :user/id (get-in request [:auth/user :user/id]))))
 
-(defmethod spec [:post :api/project.file]
+(defmethod spec [:post :api/file]
   [_ request]
   (-> request
       (get-in [:body :data])
@@ -134,3 +144,8 @@
   (-> request
       (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))))
+
+(defmethod spec [:get :api/artifact]
+  [_ request]
+  {:user/id     (get-in request [:auth/user :user/id])
+   :artifact/id (get-in request [:nav/route :route-params :artifact-id])})

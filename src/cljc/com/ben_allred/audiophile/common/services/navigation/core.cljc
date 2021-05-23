@@ -19,12 +19,14 @@
 
 (defn ^:private params->internal [params]
   (update params :route-params (fns/=>
+                                 (maps/update-maybe :artifact-id uuids/->uuid)
                                  (maps/update-maybe :file-id uuids/->uuid)
                                  (maps/update-maybe :project-id uuids/->uuid)
                                  (maps/update-maybe :team-id uuids/->uuid))))
 
 (defn ^:private internal->params [params]
   (update params :route-params (fns/=>
+                                 (maps/update-maybe :artifact-id str)
                                  (maps/update-maybe :file-id str)
                                  (maps/update-maybe :project-id str)
                                  (maps/update-maybe :team-id str))))

@@ -1,0 +1,17 @@
+{[:duct/const :views.roots/files#one]
+ #ig/ref :com.ben-allred.audiophile.common.views.roots.files/one
+
+ [:duct/const :resources/project.files]
+ #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :file/one]
+
+ :com.ben-allred.audiophile.common.views.roots.files/one
+ {:*file #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :file/one]
+  :player #ig/ref :components/audio-player}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/resource :file/one]
+ {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :file/one]}
+
+ [:com.ben-allred.audiophile.common.services.resources.core/http-handler :file/one]
+ {:http-client #ig/ref :services/http
+  :method      :get
+  :route       :api/file}}

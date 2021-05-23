@@ -11,9 +11,11 @@
    ;; API
    ["/api"
     [["/ws" :ws/connection]
-     ["/artifacts" :api/artifacts]
+     ["/artifacts"
+      [["" :api/artifacts]
+       [["/" #audiophile/uuid-param :artifact-id] :api/artifact]]]
      ["/files"
-      [[["/" #audiophile/uuid-param :file-id] :api/project.file]]]
+      [[["/" #audiophile/uuid-param :file-id] :api/file]]]
      ["/projects"
       [["" :api/projects]
        [["/" #audiophile/uuid-param :project-id]
@@ -27,6 +29,8 @@
 
    ;; UI
    ["/" :ui/home]
+   ["/files"
+    [[["/" #audiophile/uuid-param :file-id] :ui/file]]]
    ["/login" :ui/login]
    ["/projects"
     [["" :ui/projects]

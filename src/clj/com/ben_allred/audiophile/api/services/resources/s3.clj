@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.api.services.resources.s3
   (:require
     [clojure.java.io :as io]
+    [clojure.string :as string]
     [cognitect.aws.client.api :as aws]
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
@@ -12,10 +13,11 @@
   prepos/IKVStore
   (uri [_ key _]
     (format "s3://%s/%s" bucket key))
-  (get [_ key _]
-    (invoke client {:op      :GetObject
-                    :request {:Bucket bucket
-                              :Key    key}}))
+  (get [_ uri _]
+    (let [key (string/replace uri (format "s3://%s/" bucket) "")]
+      (invoke client {:op      :GetObject
+                      :request {:Bucket bucket
+                                :Key    key}})))
   (put! [_ key content opts]
     (invoke client {:op      :PutObject
                     :request {:Bucket        bucket

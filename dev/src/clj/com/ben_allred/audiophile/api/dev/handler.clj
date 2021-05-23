@@ -2,6 +2,7 @@
   (:require
     [clojure.java.io :as io]
     [clojure.java.shell :as sh]
+    [clojure.string :as string]
     [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
@@ -13,11 +14,11 @@
     prepos/IKVStore
     (uri [_ key _]
       (str "local://target/" key))
-    (get [_ key _]
-      (let [file (io/file (str "target/" key ".dat"))]
-        (if (.exists file)
-          (io/input-stream file)
-          (throw (ex-info "could not stub S3Client#get" {:key key})))))
+    (get [_ uri _]
+      (let [key (string/replace uri "local://target/" "")
+            file (io/file (str "target/" key ".dat"))]
+        (when (.exists file)
+          {:Body (io/input-stream file)})))
     (put! [_ key value opts]
       (sh/sh "mkdir" "-p" "target/artifacts")
       (io/copy value (io/file (str "target/" key ".dat")))

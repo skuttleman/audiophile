@@ -1,13 +1,15 @@
 {[:duct/const :routes/table#api]
- {[:get :api/project.files]  #ig/ref :api.handler/project.files#get
+ {[:get :api/artifact]       #ig/ref :res.handler/file-version#get
+  [:get :api/file]           #ig/ref :api.handler/file#get
+  [:get :api/project.files]  #ig/ref :api.handler/project.files#get
   [:get :api/project]        #ig/ref :api.handler/project#get
   [:get :api/projects]       #ig/ref :api.handler/projects#get
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
+  [:get :resources/health]   #ig/ref :res.handler/health#api
   [:get :ws/connection]      #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
-  [:get :resources/health]   #ig/ref :handlers/health#api
+  [:post :api/file]          #ig/ref :api.handler/file#post
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
-  [:post :api/project.file]  #ig/ref :api.handler/project.file#post
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
   [:post :api/projects]      #ig/ref :api.handler/projects#post
   [:post :api/teams]         #ig/ref :api.handler/teams#post}
@@ -34,6 +36,15 @@
  [:com.ben-allred.audiophile.api.handlers.core/router :api/router#ui]
  #ig/ref :routes/table#ui
 
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/file#get]
+ {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/fetch
+  :spec    :api.common/file-id}
+
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :res.handler/file-version#get]
+ {:->response #ig/ref :com.ben-allred.audiophile.api.handlers.validations.core/ok
+  :handler    #ig/ref :com.ben-allred.audiophile.api.handlers.files/download
+  :spec       :res.version/download}
+
  [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/project.files#get]
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/fetch-all
   :spec    :api.common/project-id}
@@ -58,7 +69,7 @@
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
   :spec    :api.artifact/create}
 
- [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/project.file#post]
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/file#post]
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/create-version
   :spec    :api.version/create}
 
@@ -74,7 +85,10 @@
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.teams/create
   :spec    :api.team/create}
 
- [:com.ben-allred.audiophile.api.handlers.resources/health :handlers/health#api]
+ :com.ben-allred.audiophile.api.handlers.validations.core/ok
+ {}
+
+ [:com.ben-allred.audiophile.api.handlers.resources/health :res.handler/health#api]
  #{}
 
  [:com.ben-allred.audiophile.api.handlers.resources/health :handlers/health#auth]
@@ -162,6 +176,9 @@
  {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.handlers.files/fetch-all
+ {:interactor #ig/ref :interactors/files}
+
+ :com.ben-allred.audiophile.api.handlers.files/fetch
  {:interactor #ig/ref :interactors/files}
 
  :com.ben-allred.audiophile.api.handlers.files/create

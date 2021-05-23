@@ -8,7 +8,8 @@
  [:duct/const :ui.components/table]
  {:ui/home    #ig/ref :com.ben-allred.audiophile.common.views.roots.home/root
   :ui/login   #ig/ref :com.ben-allred.audiophile.common.views.roots.login/root
-  :ui/project #ig/ref :views.roots/projects#one}
+  :ui/project #ig/ref :views.roots/projects#one
+  :ui/file    #ig/ref :views.roots/files#one}
 
  :com.ben-allred.audiophile.common.views.roots.home/root
  {:nav           #ig/ref :services/nav

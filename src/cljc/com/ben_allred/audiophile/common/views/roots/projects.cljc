@@ -110,7 +110,7 @@
                                        "Select file…")}
                           (forms/with-attrs *form [:artifact/details]))]]))))
 
-(defmethod ig/init-key ::track-list [_ {:keys [file-form store version-form]}]
+(defmethod ig/init-key ::track-list [_ {:keys [file-form nav store version-form]}]
   (fn [files project-id]
     [:div
      [:div.buttons
@@ -129,7 +129,8 @@
             [:td {:style {:white-space :nowrap}}
              [:em (strings/format "%02d" (inc idx))]]
             [:td {:style {:width "99%"}}
-             [:span [:strong (:file/name file)] " - " (:version/name file)]]
+             [:a.link {:href (nav/path-for nav :ui/file {:route-params {:file-id (:file/id file)}})}
+              [:span [:strong (:file/name file)] " - " (:version/name file)]]]
             [:td
              [in/plain-button
               {:class    ["is-outlined"]
@@ -142,7 +143,6 @@
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
 
-
 (defn ^:private project-details [project *team]
   (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
     [:div {:style {:display :flex}}
@@ -153,7 +153,7 @@
 (defmethod ig/init-key ::one [_ {:keys [*files *project *team track-list]}]
   (fn [state]
     (let [project-id (get-in state [:nav/route :route-params :project-id])
-          opts {:nav/params {:route-params {:project-id project-id}}}]
+          opts {:nav/params (:nav/route state)}]
       [:div
        [comp/with-resource [*project opts] project-details *team]
        [comp/with-resource [*files opts] track-list project-id]])))

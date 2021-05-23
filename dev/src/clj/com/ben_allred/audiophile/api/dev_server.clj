@@ -20,9 +20,14 @@
                                                   "dev/src/clj"]})]
     (fn []
       (reload* nil)
+      (require 'com.ben-allred.audiophile.api.dev.handler :reload)
       (require 'com.ben-allred.audiophile.api.services.pubsub.ws :reload)
       (require 'com.ben-allred.audiophile.api.services.repositories.common :reload)
       (require 'com.ben-allred.audiophile.api.services.repositories.core :reload)
+      (require 'com.ben-allred.audiophile.api.services.repositories.files.core :reload)
+      (require 'com.ben-allred.audiophile.api.services.repositories.projects.core :reload)
+      (require 'com.ben-allred.audiophile.api.services.repositories.teams.core :reload)
+      (require 'com.ben-allred.audiophile.api.services.repositories.users.core :reload)
       (require 'com.ben-allred.audiophile.api.services.resources.s3 :reload)
       (require 'com.ben-allred.audiophile.common.services.navigation.core :reload)
       (require 'com.ben-allred.audiophile.common.services.serdes.core :reload))))

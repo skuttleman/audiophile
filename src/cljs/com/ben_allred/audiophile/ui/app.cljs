@@ -18,9 +18,11 @@
     com.ben-allred.audiophile.common.services.resources.redirect
     com.ben-allred.audiophile.common.services.resources.toaster
     com.ben-allred.audiophile.common.services.resources.users
+    com.ben-allred.audiophile.common.views.components.audio
     com.ben-allred.audiophile.common.views.components.modal
     com.ben-allred.audiophile.common.views.components.tiles
     com.ben-allred.audiophile.common.views.components.toast
+    com.ben-allred.audiophile.common.views.roots.files
     com.ben-allred.audiophile.common.views.roots.home
     com.ben-allred.audiophile.common.views.roots.login
     com.ben-allred.audiophile.common.views.roots.projects
