@@ -1,27 +1,65 @@
 (ns com.ben-allred.audiophile.api.services.repositories.projects.queries
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.models.core :as models]))
+    [com.ben-allred.audiophile.api.services.repositories.projects.protocols :as pp]
+    [com.ben-allred.audiophile.api.services.repositories.models.core :as models]
+    [integrant.core :as ig]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]))
 
-(defn ^:private has-team-clause [user-id]
-  [:exists {:select [:user-id]
-            :from   [:user-teams]
-            :where  [:and
-                     [:= :projects.team-id :user-teams.team-id]
-                     [:= :user-teams.user-id user-id]]}])
+(defn ^:private has-team-clause [user-teams user-id]
+  [:exists (-> user-teams
+               (models/select* [:and
+                                [:= :projects.team-id :user-teams.team-id]
+                                [:= :user-teams.user-id user-id]])
+               (assoc :select [1]))])
 
-(defn select-by [model clause]
-  (models/select* model clause))
+(defn ^:private select-one [projects project-id]
+  (models/select* projects [:= :projects.id project-id]))
 
-(defn select-one [model project-id]
-  (select-by model [:= :projects.id project-id]))
+(defn ^:private select-one-for-user [projects project-id user-teams user-id]
+  (models/select* projects [:and
+                            [:= :projects.id project-id]
+                            (has-team-clause user-teams user-id)]))
 
-(defn select-for-user [model user-id]
-  (select-by model (has-team-clause user-id)))
+(defn ^:private insert [projects value user-id]
+  (models/insert-into projects (assoc value :created-by user-id)))
 
-(defn select-one-for-user [model project-id user-id]
-  (select-by model [:and
-                    [:= :projects.id project-id]
-                    (has-team-clause user-id)]))
+(deftype ProjectExecutor [executor projects user-teams users]
+  pp/IProjectsExecutor
+  (find-by-project-id [_ project-id opts]
+    (colls/only! (repos/execute! executor
+                                 (if-let [user-id (:user/id opts)]
+                                   (select-one-for-user projects project-id user-teams user-id)
+                                   (select-one projects project-id))
+                                 opts)))
+  (select-for-user [_ user-id opts]
+    (repos/execute! executor
+                    (models/select* projects (has-team-clause user-teams user-id))
+                    opts))
+  (insert-project! [_ project opts]
+    (-> executor
+        (repos/execute! (insert projects project (:user/id opts)))
+        colls/only!
+        :id)))
 
-(defn insert [model value user-id]
-  (models/insert-into model (assoc value :created-by user-id)))
+(defmethod ig/init-key ::->executor [_ {:keys [projects user-teams users]}]
+  (fn [executor]
+    (->ProjectExecutor executor projects user-teams users)))
+
+(defn find-by-project-id
+  ([executor project-id]
+   (find-by-project-id executor project-id nil))
+  ([executor project-id opts]
+   (pp/find-by-project-id executor project-id opts)))
+
+(defn select-for-user
+  ([executor user-id]
+   (select-for-user executor user-id nil))
+  ([executor user-id opts]
+   (pp/select-for-user executor user-id opts)))
+
+(defn insert-project!
+  ([executor project]
+   (insert-project! executor project nil))
+  ([executor project opts]
+   (pp/insert-project! executor project opts)))

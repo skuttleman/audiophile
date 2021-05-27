@@ -1,6 +1,7 @@
 (ns ^:unit com.ben-allred.audiophile.api.services.interactors.files.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.api.services.repositories.files.queries :as fqueries]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
@@ -11,10 +12,24 @@
     [test.utils.stubs :as stubs]
     [test.utils.repositories :as trepos]))
 
+(defn ^:private ->file-executor
+  ([store]
+   (fn [executor models]
+     (->file-executor executor (assoc models :store store))))
+  ([executor {:keys [artifacts file-versions files projects store user-teams]}]
+   (fqueries/->FilesExecutor executor
+                             artifacts
+                             file-versions
+                             files
+                             projects
+                             user-teams
+                             store
+                             (constantly ::key))))
+
 (deftest create-artifact-test
   (testing "create-artifact"
     (let [store (trepos/stub-kv-store)
-          tx (trepos/stub-transactor store)
+          tx (trepos/stub-transactor (->file-executor store))
           repo (rfiles/->FileAccessor tx)]
       (testing "when the content saves to the kv-store"
         (let [[artifact-id user-id] (repeatedly uuids/random)]
@@ -62,7 +77,7 @@
 (deftest query-many-test
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor)
+          tx (trepos/stub-transactor ->file-executor)
           repo (rfiles/->FileAccessor tx)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
@@ -85,7 +100,7 @@
                     clauses' (into {} (map (juxt tu/op-set identity)) clauses)]
                 (is (= :and clause))
                 (is (contains? clauses' [:= #{:files.project-id project-id}]))
-                (is (= [:exists {:select [:id]
+                (is (= [:exists {:select [1]
                                  :from   [:projects]
                                  :join   [:user-teams [:= #{:projects.team-id :user-teams.team-id}]]
                                  :where  [:and
@@ -126,7 +141,7 @@
 (deftest create-file-test
   (testing "create-file"
     (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor)
+          tx (trepos/stub-transactor ->file-executor)
           repo (rfiles/->FileAccessor tx)]
       (testing "when creating a file"
         (stubs/use! tx :execute!
@@ -228,7 +243,7 @@
 (deftest create-file-version-test
   (testing "create-file-version"
     (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor)
+          tx (trepos/stub-transactor ->file-executor)
           repo (rfiles/->FileAccessor tx)]
       (testing "when creating a version"
         (stubs/use! tx :execute!

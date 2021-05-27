@@ -19,13 +19,12 @@
                                 (= "USER-DEFINED" (:data_type row))
                                 (assoc-in [:casts column] (keyword (:udt_name row))))))))
           {}
-          (repos/transact! tx (fn [executor _]
-                                (repos/execute! executor
-                                                {:select [:table-name :column-name :data-type :udt-name]
-                                                 :from   [:information-schema.columns]
-                                                 :where  [:and
-                                                          [:= :table-schema "public"]
-                                                          [:not= :table-name "db_migrations"]]})))))
+          (repos/transact! tx repos/execute!
+                           {:select [:table-name :column-name :data-type :udt-name]
+                            :from   [:information-schema.columns]
+                            :where  [:and
+                                     [:= :table-schema "public"]
+                                     [:not= :table-name "db_migrations"]]})))
 
 (defmethod ig/init-key ::model [_ {:keys [models namespace table-name]}]
   (-> models

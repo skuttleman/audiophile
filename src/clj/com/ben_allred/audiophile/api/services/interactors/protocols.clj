@@ -12,11 +12,19 @@
 (defprotocol IFileAccessor
   "Abstraction for saving and querying files and artifacts"
   (create-artifact! [this opts]
-    "Save an artifact to the repository and upload the content to the kv store.
-     If write to kv store fails, repository will be rolled back. Otherwise, cleanup TBD")
+    "Create an artifact in the repository and upload the content to a kv store.")
   (create-file! [this opts]
-    "Save a new file with a version to the repository.")
+    "Create a new file with a version to the repository.")
   (create-file-version! [this opts]
     "Create a new version of an existing file")
   (get-artifact [this opts]
-    "Get artifact data"))
+    "Get artifact data from a kv store"))
+
+(defprotocol IProjectAccessor
+  "Abstraction for saving and querying projects")
+
+(defprotocol ITeamAccessor
+  "Abstraction for saving and querying teams and user/team relationships")
+
+(defprotocol IUserAccessor
+  "Abstraction for saving and querying users")

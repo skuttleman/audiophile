@@ -3,38 +3,38 @@
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [test.utils.stubs :as stubs]))
 
-(def ^:private opts
-  {:models/artifacts
+(def models
+  {:artifacts
    {:fields    #{:filename :created-by :id :content-type :uri :content-size :created-at}
     :table     :artifacts
     :namespace :artifact}
 
-   :models/files
+   :files
    {:fields    #{:name :created-by :id :idx :project-id :created-at}
     :table     :files
     :namespace :file}
 
-   :models/file-versions
+   :file-versions
    {:fields    #{:file-id :artifact-id :name :created-by :id :created-at}
     :table     :file-versions
     :namespace :file-version}
 
-   :models/projects
+   :projects
    {:fields    #{:team-id :name :created-by :id :created-at}
     :table     :projects
     :namespace :project}
 
-   :models/teams
+   :teams
    {:fields    #{:type :name :created-by :id :created-at}
     :table     :teams
     :namespace :team}
 
-   :models/user-teams
+   :user-teams
    {:fields    #{:team-id :user-id}
     :table     :user-teams
     :namespace :user-team}
 
-   :models/users
+   :users
    {:fields    #{:id :first-name :last-name :handle :email :mobile-number :created-at}
     :table     :users
     :namespace :user}})
@@ -46,14 +46,11 @@
                     (str "test://uri/" key))
                   (put! [_ _ _ _]))))
 
-(defn stub-transactor
-  ([]
-   (stub-transactor nil))
-  ([kv-store]
-   (stubs/create (reify
-                   prepos/ITransact
-                   (transact! [this f]
-                     (f this (assoc opts :store/kv kv-store)))
+(defn stub-transactor [cb]
+  (stubs/create (reify
+                  prepos/ITransact
+                  (transact! [this f]
+                    (f (cb this models)))
 
-                   prepos/IExecute
-                   (execute! [_ _ _])))))
+                  prepos/IExecute
+                  (execute! [_ _ _]))))

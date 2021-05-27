@@ -3,6 +3,7 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.teams.core :as rteams]
+    [com.ben-allred.audiophile.api.services.repositories.teams.queries :as tqueries]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
@@ -10,9 +11,12 @@
     [test.utils.repositories :as trepos]
     [test.utils.stubs :as stubs]))
 
+(defn ^:private ->team-executor [executor {:keys [teams user-teams users]}]
+  (tqueries/->TeamExecutor executor teams user-teams users))
+
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (trepos/stub-transactor ->team-executor)
           repo (rteams/->TeamAccessor tx)
           user-id (uuids/random)]
       (testing "when querying teams"
@@ -29,7 +33,7 @@
                      [:teams.created-at "team/created-at"]}
                    (set select)))
             (is (= [:teams] from))
-            (is (= [:exists {:select #{:user-id}
+            (is (= [:exists {:select #{1}
                              :from   [:user-teams]
                              :where  [:and
                                       #{[:= #{:user-teams.team-id :teams.id}]
@@ -50,7 +54,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (trepos/stub-transactor ->team-executor)
           repo (rteams/->TeamAccessor tx)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when querying teams"
@@ -73,7 +77,7 @@
                     clauses' (into {} (map (juxt tu/op-set identity)) clauses)]
                 (is (= :and clause))
                 (is (contains? clauses' [:= #{:teams.id team-id}]))
-                (is (= [:exists {:select #{:user-id}
+                (is (= [:exists {:select #{1}
                                  :from   [:user-teams]
                                  :where  [:and
                                           #{[:= #{:user-teams.team-id :teams.id}]
@@ -109,7 +113,7 @@
 
 (deftest create!-test
   (testing "create!"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (trepos/stub-transactor ->team-executor)
           repo (rteams/->TeamAccessor tx)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when creating a team"

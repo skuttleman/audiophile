@@ -42,7 +42,7 @@
 
 (defn seed! [transactor file]
   (let [seed-sql (some->> file io/resource slurp)]
-    (repos/transact! transactor repos/->exec! (constantly seed-sql))))
+    (repos/transact! transactor repos/execute! seed-sql)))
 
 (defn create! [migrator name]
   (pdev/create migrator name))

@@ -1,30 +1,98 @@
 (ns com.ben-allred.audiophile.api.services.repositories.teams.queries
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.models.core :as models]))
+    [com.ben-allred.audiophile.api.services.repositories.common :as crepos]
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
+    [com.ben-allred.audiophile.api.services.repositories.models.core :as models]
+    [com.ben-allred.audiophile.api.services.repositories.teams.protocols :as pt]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [integrant.core :as ig]
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
-(defn ^:private has-team-clause [user-id]
-  [:exists {:select [:user-id]
-            :from   [:user-teams]
-            :where  [:and
-                     [:= :user-teams.team-id :teams.id]
-                     [:= :user-teams.user-id user-id]]}])
+(defn ^:private opts* [model]
+  {:model-fn (crepos/->model-fn model)})
 
-(defn select-by [model clause]
+(defn ^:private has-team-clause [user-teams user-id]
+  [:exists (-> user-teams
+               (models/select* [:and
+                                [:= :user-teams.team-id :teams.id]
+                                [:= :user-teams.user-id user-id]])
+               (assoc :select [1]))])
+
+(defn ^:private select-by [model clause]
   (models/select* model clause))
 
-(defn select-one [model team-id]
+(defn ^:private select-one [model team-id]
   (select-by model [:= :teams.id team-id]))
 
-(defn select-for-user [model user-id]
-  (select-by model (has-team-clause user-id)))
-
-(defn select-one-for-user [model team-id user-id]
-  (select-by model [:and
+(defn ^:private select-one-for-user [teams user-teams team-id user-id]
+  (select-by teams [:and
                     [:= :teams.id team-id]
-                    (has-team-clause user-id)]))
+                    (has-team-clause user-teams user-id)]))
 
-(defn insert [model value]
-  (models/insert-into model value))
-
-(defn insert-user-team [model team-id user-id]
+(defn ^:private insert-user-team [model team-id user-id]
   (models/insert-into model {:user-id user-id :team-id team-id}))
+
+(defn ^:private select-team [model user-teams team-id]
+  (-> model
+      (assoc :alias :member)
+      (models/select-fields #{:id :first-name :last-name})
+      (select-by [:= :user-teams.team-id team-id])
+      (models/join (-> user-teams
+                       (assoc :namespace :member)
+                       (models/select-fields #{:team-id}))
+                   [:= :user-teams.user-id :member.id])))
+
+(deftype TeamExecutor [executor teams user-teams users]
+  pt/ITeamsExecutor
+  (find-by-team-id [_ team-id opts]
+    (colls/only! (repos/execute! executor
+                                 (if-let [user-id (:user/id opts)]
+                                   (select-one-for-user teams user-teams team-id user-id)
+                                   (select-one teams team-id)))))
+  (select-team-members [_ team-id opts]
+    (repos/execute! executor
+                    (select-team users user-teams team-id)
+                    opts))
+  (select-for-user [_ user-id opts]
+    (repos/execute! executor
+                    (select-by teams (has-team-clause user-teams user-id))
+                    (merge opts (opts* teams))))
+  (insert-team! [_ team {user-id :user/id :as thing}]
+    (log/warn thing)
+    (let [team-id (-> executor
+                      (repos/execute! (models/insert-into teams (assoc team :created-by user-id)))
+                      colls/only!
+                      :id)]
+      (repos/execute! executor
+                      (insert-user-team user-teams
+                                        team-id
+                                        user-id))
+      team-id)))
+
+(defmethod ig/init-key ::->executor [_ {:keys [teams user-teams users]}]
+  (fn [executor]
+    (->TeamExecutor executor teams user-teams users)))
+
+(defn find-by-team-id
+  ([executor team-id]
+   (find-by-team-id executor team-id nil))
+  ([executor team-id opts]
+   (pt/find-by-team-id executor team-id opts)))
+
+(defn select-for-user
+  ([executor user-id]
+   (select-for-user executor user-id nil))
+  ([executor user-id opts]
+   (pt/select-for-user executor user-id opts)))
+
+(defn insert-team!
+  ([executor team]
+   (insert-team! executor team nil))
+  ([executor team opts]
+   (pt/insert-team! executor team opts)))
+
+(defn select-team-members
+  ([executor team-id]
+   (select-team-members executor team-id nil))
+  ([executor team-id opts]
+   (pt/select-team-members executor team-id opts)))

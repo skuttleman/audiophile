@@ -35,7 +35,8 @@
          (assoc [:duct/const :services/transactor]
                 (stubs/create (reify
                                 prepos/ITransact
-                                (transact! [this f] (f this nil))
+                                (transact! [this f]
+                                  (f this))
                                 prepos/IExecute
                                 (execute! [_ _ _]))))))))
 
@@ -68,7 +69,7 @@
 
 (defn ^:private lookup* [system query]
   (let [tx (component system :services/transactor)]
-    (first (repos/transact! tx repos/->exec! (constantly query)))))
+    (first (repos/transact! tx repos/execute! query))))
 
 (defn lookup-user [system email]
   (lookup* system {:select [[:id "user/id"]

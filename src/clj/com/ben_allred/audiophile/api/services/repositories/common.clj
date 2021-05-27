@@ -13,14 +13,13 @@
            (contains? (:casts model) k')
            keyword)])))
 
-(deftype Repository [tx opts*]
+(deftype Repository [tx ->executor]
   prepos/ITransact
   (transact! [_ f]
-    (repos/transact! tx (fn [executor opts]
-                          (f executor (merge opts opts*))))))
+    (repos/transact! tx (comp f ->executor))))
 
-(defmethod ig/init-key ::repo [_ {:keys [opts tx]}]
-  (->Repository tx opts))
+(defmethod ig/init-key ::repo [_ {:keys [->executor tx]}]
+  (->Repository tx ->executor))
 
 (deftype KVStore [client stream-serde]
   prepos/IKVStore

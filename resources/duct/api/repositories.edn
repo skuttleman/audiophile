@@ -1,31 +1,14 @@
-{[:duct/const :services/repositories]
- #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/repo
-
- [:duct/const :interactors/files]
- #ig/ref :com.ben-allred.audiophile.api.services.repositories.files.core/model
+{[:duct/const :interactors/files]
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.files.core/accessor
 
  [:duct/const :interactors/projects]
- #ig/ref :com.ben-allred.audiophile.api.services.repositories.projects.core/model
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.projects.core/accessor
 
  [:duct/const :interactors/teams]
- #ig/ref :com.ben-allred.audiophile.api.services.repositories.teams.core/model
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.teams.core/accessor
 
  [:duct/const :interactors/users]
- #ig/ref :com.ben-allred.audiophile.api.services.repositories.users.core/model
-
- [:duct/const :stores/s3]
- #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/store
-
- :com.ben-allred.audiophile.api.services.repositories.common/repo
- {:opts {:models/artifacts     #ig/ref :models/artifacts
-         :models/file-versions #ig/ref :models/file-versions
-         :models/files         #ig/ref :models/files
-         :models/projects      #ig/ref :models/projects
-         :models/teams         #ig/ref :models/teams
-         :models/user-teams    #ig/ref :models/user-teams
-         :models/users         #ig/ref :models/users
-         :store/kv             #ig/ref :stores/s3}
-  :tx   #ig/ref :services/transactor}
+ #ig/ref :com.ben-allred.audiophile.api.services.repositories.users.core/accessor
 
  :com.ben-allred.audiophile.api.services.repositories.common/store
  {:s3-client    #ig/ref :services/s3-client
@@ -34,14 +17,52 @@
  :com.ben-allred.audiophile.api.services.resources.s3/stream-serde
  {}
 
- :com.ben-allred.audiophile.api.services.repositories.files.core/model
- {:repo #ig/ref :services/repositories}
+ :com.ben-allred.audiophile.api.services.repositories.files.core/accessor
+ {:repo #ig/ref :repositories/files}
 
- :com.ben-allred.audiophile.api.services.repositories.projects.core/model
- {:repo #ig/ref :services/repositories}
+ :com.ben-allred.audiophile.api.services.repositories.projects.core/accessor
+ {:repo #ig/ref :repositories/projects}
 
- :com.ben-allred.audiophile.api.services.repositories.teams.core/model
- {:repo #ig/ref :services/repositories}
+ :com.ben-allred.audiophile.api.services.repositories.teams.core/accessor
+ {:repo #ig/ref :repositories/teams}
 
- :com.ben-allred.audiophile.api.services.repositories.users.core/model
- {:repo #ig/ref :services/repositories}}
+ :com.ben-allred.audiophile.api.services.repositories.users.core/accessor
+ {:repo #ig/ref :repositories/users}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/files]
+ {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.files.queries/->executor
+  :tx         #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/projects]
+ {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.projects.queries/->executor
+  :tx         #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/teams]
+ {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.teams.queries/->executor
+  :tx         #ig/ref :services/transactor}
+
+ [:com.ben-allred.audiophile.api.services.repositories.common/repo :repositories/users]
+ {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.users.queries/->executor
+  :tx         #ig/ref :services/transactor}
+
+ :com.ben-allred.audiophile.api.services.repositories.files.queries/->executor
+ {:artifacts     #ig/ref :models/artifacts
+  :file-versions #ig/ref :models/file-versions
+  :files         #ig/ref :models/files
+  :projects      #ig/ref :models/projects
+  :user-teams    #ig/ref :models/user-teams
+  :store         #ig/ref :com.ben-allred.audiophile.api.services.repositories.common/store}
+
+ :com.ben-allred.audiophile.api.services.repositories.projects.queries/->executor
+ {:projects   #ig/ref :models/projects
+  :user-teams #ig/ref :models/user-teams
+  :users      #ig/ref :models/users}
+
+ :com.ben-allred.audiophile.api.services.repositories.teams.queries/->executor
+ {:teams      #ig/ref :models/teams
+  :user-teams #ig/ref :models/user-teams
+  :users      #ig/ref :models/users}
+
+ :com.ben-allred.audiophile.api.services.repositories.users.queries/->executor
+ {:users      #ig/ref :models/users
+  :user-teams #ig/ref :models/user-teams}}

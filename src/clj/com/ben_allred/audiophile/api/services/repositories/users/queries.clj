@@ -1,18 +1,29 @@
 (ns com.ben-allred.audiophile.api.services.repositories.users.queries
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.models.core :as models]))
+    [com.ben-allred.audiophile.api.services.repositories.models.core :as models]
+    [com.ben-allred.audiophile.api.services.repositories.users.protocols :as pu]
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]
+    [integrant.core :as ig]))
 
-(defn select-by [models clause]
-  (-> models
-      (update :fields (partial remove #{:mobile-number}))
+(defn ^:private select-by [model clause]
+  (-> model
+      (models/remove-fields #{:mobile-number})
       (models/select* clause)))
 
-(defn select-team [models user-teams team-id]
-  (-> models
-      (assoc :alias :member)
-      (models/select-fields #{:id :first-name :last-name})
-      (select-by [:= :user-teams.team-id team-id])
-      (models/join (-> user-teams
-                         (assoc :namespace :member)
-                         (models/select-fields #{:team-id}))
-                     [:= :user-teams.user-id :member.id])))
+(deftype UserExecutor [executor users user-teams]
+  pu/IUserExecutor
+  (find-by-email [_ email opts]
+    (colls/only! (repos/execute! executor
+                                 (select-by users [:= :users.email email])
+                                 opts))))
+
+(defmethod ig/init-key ::->executor [_ {:keys [users user-teams]}]
+  (fn [executor]
+    (->UserExecutor executor users user-teams)))
+
+(defn find-by-email
+  ([executor email]
+   (find-by-email executor email nil))
+  ([executor email opts]
+   (pu/find-by-email executor email opts)))

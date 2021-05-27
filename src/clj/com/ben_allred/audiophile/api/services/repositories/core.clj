@@ -68,14 +68,14 @@
                                            :builder-fn (->builder-fn opts))))))
 
 (defmethod ig/init-key ::->executor [_ {:keys [->builder-fn query-formatter]}]
-  (fn [conn] (->Executor conn ->builder-fn query-formatter)))
+  (fn [conn]
+    (->Executor conn ->builder-fn query-formatter)))
 
 (deftype Transactor [datasource opts ->executor]
   prepos/ITransact
   (transact! [_ f]
     (jdbc/transact datasource
-                   (fn [conn]
-                     (f (->executor conn) opts))
+                   (comp f ->executor)
                    opts)))
 
 (defmethod ig/init-key ::transactor [_ {:keys [->executor datasource]}]
@@ -121,19 +121,7 @@
   ([transactor f]
    (prepos/transact! transactor f))
   ([transactor f & args]
-   (prepos/transact! transactor #(apply f %1 %2 args))))
-
-(defn ->exec!
-  "Helper function executing a single query with a transactor. `f` will be called
-   with the transactor's `opts`. Any additional args will be passed to `f` as well.
-
-  ```clojure
-  (repos/transact! tx repos/->exec! (fn [opts] ...))
-  ```"
-  ([executor opts f]
-   (execute! executor (f opts) opts))
-  ([executor opts f & args]
-   (execute! executor (apply f opts args) opts)))
+   (prepos/transact! transactor #(apply f % args))))
 
 (defn uri
   ([kv-store key]

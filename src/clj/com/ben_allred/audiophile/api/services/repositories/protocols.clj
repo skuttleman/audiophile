@@ -2,16 +2,18 @@
   (:refer-clojure :exclude [format get]))
 
 (defprotocol ITransact
-  "Opens a database transaction and invokes `f` with an [[IExecute]]
-   implementation and a map of additional transaction options. Returns the result of `f`."
+  "Opens a transaction and invokes `f` with a query [[IExecute]] which can be used to
+   do multiple operations inside the transaction. The transaction is committed when
+   `f` returns a value. The transaction is aborted when `f` throws any exception.
+   Returns or throws the result of `f`."
   (transact! [this f]))
 
 (defprotocol IExecute
-  "Sends queries across a database connection and returns the results. Typically run inside a transaction."
-  (execute! [this query opts] "Execute a single query"))
+  "Executes a single query or request and returns the results. Typically run inside a transaction."
+  (execute! [this query opts]))
 
 (defprotocol IFormatQuery
-  "Formats a query to be executedL."
+  "Formats a query to be executed."
   (format [this query]))
 
 (defprotocol IKVStore

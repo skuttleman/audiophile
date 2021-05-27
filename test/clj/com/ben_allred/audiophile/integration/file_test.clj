@@ -202,7 +202,7 @@
                 (testing "includes the new file"
                   (assert/is? {:file/name       "File Seed"
                                :file/project-id project-id}
-                               data)
+                              data)
                   (assert/has? {:file-version/name "version name"
                                 :file-version/id   uuid?}
                                versions)

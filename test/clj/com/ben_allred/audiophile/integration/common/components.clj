@@ -69,7 +69,7 @@
 (defmethod ig/init-key ::transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
   (mig/migrate! migrator)
   (doto (repos/->Transactor datasource opts ->executor)
-    (repos/transact! (fn [executor _]
+    (repos/transact! (fn [executor]
                        (doseq [query seed-data]
                          (repos/execute! executor query))))))
 

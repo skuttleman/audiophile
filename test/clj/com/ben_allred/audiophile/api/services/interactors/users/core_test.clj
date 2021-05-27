@@ -3,15 +3,19 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.users.core :as rusers]
+    [com.ben-allred.audiophile.api.services.repositories.users.queries :as uqueries]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
     [test.utils.repositories :as trepos]
     [test.utils.stubs :as stubs]
     [test.utils :as tu]))
 
+(defn ^:private ->user-executor [executor {:keys [user-teams users]}]
+  (uqueries/->UserExecutor executor users user-teams))
+
 (deftest query-by-email-test
   (testing "query-by-email"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (trepos/stub-transactor ->user-executor)
           repo (rusers/->UserAccessor tx)
           user-id (uuids/random)]
       (testing "when querying for a user"
