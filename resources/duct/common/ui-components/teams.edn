@@ -1,16 +1,13 @@
-{[:duct/const :views.teams/create]
- #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/create
-
- [:duct/const :resources/teams.all]
+{[:duct/const :resources/teams.all]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
 
  [:duct/const :resources/team]
  #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
 
- :com.ben-allred.audiophile.common.views.roots.teams/list
+ :audiophile.ui.views.teams/list
  {}
 
- :com.ben-allred.audiophile.common.views.roots.teams/create
+ :audiophile.ui.views.teams/create
  {:*all-teams #ig/ref :resources/teams.all
   :*teams     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]}
 
@@ -53,7 +50,7 @@
   :nav      #ig/ref :services/nav
   :routes   {:success/handle :ui/home}}
 
- [:com.ben-allred.audiophile.common.views.components.tiles/with-resource :tiles/teams#all]
- {:resource #ig/ref :resources/teams.all
-  :title    "Your teams"
-  :view     #ig/ref :com.ben-allred.audiophile.common.views.roots.teams/list}}
+ [:audiophile.ui.views.components/tile :tiles/teams#all]
+ {:*resource #ig/ref :resources/teams.all
+  :title     "Your teams"
+  :view      #ig/ref :audiophile.ui.views.teams/list}}

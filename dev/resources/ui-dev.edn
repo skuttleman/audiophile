@@ -2,7 +2,7 @@
  #duct/include "duct/ui/base.edn"
 
  :duct.profile/dev
- {:com.ben-allred.audiophile.common.views.roots.login/root
+ {:audiophile.ui.views.login/root
   ^:promote {:login-form #ig/ref :com.ben-allred.audiophile.ui.dev.core/login-form}
 
   :com.ben-allred.audiophile.ui.dev.core/login-form

@@ -2,10 +2,9 @@
   (:require
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.views.components.input-fields :as in]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.views.components.input-fields :as in]))
 
-(defn root* [login-form state]
+(defn ^:private root* [login-form state]
   [:div..gutters.layout--xl.layout--xxl.layout--inset
    [:div
     [:h1.title [comp/icon :headphones] " Audiophile"]
@@ -21,7 +20,7 @@
     [:div "Login to get started"]
     [login-form (:nav/route state)]]])
 
-(defmethod ig/init-key ::login-form [_ {:keys [nav]}]
+(defn form [{:keys [nav]}]
   (constantly
     [:div.buttons
      [in/plain-button
@@ -30,7 +29,7 @@
                    (nav/goto! nav :auth/login))}
       "Login"]]))
 
-(defmethod ig/init-key ::root [_ {:keys [nav login-form]}]
+(defn root [{:keys [nav login-form]}]
   (fn [state]
     (let [redirect-uri (get-in state [:nav/route :query-params :redirect-uri])]
       (if (:auth/user state)

@@ -1,15 +1,14 @@
 (ns com.ben-allred.audiophile.common.views.core
   (:require
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.views.components.core :as comp]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.views.components.core :as comp]))
 
-(defn root [components-table state]
+(defn ^:private root* [components-table state]
   (let [handle (get-in state [:nav/route :handle])
         component (get components-table handle comp/not-found)]
     [component state]))
 
-(defmethod ig/init-key ::app [_ {:keys [banners components-table header modals toasts]}]
+(defn root [{:keys [banners components-table header modals toasts]}]
   (fn [state]
     [:div
      [banners (:banners state)]
@@ -17,6 +16,6 @@
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
       [:div.layout--inset
-       [root components-table state]]]
+       [root* components-table state]]]
      [modals (:modals state)]
      [toasts (:toasts state)]]))

@@ -7,9 +7,6 @@
  [:duct/const :ui/err-codes]
  {:login-failed "Authentication failed. Please try again."}
 
- [:duct/const :components/audio-player]
- #ig/ref :com.ben-allred.audiophile.common.views.components.audio/player
-
  :com.ben-allred.audiophile.common.services.ui-store.core/store
  {:env #ig/ref :services.ui/env}
 
@@ -37,9 +34,9 @@
  :com.ben-allred.audiophile.common.services.resources.core/file-uploader
  {}
 
- :com.ben-allred.audiophile.common.views.components.audio/player
- {:*artifact #ig/ref :com.ben-allred.audiophile.common.views.components.audio/resource}
+ :audiophile.ui.views.components/audio-player
+ {:*artifact #ig/ref :audiophile.ui.views.components/audio-resource}
 
- :com.ben-allred.audiophile.common.views.components.audio/resource
+ :audiophile.ui.views.components/audio-resource
  {:http-client #ig/ref :services/http
   :nav         #ig/ref :services/nav}}

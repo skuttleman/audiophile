@@ -5,7 +5,8 @@
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
     [duct.core :as duct]
     [duct.core.env :as env*]
-    [integrant.core :as ig]))
+    [integrant.core :as ig]
+    com.ben-allred.audiophile.common.services.config.views))
 
 (defn -main [& _]
   (duct/load-hierarchy)

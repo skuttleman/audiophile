@@ -5,6 +5,8 @@
   (:require
     #?@(:clj [[com.ben-allred.audiophile.common.utils.duct :as uduct]
               [duct.core :as duct]])
+    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [integrant.core :as ig]))
 
 (defmacro load-config [file profiles]
@@ -25,3 +27,10 @@
 
 (defmethod ig/init-key :duct.custom/merge [_ ms]
   (reduce merge ms))
+
+(defmethod ig/init-key :audiophile.ui.services/env [_ {:keys [edn]}]
+  (some->> dom/window .-ENV (serdes/deserialize edn)))
+
+(defmethod ig/init-key :audiophile.ui.services/base-urls [_ {:keys [env]}]
+  {:api  (:api-base env)
+   :auth (:auth-base env)})

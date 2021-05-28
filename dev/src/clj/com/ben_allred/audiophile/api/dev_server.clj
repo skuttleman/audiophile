@@ -8,7 +8,8 @@
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [nrepl.server :as nrepl]
-    [ring.middleware.reload :as rel]))
+    [ring.middleware.reload :as rel]
+    com.ben-allred.audiophile.common.services.config.views))
 
 (defonce system nil)
 

@@ -1,8 +1,7 @@
 (ns com.ben-allred.audiophile.common.views.components.toast
   (:require
     [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
-    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]))
 
 (defn ^:private banner-message [store err-codes banner-id {:keys [body level]}]
   (let [body (or (cond-> body
@@ -20,14 +19,6 @@
       [:button.delete {:aria-label "delete"}]]
      [:div.message-body
       [:div.body-text body]]]))
-
-(defmethod ig/init-key ::banners [_ {:keys [err-codes store]}]
-  (fn [banners]
-    [:div.banner-container
-     [:ul.banner-messages
-      (for [[banner-id banner] (take 2 (sort-by key banners))]
-        ^{:key banner-id}
-        [banner-message store err-codes banner-id banner])]]))
 
 (defn ^:private toast-message [_store _toast-id _toast]
   (let [height (volatile! nil)]
@@ -53,7 +44,15 @@
            :style    {:cursor :pointer}}
           [:div.body-text @body]]]))))
 
-(defmethod ig/init-key ::toasts [_ {:keys [store]}]
+(defn banners [{:keys [err-codes store]}]
+  (fn [banners]
+    [:div.banner-container
+     [:ul.banner-messages
+      (for [[banner-id banner] (take 2 (sort-by key banners))]
+        ^{:key banner-id}
+        [banner-message store err-codes banner-id banner])]]))
+
+(defn toasts [{:keys [store]}]
   (fn [toasts]
     [:div.toast-container
      [:ul.toast-messages

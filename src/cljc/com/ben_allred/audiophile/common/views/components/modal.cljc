@@ -6,10 +6,9 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
-    [com.ben-allred.audiophile.common.views.components.tiles :as tiles]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.views.components.tiles :as tiles]))
 
-(defn modal [store idx id frame]
+(defn modal* [store idx id frame]
   (let [inset (str (* 8 idx) "px")
         close! (comp (fn [_]
                        (ui-store/dispatch! store (actions/remove-modal! id)))
@@ -31,7 +30,7 @@
         [comp/icon :times]]]
       [:div (some-> (:body frame) (conj close!))]]]))
 
-(defmethod ig/init-key ::modals [_ {:keys [store]}]
+(defn modals [{:keys [store]}]
   (fn [modals]
     (let [active? (and (seq modals)
                        (or (seq (rest modals))
@@ -46,4 +45,4 @@
           [:ul.modal-list
            (for [[idx [id frame]] (map-indexed vector (sort-by key modals))]
              ^{:key id}
-             [modal store idx id frame])]]]))))
+             [modal* store idx id frame])]]]))))

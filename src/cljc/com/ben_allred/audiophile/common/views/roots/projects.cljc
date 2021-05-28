@@ -1,4 +1,5 @@
 (ns com.ben-allred.audiophile.common.views.roots.projects
+  (:refer-clojure :exclude [list])
   (:require
     [#?(:cljs    com.ben-allred.audiophile.ui.services.forms.standard
         :default com.ben-allred.audiophile.common.services.forms.noop) :as form]
@@ -12,13 +13,12 @@
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.common.views.components.input-fields.dropdown :as dd]
-    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
-    [integrant.core :as ig]))
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (def ^:private validator
   (constantly nil))
 
-(defmulti team-name :team/type)
+(defmulti ^:private team-name :team/type)
 
 (defmethod team-name :PERSONAL
   [_]
@@ -36,24 +36,48 @@
     (get-in options-by-id [team-id :team/name])
     "Select a team…"))
 
-(defmethod ig/init-key ::list [_ {:keys [nav]}]
-  (fn [projects _state]
-    [:div
-     [:p [:strong "Your projects"]]
-     (if (seq projects)
-       [:ul
-        (for [{:project/keys [id name]} projects]
-          ^{:key id}
-          [:li.layout--space-between
-           [:a.link {:href (nav/path-for nav :ui/project {:route-params {:project-id id}})}
-            [:span name]]])]
-       [:p "You don't have any projects. Why not create one?"])]))
+(defn ^:private team-view [team]
+  [:h3 [:em (:team/name team)]])
+
+(defn ^:private project-details [project *team]
+  (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
+    [:div {:style {:display :flex}}
+     [:h2.subtitle (:project/name project)]
+     [:div {:style {:width "16px"}}]
+     [comp/with-resource [*team opts] team-view]]))
+
+(defn ^:private create* [teams *projects _cb]
+  (let [options (->> teams
+                     (colls/split-on personal?)
+                     (apply concat)
+                     (map (juxt :team/id identity)))
+        *form (vres/create *projects (form/create {:project/team-id (ffirst options)}
+                                                  validator))
+        options-by-id (into {} options)]
+    (fn [_teams _*projects cb]
+      [:div
+       [comp/form {:form         *form
+                   :on-submitted (fn [vow]
+                                   (v/peek vow cb nil))}
+        (when (>= (count options-by-id) 2)
+          [dd/dropdown (-> {:options        options
+                            :options-by-id  options-by-id
+                            :item-control   team-name
+                            :force-value?   true
+                            :label          "Team"
+                            :attrs->content attrs->content}
+                           (forms/with-attrs *form [:project/team-id])
+                           dd/singleable)])
+        [in/input (forms/with-attrs {:label       "Name"
+                                     :auto-focus? true}
+                                    *form
+                                    [:project/name])]]])))
 
 (defmethod vres/internal->remote ::file
   [_ data]
   (merge data (:artifact/details data)))
 
-(defmethod ig/init-key ::version-form [_ {:keys [*artifacts *file-version *files]}]
+(defn version-form [{:keys [*artifacts *file-version *files]}]
   (fn [file _cb]
     (let [project-id (:file/project-id file)
           *form (vres/create ::file
@@ -81,7 +105,7 @@
                                        "Select file…")}
                           (forms/with-attrs *form [:artifact/details]))]]))))
 
-(defmethod ig/init-key ::file-form [_ {:keys [*artifacts *file *files]}]
+(defn file-form [{:keys [*artifacts *file *files]}]
   (fn [project-id _cb]
     (let [*form (vres/create ::file
                              *file
@@ -110,7 +134,7 @@
                                        "Select file…")}
                           (forms/with-attrs *form [:artifact/details]))]]))))
 
-(defmethod ig/init-key ::track-list [_ {:keys [file-form nav store version-form]}]
+(defn track-list [{:keys [file-form nav store version-form]}]
   (fn [files project-id]
     [:div
      [:div.buttons
@@ -140,17 +164,7 @@
               "Upload new version"]]])]]
        [:div "This projects doesn't have any tracks. You should upload one."])]))
 
-(defn ^:private team-view [team]
-  [:h3 [:em (:team/name team)]])
-
-(defn ^:private project-details [project *team]
-  (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
-    [:div {:style {:display :flex}}
-     [:h2.subtitle (:project/name project)]
-     [:div {:style {:width "16px"}}]
-     [comp/with-resource [*team opts] team-view]]))
-
-(defmethod ig/init-key ::one [_ {:keys [*files *project *team track-list]}]
+(defn one [{:keys [*files *project *team track-list]}]
   (fn [state]
     (let [project-id (get-in state [:nav/route :route-params :project-id])
           opts {:nav/params (:nav/route state)}]
@@ -158,34 +172,20 @@
        [comp/with-resource [*project opts] project-details *team]
        [comp/with-resource [*files opts] track-list project-id]])))
 
-(defn create* [teams *projects _cb]
-  (let [options (->> teams
-                     (colls/split-on personal?)
-                     (apply concat)
-                     (map (juxt :team/id identity)))
-        *form (vres/create *projects (form/create {:project/team-id (ffirst options)}
-                                                  validator))
-        options-by-id (into {} options)]
-    (fn [_teams _*projects cb]
-      [:div
-       [comp/form {:form         *form
-                   :on-submitted (fn [vow]
-                                   (v/peek vow cb nil))}
-        (when (>= (count options-by-id) 2)
-          [dd/dropdown (-> {:options        options
-                            :options-by-id  options-by-id
-                            :item-control   team-name
-                            :force-value?   true
-                            :label          "Team"
-                            :attrs->content attrs->content}
-                           (forms/with-attrs *form [:project/team-id])
-                           dd/singleable)])
-        [in/input (forms/with-attrs {:label       "Name"
-                                     :auto-focus? true}
-                                    *form
-                                    [:project/name])]]])))
+(defn list [{:keys [nav]}]
+  (fn [projects _state]
+    [:div
+     [:p [:strong "Your projects"]]
+     (if (seq projects)
+       [:ul
+        (for [{:project/keys [id name]} projects]
+          ^{:key id}
+          [:li.layout--space-between
+           [:a.link {:href (nav/path-for nav :ui/project {:route-params {:project-id id}})}
+            [:span name]]])]
+       [:p "You don't have any projects. Why not create one?"])]))
 
-(defmethod ig/init-key ::create [_ {:keys [*all-projects projects *teams]}]
+(defn create [{:keys [*all-projects projects *teams]}]
   (fn [cb]
     [comp/with-resource [*teams] create* projects (fn [result]
                                                     (res/request! *all-projects)

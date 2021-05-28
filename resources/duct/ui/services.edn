@@ -6,10 +6,10 @@
   :routes    #ig/ref :nav/routes
   :store     #ig/ref :services/store}
 
- [:com.ben-allred.audiophile.ui.app/env :services.ui/env]
+ [:audiophile.ui.services/env :services.ui/env]
  {:edn #ig/ref :serdes/edn}
 
- [:com.ben-allred.audiophile.ui.app/base-urls :services.ui/base-urls]
+ [:audiophile.ui.services/base-urls :services.ui/base-urls]
  {:env #ig/ref :services.ui/env}
 
  :com.ben-allred.audiophile.common.services.pubsub.ws/handler

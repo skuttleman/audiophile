@@ -8,8 +8,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
-    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
-    [integrant.core :as ig]))
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn ^:private on-load [blob id]
   #?(:cljs
@@ -19,7 +18,7 @@
                                       :progressColor     "blue"})
        (.loadBlob blob))))
 
-(defmethod ig/init-key ::player [_ {:keys [*artifact]}]
+(defn player [{:keys [*artifact]}]
   (fn [artifact-id]
     #?(:cljs
        (let [id (name (gensym))
@@ -50,5 +49,5 @@
               (nav/path-for nav :api/artifact {:route-params opts})
               {:response-type :blob})))
 
-(defmethod ig/init-key ::resource [_ {:keys [http-client nav]}]
+(defn resource [{:keys [http-client nav]}]
   (->ArtifactResource http-client nav))
