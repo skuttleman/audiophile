@@ -107,13 +107,13 @@
   (close! [_]
     (web.async/close ch)))
 
-(defn ^:private ->handler-fn [request {:keys [->channel ->handler]}]
+(defn ^:private ->handler-fn [params {:keys [->channel ->handler]}]
   (let [handler (promise)]
     (fn [ch]
       (when-not (realized? handler)
         (->> (->Channel ch)
-             (->channel request)
-             (->handler request)
+             (->channel params)
+             (->handler params)
              (deliver handler)))
       @handler)))
 
@@ -126,7 +126,6 @@
 
 (defmethod ig/init-key ::handler [_ cfg]
   (fn [request]
-    (validations/validate! :api.ws/connect request)
     (->> cfg
          (->handler-fn request)
          ch-map

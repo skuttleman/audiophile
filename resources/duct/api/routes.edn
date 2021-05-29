@@ -7,7 +7,7 @@
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :resources/health]   #ig/ref :res.handler/health#api
-  [:get :ws/connection]      #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  [:get :ws/connection]      #ig/ref :api.handler/ws#connect
   [:post :api/file]          #ig/ref :api.handler/file#post
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
@@ -65,6 +65,11 @@
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.teams/fetch-all
   :spec    :api.common/auth}
 
+ [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/ws#connect]
+ {:->response #ig/ref :com.ben-allred.audiophile.api.handlers.validations.core/identity
+  :handler    #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  :spec       :api.ws/connect}
+
  [:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/artifacts#post]
  {:handler #ig/ref :com.ben-allred.audiophile.api.handlers.files/upload
   :spec    :api.artifact/create}
@@ -86,6 +91,9 @@
   :spec    :api.team/create}
 
  :com.ben-allred.audiophile.api.handlers.validations.core/ok
+ {}
+
+ :com.ben-allred.audiophile.api.handlers.validations.core/identity
  {}
 
  [:com.ben-allred.audiophile.api.handlers.resources/health :res.handler/health#api]

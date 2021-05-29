@@ -9,22 +9,32 @@
     [integrant.core :as ig]
     [spec-tools.core :as st]))
 
-(defn select-input
-  "Selects relevant data from HTTP request to be passed to handler"
-  [handler request]
-  (specs/spec handler request))
-
-(defn validate! [spec data]
-  (try
-    (st/select-spec spec (st/conform! spec data))
-    (catch Throwable _
-      (log/error "Invalid input" data (s/explain-data spec data))
-      (int/invalid-input!))))
+(defmacro ^:private spec-check! [spec data form]
+  `(let [spec# ~spec
+         data# ~data]
+     (try
+       ~form
+       (catch Throwable _#
+         (log/error "Invalid input" data# (s/explain-data spec# data#))
+         (int/invalid-input!)))))
 
 (defn ^:private data-responder [result]
   (if result
     [::http/ok {:data result}]
     [::http/not-found]))
+
+(defn select-input
+  "Selects relevant data from HTTP request to be passed to handler"
+  [handler request]
+  (specs/spec handler request))
+
+(defmulti validate! (fn [spec _] spec))
+
+(defmethod validate! :default [spec data]
+  (spec-check! spec data (st/select-spec spec (st/conform! spec data))))
+
+(defmethod validate! :api.ws/connect [spec data]
+  (spec-check! spec data (st/conform! spec data)))
 
 (defmethod ig/init-key ::with-spec [_ {:keys [->response handler spec]}]
   (let [->response (or ->response data-responder)]
@@ -32,3 +42,6 @@
 
 (defmethod ig/init-key ::ok [_ _]
   (partial into [::http/ok]))
+
+(defmethod ig/init-key ::identity [_ _]
+  identity)
