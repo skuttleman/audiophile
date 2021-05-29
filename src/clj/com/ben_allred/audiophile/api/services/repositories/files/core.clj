@@ -6,6 +6,11 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
+(defn ^:private create-artifact* [executor artifact opts]
+  (let [artifact-id (q/insert-artifact! executor artifact opts)]
+    {:artifact/id artifact-id
+     :artifact/filename (:filename artifact)}))
+
 (defn ^:private create-file* [executor file opts]
   (let [file-id (q/insert-file! executor file opts)]
     (q/find-by-file-id executor file-id (assoc opts :internal/verified? true))))
@@ -27,7 +32,7 @@
 
   pint/IFileAccessor
   (create-artifact! [_ opts]
-    (repos/transact! repo q/insert-artifact! opts opts))
+    (repos/transact! repo create-artifact* opts opts))
   (create-file! [_ opts]
     (repos/transact! repo create-file* opts opts))
   (create-file-version! [_ opts]

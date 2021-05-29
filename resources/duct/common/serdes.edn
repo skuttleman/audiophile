@@ -6,25 +6,25 @@
   :default   #ig/ref :serdes/edn}
 
  [:duct/const :serdes/edn]
- #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/edn
+ #ig/ref :audiophile.services.serdes/edn
 
  [:duct/const :serdes/transit]
- #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/transit
+ #ig/ref :audiophile.services.serdes/transit
 
  [:duct/const :serdes/json]
- #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/json
+ #ig/ref :audiophile.services.serdes/json
 
  [:duct/const :serdes/urlencode]
- #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/urlencode
+ #ig/ref :audiophile.services.serdes/urlencode
 
- :com.ben-allred.audiophile.common.services.serdes.core/edn
+ :audiophile.services.serdes/edn
  {}
 
- :com.ben-allred.audiophile.common.services.serdes.core/transit
+ :audiophile.services.serdes/transit
  {}
 
- :com.ben-allred.audiophile.common.services.serdes.core/json
+ :audiophile.services.serdes/json
  {}
 
- :com.ben-allred.audiophile.common.services.serdes.core/urlencode
+ :audiophile.services.serdes/urlencode
  {}}

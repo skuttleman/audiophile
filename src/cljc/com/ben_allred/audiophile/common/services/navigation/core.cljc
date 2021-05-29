@@ -14,8 +14,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
 
 (defn ^:private params->internal [params]
   (update params :route-params (fns/=>
@@ -52,7 +51,7 @@
   (deserialize [_ path opts]
     (pserdes/deserialize router path opts)))
 
-(defn serialize* [base-urls routes handle opts]
+(defn ^:private serialize* [base-urls routes handle opts]
   (let [{:keys [query-params]} opts
         qp (uri/join-query query-params)
         base-url (get base-urls (keyword (namespace handle)))]
@@ -69,7 +68,7 @@
       base-url (->> (str base-url))
       (seq qp) (str "?" qp))))
 
-(defn deserialize* [routes path]
+(defn ^:private deserialize* [routes path]
   (let [[path' query-string] (string/split path #"\?")
         qp (uri/split-query query-string)]
     (some-> routes
@@ -80,6 +79,13 @@
               (seq qp) (assoc :query-params qp)
               query-string (assoc :query-string query-string))
             params->internal)))
+
+(defn ^:private on-nav [-nav store pushy handle]
+  (let [route (maps/update-maybe handle :query-params dissoc :error-msg)]
+    (if-let [err (get-in handle [:query-params :error-msg])]
+      (do (ui-store/dispatch! store (actions/server-err! err))
+          (pushy/replace-token! pushy (serdes/serialize -nav (:handle route) route)))
+      (ui-store/dispatch! store [:router/updated route]))))
 
 (deftype Router [base-urls routes]
   pnav/IHistory
@@ -92,25 +98,17 @@
   (deserialize [_ path _]
     (deserialize* routes path)))
 
-(defmethod ig/init-key ::router [_ {:keys [base-urls routes]}]
+(defn router [{:keys [base-urls routes]}]
   (->Router base-urls routes))
 
-(defn ^:private on-nav [-nav store pushy handle]
-  (let [route (maps/update-maybe handle :query-params dissoc :error-msg)]
-    (if-let [err (get-in handle [:query-params :error-msg])]
-      (do (ui-store/dispatch! store (actions/server-err! err))
-          (pushy/replace-token! pushy (serdes/serialize -nav (:handle route) route)))
-      (ui-store/dispatch! store [:router/updated route]))))
-
-(defmethod ig/init-key ::nav [_ {:keys [base-urls routes store]}]
-  (let [router (->Router base-urls routes)
-        pushy (volatile! nil)]
+(defn nav [{:keys [router store]}]
+  (let [pushy (volatile! nil)]
     (vreset! pushy (pushy/pushy #(on-nav router store @pushy %)
                                 #(serdes/deserialize router %)))
     (doto (->LinkedNavigator @pushy router)
       pnav/start!)))
 
-(defmethod ig/halt-key! ::nav [_ nav]
+(defn nav#stop [nav]
   (pnav/stop! nav))
 
 (defn path-for

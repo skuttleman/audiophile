@@ -1,56 +1,56 @@
 {[:duct/const :resources/teams.all]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
+ #ig/ref [:audiophile.resources/base :teams/all]
 
  [:duct/const :resources/team]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
+ #ig/ref [:audiophile.resources/base :teams/one]
 
- :audiophile.ui.views.teams/list
+ :audiophile.views.teams/list
  {}
 
- :audiophile.ui.views.teams/create
+ :audiophile.views.teams/create
  {:*all-teams #ig/ref :resources/teams.all
-  :*teams     #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]}
+  :*teams     #ig/ref [:audiophile.resources/redirect :teams/create]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/all]
+ [:audiophile.resources/http-handler :teams/all]
  {:http-client #ig/ref :services/http
   :method      :get
   :route       :api/teams}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/one]
+ [:audiophile.resources/http-handler :teams/one]
  {:http-client  #ig/ref :services/http
   :method       :get
   :route        :api/team}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/create]
+ [:audiophile.resources/http-handler :teams/create]
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/teams
-  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
- [:com.ben-allred.audiophile.common.services.resources.cached/resource :resources/teams#all]
- {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]}
+ [:audiophile.resources/cached :resources/teams#all]
+ {:resource #ig/ref [:audiophile.resources/base :teams/all]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/all]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/all]}
+ [:audiophile.resources/base :teams/all]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :teams/all]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/one]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/one]}
+ [:audiophile.resources/base :teams/one]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :teams/one]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/create]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :teams/create]}
+ [:audiophile.resources/base :teams/create]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :teams/create]}
 
- [:com.ben-allred.audiophile.common.services.resources.toaster/resource :teams/create]
- {:error-fn   #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
-  :resource   #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :teams/create]
+ [:audiophile.resources/toaster :teams/create]
+ {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:audiophile.resources/base :teams/create]
   :store      #ig/ref :services/store
-  :success-fn #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]}
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]}
 
- [:com.ben-allred.audiophile.common.services.resources.redirect/resource :teams/create]
- {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :teams/create]
+ [:audiophile.resources/redirect :teams/create]
+ {:resource #ig/ref [:audiophile.resources/toaster :teams/create]
   :nav      #ig/ref :services/nav
   :routes   {:success/handle :ui/home}}
 
- [:audiophile.ui.views.components/tile :tiles/teams#all]
+ [:audiophile.views.components/tile :tiles/teams#all]
  {:*resource #ig/ref :resources/teams.all
   :title     "Your teams"
-  :view      #ig/ref :audiophile.ui.views.teams/list}}
+  :view      #ig/ref :audiophile.views.teams/list}}

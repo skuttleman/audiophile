@@ -1,5 +1,5 @@
 {[:duct/const :services/nav]
- #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/router
+ #ig/ref :audiophile.services.nav/router
 
- :com.ben-allred.audiophile.common.services.navigation.core/router
+ :audiophile.services.nav/router
  {:routes #ig/ref :nav/routes}}

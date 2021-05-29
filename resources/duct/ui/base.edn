@@ -2,9 +2,9 @@
 [#duct/include "duct/common/base.edn"
  #duct/include "duct/ui/env.edn"
  #duct/include "duct/ui/services.edn"
- {:com.ben-allred.audiophile.common.services.http/client
-  ^:promote {:middlewares [#ig/ref :com.ben-allred.audiophile.common.services.http/with-nav]}
+ {:audiophile.services.http/client
+  ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-nav]}
 
-  :com.ben-allred.audiophile.common.services.http/with-nav
+  :audiophile.services.http/with-nav
   {:env #ig/ref :services.ui/env
    :nav #ig/ref :services/nav}}]

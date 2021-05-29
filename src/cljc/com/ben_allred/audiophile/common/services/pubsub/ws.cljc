@@ -8,8 +8,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
-    [com.ben-allred.ws-client-cljc.core :as ws*]
-    [integrant.core :as ig]))
+    [com.ben-allred.ws-client-cljc.core :as ws*]))
 
 (defn handle-msg [store msg]
   (some-> msg
@@ -34,7 +33,7 @@
         uri/stringify
         (str (nav/path-for nav :ws/connection params)))))
 
-(defmethod ig/init-key ::handler [_ {:keys [env nav reconnect-ms serde store]}]
+(defn handler [{:keys [env nav reconnect-ms serde store]}]
   (let [url (ws-uri nav serde (:api-base env))
         {:auth/keys [user]} (ui-store/get-state store)]
     (when user
@@ -51,5 +50,5 @@
             (recur)))
         ws))))
 
-(defmethod ig/halt-key! ::handler [_ ws]
+(defn handler#close [ws]
   (some-> ws async/close!))

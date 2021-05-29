@@ -3,8 +3,9 @@
     [clojure.java.io :as io]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.core :as u]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]
-    com.ben-allred.audiophile.ui.services.config)
+    com.ben-allred.audiophile.ui.config)
   (:import
     (java.net InetAddress)))
 
@@ -13,7 +14,7 @@
     (some->> file
              io/file
              slurp
-             (serdes/deserialize (ig/init-key ::serdes/edn nil)))))
+             (serdes/deserialize (serdes/edn {})))))
 
 (defn load-env
   "Loads edn files and builds a map of environment variables. Silently skips files that don't exist."

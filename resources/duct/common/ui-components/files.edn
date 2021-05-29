@@ -1,14 +1,14 @@
 {[:duct/const :resources/project.files]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :file/one]
+ #ig/ref [:audiophile.resources/base :file/one]
 
- :audiophile.ui.views.files/one
+ :audiophile.views.files/one
  {:*file  #ig/ref :resources/project.files
-  :player #ig/ref :audiophile.ui.views.components/audio-player}
+  :player #ig/ref :audiophile.views.components/audio-player}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :file/one]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :file/one]}
+ [:audiophile.resources/base :file/one]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :file/one]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :file/one]
+ [:audiophile.resources/http-handler :file/one]
  {:http-client #ig/ref :services/http
   :method      :get
   :route       :api/file}}

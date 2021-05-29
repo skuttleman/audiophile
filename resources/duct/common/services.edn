@@ -1,26 +1,26 @@
 {[:duct/const :services/http]
- #ig/ref :com.ben-allred.audiophile.common.services.http/client
+ #ig/ref :audiophile.services.http/client
 
  [:duct/const :services/pubsub]
- #ig/ref :com.ben-allred.audiophile.common.services.pubsub.core/pubsub
+ #ig/ref :audiophile.services/pubsub
 
- :com.ben-allred.audiophile.common.services.http/client
- {:middlewares [#ig/ref :com.ben-allred.audiophile.common.services.http/base
-                #ig/ref :com.ben-allred.audiophile.common.services.http/with-logging
-                #ig/ref :com.ben-allred.audiophile.common.services.http/with-headers
-                #ig/ref :com.ben-allred.audiophile.common.services.http/with-serde]}
+ :audiophile.services.http/client
+ {:middlewares [#ig/ref :audiophile.services.http/base
+                #ig/ref :audiophile.services.http/with-logging
+                #ig/ref :audiophile.services.http/with-headers
+                #ig/ref :audiophile.services.http/with-serde]}
 
- :com.ben-allred.audiophile.common.services.http/with-serde
+ :audiophile.services.http/with-serde
  {:serdes #ig/ref :config/serdes}
 
- :com.ben-allred.audiophile.common.services.http/with-headers
+ :audiophile.services.http/with-headers
  {}
 
- :com.ben-allred.audiophile.common.services.http/base
+ :audiophile.services.http/base
  {}
 
- :com.ben-allred.audiophile.common.services.http/with-logging
+ :audiophile.services.http/with-logging
  {:log-ctx {:id :HTTP}}
 
- :com.ben-allred.audiophile.common.services.pubsub.core/pubsub
+ :audiophile.services/pubsub
  {}}

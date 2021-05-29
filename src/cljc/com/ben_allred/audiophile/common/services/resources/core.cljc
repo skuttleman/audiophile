@@ -6,8 +6,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
-    [com.ben-allred.vow.impl.protocol :as pv]
-    [integrant.core :as ig])
+    [com.ben-allred.vow.impl.protocol :as pv])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -49,10 +48,10 @@
         :error error
         value))))
 
-(defmethod ig/init-key ::resource [_ {:keys [opts->vow]}]
+(defn base [{:keys [opts->vow]}]
   (->Resource (r/atom {:status :init}) opts->vow))
 
-(defmethod ig/init-key ::http-handler [_ {:keys [http-client method opts->params opts->request route]}]
+(defn http-handler [{:keys [http-client method opts->params opts->request route]}]
   (let [opts->params (or opts->params :nav/params)
         opts->request (or opts->request identity)]
     (fn [opts]
@@ -62,7 +61,7 @@
                                           :nav/route route
                                           :nav/params (opts->params opts))))))
 
-(defmethod ig/init-key ::file-uploader [_ _]
+(defn file-uploader [_]
   (fn [{:keys [files] :as opts}]
     (assoc opts
            #?@(:clj  [:multipart (map (fn [file]

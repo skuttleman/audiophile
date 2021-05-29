@@ -10,7 +10,7 @@
     [test.utils.stubs :as stubs]))
 
 (deftest ->handler-test
-  (let [pubsub (ig/init-key ::pubsub/pubsub {})
+  (let [pubsub (pubsub/pubsub {})
         ->handler (ig/init-key ::ws/->handler
                                {:heartbeat-int-ms 100
                                 :pubsub           pubsub

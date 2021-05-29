@@ -32,7 +32,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [*cached (cached/->CachedResource (atom nil) *resource)
+            (let [*cached (cached/resource {:resource *resource})
                   result (res/request! *cached ::opts)]
               (testing "requests the underlying resources"
                 (is (= ::opts (ffirst (stubs/calls *resource :request!)))))

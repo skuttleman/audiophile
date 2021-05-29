@@ -1,10 +1,13 @@
 {[:duct/const :services/nav]
- #ig/ref :com.ben-allred.audiophile.common.services.navigation.core/nav
+ #ig/ref :audiophile.services.nav/nav
 
- :com.ben-allred.audiophile.common.services.navigation.core/nav
- {:base-urls #ig/ref :services.ui/base-urls
-  :routes    #ig/ref :nav/routes
+ :audiophile.services.nav/nav
+ {:router    #ig/ref :audiophile.services.nav/router
   :store     #ig/ref :services/store}
+
+ :audiophile.services.nav/router
+ {:base-urls #ig/ref :services.ui/base-urls
+  :routes    #ig/ref :nav/routes}
 
  [:audiophile.ui.services/env :services.ui/env]
  {:edn #ig/ref :serdes/edn}
@@ -12,7 +15,7 @@
  [:audiophile.ui.services/base-urls :services.ui/base-urls]
  {:env #ig/ref :services.ui/env}
 
- :com.ben-allred.audiophile.common.services.pubsub.ws/handler
+ :audiophile.services.ws/handler
  {:env          #ig/ref :services.ui/env
   :nav          #ig/ref :services/nav
   :reconnect-ms #ig/ref :env/ws-reconnect-ms

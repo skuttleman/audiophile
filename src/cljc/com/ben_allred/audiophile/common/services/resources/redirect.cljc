@@ -4,8 +4,7 @@
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]
-    [integrant.core :as ig])
+    [com.ben-allred.vow.impl.protocol :as pv])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -36,5 +35,5 @@
   (#?(:cljs -deref :default deref) [_]
     @*resource))
 
-(defmethod ig/init-key ::resource [_ {:keys [nav resource routes]}]
+(defn resource [{:keys [nav resource routes]}]
   (->RedirectResource resource nav routes))

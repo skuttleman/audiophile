@@ -1,42 +1,42 @@
 {[:duct/const :services/store]
- #ig/ref :com.ben-allred.audiophile.common.services.ui-store.core/store
+ #ig/ref :audiophile.services/ui-store
 
  [:duct/const :resources/artifacts]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :artifacts/all]
+ #ig/ref [:audiophile.resources/base :artifacts/all]
 
  [:duct/const :ui/err-codes]
  {:login-failed "Authentication failed. Please try again."}
 
- :com.ben-allred.audiophile.common.services.ui-store.core/store
+ :audiophile.services/ui-store
  {:env #ig/ref :services.ui/env}
 
- :com.ben-allred.audiophile.common.services.resources.users/login
+ :audiophile.resources.user/login-fn
  {:nav #ig/ref :services/nav}
 
- [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]
+ [:audiophile.resources.toaster/result-fn :toaster/success]
  {:msg "Success"}
 
- [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
+ [:audiophile.resources.toaster/result-fn :toaster/error]
  {:msg "An error occurred."}
 
- :com.ben-allred.audiophile.common.services.resources.validated/opts->request
+ :audiophile.resource.validated/opts->request
  {}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :artifacts/all]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :artifacts/all]}
+ [:audiophile.resources/base :artifacts/all]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :artifacts/all]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :artifacts/all]
+ [:audiophile.resources/http-handler :artifacts/all]
  {:http-client   #ig/ref :services/http
   :method        :post
-  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.core/file-uploader
+  :opts->request #ig/ref :audiophile.resources/file-uploader
   :route         :api/artifacts}
 
- :com.ben-allred.audiophile.common.services.resources.core/file-uploader
+ :audiophile.resources/file-uploader
  {}
 
- :audiophile.ui.views.components/audio-player
- {:*artifact #ig/ref :audiophile.ui.views.components/audio-resource}
+ :audiophile.views.components/audio-player
+ {:*artifact #ig/ref :audiophile.views.components/audio-resource}
 
- :audiophile.ui.views.components/audio-resource
+ :audiophile.views.components/audio-resource
  {:http-client #ig/ref :services/http
   :nav         #ig/ref :services/nav}}

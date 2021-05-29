@@ -5,8 +5,7 @@
     [com.ben-allred.audiophile.common.services.ui-store.reducers :as reducers]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.collaj.core :as collaj]
-    [com.ben-allred.collaj.enhancers :as ecollaj]
-    [integrant.core :as ig]))
+    [com.ben-allred.collaj.enhancers :as ecollaj]))
 
 (deftype Store [get-state dispatch]
   pui-store/IStore
@@ -15,7 +14,7 @@
   (dispatch! [_ action]
     (dispatch action)))
 
-(defn create-store [reducer init]
+(defn ^:private create* [reducer init]
   (let [{:keys [get-state dispatch]}
         (collaj/create-custom-store
           r/atom
@@ -26,8 +25,8 @@
                      #(log/info "New state:" %))))]
     (->Store get-state dispatch)))
 
-(defmethod ig/init-key ::store [_ {:keys [env]}]
-  (create-store reducers/reducer env))
+(defn store [{:keys [env]}]
+  (create* reducers/reducer env))
 
 (defn get-state [store]
   (pui-store/get-state store))

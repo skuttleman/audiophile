@@ -9,8 +9,7 @@
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
-    [integrant.core :as ig]))
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn ^:private find-serde
   ([headers serdes]
@@ -44,7 +43,7 @@
          #?(:clj (assoc :cookies (cook/get-cookies cs)))
          (update :headers (partial maps/map-keys keyword))))))
 
-(defmethod ig/init-key ::base [_ _]
+(defn base [_]
   (fn [http-client]
     (reify
       pres/IResource
@@ -61,7 +60,7 @@
                         (catch #?(:cljs :default :default Throwable) ex
                           (reject (ex-data ex)))))))))))
 
-(defmethod ig/init-key ::with-logging [_ {:keys [log-ctx]}]
+(defn with-logging [{:keys [log-ctx]}]
   (fn [http-client]
     (reify
       pres/IResource
@@ -81,7 +80,7 @@
                                      (assoc :status (:status result)
                                             :body (:body result))))))))))))
 
-(defmethod ig/init-key ::with-headers [_ _]
+(defn with-headers [_]
   (fn [http-client]
     (reify
       pres/IResource
@@ -94,7 +93,7 @@
               (->> (pres/request! http-client))
               (v/then result-fn (comp v/reject result-fn))))))))
 
-(defmethod ig/init-key ::with-serde [_ {:keys [serdes]}]
+(defn with-serde [{:keys [serdes]}]
   (fn [http-client]
     (reify
       pres/IResource
@@ -117,7 +116,7 @@
                             (response* (:response? request))
                             deserde))))))))
 
-(defmethod ig/init-key ::with-nav [_ {:keys [nav]}]
+(defn with-nav [{:keys [nav]}]
   (fn [http-client]
     (reify
       pres/IResource
@@ -136,10 +135,10 @@
               (->request request)))
           middlewares))
 
-(defmethod ig/init-key ::client [_ {:keys [middlewares]}]
+(defn client [{:keys [middlewares]}]
   (create client/request middlewares))
 
-(defmethod ig/init-key ::stub [_ {:keys [result result-fn]}]
+(defn stub [{:keys [result result-fn]}]
   (reify
     pres/IResource
     (request! [_ request]

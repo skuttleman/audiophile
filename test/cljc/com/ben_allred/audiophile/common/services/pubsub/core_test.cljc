@@ -6,7 +6,7 @@
 
 (deftest PubSub-test
   (testing "PubSub"
-    (let [pubsub (pubsub/->PubSub (atom nil))
+    (let [pubsub (pubsub/pubsub {})
           spy (spies/create)]
       (pubsub/subscribe! pubsub ::id [:topic/one] spy)
       (pubsub/subscribe! pubsub ::id [:topic/two :a] spy)

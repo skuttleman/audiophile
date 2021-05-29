@@ -32,7 +32,7 @@
         (testing "when all resources succeed"
           (let [*res-1 (->resource :success :value-1 :result-1)
                 *res-2 (->resource :success :value-2 :result-2)
-                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
+                *multi (multi/resource {:resources {:res-1 *res-1 :res-2 *res-2}})]
             (testing "returns expected request result"
               (is (= [:success {:res-1 :result-1
                                 :res-2 :result-2}]
@@ -50,7 +50,7 @@
         (testing "when one resource is requesting"
           (let [*res-1 (->resource :success :value-1 :result-1)
                 *res-2 (->resource :requesting :req :req)
-                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
+                *multi (multi/resource {:resources {:res-1 *res-1 :res-2 *res-2}})]
             (testing "does not return a result"
               (is (= [:success ::timeout]
                      (tu/<p! (-> [(res/request! *multi)
@@ -66,7 +66,7 @@
         (testing "when one resource has not been requested"
           (let [*res-1 (->resource :success :value-1 :result-1)
                 *res-2 (->resource :init :init :init)
-                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
+                *multi (multi/resource {:resources {:res-1 *res-1 :res-2 *res-2}})]
             (testing "does not return a result"
               (is (= [:success ::timeout]
                      (tu/<p! (-> [(res/request! *multi)
@@ -82,7 +82,7 @@
         (testing "when one resource has erred"
           (let [*res-1 (->resource :success :value-1 :result-1)
                 *res-2 (->resource :error :value-2 :result-2)
-                *multi (multi/->multi-resource {:res-1 *res-1 :res-2 *res-2})]
+                *multi (multi/resource {:resources {:res-1 *res-1 :res-2 *res-2}})]
             (testing "returns expected request result"
               (is (= [:error :result-2] (tu/<p! (res/request! *multi)))))
 

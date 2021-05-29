@@ -2,11 +2,11 @@
  #duct/include "duct/ui/base.edn"
 
  :duct.profile/dev
- {:audiophile.ui.views.login/root
+ {:audiophile.views.login/root
   ^:promote {:login-form #ig/ref :com.ben-allred.audiophile.ui.dev.core/login-form}
 
   :com.ben-allred.audiophile.ui.dev.core/login-form
   {:login-resource #ig/ref :resources/user-login}
 
-  [:com.ben-allred.audiophile.common.services.resources.core/resource :resources/user-login]
-  {:opts->vow #ig/ref :com.ben-allred.audiophile.common.services.resources.users/login}}}
+  [:audiophile.resources/base :resources/user-login]
+  {:opts->vow #ig/ref :audiophile.resources.user/login-fn}}}

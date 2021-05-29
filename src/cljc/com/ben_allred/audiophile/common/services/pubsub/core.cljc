@@ -1,8 +1,7 @@
 (ns com.ben-allred.audiophile.common.services.pubsub.core
   (:require
     [com.ben-allred.audiophile.common.services.pubsub.protocols :as ppubsub]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defn ^:private publish* [state this topic event]
   (let [state @state
@@ -62,7 +61,7 @@
     (unsubscribe* state key topic)
     this))
 
-(defmethod ig/init-key ::pubsub [_ _]
+(defn pubsub [_]
   (->PubSub (atom nil)))
 
 (defn publish! [pubsub topic event]

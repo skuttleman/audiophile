@@ -4,8 +4,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]
-    [integrant.core :as ig])
+    [com.ben-allred.vow.impl.protocol :as pv])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -41,8 +40,5 @@
             :success (recur (assoc vals k value) (rest resources))
             nil))))))
 
-(defn ->multi-resource [resources]
+(defn resource [{:keys [resources]}]
   (->MultiResource resources))
-
-(defmethod ig/init-key ::resource [_ {:keys [resources]}]
-  (->multi-resource resources))

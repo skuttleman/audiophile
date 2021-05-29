@@ -10,8 +10,7 @@
     [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.keywords :as keywords]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.uri :as uri]
-    [integrant.core :as ig])
+    [com.ben-allred.audiophile.common.utils.uri :as uri])
   #?(:clj
      (:import
        (java.io ByteArrayInputStream ByteArrayOutputStream InputStream PushbackReader)
@@ -39,7 +38,7 @@
        #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn*/read opts))])
        :else (edn*/read opts value)))))
 
-(defmethod ig/init-key ::edn [_ _]
+(defn edn [_]
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -73,7 +72,7 @@
                  trans/reader
                  (trans/read value)))))
 
-(defmethod ig/init-key ::transit [_ _]
+(defn transit [_]
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -93,7 +92,7 @@
   #?(:clj (jsonista/read-value value object-mapper)
      :cljs (js/JSON.parse value)))
 
-(defmethod ig/init-key ::json [_ _]
+(defn json [_]
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -105,7 +104,7 @@
     (mime-type [_]
       "application/json")))
 
-(defmethod ig/init-key ::urlencode [_ _]
+(defn urlencode [_]
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -117,7 +116,7 @@
     (mime-type [_]
       "application/x-www-form-urlencoded")))
 
-(defmethod ig/init-key ::jwt [_ {:keys [data-serde expiration secret]}]
+(defn jwt [{:keys [data-serde expiration secret]}]
   (reify
     pserdes/ISerde
     (serialize [_ payload opts]

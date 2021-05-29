@@ -101,7 +101,7 @@
  {}
 
  :com.ben-allred.audiophile.api.handlers.resources/ui
- {:app       #ig/ref :audiophile.ui.views/app
+ {:app       #ig/ref :audiophile.views/app
   :api-base  #ig/ref :env/base-url#api
   :auth-base #ig/ref :env/base-url#auth
   :store     #ig/ref :services/store}

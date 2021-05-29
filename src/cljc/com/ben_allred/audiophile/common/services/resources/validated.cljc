@@ -5,8 +5,7 @@
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]
-    [integrant.core :as ig])
+    [com.ben-allred.vow.impl.protocol :as pv])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -80,6 +79,6 @@
   ([id resource form opts]
    (->ValidatedResource id resource form opts)))
 
-(defmethod ig/init-key ::opts->request [_ _]
+(defn opts->request [_]
   (fn [opts]
     {:body {:data (:form/value opts)}}))

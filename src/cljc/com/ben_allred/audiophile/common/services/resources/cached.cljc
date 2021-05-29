@@ -4,8 +4,7 @@
     [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]
-    [integrant.core :as ig])
+    [com.ben-allred.vow.impl.protocol :as pv])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -27,5 +26,5 @@
   (#?(:cljs -deref :default deref) [_]
     @*resource))
 
-(defmethod ig/init-key ::resource [_ {:keys [resource]}]
+(defn resource [{:keys [resource]}]
   (->CachedResource (r/atom nil) resource))

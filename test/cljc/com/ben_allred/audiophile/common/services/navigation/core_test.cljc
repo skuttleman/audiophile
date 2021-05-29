@@ -4,23 +4,21 @@
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
 
-(deftest serialize*-test
-  (testing "serialize*"
-    (let [routes ["" [[["/test/" [uuids/regex :project-id] "/route"] :test/route]]]
-          id (uuids/random)]
+(deftest router-test
+  (let [routes ["" [[["/test/" [uuids/regex :project-id] "/route"] :test/route]]]
+        router (nav/router {:base-urls {:test "test://base"}
+                            :routes    routes})
+        id (uuids/random)]
+    (testing "#path-for"
       (testing "serializes params to url"
         (is (= (str "test://base/test/" id "/route?query&foo=bar")
-               (nav/serialize* {:test "test://base"}
-                               routes
-                               :test/route
-                               {:route-params {:project-id id}
-                                :query-params {:query true
-                                               :foo   :bar}})))))))
+               (nav/path-for router
+                             :test/route
+                             {:route-params {:project-id id}
+                              :query-params {:query true
+                                             :foo   :bar}})))))
 
-(deftest deserialize*-test
-  (testing "deserialize*"
-    (let [routes ["" [[["/test/" [uuids/regex :project-id] "/route"] :test/route]]]
-          id (uuids/random)]
+    (testing "#match-route"
       (testing "deserializes url to params"
         (is (= {:handle       :test/route
                 :route-params {:project-id id}
@@ -28,4 +26,5 @@
                                :foo   "bar"}
                 :path         (str "/test/" id "/route")
                 :query-string "query&foo=bar"}
-               (nav/deserialize* routes (str "/test/" id "/route?query&foo=bar"))))))))
+               (nav/match-route router
+                                (str "/test/" id "/route?query&foo=bar"))))))))

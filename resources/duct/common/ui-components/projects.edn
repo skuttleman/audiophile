@@ -1,111 +1,111 @@
 {[:duct/const :resources/project.file#create]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#create]
+ #ig/ref [:audiophile.resources/base :projects/file#create]
 
  [:duct/const :resources/project.file#version]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#version]
+ #ig/ref [:audiophile.resources/base :projects/file#version]
 
  [:duct/const :resources/project.files]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
+ #ig/ref [:audiophile.resources/base :projects/files]
 
  [:duct/const :resources/project]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
+ #ig/ref [:audiophile.resources/base :projects/one]
 
  [:duct/const :resources/projects.all]
- #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/all]
+ #ig/ref [:audiophile.resources/base :projects/all]
 
- :audiophile.ui.views.projects/list
+ :audiophile.views.projects/list
  {:nav #ig/ref :services/nav}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/all]
+ [:audiophile.resources/http-handler :projects/all]
  {:http-client #ig/ref :services/http
   :method      :get
   :route       :api/projects}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]
+ [:audiophile.resources/http-handler :projects/one]
  {:http-client #ig/ref :services/http
   :method      :get
   :route       :api/project}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#create]
+ [:audiophile.resources/http-handler :projects/file#create]
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/project.files
-  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#version]
+ [:audiophile.resources/http-handler :projects/file#version]
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/file
-  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]
+ [:audiophile.resources/http-handler :projects/files]
  {:http-client #ig/ref :services/http
   :method      :get
   :route       :api/project.files}
 
- [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/create]
+ [:audiophile.resources/http-handler :projects/create]
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/projects
-  :opts->request #ig/ref :com.ben-allred.audiophile.common.services.resources.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/all]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/all]}
+ [:audiophile.resources/base :projects/all]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/all]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/one]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/one]}
+ [:audiophile.resources/base :projects/one]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/one]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#create]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#create]}
+ [:audiophile.resources/base :projects/file#create]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/file#create]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/file#version]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/file#version]}
+ [:audiophile.resources/base :projects/file#version]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/file#version]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/files]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/files]}
+ [:audiophile.resources/base :projects/files]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/files]}
 
- [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/create]
- {:opts->vow #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/http-handler :projects/create]}
+ [:audiophile.resources/base :projects/create]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/create]}
 
- [:com.ben-allred.audiophile.common.services.resources.toaster/resource :projects/create]
- {:error-fn   #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/error]
-  :resource   #ig/ref [:com.ben-allred.audiophile.common.services.resources.core/resource :projects/create]
+ [:audiophile.resources/toaster :projects/create]
+ {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:audiophile.resources/base :projects/create]
   :store      #ig/ref :services/store
-  :success-fn #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/result-fn :toaster/success]}
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]}
 
- [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]
- {:resource #ig/ref [:com.ben-allred.audiophile.common.services.resources.toaster/resource :projects/create]
+ [:audiophile.resources/redirect :projects/create]
+ {:resource #ig/ref [:audiophile.resources/toaster :projects/create]
   :nav      #ig/ref :services/nav
   :routes   {:success/handle :ui/home}}
 
- [:audiophile.ui.views.components/tile :tiles/projects#all]
+ [:audiophile.views.components/tile :tiles/projects#all]
  {:*resource #ig/ref :resources/projects.all
   :title     "Your projects"
-  :view      #ig/ref :audiophile.ui.views.projects/list}
+  :view      #ig/ref :audiophile.views.projects/list}
 
- :audiophile.ui.views.projects/create
+ :audiophile.views.projects/create
  {:*all-projects #ig/ref :resources/projects.all
   :*teams        #ig/ref :resources/teams#all
-  :projects      #ig/ref [:com.ben-allred.audiophile.common.services.resources.redirect/resource :projects/create]}
+  :projects      #ig/ref [:audiophile.resources/redirect :projects/create]}
 
- :audiophile.ui.views.projects/one
+ :audiophile.views.projects/one
  {:*files     #ig/ref :resources/project.files
   :*project   #ig/ref :resources/project
   :*team      #ig/ref :resources/team
-  :track-list #ig/ref :audiophile.ui.views.projects/track-list}
+  :track-list #ig/ref :audiophile.views.projects/track-list}
 
- :audiophile.ui.views.projects/track-list
- {:file-form    #ig/ref :audiophile.ui.views.projects/file-form
+ :audiophile.views.projects/track-list
+ {:file-form    #ig/ref :audiophile.views.projects/file-form
   :nav          #ig/ref :services/nav
   :store        #ig/ref :services/store
-  :version-form #ig/ref :audiophile.ui.views.projects/version-form}
+  :version-form #ig/ref :audiophile.views.projects/version-form}
 
- :audiophile.ui.views.projects/file-form
+ :audiophile.views.projects/file-form
  {:*artifacts #ig/ref :resources/artifacts
   :*file      #ig/ref :resources/project.file#create
   :*files     #ig/ref :resources/project.files}
 
- :audiophile.ui.views.projects/version-form
+ :audiophile.views.projects/version-form
  {:*artifacts    #ig/ref :resources/artifacts
   :*file-version #ig/ref :resources/project.file#version
   :*files        #ig/ref :resources/project.files}}

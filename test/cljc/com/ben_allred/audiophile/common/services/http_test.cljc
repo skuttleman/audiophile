@@ -46,7 +46,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((ig/init-key ::client/base {}) client)]
+            (let [resource ((client/base {}) client)]
               (testing "when the request succeeds"
                 (stubs/use! client :request!
                             (#?(:cljs async/go :default do)
@@ -89,7 +89,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((ig/init-key ::client/with-headers {}) client)]
+            (let [resource ((client/with-headers {}) client)]
               (testing "when the request succeeds"
                 (stubs/use! client :request!
                             (cookie-responder v/resolve
@@ -161,7 +161,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((ig/init-key ::client/with-serde {:serdes serdes})
+            (let [resource ((client/with-serde {:serdes serdes})
                             client)]
               (testing "when the request succeeds"
                 (testing "and when the request is serialized as application/foo"
@@ -197,7 +197,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((ig/init-key ::client/with-nav {:nav nav})
+            (let [resource ((client/with-nav {:nav nav})
                             client)]
               (testing "when sending a request"
                 (stubs/use! client :request!

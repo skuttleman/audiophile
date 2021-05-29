@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
+    [com.ben-allred.audiophile.common.utils.logger :as log]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
@@ -39,9 +40,6 @@
                                   (f this))
                                 prepos/IExecute
                                 (execute! [_ _ _]))))))))
-
-(defn setup-stub [config stub-k method f-or-val]
-  (update config [:duct/const stub-k] stubs/set-stub! method f-or-val))
 
 (defn setup-stub [config & args]
   (->> args

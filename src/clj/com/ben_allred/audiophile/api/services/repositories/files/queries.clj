@@ -155,13 +155,12 @@
                     {:content-type   (:content-type artifact)
                      :content-length (:size artifact)
                      :metadata       {:filename (:filename artifact)}})
-        {:artifact/id       (->> opts
-                                 :user/id
-                                 (insert-artifact artifacts (repos/uri store key) artifact)
-                                 (repos/execute! executor)
-                                 colls/only!
-                                 :id)
-         :artifact/filename (:filename artifact)})))
+        (->> opts
+             :user/id
+             (insert-artifact artifacts (repos/uri store key) artifact)
+             (repos/execute! executor)
+             colls/only!
+             :id))))
   (find-by-file-id [_ file-id opts]
     (when-not (:internal/verified? opts)
       (access! executor :file (access-file projects files user-teams file-id (:user/id opts))))

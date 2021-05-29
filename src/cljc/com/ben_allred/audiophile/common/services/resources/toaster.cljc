@@ -4,8 +4,7 @@
     [com.ben-allred.audiophile.common.services.ui-store.actions :as actions]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]
-    [integrant.core :as ig])
+    [com.ben-allred.vow.impl.protocol :as pv])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -35,8 +34,8 @@
   (#?(:cljs -deref :default deref) [_]
     @*resource))
 
-(defmethod ig/init-key ::resource [_ {:keys [error-fn resource store success-fn]}]
+(defn resource [{:keys [error-fn resource store success-fn]}]
   (->ToastResource resource store success-fn error-fn nil nil))
 
-(defmethod ig/init-key ::result-fn [_ {:keys [msg]}]
+(defn toast-fn [{:keys [msg]}]
   (constantly msg))

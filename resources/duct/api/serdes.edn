@@ -1,7 +1,7 @@
 {[:duct/const :serdes/jwt]
- #ig/ref :com.ben-allred.audiophile.common.services.serdes.core/jwt
+ #ig/ref :audiophile.services.serdes/jwt
 
- :com.ben-allred.audiophile.common.services.serdes.core/jwt
+ :audiophile.services.serdes/jwt
  {:data-serde #ig/ref :serdes/transit
   :expiration #ig/ref :env/jwt-expiration
   :secret     #ig/ref :env/jwt-secret}}

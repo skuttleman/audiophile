@@ -3,20 +3,10 @@
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.ui.services.config :as cfg]
+    [com.ben-allred.audiophile.ui.config :as cfg]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
-    com.ben-allred.audiophile.common.services.config.views
-    com.ben-allred.audiophile.common.services.http
-    com.ben-allred.audiophile.common.services.navigation.core
-    com.ben-allred.audiophile.common.services.pubsub.core
-    com.ben-allred.audiophile.common.services.pubsub.ws
-    com.ben-allred.audiophile.common.services.resources.cached
-    com.ben-allred.audiophile.common.services.resources.core
-    com.ben-allred.audiophile.common.services.resources.multi
-    com.ben-allred.audiophile.common.services.resources.redirect
-    com.ben-allred.audiophile.common.services.resources.toaster
-    com.ben-allred.audiophile.common.services.resources.users))
+    com.ben-allred.audiophile.common.config.core))
 
 (defn ^:private app [app* store]
   [app* (ui-store/get-state store)])
@@ -30,8 +20,8 @@
    (set! log/*ctx* {:disabled? true})
    (init (ig/init config)))
   ([system]
-   (let [{store ::ui-store/store
-          app*  :audiophile.ui.views/app} system]
+   (let [{store :audiophile.services/ui-store
+          app*  :audiophile.views/app} system]
      (rdom/render
        [app app* store]
        (.getElementById dom/document "root")
