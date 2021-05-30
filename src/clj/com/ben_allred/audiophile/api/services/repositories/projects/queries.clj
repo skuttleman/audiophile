@@ -1,10 +1,9 @@
 (ns com.ben-allred.audiophile.api.services.repositories.projects.queries
   (:require
-    [com.ben-allred.audiophile.api.services.repositories.projects.protocols :as pp]
+    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.models.core :as models]
-    [integrant.core :as ig]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.api.services.repositories.core :as repos]))
+    [com.ben-allred.audiophile.api.services.repositories.projects.protocols :as pp]
+    [com.ben-allred.audiophile.common.utils.colls :as colls]))
 
 (defn ^:private has-team-clause [user-teams user-id]
   [:exists (-> user-teams
@@ -42,7 +41,7 @@
         colls/only!
         :id)))
 
-(defmethod ig/init-key ::->executor [_ {:keys [projects user-teams users]}]
+(defn ->executor [{:keys [projects user-teams users]}]
   (fn [executor]
     (->ProjectExecutor executor projects user-teams users)))
 

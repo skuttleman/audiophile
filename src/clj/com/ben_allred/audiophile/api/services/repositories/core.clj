@@ -5,7 +5,6 @@
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [hikari-cp.core :as hikari]
-    [integrant.core :as ig]
     [next.jdbc :as jdbc]
     [next.jdbc.result-set :as result-set])
   (:import
@@ -16,17 +15,11 @@
   (format [_ query]
     (sql/format query)))
 
-(defmethod ig/init-key ::query-formatter [_ _]
-  (->QueryFormatter))
-
 (deftype RawFormatter []
   prepos/IFormatQuery
   (format [_ sql]
     (cond-> sql
       (not (vector? sql)) vector)))
-
-(defmethod ig/init-key ::raw-formatter [_ _]
-  (->RawFormatter))
 
 (deftype Builder [cols col-cnt collect! ->row! rs]
   result-set/RowBuilder
@@ -43,7 +36,29 @@
   (with-row [_ mrs row] (collect! mrs row))
   (rs! [_ mrs] (persistent! mrs)))
 
-(defmethod ig/init-key ::->builder-fn [_ _]
+(deftype Executor [conn ->builder-fn query-formatter]
+  prepos/IExecute
+  (execute! [_ query opts]
+    (let [formatted (prepos/format query-formatter query)]
+      (log/debug "[TX] - formatting:" query)
+      (log/debug "[TX] - executing:" formatted)
+      (jdbc/execute! conn formatted (assoc (:sql/opts opts)
+                                           :builder-fn (->builder-fn opts))))))
+
+(deftype Transactor [datasource opts ->executor]
+  prepos/ITransact
+  (transact! [_ f]
+    (jdbc/transact datasource
+                   (comp f ->executor)
+                   opts)))
+
+(defn query-formatter [_]
+  (->QueryFormatter))
+
+(defn raw-formatter [_]
+  (->RawFormatter))
+
+(defn ->builder-fn [_]
   (fn [{:keys [model-fn result-xform]}]
     (let [xform (or result-xform identity)
           model-fn (cond->> (fn [[k v]]
@@ -58,30 +73,14 @@
                          (range col-cnt))]
           (->Builder cols col-cnt (xform conj!) ->row! rs))))))
 
-(deftype Executor [conn ->builder-fn query-formatter]
-  prepos/IExecute
-  (execute! [_ query opts]
-    (let [formatted (prepos/format query-formatter query)]
-      (log/debug "[TX] - formatting:" query)
-      (log/debug "[TX] - executing:" formatted)
-      (jdbc/execute! conn formatted (assoc (:sql/opts opts)
-                                           :builder-fn (->builder-fn opts))))))
-
-(defmethod ig/init-key ::->executor [_ {:keys [->builder-fn query-formatter]}]
+(defn ->executor [{:keys [->builder-fn query-formatter]}]
   (fn [conn]
     (->Executor conn ->builder-fn query-formatter)))
 
-(deftype Transactor [datasource opts ->executor]
-  prepos/ITransact
-  (transact! [_ f]
-    (jdbc/transact datasource
-                   (comp f ->executor)
-                   opts)))
-
-(defmethod ig/init-key ::transactor [_ {:keys [->executor datasource]}]
+(defn transactor [{:keys [->executor datasource]}]
   (->Transactor datasource nil ->executor))
 
-(defmethod ig/init-key ::cfg [_ {:keys [db-name host password port user]}]
+(defn cfg [{:keys [db-name host password port user]}]
   {:auto-commit           true
    :read-only             false
    :connection-timeout    10000
@@ -100,10 +99,10 @@
    :port-number           port
    :register-mbeans       false})
 
-(defmethod ig/init-key ::datasource [_ {:keys [spec]}]
+(defn datasource [{:keys [spec]}]
   (hikari/make-datasource spec))
 
-(defmethod ig/halt-key! ::datasource [_ datasource]
+(defn datasource#close [datasource]
   (hikari/close-datasource datasource))
 
 (defn execute!

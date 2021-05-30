@@ -12,16 +12,16 @@
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
 
-                      :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+                      :audiophile.services.ws/->handler
                       ^:promote {:heartbeat-int-ms 250}
 
                       :com.ben-allred.audiophile.integration.common.components/ws-handler
-                      {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
-                       :->handler #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+                      {:->channel #ig/ref :audiophile.services.ws/->channel
+                       :->handler #ig/ref :audiophile.services.ws/->handler
                        :serdes    #ig/ref :config/serdes}
 
                       :com.ben-allred.audiophile.integration.common.components/transactor
-                      {:->executor #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/->executor
+                      {:->executor #ig/ref :audiophile.repositories/->executor
                        :datasource #ig/ref :services/datasource
                        :migrator   #ig/ref :com.ben-allred.audiophile.api.dev.migrations/migrator
                        :seed-data  #ig/ref :test/seed-data}

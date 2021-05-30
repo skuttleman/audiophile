@@ -3,8 +3,7 @@
     [com.ben-allred.audiophile.api.services.repositories.models.core :as models]
     [com.ben-allred.audiophile.api.services.repositories.users.protocols :as pu]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.colls :as colls]))
 
 (defn ^:private select-by [model clause]
   (-> model
@@ -18,7 +17,7 @@
                                  (select-by users [:= :users.email email])
                                  opts))))
 
-(defmethod ig/init-key ::->executor [_ {:keys [users user-teams]}]
+(defn ->executor [{:keys [users user-teams]}]
   (fn [executor]
     (->UserExecutor executor users user-teams)))
 

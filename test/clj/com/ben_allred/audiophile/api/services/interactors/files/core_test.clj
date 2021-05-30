@@ -1,7 +1,7 @@
 (ns ^:unit com.ben-allred.audiophile.api.services.interactors.files.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.api.services.repositories.files.queries :as fqueries]
+    [com.ben-allred.audiophile.api.services.repositories.files.queries :as qfiles]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
@@ -17,14 +17,14 @@
    (fn [executor models]
      (->file-executor executor (assoc models :store store))))
   ([executor {:keys [artifacts file-versions files projects store user-teams]}]
-   (fqueries/->FilesExecutor executor
-                             artifacts
-                             file-versions
-                             files
-                             projects
-                             user-teams
-                             store
-                             (constantly ::key))))
+   (qfiles/->FilesExecutor executor
+                           artifacts
+                           file-versions
+                           files
+                           projects
+                           user-teams
+                           store
+                           (constantly ::key))))
 
 (deftest create-artifact-test
   (testing "create-artifact"

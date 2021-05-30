@@ -5,8 +5,7 @@
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
-    [com.ben-allred.vow.core :as v]
-    [integrant.core :as ig]))
+    [com.ben-allred.vow.core :as v]))
 
 (defn ^:private redirect-params [{:keys [client-id redirect-uri]}]
   {:client_id       client-id
@@ -56,5 +55,5 @@
   (profile [this opts]
     (profile* (.getSimpleName (class this)) http-client cfg opts)))
 
-(defmethod ig/init-key ::oauth-provider [_ {:keys [cfg http-client]}]
+(defn provider [{:keys [cfg http-client]}]
   (->GoogleOAuthProvider http-client cfg))

@@ -3,7 +3,7 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.teams.core :as rteams]
-    [com.ben-allred.audiophile.api.services.repositories.teams.queries :as tqueries]
+    [com.ben-allred.audiophile.api.services.repositories.teams.queries :as qteams]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
@@ -12,7 +12,7 @@
     [test.utils.stubs :as stubs]))
 
 (defn ^:private ->team-executor [executor {:keys [teams user-teams users]}]
-  (tqueries/->TeamExecutor executor teams user-teams users))
+  (qteams/->TeamExecutor executor teams user-teams users))
 
 (deftest query-all-test
   (testing "query-all"

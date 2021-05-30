@@ -3,8 +3,7 @@
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.teams.queries :as q]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
   (when-let [team (q/find-by-team-id executor team-id opts)]
@@ -26,5 +25,5 @@
   (create! [_ opts]
     (repos/transact! repo create* opts)))
 
-(defmethod ig/init-key ::accessor [_ {:keys [repo]}]
+(defn accessor [{:keys [repo]}]
   (->TeamAccessor repo))

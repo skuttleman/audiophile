@@ -6,8 +6,7 @@
     [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
 
 (defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]
@@ -186,7 +185,7 @@
                                                project-id
                                                (:user/id opts)))))
 
-(defmethod ig/init-key ::->executor [_ {:keys [artifacts file-versions files projects user-teams store]}]
+(defn ->executor [{:keys [artifacts file-versions files projects user-teams store]}]
   (fn [executor]
     (->FilesExecutor executor
                      artifacts

@@ -6,8 +6,7 @@
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (deftype S3Client [client bucket invoke]
   prepos/IKVStore
@@ -27,7 +26,7 @@
                               :Metadata      (:metadata opts)
                               :Body          content}})))
 
-(defmethod ig/init-key ::client [_ {:keys [access-key bucket region secret-key]}]
+(defn client [{:keys [access-key bucket region secret-key]}]
   (let [client (aws/client {:api                  :s3
                             :region               region
                             :credentials-provider (aws.creds/basic-credentials-provider
@@ -35,7 +34,7 @@
                                                      :secret-access-key secret-key})})]
     (->S3Client client bucket aws/invoke)))
 
-(defmethod ig/init-key ::stream-serde [_ _]
+(defn stream-serde [_]
   (reify pserdes/ISerde
     (serialize [_ file _]
       (io/input-stream file))

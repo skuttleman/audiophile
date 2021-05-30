@@ -4,7 +4,6 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
-    [integrant.core :as ig]
     [next.jdbc.result-set :as result-set])
   (:import
     (java.sql ResultSet ResultSetMetaData)))
@@ -28,7 +27,7 @@
 
 (deftest ->builder-fn-test
   (testing "Builder"
-    (let [->builder-fn (ig/init-key ::repos/->builder-fn nil)
+    (let [->builder-fn (repos/->builder-fn {})
           id (uuids/random)
           result-set (->StubResultSet "user/id" id)]
       (testing "#with-column"

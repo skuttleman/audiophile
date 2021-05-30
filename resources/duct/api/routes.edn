@@ -67,7 +67,7 @@
 
  [:audiophile.spec/with-spec :api.handler/ws#connect]
  {:->response #ig/ref :audiophile.spec/id
-  :handler    #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/handler
+  :handler    #ig/ref :audiophile.services.ws/handler
   :spec       :api.ws/connect}
 
  [:audiophile.spec/with-spec :api.handler/artifacts#post]
@@ -138,7 +138,7 @@
  {}
 
  :audiophile.handlers.auth/login
- {:oauth #ig/ref :com.ben-allred.audiophile.api.services.auth.core/auth-provider}
+ {:oauth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.handlers.auth/logout
  {:base-url #ig/ref :env/base-url#ui
@@ -151,13 +151,13 @@
  :audiophile.handlers.auth/callback
  {:base-url #ig/ref :env/base-url#ui
   :nav      #ig/ref :services/nav
-  :oauth    #ig/ref :com.ben-allred.audiophile.api.services.auth.core/auth-provider
+  :oauth    #ig/ref :audiophile.services.auth/provider
   :serde    #ig/ref :serdes/jwt}
 
  :audiophile.handlers.auth/details
  {}
 
- :com.ben-allred.audiophile.api.services.auth.core/auth-provider
+ :audiophile.services.auth/provider
  {:nav        #ig/ref :services/nav
   :oauth      #ig/ref :services/oauth
   :interactor #ig/ref :interactors/users}
@@ -198,14 +198,14 @@
  :audiophile.handlers.files/download
  {:interactor #ig/ref :interactors/files}
 
- :com.ben-allred.audiophile.api.services.pubsub.ws/handler
- {:->channel #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
-  :->handler #ig/ref :com.ben-allred.audiophile.api.services.pubsub.ws/->handler}
+ :audiophile.services.ws/handler
+ {:->channel #ig/ref :audiophile.services.ws/->channel
+  :->handler #ig/ref :audiophile.services.ws/->handler}
 
- :com.ben-allred.audiophile.api.services.pubsub.ws/->channel
+ :audiophile.services.ws/->channel
  {:serdes #ig/ref :config/serdes}
 
- :com.ben-allred.audiophile.api.services.pubsub.ws/->handler
+ :audiophile.services.ws/->handler
  {:heartbeat-int-ms #ig/ref :env.ws/heartbeat-int-ms
   :pubsub           #ig/ref :services/pubsub
   :serdes           #ig/ref :config/serdes}}

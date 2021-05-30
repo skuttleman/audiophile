@@ -3,8 +3,7 @@
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defn ->model-fn [model]
   (fn [[k v]]
@@ -18,7 +17,7 @@
   (transact! [_ f]
     (repos/transact! tx (comp f ->executor))))
 
-(defmethod ig/init-key ::repo [_ {:keys [->executor tx]}]
+(defn repo [{:keys [->executor tx]}]
   (->Repository tx ->executor))
 
 (deftype KVStore [client stream-serde]
@@ -30,5 +29,5 @@
   (put! [_ key value opts]
     (prepos/put! client key (serdes/serialize stream-serde value) opts)))
 
-(defmethod ig/init-key ::store [_ {:keys [s3-client stream-serde]}]
-  (->KVStore s3-client stream-serde))
+(defn store [{:keys [client stream-serde]}]
+  (->KVStore client stream-serde))

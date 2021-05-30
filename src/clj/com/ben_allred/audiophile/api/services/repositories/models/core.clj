@@ -5,10 +5,9 @@
     [com.ben-allred.audiophile.api.services.repositories.models.sql :as sql]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
-(defmethod ig/init-key ::models [_ {:keys [tx]}]
+(defn models [{:keys [tx]}]
   (reduce (fn [models row]
             (let [table (csk/->kebab-case-keyword (:table_name row))
                   column (csk/->kebab-case-keyword (:column_name row))]
@@ -26,7 +25,7 @@
                                      [:= :table-schema "public"]
                                      [:not= :table-name "db_migrations"]]})))
 
-(defmethod ig/init-key ::model [_ {:keys [models namespace table-name]}]
+(defn model [{:keys [models namespace table-name]}]
   (-> models
       (get table-name)
       (assoc :table table-name :namespace namespace)))

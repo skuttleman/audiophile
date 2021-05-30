@@ -5,7 +5,6 @@
     [com.ben-allred.audiophile.api.services.repositories.models.core :as models]
     [com.ben-allred.audiophile.api.services.repositories.teams.protocols :as pt]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [integrant.core :as ig]
     [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defn ^:private opts* [model]
@@ -69,7 +68,7 @@
                                         user-id))
       team-id)))
 
-(defmethod ig/init-key ::->executor [_ {:keys [teams user-teams users]}]
+(defn ->executor [{:keys [teams user-teams users]}]
   (fn [executor]
     (->TeamExecutor executor teams user-teams users)))
 

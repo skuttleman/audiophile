@@ -3,7 +3,7 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.services.repositories.projects.core :as rprojects]
-    [com.ben-allred.audiophile.api.services.repositories.projects.queries :as pqueries]
+    [com.ben-allred.audiophile.api.services.repositories.projects.queries :as qprojects]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -13,7 +13,7 @@
     [test.utils.stubs :as stubs]))
 
 (defn ^:private ->project-executor [executor {:keys [projects user-teams users]}]
-  (pqueries/->ProjectExecutor executor projects user-teams users))
+  (qprojects/->ProjectExecutor executor projects user-teams users))
 
 (deftest query-all-test
   (testing "query-all"

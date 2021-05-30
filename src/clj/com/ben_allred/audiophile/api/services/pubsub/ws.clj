@@ -6,8 +6,7 @@
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uuids :as uuids]
-    [immutant.web.async :as web.async]
-    [integrant.core :as ig]))
+    [immutant.web.async :as web.async]))
 
 (defmulti ^:private handle-msg (fn [_ _ event]
                                  (log/debug "received event" event)
@@ -50,24 +49,6 @@
   (log/info "websocket closed:" ch-id user-id)
   (pubsub/unsubscribe! pubsub ch-id))
 
-(defmethod ig/init-key ::->handler [_ {:keys [heartbeat-int-ms pubsub serdes]}]
-  (fn [params channel]
-    (let [deserializer (serdes/find-serde serdes (:content-type params))
-          ctx {:ch-id            (uuids/random)
-               :heartbeat-int-ms heartbeat-int-ms
-               :user-id          (:user/id params)
-               :pubsub           pubsub
-               :state            (ref nil)}]
-      (reify
-        pws/IHandler
-        (on-open [_]
-          (handle-open ctx channel))
-        (on-message [_ msg]
-          (handle-msg ctx channel (cond->> msg
-                                    deserializer (serdes/deserialize deserializer))))
-        (on-close [_]
-          (handle-close ctx channel))))))
-
 (defn ^:private send* [channel serde msg]
   (try
     (pws/send! channel
@@ -92,11 +73,6 @@
   (close! [_]
     (close* channel)))
 
-(defmethod ig/init-key ::->channel [_ {:keys [serdes]}]
-  (fn [params channel]
-    (let [serializer (serdes/find-serde! serdes (:accept params))]
-      (->SerdeChannel channel serializer))))
-
 (deftype Channel [ch]
   pws/IChannel
   (open? [_]
@@ -105,6 +81,13 @@
     (web.async/send! ch msg))
   (close! [_]
     (web.async/close ch)))
+
+(defn ^:private ch-map [->handler]
+  {:on-open    (comp pws/on-open ->handler)
+   :on-message (fn [ch msg]
+                 (pws/on-message (->handler ch) msg))
+   :on-close   (fn [ch _]
+                 (pws/on-close (->handler ch)))})
 
 (defn ^:private ->handler-fn [params {:keys [->channel ->handler]}]
   (let [handler (promise)]
@@ -116,14 +99,30 @@
              (deliver handler)))
       @handler)))
 
-(defn ch-map [->handler]
-  {:on-open    (comp pws/on-open ->handler)
-   :on-message (fn [ch msg]
-                 (pws/on-message (->handler ch) msg))
-   :on-close   (fn [ch _]
-                 (pws/on-close (->handler ch)))})
+(defn ->channel [{:keys [serdes]}]
+  (fn [params channel]
+    (let [serializer (serdes/find-serde! serdes (:accept params))]
+      (->SerdeChannel channel serializer))))
 
-(defmethod ig/init-key ::handler [_ cfg]
+(defn ->handler [{:keys [heartbeat-int-ms pubsub serdes]}]
+  (fn [params channel]
+    (let [deserializer (serdes/find-serde serdes (:content-type params))
+          ctx {:ch-id            (uuids/random)
+               :heartbeat-int-ms heartbeat-int-ms
+               :user-id          (:user/id params)
+               :pubsub           pubsub
+               :state            (ref nil)}]
+      (reify
+        pws/IHandler
+        (on-open [_]
+          (handle-open ctx channel))
+        (on-message [_ msg]
+          (handle-msg ctx channel (cond->> msg
+                                           deserializer (serdes/deserialize deserializer))))
+        (on-close [_]
+          (handle-close ctx channel))))))
+
+(defn handler [cfg]
   (fn [request]
     (->> cfg
          (->handler-fn request)

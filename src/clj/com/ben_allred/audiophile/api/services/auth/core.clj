@@ -4,8 +4,7 @@
     [com.ben-allred.audiophile.api.services.interactors.core :as int]
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defmacro ^:private safely! [ctx & body]
   `(try [~@body]
@@ -73,7 +72,7 @@
              request->params
              (params->user interactor oauth))))
 
-(defmethod ig/init-key ::auth-provider [_ {:keys [nav oauth interactor]}]
+(defn interactor [{:keys [nav oauth interactor]}]
   (->AuthInteractor nav oauth interactor))
 
 (defn redirect-uri

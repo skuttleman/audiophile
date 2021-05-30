@@ -5,11 +5,11 @@
    :com.ben-allred/audiophile.migrations
 
    :com.ben-allred.audiophile.api.dev.migrations/migrator
-   {:datasource          #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/datasource
+   {:datasource          #ig/ref :audiophile.repositories/datasource
     :migrations-res-path #ig/ref :resources/migration-path}
 
-   :com.ben-allred.audiophile.api.services.repositories.core/->executor
-   ^:promote {:query-formatter #ig/ref :com.ben-allred.audiophile.api.services.repositories.core/raw-formatter}
+   :audiophile.repositories/->executor
+   ^:promote {:query-formatter #ig/ref :audiophile.repositories/raw-formatter}
 
-   :com.ben-allred.audiophile.api.services.repositories.core/raw-formatter
+   :audiophile.repositories/raw-formatter
    {}}}]

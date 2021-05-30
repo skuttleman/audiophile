@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.api.services.repositories.files.core
+  (:refer-clojure :exclude [accessor])
   (:require
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
     [com.ben-allred.audiophile.api.services.repositories.files.queries :as q]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
   (let [artifact-id (q/insert-artifact! executor artifact opts)]
@@ -40,5 +40,5 @@
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* (:artifact/id opts) opts)))
 
-(defmethod ig/init-key ::accessor [_ {:keys [repo]}]
+(defn accessor [{:keys [repo]}]
   (->FileAccessor repo))

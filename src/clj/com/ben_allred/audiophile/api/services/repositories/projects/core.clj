@@ -2,8 +2,7 @@
   (:require
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]
-    [com.ben-allred.audiophile.api.services.repositories.projects.queries :as q]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.api.services.repositories.projects.queries :as q]))
 
 (defn ^:private create* [executor opts]
   (let [project-id (q/insert-project! executor opts opts)]
@@ -19,5 +18,5 @@
   (create! [_ opts]
     (repos/transact! repo create* opts)))
 
-(defmethod ig/init-key ::accessor [_ {:keys [repo]}]
+(defn accessor [{:keys [repo]}]
   (->ProjectAccessor repo))

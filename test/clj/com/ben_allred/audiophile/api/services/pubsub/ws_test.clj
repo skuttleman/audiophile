@@ -6,24 +6,22 @@
     [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]
     [test.utils.stubs :as stubs]))
 
 (deftest ->handler-test
   (let [pubsub (pubsub/pubsub {})
-        ->handler (ig/init-key ::ws/->handler
-                               {:heartbeat-int-ms 100
-                                :pubsub           pubsub
-                                :serdes           {:foo/bar (reify
-                                                              pserdes/ISerde
-                                                              (serialize [_ value _]
-                                                                [:serialized value])
-                                                              (deserialize [_ value _]
-                                                                (second value))
+        ->handler (ws/->handler {:heartbeat-int-ms 100
+                                 :pubsub           pubsub
+                                 :serdes           {:foo/bar (reify
+                                                               pserdes/ISerde
+                                                               (serialize [_ value _]
+                                                                 [:serialized value])
+                                                               (deserialize [_ value _]
+                                                                 (second value))
 
-                                                              pserdes/IMime
-                                                              (mime-type [_]
-                                                                "foo/bar"))}})
+                                                               pserdes/IMime
+                                                               (mime-type [_]
+                                                                 "foo/bar"))}})
         request {:user/id      ::user-id
                  :content-type "foo/bar"}
         stub (stubs/create (reify pws/IChannel
@@ -83,17 +81,16 @@
             (is (empty? (stubs/calls stub :send!)))))))))
 
 (deftest ->channel-test
-  (let [->channel (ig/init-key ::ws/->channel
-                               {:serdes {:foo/bar (reify
-                                                    pserdes/ISerde
-                                                    (serialize [_ value _]
-                                                      [:serialized value])
-                                                    (deserialize [_ value _]
-                                                      [:deserialized value])
+  (let [->channel (ws/->channel {:serdes {:foo/bar (reify
+                                                     pserdes/ISerde
+                                                     (serialize [_ value _]
+                                                       [:serialized value])
+                                                     (deserialize [_ value _]
+                                                       [:deserialized value])
 
-                                                    pserdes/IMime
-                                                    (mime-type [_]
-                                                      "foo/bar"))}})
+                                                     pserdes/IMime
+                                                     (mime-type [_]
+                                                       "foo/bar"))}})
         request {:accept "foo/bar"}
         stub (stubs/create (reify pws/IChannel
                              (open? [_] ::open?)
