@@ -20,6 +20,7 @@
                  :filename       "example.mp3"
                  :content-type   "audio/mp3"
                  :content-length 123
+                 :key            "some-key"
                  :created-by     #audiophile/fk [:users :email "joe@example.com"]}]}
  {:insert-into :files
   :values      [{:project-id #audiophile/fk [:projects :name "Project Seed"]

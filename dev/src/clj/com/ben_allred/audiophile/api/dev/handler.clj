@@ -14,9 +14,8 @@
     prepos/IKVStore
     (uri [_ key _]
       (str "local://target/" key))
-    (get [_ uri _]
-      (let [key (string/replace uri "local://target/" "")
-            file (io/file (str "target/" key ".dat"))]
+    (get [_ key _]
+      (let [file (io/file (str "target/" key ".dat"))]
         (when (.exists file)
           {:Body (io/input-stream file)})))
     (put! [_ key value opts]

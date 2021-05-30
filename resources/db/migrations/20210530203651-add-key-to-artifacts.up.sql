@@ -1,0 +1,3 @@
+ALTER TABLE artifacts
+    ADD COLUMN "key" VARCHAR(255) NOT NULL;
+--;;

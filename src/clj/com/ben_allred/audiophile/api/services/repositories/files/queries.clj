@@ -108,7 +108,7 @@
 
 (defn ^:private insert-artifact [artifacts uri artifact user-id]
   (-> artifact
-      (select-keys #{:content-type :filename})
+      (select-keys #{:content-type :filename :key})
       (assoc :uri uri
              :content-length (:size artifact)
              :created-by user-id)
@@ -156,7 +156,7 @@
                      :metadata       {:filename (:filename artifact)}})
         (->> opts
              :user/id
-             (insert-artifact artifacts (repos/uri store key) artifact)
+             (insert-artifact artifacts (repos/uri store key) (assoc artifact :key key))
              (repos/execute! executor)
              colls/only!
              :id))))
@@ -177,7 +177,7 @@
     (let [artifact (-> executor
                        (repos/execute! (select-artifact artifacts artifact-id))
                        colls/only!)]
-      (assoc artifact :artifact/data (repos/get store (:artifact/uri artifact)))))
+      (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
   (select-for-project [_ project-id opts]
     (repos/execute! executor (select-for-user* files
                                                projects
