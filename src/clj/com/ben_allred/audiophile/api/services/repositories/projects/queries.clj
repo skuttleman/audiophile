@@ -44,21 +44,3 @@
 (defn ->executor [{:keys [projects user-teams users]}]
   (fn [executor]
     (->ProjectExecutor executor projects user-teams users)))
-
-(defn find-by-project-id
-  ([executor project-id]
-   (find-by-project-id executor project-id nil))
-  ([executor project-id opts]
-   (pp/find-by-project-id executor project-id opts)))
-
-(defn select-for-user
-  ([executor user-id]
-   (select-for-user executor user-id nil))
-  ([executor user-id opts]
-   (pp/select-for-user executor user-id opts)))
-
-(defn insert-project!
-  ([executor project]
-   (insert-project! executor project nil))
-  ([executor project opts]
-   (pp/insert-project! executor project opts)))

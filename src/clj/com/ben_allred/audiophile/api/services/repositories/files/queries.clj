@@ -195,39 +195,3 @@
                      user-teams
                      store
                      #(str "artifacts/" (uuids/random)))))
-
-(defn insert-file!
-  ([this file]
-   (insert-file! this file nil))
-  ([this file opts]
-   (pf/insert-file! this file opts)))
-
-(defn insert-version!
-  ([this version]
-   (insert-version! this version nil))
-  ([this version opts]
-   (pf/insert-version! this version opts)))
-
-(defn insert-artifact!
-  ([this artifact]
-   (insert-artifact! this artifact nil))
-  ([this artifact opts]
-   (pf/insert-artifact! this artifact opts)))
-
-(defn find-by-file-id
-  ([this file-id]
-   (find-by-file-id this file-id nil))
-  ([this file-id opts]
-   (pf/find-by-file-id this file-id opts)))
-
-(defn find-by-artifact-id
-  ([this artifact-id]
-   (find-by-artifact-id this artifact-id nil))
-  ([this artifact-id opts]
-   (pf/find-by-artifact-id this artifact-id opts)))
-
-(defn select-for-project
-  ([this project-id]
-   (select-for-project this project-id nil))
-  ([this project-id opts]
-   (pf/select-for-project this project-id opts)))

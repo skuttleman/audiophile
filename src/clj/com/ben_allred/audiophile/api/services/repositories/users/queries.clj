@@ -20,9 +20,3 @@
 (defn ->executor [{:keys [users user-teams]}]
   (fn [executor]
     (->UserExecutor executor users user-teams)))
-
-(defn find-by-email
-  ([executor email]
-   (find-by-email executor email nil))
-  ([executor email opts]
-   (pu/find-by-email executor email opts)))

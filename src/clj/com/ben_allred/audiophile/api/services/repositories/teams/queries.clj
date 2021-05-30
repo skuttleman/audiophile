@@ -71,27 +71,3 @@
 (defn ->executor [{:keys [teams user-teams users]}]
   (fn [executor]
     (->TeamExecutor executor teams user-teams users)))
-
-(defn find-by-team-id
-  ([executor team-id]
-   (find-by-team-id executor team-id nil))
-  ([executor team-id opts]
-   (pt/find-by-team-id executor team-id opts)))
-
-(defn select-for-user
-  ([executor user-id]
-   (select-for-user executor user-id nil))
-  ([executor user-id opts]
-   (pt/select-for-user executor user-id opts)))
-
-(defn insert-team!
-  ([executor team]
-   (insert-team! executor team nil))
-  ([executor team opts]
-   (pt/insert-team! executor team opts)))
-
-(defn select-team-members
-  ([executor team-id]
-   (select-team-members executor team-id nil))
-  ([executor team-id opts]
-   (pt/select-team-members executor team-id opts)))
