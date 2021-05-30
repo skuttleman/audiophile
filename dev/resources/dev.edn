@@ -1,15 +1,15 @@
 {:duct.profile/base
  #audiophile/merge
-     [#duct/include "duct/api/base.edn"
-      {[:duct/const :resources/migration-path]
-       "db/migrations"}]
+ [#duct/include "duct/api/base.edn"
+  {[:duct/const :resources/migration-path]
+   "db/migrations"}]
 
  :duct.profile/dev
  {[:duct/const :services/s3-client]
-  #ig/ref :com.ben-allred.audiophile.api.dev.handler/s3-client
+  #ig/ref :audiophile.dev/s3-client
 
   [:duct/const :services/oauth]
-  #ig/ref :com.ben-allred.audiophile.api.dev.handler/oauth
+  #ig/ref :audiophile.dev/oauth
 
   [:audiophile.handlers/app :api/handler#api]
   {:middleware [#ig/ref :audiophile.middleware/with-auth
@@ -37,30 +37,30 @@
                 #ig/ref :audiophile.middleware/with-headers]
    :router     #ig/ref :api/router#ui}
 
-  [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#api]
+  [:audiophile.dev/app :api.dev/handler#api]
   {:app #ig/ref :api/handler#api}
 
-  [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#auth]
+  [:audiophile.dev/app :api.dev/handler#auth]
   {:app #ig/ref :api/handler#auth}
 
-  [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#ui]
+  [:audiophile.dev/app :api.dev/handler#ui]
   {:app #ig/ref :api/handler#ui}
 
-  [:audiophile.core/server :http/server#api :duct/daemon]
+  [:audiophile.core/server :duct/daemon :http/server#api]
   {:handler     #ig/ref :api.dev/handler#api
    :server-port #ig/ref :env/server-port#api}
 
-  [:audiophile.core/server :http/server#auth :duct/daemon]
+  [:audiophile.core/server :duct/daemon :http/server#auth]
   {:handler     #ig/ref :api.dev/handler#auth
    :server-port #ig/ref :env/server-port#auth}
 
-  [:audiophile.core/server :http/server#ui :duct/daemon]
+  [:audiophile.core/server :duct/daemon :http/server#ui]
   {:handler     #ig/ref :api.dev/handler#ui
    :server-port #ig/ref :env/server-port#ui}
 
-  :com.ben-allred.audiophile.api.dev.handler/s3-client
+  :audiophile.dev/s3-client
   {}
 
-  :com.ben-allred.audiophile.api.dev.handler/oauth
+  :audiophile.dev/oauth
   {:nav      #ig/ref :services/nav
    :base-url #ig/ref :env/base-url#auth}}}

@@ -49,7 +49,7 @@
 (defn create! [migrator name]
   (pdev/create migrator name))
 
-(defmethod ig/init-key ::migrator [_ {:keys [datasource migrations-res-path]}]
+(defmethod ig/init-key :audiophile.migrations/migrator [_ {:keys [datasource migrations-res-path]}]
   (->Migrator {:store                :database
                :migration-dir        (format "resources/%s/" migrations-res-path)
                :migration-table-name "db_migrations"
@@ -57,8 +57,8 @@
 
 (defn -main [command & [arg :as args]]
   (duct/load-hierarchy)
-  (let [{migrator   ::migrator
-         transactor ::repos/transactor
+  (let [{migrator   :audiophile.migrations/migrator
+         transactor :audiophile.repositories/transactor
          :as        system} (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-migrations"]))]
                               (-> "migrations.edn"
                                   duct/resource
@@ -66,7 +66,7 @@
                                   (duct/prep-config [:duct.profile/base
                                                      :duct.profile/dev
                                                      :duct.profile/migrations])
-                                  (ig/init [::migrator ::repos/transactor])))]
+                                  (ig/init [:audiophile.migrations/migrator :audiophile.repositories/transactor])))]
     (try
       (case command
         "migrate" (migrate! migrator)

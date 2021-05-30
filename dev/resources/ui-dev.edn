@@ -3,9 +3,9 @@
 
  :duct.profile/dev
  {:audiophile.views.login/root
-  ^:promote {:login-form #ig/ref :com.ben-allred.audiophile.ui.dev.core/login-form}
+  ^:promote {:login-form #ig/ref :audiophile.dev/login-form}
 
-  :com.ben-allred.audiophile.ui.dev.core/login-form
+  :audiophile.dev/login-form
   {:login-resource #ig/ref :resources/user-login}
 
   [:audiophile.resources/base :resources/user-login]

@@ -9,7 +9,6 @@
     [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
-    [integrant.core :as ig]
     [test.utils :refer [async] :as tu]
     [test.utils.stubs :as stubs])
   #?(:clj

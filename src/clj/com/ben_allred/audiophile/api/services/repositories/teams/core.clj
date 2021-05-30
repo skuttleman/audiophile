@@ -1,4 +1,5 @@
 (ns com.ben-allred.audiophile.api.services.repositories.teams.core
+  (:refer-clojure :exclude [accessor])
   (:require
     [com.ben-allred.audiophile.api.services.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.services.repositories.core :as repos]

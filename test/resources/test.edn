@@ -1,13 +1,13 @@
 #audiophile/merge
 [#duct/include "dev.edn"
  {:duct.profile/test {[:audiophile.spec/with-spec :api.handler/ws#connect]
-                      ^:promote {:handler #ig/ref :com.ben-allred.audiophile.integration.common.components/ws-handler}
+                      ^:promote {:handler #ig/ref :audiophile.test/ws-handler}
 
                       [:duct/const :services/transactor]
-                      ^:promote #ig/ref :com.ben-allred.audiophile.integration.common.components/transactor
+                      ^:promote #ig/ref :audiophile.test/transactor
 
                       [:duct/const :services/datasource]
-                      ^:promote #ig/ref :com.ben-allred.audiophile.integration.common.components/datasource
+                      ^:promote #ig/ref :audiophile.test/datasource
 
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
@@ -15,20 +15,20 @@
                       :audiophile.services.ws/->handler
                       ^:promote {:heartbeat-int-ms 250}
 
-                      :com.ben-allred.audiophile.integration.common.components/ws-handler
+                      :audiophile.test/ws-handler
                       {:->channel #ig/ref :audiophile.services.ws/->channel
                        :->handler #ig/ref :audiophile.services.ws/->handler
                        :serdes    #ig/ref :config/serdes}
 
-                      :com.ben-allred.audiophile.integration.common.components/transactor
+                      :audiophile.test/transactor
                       {:->executor #ig/ref :audiophile.repositories/->executor
                        :datasource #ig/ref :services/datasource
-                       :migrator   #ig/ref :com.ben-allred.audiophile.api.dev.migrations/migrator
+                       :migrator   #ig/ref :audiophile.migrations/migrator
                        :seed-data  #ig/ref :test/seed-data}
 
-                      :com.ben-allred.audiophile.integration.common.components/datasource
+                      :audiophile.test/datasource
                       {:spec #ig/ref :config/db}
 
-                      :com.ben-allred.audiophile.api.dev.migrations/migrator
-                      {:datasource          #ig/ref :com.ben-allred.audiophile.integration.common.components/datasource
+                      :audiophile.migrations/migrator
+                      {:datasource          #ig/ref :audiophile.test/datasource
                        :migrations-res-path #ig/ref :resources/migration-path}}}]

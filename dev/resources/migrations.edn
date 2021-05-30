@@ -4,7 +4,7 @@
   {:duct.core/project-ns
    :com.ben-allred/audiophile.migrations
 
-   :com.ben-allred.audiophile.api.dev.migrations/migrator
+   :audiophile.migrations/migrator
    {:datasource          #ig/ref :audiophile.repositories/datasource
     :migrations-res-path #ig/ref :resources/migration-path}
 

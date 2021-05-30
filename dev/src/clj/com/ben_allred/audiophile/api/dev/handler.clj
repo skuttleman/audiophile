@@ -9,7 +9,7 @@
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
 
-(defmethod ig/init-key ::s3-client [_ _]
+(defmethod ig/init-key :audiophile.dev/s3-client [_ _]
   (reify
     prepos/IKVStore
     (uri [_ key _]
@@ -28,7 +28,7 @@
                      :Metadata      (:metadata opts)
                      :ContentLength (:content-length opts)})))))
 
-(defmethod ig/init-key ::oauth [_ {:keys [base-url nav]}]
+(defmethod ig/init-key :audiophile.dev/oauth [_ {:keys [base-url nav]}]
   (reify
     pauth/IOAuthProvider
     (redirect-uri [_ {:keys [email]}]
@@ -36,7 +36,7 @@
     (profile [_ opts]
       {:email (:mock-email opts)})))
 
-(defmethod ig/init-key ::app [_ {:keys [app]}]
+(defmethod ig/init-key :audiophile.dev/app [_ {:keys [app]}]
   (fn [request]
     (try (app request)
          (catch Throwable ex

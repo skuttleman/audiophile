@@ -20,7 +20,7 @@
     (javax.sql DataSource)
     (org.projectodd.wunderboss.web.async Channel)))
 
-(defmethod ig/init-key ::ws-handler [_ {:keys [->channel ->handler serdes]}]
+(defmethod ig/init-key :audiophile.test/ws-handler [_ {:keys [->channel ->handler serdes]}]
   (fn [request]
     (let [params (get-in request [:nav/route :query-params])
           serializer (serdes/find-serde! serdes
@@ -64,14 +64,14 @@
                        (ws/on-close handler))
                      (ws/close! channel)))])))
 
-(defmethod ig/init-key ::transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
+(defmethod ig/init-key :audiophile.test/transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
   (mig/migrate! migrator)
   (doto (repos/->Transactor datasource opts ->executor)
     (repos/transact! (fn [executor]
                        (doseq [query seed-data]
                          (repos/execute! executor query))))))
 
-(defmethod ig/init-key ::datasource [_ {:keys [spec]}]
+(defmethod ig/init-key :audiophile.test/datasource [_ {:keys [spec]}]
   (let [datasource (hikari/make-datasource spec)
         db-name (str "test_db_" (string/replace (str (uuids/random)) #"-" ""))]
     (jdbc/execute! datasource [(str "CREATE DATABASE " db-name)])
@@ -91,5 +91,5 @@
         (-transact [_ body-fn opts]
           (pjdbc/-transact ds body-fn opts))))))
 
-(defmethod ig/halt-key! ::datasource [_ datasource]
+(defmethod ig/halt-key! :audiophile.test/datasource [_ datasource]
   (.close datasource))

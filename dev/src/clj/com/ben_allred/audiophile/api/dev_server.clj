@@ -10,6 +10,7 @@
     [nrepl.server :as nrepl]
     [ring.middleware.reload :as rel]
     com.ben-allred.audiophile.api.config.core
+    com.ben-allred.audiophile.api.dev.handler
     com.ben-allred.audiophile.common.config.core))
 
 (defonce system nil)

@@ -9,7 +9,11 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    [test.utils.stubs :as stubs]))
+    [test.utils.stubs :as stubs]
+    com.ben-allred.audiophile.api.config.core
+    com.ben-allred.audiophile.api.dev.handler
+    com.ben-allred.audiophile.common.config.core
+    com.ben-allred.audiophile.integration.common.components))
 
 (def ^:private config-base
   (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-test"]))]

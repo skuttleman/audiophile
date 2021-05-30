@@ -37,7 +37,7 @@
 (def validator
   (f/validator {:email (f/required "email is required")}))
 
-(defmethod ig/init-key ::login-form [_ {:keys [login-resource]}]
+(defmethod ig/init-key :audiophile.dev/login-form [_ {:keys [login-resource]}]
   (fn [_route]
     (let [form (vres/create login-resource (forms.std/create nil validator))]
       (fn [route]
