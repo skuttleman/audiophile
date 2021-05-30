@@ -24,7 +24,7 @@
           [["" :api/project.files]]]]]]]
      ["/teams"
       [["" :api/teams]
-       [["/teams/" #audiophile/uuid-param :team-id] :api/team]]]
+       [["/" #audiophile/uuid-param :team-id] :api/team]]]
      [true :api/not-found]]]
 
    ;; UI

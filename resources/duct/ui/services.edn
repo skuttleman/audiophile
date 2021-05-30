@@ -15,7 +15,7 @@
  [:audiophile.ui.services/base-urls :services.ui/base-urls]
  {:env #ig/ref :services.ui/env}
 
- :audiophile.services.ws/handler
+ :audiophile.services.ws/client
  {:env          #ig/ref :services.ui/env
   :nav          #ig/ref :services/nav
   :reconnect-ms #ig/ref :env/ws-reconnect-ms

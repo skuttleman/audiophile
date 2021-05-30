@@ -33,7 +33,7 @@
         uri/stringify
         (str (nav/path-for nav :ws/connection params)))))
 
-(defn handler [{:keys [env nav reconnect-ms serde store]}]
+(defn client [{:keys [env nav reconnect-ms serde store]}]
   (let [url (ws-uri nav serde (:api-base env))
         {:auth/keys [user]} (ui-store/get-state store)]
     (when user
@@ -50,5 +50,5 @@
             (recur)))
         ws))))
 
-(defn handler#close [ws]
+(defn client#close [ws]
   (some-> ws async/close!))

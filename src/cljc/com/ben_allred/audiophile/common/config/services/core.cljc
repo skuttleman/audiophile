@@ -24,8 +24,8 @@
 (defmethod ig/init-key :audiophile.services/pubsub [_ cfg]
   (pubsub/pubsub cfg))
 
-(defmethod ig/init-key :audiophile.services.ws/handler [_ cfg]
-  (ws/handler cfg))
+(defmethod ig/init-key :audiophile.services.ws/client [_ cfg]
+  (ws/client cfg))
 
-(defmethod ig/halt-key! :audiophile.services.ws/handler [_ ws-handler]
-  (ws/handler#close ws-handler))
+(defmethod ig/halt-key! :audiophile.services.ws/client [_ ws-handler]
+  (ws/client#close ws-handler))

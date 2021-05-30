@@ -1,8 +1,8 @@
-{[:duct/const :resources/project.files]
+{[:duct/const :resources/file]
  #ig/ref [:audiophile.resources/base :file/one]
 
  :audiophile.views.files/one
- {:*file  #ig/ref :resources/project.files
+ {:*file  #ig/ref :resources/file
   :player #ig/ref :audiophile.views.components/audio-player}
 
  [:audiophile.resources/base :file/one]
