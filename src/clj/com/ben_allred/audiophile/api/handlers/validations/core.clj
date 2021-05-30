@@ -6,7 +6,6 @@
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]
     [spec-tools.core :as st]))
 
 (defmacro ^:private spec-check! [spec data form]
@@ -36,12 +35,12 @@
 (defmethod validate! :api.ws/connect [spec data]
   (spec-check! spec data (st/conform! spec data)))
 
-(defmethod ig/init-key ::with-spec [_ {:keys [->response handler spec]}]
+(defn with-spec [{:keys [->response handler spec]}]
   (let [->response (or ->response data-responder)]
     (fns/=>> (validate! spec) handler ->response)))
 
-(defmethod ig/init-key ::ok [_ _]
+(defn ok [_]
   (partial into [::http/ok]))
 
-(defmethod ig/init-key ::identity [_ _]
+(defn id [_]
   identity)

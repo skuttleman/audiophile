@@ -4,7 +4,6 @@
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]
     com.ben-allred.audiophile.ui.config)
   (:import
     (java.net InetAddress)))
@@ -24,6 +23,6 @@
              {}
              files))
 
-(defmethod ig/init-key ::base-url [_ {:keys [base-url server-port]}]
+(defn base-url [{:keys [base-url server-port]}]
   (or base-url
       (format "http://%s:%d" (.getCanonicalHostName (InetAddress/getLocalHost)) server-port)))

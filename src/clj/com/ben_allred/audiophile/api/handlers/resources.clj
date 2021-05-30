@@ -6,10 +6,9 @@
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.maps :as maps]))
 
-(defmethod ig/init-key ::assets [_ _]
+(defn assets [_]
   (fn [{:keys [uri] :as request}]
     (some-> request
             (ring/resource-request "public")
@@ -19,10 +18,10 @@
                         (string/ends-with? uri ".css") "text/css"
                         :else "text/plain")))))
 
-(defmethod ig/init-key ::health [_ _]
+(defn health [_]
   (constantly [::http/ok {:a :ok}]))
 
-(defmethod ig/init-key ::ui [_ {:keys [api-base app auth-base store]}]
+(defn ui [{:keys [api-base app auth-base store]}]
   (fn [{user :auth/user route :nav/route}]
     [::http/ok
      (templates/html [app (maps/assoc-maybe (ui-store/get-state store)

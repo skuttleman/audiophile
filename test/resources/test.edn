@@ -1,6 +1,6 @@
 #audiophile/merge
 [#duct/include "dev.edn"
- {:duct.profile/test {[:com.ben-allred.audiophile.api.handlers.validations.core/with-spec :api.handler/ws#connect]
+ {:duct.profile/test {[:audiophile.spec/with-spec :api.handler/ws#connect]
                       ^:promote {:handler #ig/ref :com.ben-allred.audiophile.integration.common.components/ws-handler}
 
                       [:duct/const :services/transactor]

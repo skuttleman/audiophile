@@ -11,30 +11,30 @@
   [:duct/const :services/oauth]
   #ig/ref :com.ben-allred.audiophile.api.dev.handler/oauth
 
-  [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#api]
-  {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-cors
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+  [:audiophile.handlers/app :api/handler#api]
+  {:middleware [#ig/ref :audiophile.middleware/with-auth
+                #ig/ref :audiophile.middleware/vector-response
+                #ig/ref :audiophile.middleware/with-serde
+                #ig/ref :audiophile.middleware/with-logging
+                #ig/ref :audiophile.middleware/with-route
+                #ig/ref :audiophile.middleware/with-cors
+                #ig/ref :audiophile.middleware/with-headers]
    :router     #ig/ref :api/router#api}
 
-  [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#auth]
-  {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-cors
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+  [:audiophile.handlers/app :api/handler#auth]
+  {:middleware [#ig/ref :audiophile.middleware/with-auth
+                #ig/ref :audiophile.middleware/vector-response
+                #ig/ref :audiophile.middleware/with-serde
+                #ig/ref :audiophile.middleware/with-route
+                #ig/ref :audiophile.middleware/with-cors
+                #ig/ref :audiophile.middleware/with-headers]
    :router     #ig/ref :api/router#auth}
 
-  [:com.ben-allred.audiophile.api.handlers.core/app :api/handler#ui]
-  {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
-                #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+  [:audiophile.handlers/app :api/handler#ui]
+  {:middleware [#ig/ref :audiophile.middleware/with-auth
+                #ig/ref :audiophile.middleware/vector-response
+                #ig/ref :audiophile.middleware/with-route
+                #ig/ref :audiophile.middleware/with-headers]
    :router     #ig/ref :api/router#ui}
 
   [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#api]
@@ -46,15 +46,15 @@
   [:com.ben-allred.audiophile.api.dev.handler/app :api.dev/handler#ui]
   {:app #ig/ref :api/handler#ui}
 
-  [:com.ben-allred.audiophile.api.core/server :http/server#api :duct/daemon]
+  [:audiophile.core/server :http/server#api :duct/daemon]
   {:handler     #ig/ref :api.dev/handler#api
    :server-port #ig/ref :env/server-port#api}
 
-  [:com.ben-allred.audiophile.api.core/server :http/server#auth :duct/daemon]
+  [:audiophile.core/server :http/server#auth :duct/daemon]
   {:handler     #ig/ref :api.dev/handler#auth
    :server-port #ig/ref :env/server-port#auth}
 
-  [:com.ben-allred.audiophile.api.core/server :http/server#ui :duct/daemon]
+  [:audiophile.core/server :http/server#ui :duct/daemon]
   {:handler     #ig/ref :api.dev/handler#ui
    :server-port #ig/ref :env/server-port#ui}
 

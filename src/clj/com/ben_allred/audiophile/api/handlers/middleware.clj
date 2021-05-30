@@ -7,8 +7,7 @@
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [integrant.core :as ig])
+    [com.ben-allred.audiophile.common.utils.maps :as maps])
   (:import
     (java.io File InputStream)
     (org.projectodd.wunderboss.web.async Channel)))
@@ -30,42 +29,6 @@
   (and (some? resp)
        (empty? (filter #(instance? % resp)
                        [File InputStream Channel String]))))
-
-(defmethod ig/init-key ::vector-response [_ _]
-  (fn [handler]
-    (fn [request]
-      (-> request handler ->response))))
-
-(defmethod ig/init-key ::serde [_ serdes]
-  (fn [handler]
-    (fn [request]
-      (let [request-serde (serdes/find-serde serdes
-                                             (get-in request [:headers :content-type]))
-            response (-> request
-                         (cond-> request-serde (maps/update-maybe :body (partial serdes/deserialize request-serde)))
-                         handler)
-            response-serde (serdes/find-serde serdes
-                                              (or (get-in response [:headers :content-type])
-                                                  (get-in request [:headers :accept])
-                                                  "unknown/mime-type")
-                                              request-serde)]
-        (cond-> response
-          (serializable? (:body response))
-          (-> (update :body (if response-serde
-                              (partial serdes/serialize response-serde)
-                              str))
-              (assoc-in [:headers :content-type] (if response-serde
-                                                   (serdes/mime-type response-serde)
-                                                   "text/plain"))))))))
-
-(defmethod ig/init-key ::with-route [_ {:keys [nav]}]
-  (fn [handler]
-    (fn [{:keys [query-string uri] :as request}]
-      (-> request
-          (assoc :nav/route (nav/match-route nav
-                                             (cond-> uri
-                                               query-string (str "?" query-string))))
-          handler))))
 
 (defn ^:private log-color [elapsed]
   (cond
@@ -91,7 +54,43 @@
             time
             (:status response))))
 
-(defmethod ig/init-key ::with-logging [_ _]
+(defn vector-response [_]
+  (fn [handler]
+    (fn [request]
+      (-> request handler ->response))))
+
+(defn with-serde [serdes]
+  (fn [handler]
+    (fn [request]
+      (let [request-serde (serdes/find-serde serdes
+                                             (get-in request [:headers :content-type]))
+            response (-> request
+                         (cond-> request-serde (maps/update-maybe :body (partial serdes/deserialize request-serde)))
+                         handler)
+            response-serde (serdes/find-serde serdes
+                                              (or (get-in response [:headers :content-type])
+                                                  (get-in request [:headers :accept])
+                                                  "unknown/mime-type")
+                                              request-serde)]
+        (cond-> response
+          (serializable? (:body response))
+          (-> (update :body (if response-serde
+                              (partial serdes/serialize response-serde)
+                              str))
+              (assoc-in [:headers :content-type] (if response-serde
+                                                   (serdes/mime-type response-serde)
+                                                   "text/plain"))))))))
+
+(defn with-route [{:keys [nav]}]
+  (fn [handler]
+    (fn [{:keys [query-string uri] :as request}]
+      (-> request
+          (assoc :nav/route (nav/match-route nav
+                                             (cond-> uri
+                                               query-string (str "?" query-string))))
+          handler))))
+
+(defn with-logging [_]
   (fn [handler]
     (fn [request]
       (let [start (System/nanoTime)
@@ -104,7 +103,7 @@
           (log/info msg))
         response))))
 
-(defmethod ig/init-key ::with-auth [_ {:keys [jwt-serde]}]
+(defn with-auth [{:keys [jwt-serde]}]
   (fn [handler]
     (fn [request]
       (let [jwt (get-in request [:cookies "auth-token" :value])
@@ -113,7 +112,7 @@
             (maps/assoc-maybe :auth/user user)
             handler)))))
 
-(defmethod ig/init-key ::with-headers [_ _]
+(defn with-headers [_]
   (fn [handler]
     (fn [request]
       (-> request
@@ -121,7 +120,7 @@
           handler
           (maps/update-maybe :headers (partial maps/map-keys name))))))
 
-(defmethod ig/init-key ::with-cors [_ _]
+(defn with-cors [_]
   (fn [handler]
     (fn [{:keys [headers] :as request}]
       (let [origin (:origin headers)

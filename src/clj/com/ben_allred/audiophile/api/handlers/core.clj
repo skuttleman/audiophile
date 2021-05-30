@@ -5,10 +5,10 @@
     [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.utils.fns :as fns]
     [com.ben-allred.audiophile.common.utils.http :as http]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [integrant.core :as ig]))
+    [com.ben-allred.audiophile.common.utils.logger :as log]))
 
 (defmulti ex->response (comp :interactor/reason ex-data))
+
 (defmethod ex->response :default
   [ex]
   (log/error ex "An unknown error occurred")
@@ -36,13 +36,13 @@
          (catch Throwable ex
            (ex->response ex)))))
 
-(defmethod ig/init-key ::router [_ route-table]
+(defn router [route-table]
   (let [multi (fns/->multi-fn route-dispatch)]
     (doseq [[route handler] (assoc route-table :default (constantly [::http/not-found]))]
       (.addMethod multi route (handler->method route handler)))
     (partial multi route-table)))
 
-(defmethod ig/init-key ::app [_ {:keys [middleware router]}]
+(defn app [{:keys [middleware router]}]
   (reduce (fn [handler mw]
             (mw handler))
           router

@@ -3,14 +3,14 @@
                      {:handler     #ig/ref :api/handler
                       :server-port #ig/ref :env/server-port#api}
 
-                     [:com.ben-allred.audiophile.api.handlers.core/app :api/handler]
-                     {:middleware [#ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-auth
-                                   #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/vector-response
-                                   #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/serde
-                                   #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-logging
-                                   #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-route
-                                   #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-cors
-                                   #ig/ref :com.ben-allred.audiophile.api.handlers.middleware/with-headers]
+                     [:audiophile.handlers/app :api/handler]
+                     {:middleware [#ig/ref :audiophile.middleware/with-auth
+                                   #ig/ref :audiophile.middleware/vector-response
+                                   #ig/ref :audiophile.middleware/with-serde
+                                   #ig/ref :audiophile.middleware/with-logging
+                                   #ig/ref :audiophile.middleware/with-route
+                                   #ig/ref :audiophile.middleware/with-cors
+                                   #ig/ref :audiophile.middleware/with-headers]
                       :router     #ig/ref :api.prod/router}
 
                      [:duct.custom/merge :routes/table]
@@ -18,5 +18,5 @@
                       #ig/ref :routes/table#auth
                       #ig/ref :routes/table#ui]
 
-                     [:com.ben-allred.audiophile.api.handlers.core/router :api.prod/router]
+                     [:audiophile.handlers/router :api.prod/router]
                      #ig/ref :routes/table}}
