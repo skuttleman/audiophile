@@ -7,14 +7,14 @@
      (:import
        (java.net URLEncoder URLDecoder))))
 
-(defn url-encode
-  "encode a parameter to be used in a url"
+(defn ^:private url-encode
+  "Encode a parameter to be used in a url"
   [arg]
   #?(:clj  (URLEncoder/encode ^String arg "UTF-8")
      :cljs (js/encodeURIComponent (str arg))))
 
-(defn url-decode
-  "decode a parameter used in a url"
+(defn ^:private url-decode
+  "Decode a parameter used in a url"
   [arg]
   (-> arg
       str
@@ -23,39 +23,45 @@
          :cljs js/decodeURIComponent)))
 
 (defn join-query
-  "join a map into a query-string representation"
+  "Join a map into a query-string representation"
   [arg]
   (when (seq arg)
-    (string/join \& (map (fn [[k v]]
-                           (if (vector? v)
-                             (join-query (map (fn [v] [k v]) v))
-                             (when (some? v)
-                               (apply str
-                                      (url-encode (name k))
-                                      (when-not (boolean? v)
-                                        [\=
-                                         (url-encode (name v))])))))
-                         arg))))
+    (string/join \& (keep (fn [[k v]]
+                            (if (vector? v)
+                              (join-query (map (fn [v] [k v]) v))
+                              (when v
+                                (apply str
+                                       (url-encode (name k))
+                                       (when-not (boolean? v)
+                                         [\=
+                                          (url-encode (str (cond-> v (keyword? v) name)))])))))
+                          arg))))
 
 (defn split-query
-  "split a query-string into a map representation"
+  "Split a query-string into a map representation"
   [query-string]
   (when (seq query-string)
-    (into {}
-          (map (fn [pair]
-                 (let [[k v] (string/split pair #"=")]
-                   [(keyword k) (if (nil? v) true (url-decode v))])))
-          (string/split query-string #"&"))))
+    (->> (string/split query-string #"&")
+         (map (fn [pair]
+                (let [[k v] (string/split pair #"=")]
+                  [(keyword k) (if (nil? v) true (url-decode v))])))
+         (reduce (fn [m [k v]]
+                   (if-some [v' (get m k)]
+                     (if (vector? v')
+                       (update m k conj v)
+                       (assoc m k [v' v]))
+                     (assoc m k v)))
+                 {}))))
 
 (defn parse
-  "parse a uri string into a record"
+  "Parse a uri string into a record"
   [uri]
   (-> uri
       uri*/parse
       (maps/update-maybe :query split-query)))
 
 (defn stringify
-  "convert a uri record into a string"
+  "Convert a uri record into a string"
   [uri]
   (-> uri
       (maps/update-maybe :query join-query)

@@ -22,13 +22,6 @@
 (def ^{:arglists '([handler] [handler options])} wrap-multipart-params
   ring.multi/wrap-multipart-params)
 
-(defn decode-cookies
-  "Test utility for decoding response cookies"
-  [response]
-  (->> (get-in response [:headers "Set-Cookie"])
-       (map #(:cookies (ring.cook/cookies-request {:headers {"cookie" %}})))
-       (reduce merge {})))
-
 (defn ->cookie
   "Creates a ring-style cookie map suitable to be encoded by ring"
   ([k v]
@@ -37,5 +30,6 @@
    {k (maps/assoc-defaults params :value v :http-only true :path "/")}))
 
 (defn error
+  "Formats an error msg as an error response map"
   [status msg]
   [status {:errors [{:message msg}]}])

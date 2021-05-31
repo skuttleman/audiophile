@@ -2,13 +2,13 @@
   (:require
     [clojure.string :as string]
     [clojure.test :refer [are deftest is testing use-fixtures]]
-    [com.ben-allred.audiophile.api.utils.ring :as ring]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [com.ben-allred.audiophile.common.utils.uri :as uri]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
+    [test.utils :as tu]
     [test.utils.stubs :as stubs]))
 
 (deftest auth-details-test
@@ -46,7 +46,7 @@
                              handler)
                 base-url (int/component system :env/base-url#ui)
                 jwt-serde (int/component system :serdes/jwt)
-                cookies (ring/decode-cookies response)]
+                cookies (tu/decode-cookies response)]
             (testing "redirects with token cookie"
               (is (http/redirect? response))
               (is (= (str base-url "/")
@@ -54,7 +54,6 @@
               (is (= user
                      (-> jwt-serde
                          (serdes/deserialize (get-in cookies ["auth-token" :value]))
-                         :data
                          (dissoc :user/created-at)))))))
 
         (testing "when the auth provider interactions fail"
@@ -66,7 +65,7 @@
                                (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
                                handler)
                   base-url (int/component system :env/base-url#ui)
-                  cookies (ring/decode-cookies response)
+                  cookies (tu/decode-cookies response)
                   location (get-in response [:headers "Location"])]
               (is (http/redirect? response))
               (is (string/starts-with? location base-url))

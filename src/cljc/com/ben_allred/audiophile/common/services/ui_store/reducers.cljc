@@ -7,14 +7,14 @@
   ([] nil)
   ([state _] state))
 
-(defn ^:private route
+(defn route
   ([] nil)
   ([state [type route]]
    (case type
      :router/updated route
      state)))
 
-(defn ^:private toasts
+(defn toasts
   ([] {})
   ([state [type {:keys [id level body]}]]
    (case type
@@ -24,7 +24,7 @@
      :toasts/remove! (dissoc state id)
      state)))
 
-(defn ^:private banners
+(defn banners
   ([] {})
   ([state [type {:keys [id level body]}]]
    (case type
@@ -32,7 +32,7 @@
      :banners/remove! (dissoc state id)
      state)))
 
-(defn ^:private modals
+(defn modals
   ([] {})
   ([state [type id frame]]
    (case type

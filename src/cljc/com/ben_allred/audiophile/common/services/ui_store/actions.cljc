@@ -23,16 +23,16 @@
    (toast! level body 6000 1000))
   ([level body linger-ms lag-ms]
    (fn [store]
-     (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))]
-       (ui-store/dispatch! store
-                           [:toasts/add! {:id    id
-                                          :level level
-                                          :body  (delay
-                                                   (async/go
-                                                     (ui-store/dispatch! store [:toasts/display! {:id id}])
-                                                     (async/<! (async/timeout linger-ms))
-                                                     (ui-store/dispatch! store (remove-toast! id lag-ms)))
-                                                   body)}])))))
+     (let [id (.getTime #?(:cljs (js/Date.) :default (Date.)))
+           body (delay
+                  (async/go
+                    (ui-store/dispatch! store [:toasts/display! {:id id}])
+                    (async/<! (async/timeout linger-ms))
+                    (ui-store/dispatch! store (remove-toast! id lag-ms)))
+                  body)]
+       (ui-store/dispatch! store [:toasts/add! {:id    id
+                                                :level level
+                                                :body  body}])))))
 
 (defn remove-banner! [id]
   [:banners/remove! {:id id}])

@@ -24,10 +24,10 @@
                  :decode-key-fn keyword})
      :default nil))
 
-(defn edn#serialize [value]
+(defn ^:private edn#serialize [value]
   (pr-str value))
 
-(defn edn#deserialize
+(defn ^:private edn#deserialize
   ([value]
    (edn#deserialize value nil))
   ([value opts]
@@ -50,7 +50,7 @@
     (mime-type [_]
       "application/edn")))
 
-(defn transit#serialize [value]
+(defn ^:private transit#serialize [value]
   #?(:clj  (let [out (ByteArrayOutputStream. 4096)]
              (-> out
                  (trans/writer :json)
@@ -60,7 +60,7 @@
                trans/writer
                (trans/write value))))
 
-(defn transit#deserialize [value]
+(defn ^:private transit#deserialize [value]
   (u/silent!
     #?(:clj  (-> value
                  (cond->
@@ -84,13 +84,13 @@
     (mime-type [_]
       "application/json+transit")))
 
-(defn json#serialize [value]
+(defn ^:private json#serialize [value]
   #?(:clj  (jsonista/write-value-as-string value object-mapper)
-     :cljs (js/JSON.stringify value)))
+     :cljs (js/JSON.stringify (clj->js value))))
 
-(defn json#deserialize [value]
+(defn ^:private json#deserialize [value]
   #?(:clj (jsonista/read-value value object-mapper)
-     :cljs (js/JSON.parse value)))
+     :cljs (js->clj (js/JSON.parse value) :keywordize-keys true)))
 
 (defn json [_]
   (reify
@@ -136,7 +136,8 @@
           (u/silent!
             (some-> token
                     (jwt*/unsign secret)
-                    (update :data (partial pserdes/deserialize data-serde) opts)))))))
+                    :data
+                    (as-> $ (pserdes/deserialize data-serde $ opts))))))))
 
 (defn serialize
   ([serde value]

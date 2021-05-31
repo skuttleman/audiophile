@@ -3,6 +3,7 @@
      (:require-macros
        test.utils))
   (:require
+    #?(:clj [ring.middleware.cookies :as ring.cook])
     [clojure.core.async :as async]
     [com.ben-allred.vow.core :as v]))
 
@@ -51,5 +52,18 @@
     `(async/<! (<!ms (prom->ch ~prom)))
     `(<!!ms (prom->ch ~prom))))
 
+(defmacro <ch! [ch]
+  (if (:ns &env)
+    `(async/<! (<!ms ~ch))
+    `(<!!ms ~ch)))
+
 (defn op-set [[op & args]]
   [op (set args)])
+
+#?(:clj
+   (defn decode-cookies
+     "Test utility for decoding response cookies"
+     [response]
+     (->> (get-in response [:headers "Set-Cookie"])
+          (map #(:cookies (ring.cook/cookies-request {:headers {"cookie" %}})))
+          (reduce merge {}))))

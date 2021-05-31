@@ -107,7 +107,7 @@
   (fn [handler]
     (fn [request]
       (let [jwt (get-in request [:cookies "auth-token" :value])
-            user (:data (serdes/deserialize jwt-serde jwt))]
+            user (serdes/deserialize jwt-serde jwt)]
         (-> request
             (maps/assoc-maybe :auth/user user)
             handler)))))
