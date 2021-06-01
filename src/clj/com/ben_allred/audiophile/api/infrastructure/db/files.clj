@@ -4,9 +4,9 @@
     [com.ben-allred.audiophile.api.app.repositories.files.protocols :as pf]
     [com.ben-allred.audiophile.api.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.api.infrastructure.db.models.sql :as sql]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]

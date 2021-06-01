@@ -6,8 +6,8 @@
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.api.app.repositories.files.core :as rfiles]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [test.utils :as tu]
     [test.utils.stubs :as stubs]
     [test.utils.repositories :as trepos]))

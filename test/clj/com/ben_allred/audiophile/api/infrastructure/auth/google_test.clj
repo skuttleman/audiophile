@@ -4,8 +4,8 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.app.protocols :as papp]
     [com.ben-allred.audiophile.api.infrastructure.auth.google :as goog]
-    [com.ben-allred.audiophile.common.services.resources.protocols :as pres]
-    [com.ben-allred.audiophile.common.utils.uri :as uri]
+    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.vow.core :as v]
     [test.utils.stubs :as stubs]))
 

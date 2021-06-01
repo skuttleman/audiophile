@@ -2,13 +2,13 @@
   (:gen-class)
   (:require
     [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
-    [com.ben-allred.audiophile.common.utils.duct :as uduct]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
     com.ben-allred.audiophile.api.infrastructure.system.core
-    com.ben-allred.audiophile.common.config.core))
+    com.ben-allred.audiophile.common.infrastructure.system.core))
 
 (defn -main [& _]
   (duct/load-hierarchy)

@@ -2,7 +2,7 @@
   (:require
     [com.ben-allred.audiophile.api.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [hikari-cp.core :as hikari]
     [next.jdbc :as jdbc]
     [next.jdbc.result-set :as result-set])

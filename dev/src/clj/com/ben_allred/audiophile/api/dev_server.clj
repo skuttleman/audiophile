@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.api.dev-server
   (:require
     [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.duct :as uduct]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
@@ -11,7 +11,7 @@
     [ring.middleware.reload :as rel]
     com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
-    com.ben-allred.audiophile.common.config.core))
+    com.ben-allred.audiophile.common.infrastructure.system.core))
 
 (defonce system nil)
 
@@ -33,8 +33,8 @@
       (require 'com.ben-allred.audiophile.api.app.repositories.teams.core :reload)
       (require 'com.ben-allred.audiophile.api.app.repositories.users.core :reload)
       (require 'com.ben-allred.audiophile.api.infrastructure.resources.s3 :reload)
-      (require 'com.ben-allred.audiophile.common.services.navigation.core :reload)
-      (require 'com.ben-allred.audiophile.common.services.serdes.core :reload))))
+      (require 'com.ben-allred.audiophile.common.app.navigation.core :reload)
+      (require 'com.ben-allred.audiophile.common.core.serdes.core :reload))))
 
 (defn reset-sys!
   ([]

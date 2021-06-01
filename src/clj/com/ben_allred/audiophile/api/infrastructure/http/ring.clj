@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.infrastructure.http.ring
   (:require
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [ring.middleware.cookies :as ring.cook]
     [ring.middleware.multipart-params :as ring.multi]
     [ring.middleware.resource :as ring.res]

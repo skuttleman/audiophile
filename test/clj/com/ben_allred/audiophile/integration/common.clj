@@ -4,15 +4,15 @@
     [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.utils.duct :as uduct]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [test.utils.stubs :as stubs]
     com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
-    com.ben-allred.audiophile.common.config.core
+    com.ben-allred.audiophile.common.infrastructure.system.core
     com.ben-allred.audiophile.integration.common.components))
 
 (def ^:private config-base

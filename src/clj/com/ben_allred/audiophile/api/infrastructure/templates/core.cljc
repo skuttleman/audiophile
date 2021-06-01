@@ -2,9 +2,9 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.infrastructure.templates.html :as html]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps])
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps])
   (:import
     (java.util Map$Entry)))
 

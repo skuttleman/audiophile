@@ -4,8 +4,8 @@
     [cognitect.aws.client.api :as aws]
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (deftype S3Client [client bucket invoke]
   prepos/IKVStore

@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.app.repositories.teams.protocols :as pt]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
   (when-let [team (pt/find-by-team-id executor team-id opts)]

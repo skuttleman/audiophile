@@ -71,7 +71,8 @@
  {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
   :resource   #ig/ref [:audiophile.resources/base :projects/create]
   :store      #ig/ref :services/store
-  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]}
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :toaster    #ig/ref :audiophile.resources/toast-fn}
 
  [:audiophile.resources/redirect :projects/create]
  {:resource #ig/ref [:audiophile.resources/toaster :projects/create]

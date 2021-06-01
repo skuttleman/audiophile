@@ -3,7 +3,7 @@
     [clojure.set :as set]
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.infrastructure.db.core :as db]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [next.jdbc.result-set :as result-set])
   (:import
     (java.sql ResultSet ResultSetMetaData)))

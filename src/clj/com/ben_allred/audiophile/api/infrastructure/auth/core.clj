@@ -4,10 +4,10 @@
     [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.app.protocols :as papp]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
-    [com.ben-allred.audiophile.common.services.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.http :as http]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmacro ^:private safely! [ctx & body]
   `(try [~@body]

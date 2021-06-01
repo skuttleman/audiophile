@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.api.app.repositories.projects.protocols :as pp]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]))
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]))
 
 (defn ^:private has-team-clause [user-teams user-id]
   [:exists (-> user-teams

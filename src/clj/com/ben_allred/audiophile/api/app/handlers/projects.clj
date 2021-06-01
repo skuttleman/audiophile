@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.app.handlers.projects
   (:require
     [com.ben-allred.audiophile.api.app.interactors.core :as int]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn fetch-all [{:keys [interactor]}]
   (fn [data]

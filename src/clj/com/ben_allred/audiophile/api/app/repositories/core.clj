@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [get])
   (:require
     [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn execute!
   ([executor query]

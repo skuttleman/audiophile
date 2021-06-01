@@ -3,10 +3,10 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.infrastructure.templates.core :as templates]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
-    [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
-    [com.ben-allred.audiophile.common.utils.http :as http]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.maps :as maps]))
+    [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defn assets [_]
   (fn [{:keys [uri] :as request}]

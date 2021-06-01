@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.app.handlers.files
   (:require
     [com.ben-allred.audiophile.api.app.interactors.core :as int]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn upload [{:keys [interactor]}]
   (fn [data]

@@ -2,7 +2,7 @@
   (:require
     [clojure.spec.alpha :as s]
     [com.ben-allred.audiophile.api.domain.validations.specs :as specs]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [spec-tools.core :as st]))
 
 (defmacro ^:private spec-check! [spec data form]

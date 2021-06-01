@@ -3,10 +3,10 @@
      (:require-macros
        com.ben-allred.audiophile.ui.infrastructure.system))
   (:require
-    #?@(:clj [[com.ben-allred.audiophile.common.utils.duct :as uduct]
+    #?@(:clj [[com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
               [duct.core :as duct]])
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.stubs.dom :as dom]
     [integrant.core :as ig]))
 
 (defmacro load-config [file profiles]

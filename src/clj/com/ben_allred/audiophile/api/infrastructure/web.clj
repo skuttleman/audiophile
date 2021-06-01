@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.infrastructure.web
   (:require
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [immutant.web :as web*]))
 
 (defn server [{:keys [handler server-port]}]

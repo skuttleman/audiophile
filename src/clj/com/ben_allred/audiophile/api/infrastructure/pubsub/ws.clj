@@ -2,10 +2,10 @@
   (:require
     [clojure.core.async :as async]
     [com.ben-allred.audiophile.api.infrastructure.pubsub.protocols :as pws]
-    [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [immutant.web.async :as web.async]))
 
 (defmulti ^:private handle-msg (fn [_ _ event]

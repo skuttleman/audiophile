@@ -4,8 +4,8 @@
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.api.app.repositories.teams.protocols :as pt]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private opts* [model]
   {:model-fn (crepos/->model-fn model)})

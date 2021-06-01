@@ -2,8 +2,8 @@
   (:require
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ->model-fn [model]
   (fn [[k v]]

@@ -4,8 +4,8 @@
     [com.ben-allred.audiophile.api.app.interactors.core :as int]
     [com.ben-allred.audiophile.api.app.repositories.users.core :as rusers]
     [com.ben-allred.audiophile.api.infrastructure.db.users :as db.users]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [test.utils.repositories :as trepos]
     [test.utils.stubs :as stubs]
     [test.utils :as tu]))

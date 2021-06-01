@@ -2,12 +2,16 @@
  #ig/ref :audiophile.services.nav/nav
 
  :audiophile.services.nav/nav
- {:router    #ig/ref :audiophile.services.nav/router
-  :store     #ig/ref :services/store}
+ {:router  #ig/ref :audiophile.services.nav/router
+  :tracker #ig/ref :audiophile.services.nav/tracker}
 
  :audiophile.services.nav/router
  {:base-urls #ig/ref :services.ui/base-urls
   :routes    #ig/ref :nav/routes}
+
+ :audiophile.services.nav/tracker
+ {:nav   #ig/ref :nav/routes
+  :store #ig/ref :services/store}
 
  [:audiophile.ui.services/env :services.ui/env]
  {:edn #ig/ref :serdes/edn}

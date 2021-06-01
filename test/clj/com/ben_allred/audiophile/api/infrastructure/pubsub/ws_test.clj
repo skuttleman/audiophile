@@ -3,9 +3,9 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.api.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.api.infrastructure.pubsub.protocols :as pws]
-    [com.ben-allred.audiophile.common.services.pubsub.core :as pubsub]
-    [com.ben-allred.audiophile.common.services.serdes.protocols :as pserdes]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [test.utils.stubs :as stubs]))
 
 (deftest ->handler-test

@@ -3,7 +3,7 @@
      (:require-macros
        test.utils.stubs))
   (:require
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [test.utils.protocols :as pu])
   #?(:clj
      (:import

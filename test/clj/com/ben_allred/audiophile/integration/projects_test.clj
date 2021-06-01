@@ -1,10 +1,10 @@
 (ns ^:integration com.ben-allred.audiophile.integration.projects-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.http :as http]
-    [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.common.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
     [test.utils.assertions :as assert]))

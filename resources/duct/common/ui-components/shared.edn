@@ -19,6 +19,9 @@
  [:audiophile.resources.toaster/result-fn :toaster/error]
  {:msg "An error occurred."}
 
+ :audiophile.resources/toast-fn
+ {:store #ig/ref :services/store}
+
  :audiophile.resource.validated/opts->request
  {}
 

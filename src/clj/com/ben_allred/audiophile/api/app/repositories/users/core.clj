@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.app.repositories.users.protocols :as pu]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (deftype UserAccessor [repo]
   pint/IUserAccessor

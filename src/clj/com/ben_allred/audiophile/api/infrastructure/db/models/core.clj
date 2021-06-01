@@ -3,9 +3,9 @@
     [camel-snake-kebab.core :as csk]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.infrastructure.db.models.sql :as sql]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.utils.fns :as fns]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.fns :as fns]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn models [{:keys [tx]}]
   (reduce (fn [models row]

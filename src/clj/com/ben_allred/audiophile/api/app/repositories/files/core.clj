@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.app.repositories.files.protocols :as pf]
-    [com.ben-allred.audiophile.common.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
   (let [artifact-id (pf/insert-artifact! executor artifact opts)]

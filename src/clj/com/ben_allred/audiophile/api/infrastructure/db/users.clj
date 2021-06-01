@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.api.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.api.app.repositories.users.protocols :as pu]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
-    [com.ben-allred.audiophile.common.utils.colls :as colls]))
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]))
 
 (defn ^:private select-by [model clause]
   (-> model

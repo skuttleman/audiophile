@@ -43,7 +43,8 @@
  {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
   :resource   #ig/ref [:audiophile.resources/base :teams/create]
   :store      #ig/ref :services/store
-  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]}
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :toaster    #ig/ref :audiophile.resources/toast-fn}
 
  [:audiophile.resources/redirect :teams/create]
  {:resource #ig/ref [:audiophile.resources/toaster :teams/create]

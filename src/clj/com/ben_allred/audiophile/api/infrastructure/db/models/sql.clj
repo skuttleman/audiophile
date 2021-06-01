@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.infrastructure.db.models.sql
   (:refer-clojure :exclude [cast count format max])
   (:require
-    [com.ben-allred.audiophile.common.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [honeysql.core :as sql*]
     [honeysql.types :as ht]
     honeysql-postgres.format
