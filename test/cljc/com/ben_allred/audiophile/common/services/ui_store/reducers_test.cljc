@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.services.ui-store.reducers-test
+(ns ^:unit com.ben-allred.audiophile.common.services.ui-store.reducers-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.services.ui-store.reducers :as reducers]))

@@ -2,9 +2,8 @@
   (:require
     [clojure.java.io :as io]
     [clojure.java.shell :as sh]
-    [clojure.string :as string]
-    [com.ben-allred.audiophile.api.services.auth.protocols :as pauth]
-    [com.ben-allred.audiophile.api.services.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.api.app.protocols :as papp]
+    [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.services.navigation.core :as nav]
     [com.ben-allred.audiophile.common.utils.logger :as log]
     [integrant.core :as ig]))
@@ -29,7 +28,7 @@
 
 (defmethod ig/init-key :audiophile.dev/oauth [_ {:keys [base-url nav]}]
   (reify
-    pauth/IOAuthProvider
+    papp/IOAuthProvider
     (redirect-uri [_ {:keys [email]}]
       (str base-url (nav/path-for nav :auth/callback {:query-params {:mock-email email}})))
     (profile [_ opts]

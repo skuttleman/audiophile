@@ -4,9 +4,10 @@
     [clojure.core.async.impl.protocols :as async.protocols]
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.dev.migrations :as mig]
-    [com.ben-allred.audiophile.api.services.pubsub.protocols :as pws]
-    [com.ben-allred.audiophile.api.services.pubsub.ws :as ws]
-    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
+    [com.ben-allred.audiophile.api.infrastructure.db.core :as db]
+    [com.ben-allred.audiophile.api.infrastructure.pubsub.protocols :as pws]
+    [com.ben-allred.audiophile.api.infrastructure.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.http :as http]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -66,7 +67,7 @@
 
 (defmethod ig/init-key :audiophile.test/transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
   (mig/migrate! migrator)
-  (doto (repos/->Transactor datasource opts ->executor)
+  (doto (db/->Transactor datasource opts ->executor)
     (repos/transact! (fn [executor]
                        (doseq [query seed-data]
                          (repos/execute! executor query))))))

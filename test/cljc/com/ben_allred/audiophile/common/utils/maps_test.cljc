@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.utils.maps-test
+(ns ^:unit com.ben-allred.audiophile.common.utils.maps-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.utils.maps :as maps]))

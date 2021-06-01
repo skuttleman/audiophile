@@ -138,29 +138,27 @@
  {}
 
  :audiophile.handlers.auth/login
- {:oauth #ig/ref :audiophile.services.auth/provider}
+ {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.handlers.auth/logout
- {:base-url #ig/ref :env/base-url#ui
-  :nav      #ig/ref :services/nav}
+ {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.handlers.auth/callback-url
  {:base-url      #ig/ref :env/base-url#auth
   :redirect-path "/auth/callback"}
 
  :audiophile.handlers.auth/callback
- {:base-url #ig/ref :env/base-url#ui
-  :nav      #ig/ref :services/nav
-  :oauth    #ig/ref :audiophile.services.auth/provider
-  :serde    #ig/ref :serdes/jwt}
+ {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.handlers.auth/details
- {}
+ {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.services.auth/provider
- {:nav        #ig/ref :services/nav
-  :oauth      #ig/ref :services/oauth
-  :interactor #ig/ref :interactors/users}
+ {:base-url   #ig/ref :env/base-url#ui
+  :interactor #ig/ref :interactors/users
+  :jwt-serde  #ig/ref :serdes/jwt
+  :nav        #ig/ref :services/nav
+  :oauth      #ig/ref :services/oauth}
 
  :audiophile.handlers.projects/fetch-all
  {:interactor #ig/ref :interactors/projects}

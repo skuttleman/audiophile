@@ -1,9 +1,9 @@
 (ns test.browser-runner
   (:require
     [clojure.string :as string]
-    [com.ben-allred.audiophile.api.utils.ring :as ring]
+    [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.utils.maps :as maps]
-    [immutant.web :as web])
+    [immutant.web :as web*])
   (:import
     (org.openqa.selenium By SearchContext WebElement)
     (org.openqa.selenium.firefox FirefoxDriver)))
@@ -45,9 +45,9 @@
         exit-code (volatile! 1)
         server-port (Long/parseLong (or (get env "UI_TEST_PORT") "8080"))]
     (try
-      (let [server (web/run #(or (ring/resource-request % "private")
-                                 {:status 204})
-                            {:port server-port :host "0.0.0.0"})
+      (let [server (web*/run #(or (ring/resource-request % "private")
+                                  {:status 204})
+                             {:port server-port :host "0.0.0.0"})
             driver (FirefoxDriver.)]
         (try
           (println "Running CLJS tests…")
@@ -78,6 +78,6 @@
             (println (str color tests " tests. " passes " passed. " fails " failed." RESET)))
           (finally
             (.quit driver)
-            (web/stop server))))
+            (web*/stop server))))
       (finally
         (System/exit @exit-code)))))

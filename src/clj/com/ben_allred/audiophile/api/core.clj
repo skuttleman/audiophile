@@ -1,13 +1,25 @@
 (ns com.ben-allred.audiophile.api.core
+  (:gen-class)
   (:require
+    [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
+    [com.ben-allred.audiophile.common.utils.duct :as uduct]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [immutant.web :as web]))
+    [duct.core :as duct]
+    [duct.core.env :as env*]
+    [integrant.core :as ig]
+    com.ben-allred.audiophile.api.infrastructure.system.core
+    com.ben-allred.audiophile.common.config.core))
 
-(defn server [{:keys [handler server-port]}]
-  (let [server (web/run handler {:port server-port :host "0.0.0.0"})]
-    (log/info (str "[SERVER] is listening on port " server-port))
-    server))
-
-(defn server#stop [server]
-  (log/info "[SERVER] is shutting down")
-  (web/stop server))
+(defn -main [& _]
+  (duct/load-hierarchy)
+  (let [system (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-prod"]))]
+                 (-> "config.edn"
+                     duct/resource
+                     (duct/read-config uduct/readers)
+                     (duct/prep-config [:duct.profile/base :duct.profile/prod])
+                     (ig/init [:duct/daemon])))]
+    (.addShutdownHook (Runtime/getRuntime)
+                      (Thread. ^Runnable
+                               (fn []
+                                 (ig/halt! system))))
+    (duct/await-daemons system)))

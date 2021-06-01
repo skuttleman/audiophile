@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.ui.services.forms.standard-test
+(ns ^:unit com.ben-allred.audiophile.ui.services.forms.standard-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.services.forms.core :as forms]

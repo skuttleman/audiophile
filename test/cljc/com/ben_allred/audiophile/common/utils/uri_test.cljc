@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.utils.uri-test
+(ns ^:unit com.ben-allred.audiophile.common.utils.uri-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.utils.uri :as uri]))

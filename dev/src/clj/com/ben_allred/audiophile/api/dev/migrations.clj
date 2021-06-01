@@ -3,14 +3,14 @@
     [clojure.java.io :as io]
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.dev.protocols :as pdev]
-    [com.ben-allred.audiophile.api.services.env :as env]
-    [com.ben-allred.audiophile.api.services.repositories.core :as repos]
+    [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
+    [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [migratus.core :as migratus]
-    com.ben-allred.audiophile.api.config.core
+    com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.common.config.core))
 
 (deftype Migrator [cfg]

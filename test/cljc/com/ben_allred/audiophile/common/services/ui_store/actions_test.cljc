@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.services.ui-store.actions-test
+(ns ^:unit com.ben-allred.audiophile.common.services.ui-store.actions-test
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]

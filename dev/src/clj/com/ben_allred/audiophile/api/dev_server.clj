@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.dev-server
   (:require
-    [com.ben-allred.audiophile.api.services.env :as env]
+    [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.common.utils.colls :as colls]
     [com.ben-allred.audiophile.common.utils.duct :as uduct]
     [com.ben-allred.audiophile.common.utils.logger :as log]
@@ -9,7 +9,7 @@
     [integrant.core :as ig]
     [nrepl.server :as nrepl]
     [ring.middleware.reload :as rel]
-    com.ben-allred.audiophile.api.config.core
+    com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
     com.ben-allred.audiophile.common.config.core))
 
@@ -24,14 +24,15 @@
     (fn []
       (reload* nil)
       (require 'com.ben-allred.audiophile.api.dev.handler :reload)
-      (require 'com.ben-allred.audiophile.api.services.pubsub.ws :reload)
-      (require 'com.ben-allred.audiophile.api.services.repositories.common :reload)
-      (require 'com.ben-allred.audiophile.api.services.repositories.core :reload)
-      (require 'com.ben-allred.audiophile.api.services.repositories.files.core :reload)
-      (require 'com.ben-allred.audiophile.api.services.repositories.projects.core :reload)
-      (require 'com.ben-allred.audiophile.api.services.repositories.teams.core :reload)
-      (require 'com.ben-allred.audiophile.api.services.repositories.users.core :reload)
-      (require 'com.ben-allred.audiophile.api.services.resources.s3 :reload)
+      (require 'com.ben-allred.audiophile.api.infrastructure.pubsub.ws :reload)
+      (require 'com.ben-allred.audiophile.api.app.repositories.common :reload)
+      (require 'com.ben-allred.audiophile.api.app.repositories.core :reload)
+      (require 'com.ben-allred.audiophile.api.infrastructure.db.core :reload)
+      (require 'com.ben-allred.audiophile.api.app.repositories.files.core :reload)
+      (require 'com.ben-allred.audiophile.api.app.repositories.projects.core :reload)
+      (require 'com.ben-allred.audiophile.api.app.repositories.teams.core :reload)
+      (require 'com.ben-allred.audiophile.api.app.repositories.users.core :reload)
+      (require 'com.ben-allred.audiophile.api.infrastructure.resources.s3 :reload)
       (require 'com.ben-allred.audiophile.common.services.navigation.core :reload)
       (require 'com.ben-allred.audiophile.common.services.serdes.core :reload))))
 
