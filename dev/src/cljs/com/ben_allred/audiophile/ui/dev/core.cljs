@@ -9,8 +9,8 @@
     [com.ben-allred.audiophile.common.views.components.core :as comp]
     [com.ben-allred.audiophile.common.views.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.app :as app]
-    [com.ben-allred.audiophile.ui.config :as cfg]
-    [com.ben-allred.audiophile.ui.services.forms.standard :as forms.std]
+    [com.ben-allred.audiophile.ui.infrastructure.system :as cfg]
+    [com.ben-allred.audiophile.ui.app.forms.standard :as forms.std]
     [com.ben-allred.formation.core :as f]
     [integrant.core :as ig]))
 

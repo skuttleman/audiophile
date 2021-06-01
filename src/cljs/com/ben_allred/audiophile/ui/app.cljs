@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.common.services.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.services.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    [com.ben-allred.audiophile.ui.config :as cfg]
+    [com.ben-allred.audiophile.ui.infrastructure.system :as cfg]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
     com.ben-allred.audiophile.common.config.core))

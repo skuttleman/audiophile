@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.common.views.roots.teams
   (:refer-clojure :exclude [list])
   (:require
-    [#?(:cljs    com.ben-allred.audiophile.ui.services.forms.standard
+    [#?(:cljs    com.ben-allred.audiophile.ui.app.forms.standard
         :default com.ben-allred.audiophile.common.services.forms.noop) :as form]
     [com.ben-allred.audiophile.common.services.forms.core :as forms]
     [com.ben-allred.audiophile.common.services.resources.core :as res]

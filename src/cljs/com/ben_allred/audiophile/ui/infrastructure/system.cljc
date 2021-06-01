@@ -1,7 +1,7 @@
-(ns com.ben-allred.audiophile.ui.config
+(ns com.ben-allred.audiophile.ui.infrastructure.system
   #?(:cljs
      (:require-macros
-       com.ben-allred.audiophile.ui.config))
+       com.ben-allred.audiophile.ui.infrastructure.system))
   (:require
     #?@(:clj [[com.ben-allred.audiophile.common.utils.duct :as uduct]
               [duct.core :as duct]])

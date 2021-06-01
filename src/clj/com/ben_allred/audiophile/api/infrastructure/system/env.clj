@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.common.services.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.utils.core :as u]
     [com.ben-allred.audiophile.common.utils.logger :as log]
-    com.ben-allred.audiophile.ui.config)
+    com.ben-allred.audiophile.ui.infrastructure.system)
   (:import
     (java.net InetAddress)))
 

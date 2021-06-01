@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.ui.services.forms.standard
+(ns com.ben-allred.audiophile.ui.app.forms.standard
   (:require
     [com.ben-allred.audiophile.common.services.forms.protocols :as pforms]
     [com.ben-allred.audiophile.common.services.stubs.reagent :as r]
