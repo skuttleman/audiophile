@@ -9,7 +9,7 @@
     [com.ben-allred.audiophile.api.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.resources.http :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [hikari-cp.core :as hikari]

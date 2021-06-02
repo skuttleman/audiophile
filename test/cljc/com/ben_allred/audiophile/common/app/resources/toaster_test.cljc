@@ -2,16 +2,16 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.app.resources.toaster :as toaster]
-    [com.ben-allred.audiophile.common.infrastructure.ui-store.protocols :as pui-store]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.ui-components.protocols :as pcomp]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]
     [test.utils :refer [async] :as tu]
-    [test.utils.stubs :as stubs]
-    [com.ben-allred.audiophile.common.core.utils.colls :as colls])
+    [test.utils.stubs :as stubs])
   #?(:clj
      (:import
        (clojure.lang IDeref))))
@@ -32,8 +32,8 @@
                                     (#?(:cljs -deref :default deref) [_]
                                       ::value)))
           toaster (stubs/create (reify
-                                pres/IToaster
-                                (toast! [_ _ _])))]
+                                  pcomp/IAlert
+                                  (create! [_ _ _])))]
       (async done
         (async/go
           (testing "#request!"
@@ -45,7 +45,7 @@
                 (stubs/init! toaster)
                 (stubs/set-stub! *resource :request! v/resolve)
                 (let [result (tu/<p! (res/request! *redirect ::opts))
-                      toast (colls/only! (stubs/calls toaster :toast!))]
+                      toast (colls/only! (stubs/calls toaster :create!))]
                   (testing "issues a toast message"
                     (is (= [:success [:good ::opts]]
                            toast)))
@@ -57,7 +57,7 @@
                 (stubs/init! toaster)
                 (stubs/set-stub! *resource :request! v/reject)
                 (let [result (tu/<p! (res/request! *redirect ::opts))
-                      toast (colls/only! (stubs/calls toaster :toast!))]
+                      toast (colls/only! (stubs/calls toaster :create!))]
                   (testing "issues a toast message"
                     (is (= [:error [:bad ::opts]]
                            toast)))

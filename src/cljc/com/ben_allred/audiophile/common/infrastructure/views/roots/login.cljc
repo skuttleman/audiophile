@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.common.infrastructure.views.roots.login
   (:require
     [com.ben-allred.audiophile.common.app.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]))
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]))
 
 (defn ^:private root* [login-form state]
   [:div..gutters.layout--xl.layout--xxl.layout--inset

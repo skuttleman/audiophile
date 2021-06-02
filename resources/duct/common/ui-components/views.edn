@@ -15,7 +15,7 @@
  {:nav           #ig/ref :services/nav
   :project-form  #ig/ref :audiophile.views.projects/create
   :projects-tile #ig/ref :tiles/projects#all
-  :store         #ig/ref :services/store
+  :*modals       #ig/ref :audiophile.core/modals
   :team-form     #ig/ref :audiophile.views.teams/create
   :teams-tile    #ig/ref :tiles/teams#all}
 
@@ -30,11 +30,11 @@
  {:nav #ig/ref :services/nav}
 
  :audiophile.views.components/modals
- {:store #ig/ref :services/store}
+ {:*modals #ig/ref :audiophile.core/modals}
 
  :audiophile.views.components/toasts
- {:store #ig/ref :services/store}
+ {:*toasts #ig/ref :audiophile.core/toasts}
 
  :audiophile.views.components/banners
- {:store     #ig/ref :services/store
+ {:*banners   #ig/ref :audiophile.core/banners
   :err-codes #ig/ref :ui/err-codes}}

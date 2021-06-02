@@ -3,8 +3,8 @@
     [com.ben-allred.audiophile.common.app.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]))
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]))
 
 (defn ^:private logout [{:keys [nav] :as attrs}]
   [:a (-> attrs
@@ -57,7 +57,7 @@
                  [:div.buttons
                   [logout {:nav nav}]]]]])]])))))
 
-(defn root [{:keys [nav project-form projects-tile store team-form teams-tile]}]
+(defn root [{:keys [nav project-form *modals projects-tile team-form teams-tile]}]
   (fn [state]
     (if (:auth/user state)
       [:div
@@ -67,7 +67,7 @@
          state
          [in/plain-button
           {:class    ["is-primary"]
-           :on-click (comp/modal-opener store
+           :on-click (comp/modal-opener *modals
                                         "Create project"
                                         project-form)}
           "Create one"]]
@@ -75,7 +75,7 @@
          state
          [in/plain-button
           {:class    ["is-primary"]
-           :on-click (comp/modal-opener store
+           :on-click (comp/modal-opener *modals
                                         "Create team"
                                         team-form)}
           "Create one"]]]]

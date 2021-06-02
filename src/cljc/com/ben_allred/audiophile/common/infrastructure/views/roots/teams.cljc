@@ -4,11 +4,11 @@
     [#?(:cljs    com.ben-allred.audiophile.ui.app.forms.standard
         :default com.ben-allred.audiophile.common.app.forms.noop) :as form]
     [com.ben-allred.audiophile.common.app.forms.core :as forms]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.app.resources.validated :as vres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (def ^:private validator

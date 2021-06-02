@@ -1,9 +1,9 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.components.input-fields.dropdown
+(ns com.ben-allred.audiophile.common.core.ui-components.input-fields.dropdown
   (:require
     [clojure.set :as set]
     [com.ben-allred.audiophile.common.core.stubs.dom :as dom]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn option-list [{:keys [value options]}]

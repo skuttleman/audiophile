@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.common.app.resources.cached
   (:require
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv])

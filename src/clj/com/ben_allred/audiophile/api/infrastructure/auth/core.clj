@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.app.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.resources.http :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmacro ^:private safely! [ctx & body]

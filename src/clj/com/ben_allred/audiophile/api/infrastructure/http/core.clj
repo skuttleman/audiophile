@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.api.app.interactors.core :as int]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
-    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.resources.http :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmulti ex->response (comp :interactor/reason ex-data))

@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.app.resources.protocols)
+(ns com.ben-allred.audiophile.common.core.resources.protocols)
 
 (defprotocol IResource
   "A component for handling asynchronous activity"
@@ -13,10 +13,3 @@
      | :requesting | resource is processing                |
      | :success    | resource has processed successfully   |
      | :success    | resource has processed unsuccessfully |"))
-
-(defprotocol IToaster
-  "Handles the generation and removal of toasts"
-  (toast! [this level body]
-    "Create a new toast message. Returns a unique id of the toast message")
-  (remove-toast! [this id]
-    "Removes a toast message by id."))

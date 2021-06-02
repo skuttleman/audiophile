@@ -1,13 +1,13 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.components.audio
+(ns com.ben-allred.audiophile.common.core.ui-components.audio
   (:require
     [com.ben-allred.audiophile.common.app.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
-    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.resources.http :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn ^:private on-load [blob id]

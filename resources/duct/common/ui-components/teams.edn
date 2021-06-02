@@ -44,7 +44,7 @@
   :resource   #ig/ref [:audiophile.resources/base :teams/create]
   :store      #ig/ref :services/store
   :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
-  :toaster    #ig/ref :audiophile.resources/toast-fn}
+  :*toasts    #ig/ref :audiophile.core/toasts}
 
  [:audiophile.resources/redirect :teams/create]
  {:resource #ig/ref [:audiophile.resources/toaster :teams/create]

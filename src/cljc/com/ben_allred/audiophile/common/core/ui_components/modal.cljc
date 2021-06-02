@@ -1,17 +1,15 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.components.modal
+(ns com.ben-allred.audiophile.common.core.ui-components.modal
   (:require
     [com.ben-allred.audiophile.common.core.stubs.dom :as dom]
-    [com.ben-allred.audiophile.common.infrastructure.ui-store.actions :as actions]
-    [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.tiles :as tiles]
-    [com.ben-allred.audiophile.common.core.stubs.reagent :as r]))
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.ui-components.tiles :as tiles]))
 
-(defn modal* [store _idx id _frame]
+(defn modal* [*modals _idx id _frame]
   (let [close! (comp (fn [_]
-                       (ui-store/dispatch! store (actions/remove-modal! id)))
+                       (comp/remove-one! *modals id))
                      dom/stop-propagation)
         listener (dom/add-listener dom/window
                                    :keydown
@@ -23,7 +21,7 @@
        (fn [_]
          (dom/remove-listener listener))
        :reagent-render
-       (fn [_store idx _id frame]
+       (fn [_*modals idx _id frame]
          (let [inset (str (* 8 idx) "px")]
            [:li.modal-item
             {:class    [(case (:state frame)
@@ -42,7 +40,7 @@
                [comp/icon :times]]]
              [:div (some-> (:body frame) (conj close!))]]]))})))
 
-(defn modals [{:keys [store]}]
+(defn modals [{:keys [*modals]}]
   (fn [modals]
     (let [active? (and (seq modals)
                        (or (seq (rest modals))
@@ -52,9 +50,9 @@
          {:class    [(when active? "is-active")]
           :on-click (when active?
                       (fn [_]
-                        (ui-store/dispatch! store actions/remove-modal-all!)))}
+                        (comp/remove-all! *modals)))}
          [:div.modal-stack
           [:ul.modal-list
            (for [[idx [id frame]] (map-indexed vector (sort-by key modals))]
              ^{:key id}
-             [modal* store idx id frame])]]]))))
+             [modal* *modals idx id frame])]]]))))

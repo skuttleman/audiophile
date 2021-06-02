@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.common.app.forms.core
   (:require
     [com.ben-allred.audiophile.common.app.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps])
   #?(:clj

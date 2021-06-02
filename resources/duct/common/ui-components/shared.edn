@@ -19,7 +19,13 @@
  [:audiophile.resources.toaster/result-fn :toaster/error]
  {:msg "An error occurred."}
 
- :audiophile.resources/toast-fn
+ :audiophile.core/banners
+ {:store #ig/ref :services/store}
+
+ :audiophile.core/toasts
+ {:store #ig/ref :services/store}
+
+ :audiophile.core/modals
  {:store #ig/ref :services/store}
 
  :audiophile.resource.validated/opts->request

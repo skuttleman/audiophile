@@ -44,10 +44,8 @@
       (ui-store/dispatch! store
                           [:banners/add! {:id    id
                                           :level level
-                                          :body  body}]))))
-
-(defn server-err! [err-code]
-  (banner! :error (keyword err-code)))
+                                          :body  body}])
+      id)))
 
 (defn remove-modal! [id]
   (fn [store]

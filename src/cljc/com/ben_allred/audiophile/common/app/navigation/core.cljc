@@ -80,7 +80,9 @@
 
 (defn ^:private on-nav [nav tracker pushy route]
   (when (get-in route [:query-params :error-msg])
-    (pushy/replace-token! pushy (serdes/serialize nav (:handle route) route)))
+    (->> (update route :query-params dissoc :error-msg)
+         (serdes/serialize nav (:handle route))
+         (pushy/replace-token! pushy)))
   (pnav/on-change tracker route))
 
 (deftype Router [base-urls routes]

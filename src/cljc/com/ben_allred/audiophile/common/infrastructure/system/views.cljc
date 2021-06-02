@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.common.infrastructure.system.views
   (:require
-    [com.ben-allred.audiophile.common.infrastructure.views.components.audio :as audio]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.modal :as modal]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.tiles :as tiles]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.toast :as toast]
+    [com.ben-allred.audiophile.common.core.ui-components.audio :as audio]
+    [com.ben-allred.audiophile.common.core.ui-components.modal :as modal]
+    [com.ben-allred.audiophile.common.core.ui-components.tiles :as tiles]
+    [com.ben-allred.audiophile.common.core.ui-components.toast :as toast]
     [com.ben-allred.audiophile.common.infrastructure.views.core :as views]
     [com.ben-allred.audiophile.common.infrastructure.views.roots.files :as views.files]
     [com.ben-allred.audiophile.common.infrastructure.views.roots.home :as views.home]

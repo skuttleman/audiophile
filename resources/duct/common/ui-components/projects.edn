@@ -72,7 +72,7 @@
   :resource   #ig/ref [:audiophile.resources/base :projects/create]
   :store      #ig/ref :services/store
   :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
-  :toaster    #ig/ref :audiophile.resources/toast-fn}
+  :*toasts    #ig/ref :audiophile.core/toasts}
 
  [:audiophile.resources/redirect :projects/create]
  {:resource #ig/ref [:audiophile.resources/toaster :projects/create]
@@ -98,7 +98,7 @@
  :audiophile.views.projects/track-list
  {:file-form    #ig/ref :audiophile.views.projects/file-form
   :nav          #ig/ref :services/nav
-  :store        #ig/ref :services/store
+  :*modals      #ig/ref :audiophile.core/modals
   :version-form #ig/ref :audiophile.views.projects/version-form}
 
  :audiophile.views.projects/file-form

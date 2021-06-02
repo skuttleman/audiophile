@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.app.resources.multi
   (:require
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.vow.core :as v]

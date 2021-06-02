@@ -1,7 +1,7 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.components.input-fields
+(ns com.ben-allred.audiophile.common.core.ui-components.input-fields
   (:require
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

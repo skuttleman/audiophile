@@ -1,28 +1,51 @@
 (ns com.ben-allred.audiophile.common.infrastructure.ui-store.hooks
   (:require
     [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.protocols :as pcomp]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.ui-store.actions :as actions]
-    [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]))
+    [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]))
 
-(deftype NavigationTracker [nav store]
+(deftype NavigationTracker [*banners nav store]
   pnav/ITrackNavigation
   (on-change [_ route]
-    (let [route' (maps/update-maybe route :query-params dissoc :error-msg)]
-      (if-let [err (get-in route [:query-params :error-msg])]
-        (ui-store/dispatch! store (actions/server-err! err))
-        (ui-store/dispatch! store [:router/updated route'])))))
+    (if-let [err (keyword (get-in route [:query-params :error-msg]))]
+      (comp/create! *banners :error err)
+      (ui-store/dispatch! store [:router/updated route]))))
 
-(defn tracker [{:keys [nav store]}]
-  (->NavigationTracker nav store))
+(defn tracker [{:keys [*banners nav store]}]
+  (->NavigationTracker *banners nav store))
 
 (deftype Toaster [store]
-  pres/IToaster
-  (toast! [_ level body]
+  pcomp/IAlert
+  (create! [_ level body]
+    (log/warn "TOAST")
     (ui-store/dispatch! store (actions/toast! level body)))
-  (remove-toast! [_ id]
+  (remove! [_ id]
     (ui-store/dispatch! store (actions/remove-toast! id))))
 
-(defn toast-fn [{:keys [store]}]
+(defn toasts [{:keys [store]}]
   (->Toaster store))
+
+(deftype Banner [store]
+  pcomp/IAlert
+  (create! [_ level body]
+    (ui-store/dispatch! store (actions/banner! level body)))
+  (remove! [_ id]
+    (ui-store/dispatch! store (actions/remove-banner! id))))
+
+(defn banners [{:keys [store]}]
+  (->Banner store))
+
+(deftype Modals [store]
+  pcomp/IModal
+  (modal! [_ header body buttons]
+    (ui-store/dispatch! store (actions/modal! header body buttons)))
+  (remove-one! [_ id]
+    (ui-store/dispatch! store (actions/remove-modal! id)))
+  (remove-all! [_]
+    (ui-store/dispatch! store actions/remove-modal-all!)))
+
+(defn modals [{:keys [store]}]
+  (->Modals store))

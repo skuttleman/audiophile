@@ -3,7 +3,7 @@
     [clojure.string :as string]
     [clojure.test :refer [are deftest is testing use-fixtures]]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.app.http :as http]
+    [com.ben-allred.audiophile.common.core.resources.http :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.audiophile.integration.common :as int]

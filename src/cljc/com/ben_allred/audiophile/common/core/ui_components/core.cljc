@@ -1,14 +1,13 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.components.core
+(ns com.ben-allred.audiophile.common.core.ui-components.core
   (:require
     [com.ben-allred.audiophile.common.app.forms.core :as forms]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.stubs.dom :as dom]
-    [com.ben-allred.audiophile.common.infrastructure.ui-store.actions :as actions]
-    [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.ui-components.protocols :as pcomp]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]))
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (def ^:private level->class
   {:error "is-danger"})
@@ -75,8 +74,26 @@
                 buttons
                 (into buttons))))))
 
-(defn modal-opener [store title view]
+(defn create! [alert level body]
+  (pcomp/create! alert level body))
+
+(defn remove! [alert id]
+  (pcomp/remove! alert id))
+
+(defn modal!
+  ([modals body]
+   (modal! modals nil body))
+  ([modals header body]
+   (modal! modals header body nil))
+  ([modals header body buttons]
+   (pcomp/modal! modals header body buttons)))
+
+(defn remove-one! [modals id]
+  (pcomp/remove-one! modals id))
+
+(defn remove-all! [modals]
+  (pcomp/remove-all! modals))
+
+(defn modal-opener [*modals title view]
   (fn [_]
-    (ui-store/dispatch! store
-                        (actions/modal! [:h2.subtitle title]
-                                        view))))
+    (modal! *modals [:h2.subtitle title] view)))

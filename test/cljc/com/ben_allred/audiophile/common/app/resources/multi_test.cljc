@@ -2,9 +2,9 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.app.resources.multi :as multi]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.vow.core :as v]
     [test.utils :refer [async] :as tu])
   #?(:clj

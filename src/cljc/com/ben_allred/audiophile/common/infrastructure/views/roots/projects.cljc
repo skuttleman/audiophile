@@ -5,14 +5,14 @@
         :default com.ben-allred.audiophile.common.app.forms.noop) :as form]
     [com.ben-allred.audiophile.common.app.forms.core :as forms]
     [com.ben-allred.audiophile.common.app.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.app.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.app.resources.validated :as vres]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.strings :as strings]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.core :as comp]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields :as in]
-    [com.ben-allred.audiophile.common.infrastructure.views.components.input-fields.dropdown :as dd]
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields.dropdown :as dd]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (def ^:private validator
@@ -134,13 +134,13 @@
                                        "Select file…")}
                           (forms/with-attrs *form [:artifact/details]))]]))))
 
-(defn track-list [{:keys [file-form nav store version-form]}]
+(defn track-list [{:keys [file-form nav *modals version-form]}]
   (fn [files project-id]
     [:div
      [:div.buttons
       [in/plain-button
        {:class    ["is-primary"]
-        :on-click (comp/modal-opener store
+        :on-click (comp/modal-opener *modals
                                      "Upload new track"
                                      [file-form project-id])}
        "New track"]]
@@ -158,7 +158,7 @@
             [:td
              [in/plain-button
               {:class    ["is-outlined"]
-               :on-click (comp/modal-opener store
+               :on-click (comp/modal-opener *modals
                                             "Upload new version"
                                             [version-form file])}
               "Upload new version"]]])]]

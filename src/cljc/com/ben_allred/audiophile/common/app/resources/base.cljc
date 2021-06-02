@@ -1,8 +1,8 @@
-(ns com.ben-allred.audiophile.common.app.resources.core
+(ns com.ben-allred.audiophile.common.app.resources.base
   (:require
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
-    [com.ben-allred.audiophile.common.app.http :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
@@ -55,11 +55,11 @@
   (let [opts->params (or opts->params :nav/params)
         opts->request (or opts->request identity)]
     (fn [opts]
-      (http/request! http-client
-                     (maps/assoc-defaults (opts->request opts)
-                                          :method method
-                                          :nav/route route
-                                          :nav/params (opts->params opts))))))
+      (res/request! http-client
+                    (maps/assoc-defaults (opts->request opts)
+                                         :method method
+                                         :nav/route route
+                                         :nav/params (opts->params opts))))))
 
 (defn file-uploader [_]
   (fn [{:keys [files] :as opts}]
@@ -70,33 +70,3 @@
                                          :content   file})
                                       files)]
                :cljs [:multipart-params (map (partial conj ["files[]"]) files)]))))
-
-(defn request!
-  ([resource]
-   (request! resource nil))
-  ([resource opts]
-   (pres/request! resource opts)))
-
-(defn toast! [toaster level body]
-  (pres/toast! toaster level body))
-
-(defn remove-toast! [toaster id]
-  (pres/remove-toast! toaster id))
-
-(defn status [resource]
-  (pres/status resource))
-
-(defn requested? [resource]
-  (not= :init (status resource)))
-
-(defn ready? [resource]
-  (not= :requesting (status resource)))
-
-(defn success? [resource]
-  (= :success (status resource)))
-
-(defn error? [resource]
-  (= :error (status resource)))
-
-(defn requesting? [resource]
-  (= :requesting (status resource)))

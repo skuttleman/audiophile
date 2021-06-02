@@ -1,8 +1,8 @@
-(ns com.ben-allred.audiophile.common.app.http
+(ns com.ben-allred.audiophile.common.core.resources.http
   (:refer-clojure :exclude [get])
   (:require
     [clojure.set :as set]
-    [com.ben-allred.audiophile.common.app.resources.protocols :as pres]))
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]))
 
 (def status->code
   {::ok 200
@@ -72,11 +72,8 @@
 (def ^{:arglists '([response])} error?
   (some-fn client-error? server-error?))
 
-(defn request! [client request]
-  (pres/request! client request))
-
 (defn ^:private http* [client method url request]
-  (request! client (assoc request :url url :method method)))
+  (pres/request! client (assoc request :url url :method method)))
 
 (defn get
   ([client url]
