@@ -1,12 +1,11 @@
-(ns com.ben-allred.audiophile.common.app.navigation.core
+(ns com.ben-allred.audiophile.common.app.navigation.base
   (:require
     [bidi.bidi :as bidi]
     [clojure.set :as set]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.core.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
-    [com.ben-allred.audiophile.common.core.stubs.dom :as dom]
     [com.ben-allred.audiophile.common.core.stubs.pushy :as pushy]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -27,27 +26,6 @@
                                  (maps/update-maybe :file-id str)
                                  (maps/update-maybe :project-id str)
                                  (maps/update-maybe :team-id str))))
-
-(deftype LinkedNavigator [pushy router]
-  pnav/IHistory
-  (start! [_]
-    (pushy/start! pushy)
-    nil)
-  (stop! [_]
-    (pushy/stop! pushy)
-    nil)
-  (navigate! [_ path]
-    (pushy/set-token! pushy path)
-    nil)
-  (replace! [_ path]
-    (pushy/replace-token! pushy path)
-    nil)
-
-  pserdes/ISerde
-  (serialize [_ handle opts]
-    (pserdes/serialize router handle opts))
-  (deserialize [_ path opts]
-    (pserdes/deserialize router path opts)))
 
 (defn ^:private serialize* [base-urls routes handle opts]
   (let [{:keys [query-params]} opts
@@ -99,6 +77,27 @@
 (defn router [{:keys [base-urls routes]}]
   (->Router base-urls routes))
 
+(deftype LinkedNavigator [pushy router]
+  pnav/IHistory
+  (start! [_]
+    (pushy/start! pushy)
+    nil)
+  (stop! [_]
+    (pushy/stop! pushy)
+    nil)
+  (navigate! [_ path]
+    (pushy/set-token! pushy path)
+    nil)
+  (replace! [_ path]
+    (pushy/replace-token! pushy path)
+    nil)
+
+  pserdes/ISerde
+  (serialize [_ handle opts]
+    (pserdes/serialize router handle opts))
+  (deserialize [_ path opts]
+    (pserdes/deserialize router path opts)))
+
 (defn nav [{:keys [router tracker]}]
   (let [pushy (volatile! nil)]
     (vreset! pushy (pushy/pushy #(on-nav router tracker @pushy %)
@@ -108,32 +107,3 @@
 
 (defn nav#stop [nav]
   (pnav/stop! nav))
-
-(defn path-for
-  ([nav handle]
-   (path-for nav handle nil))
-  ([nav handle params]
-   (serdes/serialize nav handle params)))
-
-(defn navigate!
-  "push a path + params to the browser's history"
-  ([nav handle]
-   (navigate! nav handle nil))
-  ([nav handle params]
-   (pnav/navigate! nav (path-for nav handle params))))
-
-(defn replace!
-  ([nav handle]
-   (replace! nav handle nil))
-  ([nav handle params]
-   (pnav/replace! nav (path-for nav handle params))))
-
-(defn goto!
-  "send the browser to a location with a page rebuild"
-  ([nav handle]
-   (goto! nav handle nil))
-  ([nav handle params]
-   (dom/assign! (path-for nav handle params))))
-
-(defn match-route [nav path]
-  (serdes/deserialize nav path))

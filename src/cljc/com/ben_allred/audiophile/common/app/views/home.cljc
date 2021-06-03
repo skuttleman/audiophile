@@ -1,10 +1,10 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.roots.home
+(ns com.ben-allred.audiophile.common.app.views.home
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
-    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]))
+    [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private logout [{:keys [nav] :as attrs}]
   [:a (-> attrs

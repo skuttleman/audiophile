@@ -1,13 +1,14 @@
-(ns ^:unit com.ben-allred.audiophile.common.app.navigation.core-test
+(ns ^:unit com.ben-allred.audiophile.common.app.navigation.base-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.base :as bnav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (deftest router-test
   (let [routes ["" [[["/test/" [uuids/regex :project-id] "/route"] :test/route]]]
-        router (nav/router {:base-urls {:test "test://base"}
-                            :routes    routes})
+        router (bnav/router {:base-urls {:test "test://base"}
+                            :routes     routes})
         id (uuids/random)]
     (testing "#path-for"
       (testing "serializes params to url"

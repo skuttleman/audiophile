@@ -4,7 +4,7 @@
     [clojure.java.shell :as sh]
     [com.ben-allred.audiophile.api.app.protocols :as papp]
     [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [integrant.core :as ig]))
 

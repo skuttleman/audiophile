@@ -1,7 +1,7 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.core
+(ns com.ben-allred.audiophile.common.app.views.core
   (:require
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]))
+    [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private root* [components-table state]
   (let [handle (get-in state [:nav/route :handle])

@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.infrastructure.ui-store.hooks
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.core.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
     [com.ben-allred.audiophile.common.core.ui-components.protocols :as pcomp]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

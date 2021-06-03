@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.infrastructure.system.services.core
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.base :as bnav]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]
@@ -17,13 +17,13 @@
   (store.hooks/tracker cfg))
 
 (defmethod ig/init-key :audiophile.services.nav/router [_ cfg]
-  (nav/router cfg))
+  (bnav/router cfg))
 
 (defmethod ig/init-key :audiophile.services.nav/nav [_ cfg]
-  (nav/nav cfg))
+  (bnav/nav cfg))
 
 (defmethod ig/halt-key! :audiophile.services.nav/nav [_ cfg]
-  (nav/nav#stop cfg))
+  (bnav/nav#stop cfg))
 
 (defmethod ig/init-key :audiophile.services/pubsub [_ cfg]
   (pubsub/pubsub cfg))

@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.core.ui-components.audio
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.stubs.reagent :as r]

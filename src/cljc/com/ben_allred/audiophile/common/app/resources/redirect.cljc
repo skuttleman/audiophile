@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.app.resources.redirect
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.vow.core :as v]

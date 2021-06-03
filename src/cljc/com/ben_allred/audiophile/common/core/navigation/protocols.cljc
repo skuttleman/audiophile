@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.app.navigation.protocols)
+(ns com.ben-allred.audiophile.common.core.navigation.protocols)
 
 (defprotocol IHistory
   "This can only be implemented in browser targeted cljs builds"

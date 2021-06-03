@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.common.app.forms.core-test
+(ns ^:unit com.ben-allred.audiophile.common.core.forms.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.app.forms.core :as forms]
-    [com.ben-allred.audiophile.common.app.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.common.core.forms.core :as forms]
+    [com.ben-allred.audiophile.common.core.forms.protocols :as pforms]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps])
   #?(:clj
      (:import

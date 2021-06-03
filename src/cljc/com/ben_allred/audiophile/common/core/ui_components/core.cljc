@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.core.ui-components.core
   (:require
-    [com.ben-allred.audiophile.common.app.forms.core :as forms]
+    [com.ben-allred.audiophile.common.core.forms.core :as forms]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.stubs.dom :as dom]

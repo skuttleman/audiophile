@@ -1,6 +1,6 @@
-(ns com.ben-allred.audiophile.common.infrastructure.views.roots.login
+(ns com.ben-allred.audiophile.common.app.views.login
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
     [com.ben-allred.audiophile.common.core.ui-components.input-fields :as in]))
 

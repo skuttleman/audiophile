@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.common.app.resources.validated
   (:require
-    [com.ben-allred.audiophile.common.app.forms.core :as forms]
-    [com.ben-allred.audiophile.common.app.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.common.core.forms.core :as forms]
+    [com.ben-allred.audiophile.common.core.forms.protocols :as pforms]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.vow.core :as v]

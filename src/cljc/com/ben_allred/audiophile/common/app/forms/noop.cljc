@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.app.forms.noop
   (:require
-    [com.ben-allred.audiophile.common.app.forms.protocols :as pforms])
+    [com.ben-allred.audiophile.common.core.forms.protocols :as pforms])
   #?(:clj
      (:import
        (clojure.lang IDeref))))

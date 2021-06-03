@@ -4,12 +4,12 @@
     [com.ben-allred.audiophile.common.core.ui-components.modal :as modal]
     [com.ben-allred.audiophile.common.core.ui-components.tiles :as tiles]
     [com.ben-allred.audiophile.common.core.ui-components.toast :as toast]
-    [com.ben-allred.audiophile.common.infrastructure.views.core :as views]
-    [com.ben-allred.audiophile.common.infrastructure.views.roots.files :as views.files]
-    [com.ben-allred.audiophile.common.infrastructure.views.roots.home :as views.home]
-    [com.ben-allred.audiophile.common.infrastructure.views.roots.login :as views.login]
-    [com.ben-allred.audiophile.common.infrastructure.views.roots.projects :as views.projects]
-    [com.ben-allred.audiophile.common.infrastructure.views.roots.teams :as views.teams]
+    [com.ben-allred.audiophile.common.app.views.core :as views]
+    [com.ben-allred.audiophile.common.app.views.files :as views.files]
+    [com.ben-allred.audiophile.common.app.views.home :as views.home]
+    [com.ben-allred.audiophile.common.app.views.login :as views.login]
+    [com.ben-allred.audiophile.common.app.views.projects :as views.projects]
+    [com.ben-allred.audiophile.common.app.views.teams :as views.teams]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.views/app [_ cfg]

@@ -1,9 +1,9 @@
 (ns ^:unit com.ben-allred.audiophile.common.infrastructure.pubsub.ws-test
   (:require
     [clojure.test :refer [deftest is testing]]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.common.app.navigation.base :as bnav]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.infrastructure.ui-store.protocols :as pui-store]
     [test.utils.stubs :as stubs]))
 
@@ -47,6 +47,6 @@
                   pserdes/IMime
                   (mime-type [_]
                     "charlie/chaplain"))
-          nav (nav/->LinkedNavigator nil serde)]
+          nav (bnav/->LinkedNavigator nil serde)]
       (is (= "wss://uri.base/:ws/connection?content-type=charlie/chaplain"
              (ws/ws-uri nav serde base-url))))))

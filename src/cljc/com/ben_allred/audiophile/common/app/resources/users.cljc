@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.app.resources.users
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn login-fn [{:keys [nav]}]

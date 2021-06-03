@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.app.forms.protocols)
+(ns com.ben-allred.audiophile.common.core.forms.protocols)
 
 (defprotocol IInit
   "Can initialize or re-initialize itself to an internally defined immutable value."

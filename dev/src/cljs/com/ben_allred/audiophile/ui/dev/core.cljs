@@ -2,7 +2,7 @@
   (:require
     [clojure.core.async :as async]
     [clojure.pprint :as pp]
-    [com.ben-allred.audiophile.common.app.forms.core :as forms]
+    [com.ben-allred.audiophile.common.core.forms.core :as forms]
     [com.ben-allred.audiophile.common.app.resources.validated :as vres]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

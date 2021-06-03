@@ -2,7 +2,7 @@
   (:require
     [clojure.core.async :as async]
     [clojure.core.match :as match]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.infrastructure.ui-store.core :as ui-store]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
