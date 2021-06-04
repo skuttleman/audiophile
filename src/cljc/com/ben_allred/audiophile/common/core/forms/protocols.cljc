@@ -23,3 +23,8 @@
     "Apply the validator fn to the current model of the form and return any errors
      - should return a data structure congruent with the nesting of the model
      - should return nil when no errors are present"))
+
+(defprotocol ILinkRoute
+  "Links to navigation updates"
+  (update-qp! [this f]
+    "Takes a function that takes a map of current query params and returns updated query params"))

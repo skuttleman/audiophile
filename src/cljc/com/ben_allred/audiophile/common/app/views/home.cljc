@@ -19,14 +19,15 @@
   (fn [_state]
     (let [shown? (r/atom false)]
       (fn [state]
-        (let [handle (get-in state [:nav/route :handle])]
+        (let [handle (get-in state [:nav/route :handle])
+              home (nav/path-for nav :ui/home)]
           [:header.header
            [:nav.navbar
             {:role "navigation" :aria-label "main navigation"}
             (when (:auth/user state)
               [:<>
                [:div.navbar-brand
-                [:a.navbar-item {:href (nav/path-for nav :ui/home)}
+                [:a.navbar-item {:href home}
                  [comp/icon :headphones]]]
                [:div.navbar-start
                 {:style {:position :relative}}
@@ -41,7 +42,7 @@
                     :class    ["expanded"]})
                  [:ul.navbar-start.undersize
                   [:li
-                   [:a.navbar-item {:href (nav/path-for nav :ui/home)} "Home"]]
+                   [:a.navbar-item {:href home} "Home"]]
                   [:li
                    [:hr.nav-divider]]
                   [:li
@@ -51,7 +52,7 @@
                  [:ul.navbar-start.oversize.tabs
                   [:li
                    {:class [(when (= :ui/home handle) "is-active")]}
-                   [:a.navbar-item {:href (nav/path-for nav :ui/home)} "Home"]]]]]
+                   [:a.navbar-item {:href home} "Home"]]]]]
                [:div.navbar-end.oversize
                 [:div.navbar-item
                  [:div.buttons

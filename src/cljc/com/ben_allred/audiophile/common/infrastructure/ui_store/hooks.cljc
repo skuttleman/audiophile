@@ -1,5 +1,7 @@
 (ns com.ben-allred.audiophile.common.infrastructure.ui-store.hooks
   (:require
+    [com.ben-allred.audiophile.common.core.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.ui-components.core :as comp]
     [com.ben-allred.audiophile.common.core.ui-components.protocols :as pcomp]
@@ -49,3 +51,12 @@
 
 (defn modals [{:keys [store]}]
   (->Modals store))
+
+(deftype RouteLink [store nav]
+  pforms/ILinkRoute
+  (update-qp! [_ f]
+    (let [{:keys [handle] :as params} (:nav/route (ui-store/get-state store))]
+      (nav/replace! nav handle (update params :query-params f)))))
+
+(defn route-link [{:keys [nav store]}]
+  (->RouteLink store nav))

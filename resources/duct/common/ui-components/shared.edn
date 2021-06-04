@@ -28,6 +28,10 @@
  :audiophile.core/modals
  {:store #ig/ref :services/store}
 
+ :audiophile.core/route-link
+ {:nav   #ig/ref :services/nav
+  :store #ig/ref :services/store}
+
  :audiophile.resource.validated/opts->request
  {}
 

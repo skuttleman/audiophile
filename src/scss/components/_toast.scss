@@ -5,7 +5,7 @@
     position: fixed;
     bottom: 0;
     width: 100vw;
-    z-index: 100;
+    z-index: 200;
 
     .toast-messages {
         align-items: flex-end;
@@ -13,6 +13,7 @@
         flex-direction: column-reverse;
         height: 100%;
         width: 100%;
+        z-index: 200;
 
         .toast-message {
             background-color: white;

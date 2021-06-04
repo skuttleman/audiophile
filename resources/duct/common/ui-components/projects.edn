@@ -1,8 +1,8 @@
 {[:duct/const :resources/project.file#create]
- #ig/ref [:audiophile.resources/base :projects/file#create]
+ #ig/ref [:audiophile.resources/toaster :projects/file#create]
 
  [:duct/const :resources/project.file#version]
- #ig/ref [:audiophile.resources/base :projects/file#version]
+ #ig/ref [:audiophile.resources/toaster :projects/file#version]
 
  [:duct/const :resources/project.files]
  #ig/ref [:audiophile.resources/base :projects/files]
@@ -32,6 +32,13 @@
   :route         :api/project.files
   :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
+ [:audiophile.resources/toaster :projects/file#create]
+ {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:audiophile.resources/base :projects/file#create]
+  :store      #ig/ref :services/store
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :*toasts    #ig/ref :audiophile.core/toasts}
+
  [:audiophile.resources/http-handler :projects/file#version]
  {:http-client   #ig/ref :services/http
   :method        :post
@@ -60,6 +67,13 @@
 
  [:audiophile.resources/base :projects/file#version]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/file#version]}
+
+ [:audiophile.resources/toaster :projects/file#version]
+ {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:audiophile.resources/base :projects/file#version]
+  :store      #ig/ref :services/store
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :*toasts    #ig/ref :audiophile.core/toasts}
 
  [:audiophile.resources/base :projects/files]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/files]}

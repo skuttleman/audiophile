@@ -41,3 +41,8 @@
    (->NoopForm value))
   ([value _]
    (->NoopForm value)))
+
+(defn wrap
+  "Generic noop wrapping of a form"
+  [*form & _]
+  *form)

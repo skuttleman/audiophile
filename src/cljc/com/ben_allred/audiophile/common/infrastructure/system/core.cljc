@@ -13,3 +13,6 @@
 
 (defmethod ig/init-key :audiophile.core/modals [_ cfg]
   (store.hooks/modals cfg))
+
+(defmethod ig/init-key :audiophile.core/route-link [_ cfg]
+  (store.hooks/route-link cfg))

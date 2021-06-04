@@ -40,6 +40,10 @@
 (defn valid? [*form]
   (empty? (errors *form)))
 
+(defn update-qp! [*link f & f-args]
+  (pforms/update-qp! *link #(apply f % f-args))
+  nil)
+
 (defn with-attrs
   ([*form path]
    (with-attrs nil *form path))

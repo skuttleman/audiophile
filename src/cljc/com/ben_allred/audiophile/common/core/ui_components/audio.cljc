@@ -13,7 +13,7 @@
 (defn ^:private on-load [blob id]
   #?(:cljs
      (doto (js/WaveSurfer.create #js {:container         (str "#" id)
-                                      :waveColor         "lightgrey"
+                                      :waveColor         "lightblue"
                                       :closeAudioContext true
                                       :progressColor     "blue"})
        (.loadBlob blob))))

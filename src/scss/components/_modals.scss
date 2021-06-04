@@ -6,7 +6,7 @@
     top: 0;
     transition: background-color 0.333s ease-out;
     width: 100vw;
-    z-index: 200;
+    z-index: 100;
     pointer-events: none;
 
     &.is-active {
