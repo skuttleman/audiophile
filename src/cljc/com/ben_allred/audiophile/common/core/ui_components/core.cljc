@@ -18,8 +18,11 @@
    [:div.message-body
     body]])
 
-(defn spinner [{:keys [size]}]
-  [(keyword (str "div.loader." (name (or size :small))))])
+(defn spinner
+  ([]
+   (spinner nil))
+  ([{:keys [size]}]
+   [(keyword (str "div.loader." (name (or size :small))))]))
 
 (defn with-resource [[*resource opts] _component & _args]
   (res/request! *resource opts)
