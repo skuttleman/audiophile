@@ -10,9 +10,9 @@
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [test.utils.stubs :as stubs]
-    com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
-    com.ben-allred.audiophile.common.infrastructure.system.core
+    com.ben-allred.audiophile.api.infrastructure.system.core
+    com.ben-allred.audiophile.common.infrastructure.system.services.core
     com.ben-allred.audiophile.integration.common.components))
 
 (def ^:private config-base

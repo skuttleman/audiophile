@@ -3,6 +3,7 @@
     [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]))
 
 (def ^:const INVALID_INPUT :interactor/INVALID_INPUT)
+(def ^:const NOT_AUTHENTICATED :interactor/NOT_AUTHENTICATED)
 (def ^:const NOT_IMPLEMENTED :interactor/NOT_IMPLEMENTED)
 
 (defn ^:private throw-reason! [code]
@@ -10,6 +11,9 @@
 
 (defn invalid-input! []
   (throw-reason! INVALID_INPUT))
+
+(defn not-authenticated! []
+  (throw-reason! NOT_AUTHENTICATED))
 
 (defn not-implemented! []
   (throw-reason! NOT_IMPLEMENTED))

@@ -12,7 +12,11 @@
        ~form
        (catch Throwable ex#
          (log/error "Invalid input" data# (s/explain-data spec# data#))
-         (throw ex#)))))
+         (throw (ex-info "Invalid input"
+                         {:paths (->> (s/explain-data spec# data#)
+                                      ::s/problems
+                                      (into #{} (map :path)))}
+                         ex#))))))
 
 (defn select-input
   "Selects relevant data from HTTP request to be passed to handler"

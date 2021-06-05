@@ -5,7 +5,4 @@
  #duct/include "duct/api/repositories.edn"
  #duct/include "duct/api/routes.edn"
  #duct/include "duct/api/serdes.edn"
- #duct/include "duct/api/services.edn"
- #duct/include "duct/api/ui-components.edn"
- {[:duct/const :services.ui/env]
-  {}}]
+ #duct/include "duct/api/services.edn"]

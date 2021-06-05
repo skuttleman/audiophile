@@ -109,10 +109,9 @@
  {}
 
  :audiophile.routes/ui
- {:app       #ig/ref :audiophile.views/app
-  :api-base  #ig/ref :env/base-url#api
+ {:api-base  #ig/ref :env/base-url#api
   :auth-base #ig/ref :env/base-url#auth
-  :store     #ig/ref :services/store}
+  :template  #duct/include "html.edn"}
 
  :audiophile.middleware/with-auth
  {:jwt-serde #ig/ref :serdes/jwt}

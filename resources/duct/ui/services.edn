@@ -1,20 +1,4 @@
-{[:duct/const :services/nav]
- #ig/ref :audiophile.services.nav/nav
-
- :audiophile.services.nav/nav
- {:router  #ig/ref :audiophile.services.nav/router
-  :tracker #ig/ref :audiophile.services.nav/tracker}
-
- :audiophile.services.nav/router
- {:base-urls #ig/ref :services.ui/base-urls
-  :routes    #ig/ref :nav/routes}
-
- :audiophile.services.nav/tracker
- {:*banners #ig/ref :audiophile.core/banners
-  :nav      #ig/ref :nav/routes
-  :store    #ig/ref :services/store}
-
- [:audiophile.ui.services/env :services.ui/env]
+{[:audiophile.ui.services/env :services.ui/env]
  {:edn #ig/ref :serdes/edn}
 
  [:audiophile.ui.services/base-urls :services.ui/base-urls]

@@ -1,4 +1,15 @@
-{[:duct/const :services/http]
+{[:duct/const :services/nav]
+ #ig/ref :audiophile.services.nav/nav
+
+ :audiophile.services.nav/nav
+ {:router #ig/ref :audiophile.services.nav/router}
+
+ :audiophile.services.nav/router
+ {:base-urls {:api-base  #ig/ref :env/base-url#api
+              :auth-base #ig/ref :env/base-url#auth}
+  :routes    #ig/ref :nav/routes}
+
+ [:duct/const :services/http]
  #ig/ref :audiophile.services.http/client
 
  [:duct/const :services/pubsub]

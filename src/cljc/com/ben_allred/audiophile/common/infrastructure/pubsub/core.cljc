@@ -10,7 +10,7 @@
             :let [handler (get-in state [:listeners key topic])]
             :when handler]
       (try (handler topic event)
-           (catch #?(:cljs :default :default Throwable) _
+           (catch #?(:clj Throwable :default :default) _
              (ppubsub/unsubscribe! this key topic))))))
 
 (defn subscribe* [state key topic listener]

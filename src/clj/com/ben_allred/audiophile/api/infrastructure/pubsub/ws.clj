@@ -118,7 +118,7 @@
           (handle-open ctx channel))
         (on-message [_ msg]
           (handle-msg ctx channel (cond->> msg
-                                           deserializer (serdes/deserialize deserializer))))
+                                    deserializer (serdes/deserialize deserializer))))
         (on-close [_]
           (handle-close ctx channel))))))
 

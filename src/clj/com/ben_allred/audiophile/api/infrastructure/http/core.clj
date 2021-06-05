@@ -18,6 +18,10 @@
   [_]
   (ring/error ::http/bad-request "invalid request"))
 
+(defmethod ex->response int/NOT_AUTHENTICATED
+  [_]
+  (ring/error ::http/unauthorized "not authenticated"))
+
 (defmethod ex->response int/NOT_IMPLEMENTED
   [_]
   (ring/error ::http/not-implemented "not implemented"))
@@ -60,8 +64,11 @@
                (validations/validate! data)
                handler
                ->response)
-           (catch Throwable _
-             (int/invalid-input!))))))
+           (catch Throwable ex
+             (if (contains? (:paths (ex-data ex))
+                            [:user/id])
+               (int/not-authenticated!)
+               (int/invalid-input!)))))))
 
 (defn ok [_]
   (partial into [::http/ok]))

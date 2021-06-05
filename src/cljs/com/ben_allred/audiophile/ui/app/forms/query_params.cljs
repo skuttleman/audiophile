@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.ui.app.forms.query-params
   (:require
-    [com.ben-allred.audiophile.common.core.forms.core :as forms]
-    [com.ben-allred.audiophile.common.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.core.stubs.reagent :as r]
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
+    [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defn ^:private qp-updater [qp path value]

@@ -11,7 +11,7 @@
     [ring.middleware.reload :as rel]
     com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
-    com.ben-allred.audiophile.common.infrastructure.system.core))
+    com.ben-allred.audiophile.common.infrastructure.system.services.core))
 
 (defonce system nil)
 
@@ -24,7 +24,6 @@
     (fn []
       (reload* nil)
       (require 'com.ben-allred.audiophile.api.dev.handler :reload)
-      (require 'com.ben-allred.audiophile.api.infrastructure.pubsub.ws :reload)
       (require 'com.ben-allred.audiophile.api.app.repositories.common :reload)
       (require 'com.ben-allred.audiophile.api.app.repositories.core :reload)
       (require 'com.ben-allred.audiophile.api.infrastructure.db.core :reload)

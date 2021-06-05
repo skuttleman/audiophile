@@ -62,7 +62,7 @@
     (let [xform (or result-xform identity)
           model-fn (cond->> (fn [[k v]]
                               [(keyword k) v])
-                            model-fn (comp model-fn))
+                     model-fn (comp model-fn))
           ->row! (fn [t k v]
                    (conj! t (model-fn [k v])))]
       (fn [^ResultSet rs _opts]

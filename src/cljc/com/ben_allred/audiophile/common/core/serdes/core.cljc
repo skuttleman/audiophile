@@ -16,7 +16,8 @@
        (java.io ByteArrayInputStream ByteArrayOutputStream InputStream PushbackReader)
        (java.time.temporal ChronoUnit)
        (java.util Date)
-       (org.joda.time DateTime))))
+       (org.joda.time DateTime)
+       (java.net URL))))
 
 (def ^:private object-mapper
   #?(:clj     (jsonista/object-mapper
@@ -35,7 +36,9 @@
      (cond
        (nil? value) nil
        (string? value) (edn*/read-string opts value)
-       #?@(:clj [(instance? InputStream value) (some->> value io/reader PushbackReader. (edn*/read opts))])
+       #?@(:clj [(or (instance? InputStream value)
+                     (instance? URL value))
+                 (some->> value io/reader PushbackReader. (edn*/read opts))])
        :else (edn*/read opts value)))))
 
 (defn edn [_]

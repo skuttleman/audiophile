@@ -67,7 +67,7 @@
     (->> (update route :query-params dissoc :error-msg)
          (serdes/serialize nav (:handle route))
          (pushy/replace-token! pushy)))
-  (pnav/on-change tracker route))
+  (some-> tracker (pnav/on-change route)))
 
 (deftype Router [base-urls routes]
   pnav/IHistory

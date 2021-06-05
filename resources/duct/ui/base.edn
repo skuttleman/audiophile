@@ -2,9 +2,21 @@
 [#duct/include "duct/common/base.edn"
  #duct/include "duct/ui/env.edn"
  #duct/include "duct/ui/services.edn"
+ #duct/include "duct/ui/components.edn"
  {:audiophile.services.http/client
   ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-nav]}
 
   :audiophile.services.http/with-nav
   {:env #ig/ref :services.ui/env
-   :nav #ig/ref :services/nav}}]
+   :nav #ig/ref :services/nav}
+
+  :audiophile.services.nav/router
+  ^:promote {:base-urls #ig/ref :services.ui/base-urls}
+
+  :audiophile.services.nav/nav
+  ^:promote {:tracker #ig/ref :audiophile.services.nav/tracker}
+
+  :audiophile.services.nav/tracker
+  {:*banners #ig/ref :audiophile.core/banners
+   :nav      #ig/ref :nav/routes
+   :store    #ig/ref :services/store}}]
