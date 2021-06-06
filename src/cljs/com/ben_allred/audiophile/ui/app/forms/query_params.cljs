@@ -22,10 +22,20 @@
     (pforms/init! *form value)
     (forms/update-qp! *qp empty))
 
+  pforms/IAttempt
+  (attempt! [_]
+    (pforms/attempt! *form))
+  (attempted? [_]
+    (pforms/attempted? *form))
+
   pforms/IChange
   (change! [_ path value]
     (forms/update-qp! *qp qp-updater path value)
     (pforms/change! *form path value))
+  (changed? [_]
+    (pforms/changed? *form))
+  (changed? [_ path]
+    (pforms/changed? *form path))
 
   pforms/ITrack
   (touch! [_]

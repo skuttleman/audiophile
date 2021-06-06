@@ -7,6 +7,11 @@
           When a value is supplied, resets itself such that the supplied value is
           the new initial state."))
 
+(defprotocol IAttempt
+  "Tracks whether the form has been attempted"
+  (attempt! [this] "Mark the entire entity as \"attempted\".")
+  (attempted? [this] "Has the entity been \"attempted\"?"))
+
 (defprotocol IChange
   "Can change the value of itself at a leaf node."
   (change! [this path value] "Update the path of data into the entity.")

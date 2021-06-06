@@ -1,11 +1,12 @@
 (ns com.ben-allred.audiophile.api.infrastructure.http.core
   (:require
-    [com.ben-allred.audiophile.api.domain.validations.core :as validations]
     [com.ben-allred.audiophile.api.app.interactors.core :as int]
+    [com.ben-allred.audiophile.api.domain.validations.selectors :as selectors]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
-    [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.resources.http :as http]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.fns :as fns]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.domain.validations.core :as val]))
 
 (defmulti ex->response (comp :interactor/reason ex-data))
 
@@ -36,7 +37,7 @@
 
 (defn ^:private handler->method [route handler]
   (fn [_ request]
-    (try (handler (validations/select-input route request))
+    (try (handler (selectors/select route request))
          (catch Throwable ex
            (ex->response ex)))))
 
@@ -61,7 +62,7 @@
   (let [->response (or ->response data-responder)]
     (fn [data]
       (try (-> spec
-               (validations/validate! data)
+               (val/validate! data)
                handler
                ->response)
            (catch Throwable ex

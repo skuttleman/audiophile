@@ -1,21 +1,41 @@
 (ns com.ben-allred.audiophile.ui.app.views.projects
   (:refer-clojure :exclude [list])
   (:require
-    [com.ben-allred.audiophile.ui.app.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.audiophile.common.core.navigation.core :as nav]
-    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
-    [com.ben-allred.audiophile.ui.core.components.core :as comp]
-    [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
-    [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.strings :as strings]
+    [com.ben-allred.audiophile.common.domain.validations.core :as val]
+    [com.ben-allred.audiophile.common.domain.validations.specs :as specs]
+    [com.ben-allred.audiophile.ui.app.forms.standard :as form]
+    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
+    [com.ben-allred.audiophile.ui.core.components.core :as comp]
+    [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
+    [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
+(defn ^:private with-artifact [form]
+  (cond-> form
+    (and (vector? form)
+         (= :artifact/id (first form)))
+    (->> (conj [:map])
+         (conj [:artifact/details]))))
+
 (def ^:private validator
-  (constantly nil))
+  (val/validator {:spec specs/project:create}))
+
+(def ^:private file-validator
+  (val/validator {:spec (with-meta (colls/postwalk with-artifact specs/file:create)
+                                   {:missing-keys {:file/name        "track name is required"
+                                                   :version/name     "version name is required"
+                                                   :artifact/details "file is required"}})}))
+
+(def ^:private version-validator
+  (val/validator {:spec (with-meta (colls/postwalk with-artifact specs/version:create)
+                                   {:missing-keys {:version/name     "version name is required"
+                                                   :artifact/details "file is required"}})}))
 
 (defmulti ^:private team-name :team/type)
 
@@ -81,7 +101,7 @@
     (let [project-id (:file/project-id file)
           *form (vres/create ::file
                              *file-version
-                             (form/create nil (constantly nil))
+                             (form/create nil version-validator)
                              {:nav/params {:route-params {:file-id    (:file/id file)
                                                           :project-id project-id}}})
           file-opts {:nav/params {:route-params {:project-id project-id}}}]
@@ -108,7 +128,7 @@
   (fn [project-id _cb]
     (let [*form (vres/create ::file
                              *file
-                             (form/create nil (constantly nil))
+                             (form/create nil file-validator)
                              {:nav/params {:route-params {:project-id project-id}}})
           file-opts {:nav/params {:route-params {:project-id project-id}}}]
       (fn [_project-id cb]

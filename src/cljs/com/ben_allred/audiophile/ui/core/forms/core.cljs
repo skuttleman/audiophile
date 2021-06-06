@@ -15,8 +15,20 @@
   ([*form value]
    (pforms/init! *form value)))
 
+(defn attempt! [*form]
+  (pforms/attempt! *form))
+
+(defn attempted? [*form]
+  (pforms/attempted? *form))
+
 (defn change! [*form path value]
   (pforms/change! *form path value))
+
+(defn changed?
+  ([*form]
+   (pforms/changed? *form))
+  ([*form path]
+   (pforms/changed? *form path)))
 
 (defn touch!
   ([*form]
@@ -48,9 +60,11 @@
          visited? (when tracks?
                     (touched? *form path))
          errors (when (satisfies? pforms/IValidate *form)
-                  (get-in (errors *form) path))]
+                  (get-in (errors *form) path))
+         attempted? (when (satisfies? pforms/IAttempt *form)
+                      (attempted? *form))]
      (-> attrs
-         (assoc :visited? visited?)
+         (assoc :visited? visited? :attempted? attempted?)
          (maps/assoc-defaults :disabled (when (satisfies? pres/IResource *form)
                                           (res/requesting? *form))
                               :on-blur (constantly nil))

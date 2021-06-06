@@ -155,7 +155,8 @@
         (let [file-input (volatile! nil)]
           (fn [{:keys [multi? on-change] :as attrs}]
             [form-field
-             attrs
+             (cond-> attrs
+               (not (:attempted? attrs)) (dissoc :errors))
              [:div
               [:input {:ref       #(some->> % (vreset! file-input))
                        :type      :file

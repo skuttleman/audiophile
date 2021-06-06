@@ -26,13 +26,14 @@
     (let [opts (-> opts*
                    (merge opts)
                    (assoc :form/value (internal->remote id @*form)))]
+      (forms/attempt! this)
       (if-let [errors (forms/errors this)]
         (do (forms/touch! *form)
             (v/reject [:local/rejected errors]))
         (-> *resource
             (pres/request! opts)
             (v/then (partial remote->internal id))
-            (v/peek (partial forms/init! *form))))))
+            (v/peek (partial forms/init! *form) nil)))))
   (status [_]
     (pres/status *resource))
 
@@ -40,9 +41,19 @@
   (init! [_ value]
     (forms/init! *form value))
 
+  pforms/IAttempt
+  (attempt! [_]
+    (forms/attempt! *form))
+  (attempted? [_]
+    (forms/attempted? *form))
+
   pforms/IChange
   (change! [_ path value]
     (forms/change! *form path value))
+  (changed? [_]
+    (forms/changed? *form))
+  (changed? [_ path]
+    (forms/changed? *form path))
 
   pforms/ITrack
   (touch! [_]

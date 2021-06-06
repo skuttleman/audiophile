@@ -11,13 +11,20 @@
       (swap! state assoc
              :init rep
              :current rep
+             :form/attempted false
              :touched #{}
              :form/touched false)
       nil))
 
+  pforms/IAttempt
+  (attempt! [_]
+    (swap! state assoc :form/attempted true)
+    nil)
+  (attempted? [_]
+    (:form/attempted @state))
+
   pforms/IChange
-  (change! [this path value]
-    (pforms/touch! this path)
+  (change! [_ path value]
     (swap! state (fn [val]
                    (update val
                            :current
@@ -27,6 +34,12 @@
                            path
                            value)))
     nil)
+  (changed? [_]
+    (let [{:keys [current init]} @state]
+      (= current init)))
+  (changed? [_ path]
+    (let [{:keys [current init]} @state]
+      (= (get current path) (get init path))))
 
   pforms/ITrack
   (touch! [_]

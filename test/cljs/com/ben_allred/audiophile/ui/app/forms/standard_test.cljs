@@ -1,13 +1,13 @@
 (ns ^:unit com.ben-allred.audiophile.ui.app.forms.standard-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
-    [com.ben-allred.audiophile.ui.app.forms.standard :as forms.std]))
+    [com.ben-allred.audiophile.ui.app.forms.standard :as form]
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]))
 
 (deftest ^:unit standard-form-test
   (testing "StandardForm"
     (testing "when using a form without a validator"
-      (let [*form (forms.std/create {:bar {:quux "init"}})]
+      (let [*form (form/create {:bar {:quux "init"}})]
         (testing "has no error"
           (is (nil? (forms/errors *form))))
 
@@ -32,8 +32,8 @@
           (testing "tracks touch state"
             (is (forms/touched? *form))
             (is (forms/touched? *form [:none]))
-            (is (forms/touched? *form [:bar :baz]))
-            (is (forms/touched? *form [:foo]))
+            (is (not (forms/touched? *form [:foo])))
+            (is (not (forms/touched? *form [:bar :baz])))
             (is (not (forms/touched? *form [:bar :quux]))))
 
           (testing "and when initializing the form"
@@ -56,7 +56,7 @@
       (let [validator (fn [{:keys [a]}]
                         (when (not= :value a)
                           ["a must = value"]))
-            form (forms.std/create {:a :value} validator)]
+            form (form/create {:a :value} validator)]
         (testing "and when the validator returns no errors"
           (testing "the form has no errors"
             (is (nil? (forms/errors form)))))

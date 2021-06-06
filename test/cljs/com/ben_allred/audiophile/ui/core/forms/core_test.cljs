@@ -25,17 +25,22 @@
 
                   pforms/IChange
                   (change! [_ _ value]
-                    [::changed value]))]
+                    [::changed value])
+
+                  pforms/IAttempt
+                  (attempted? [_]
+                    ::attempted))]
       (testing "updates form attrs"
         (let [[{:keys [on-blur on-change]} attrs] (-> {:some     :attrs
                                                        :disabled ::disabled}
                                                       (forms/with-attrs *form [:some :path])
                                                       (maps/extract-keys #{:on-blur :on-change}))]
-          (is (= {:some     :attrs
-                  :visited? [::touched [:some :path]]
-                  :disabled ::disabled
-                  :value    ::value
-                  :errors   ::errors}
+          (is (= {:some       :attrs
+                  :visited?   [::touched [:some :path]]
+                  :disabled   ::disabled
+                  :value      ::value
+                  :errors     ::errors
+                  :attempted? ::attempted}
                  attrs))
           (on-blur :value)
           (is (= [::touch! [:some :path]] @touch!))

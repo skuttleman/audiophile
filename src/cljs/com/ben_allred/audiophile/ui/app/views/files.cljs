@@ -1,11 +1,11 @@
 (ns com.ben-allred.audiophile.ui.app.views.files
   (:require
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.app.forms.query-params :as form.qp]
     [com.ben-allred.audiophile.ui.app.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]))
 
 (defn ^:private version-name [version]
   [:span (:file-version/name version)])

@@ -1,17 +1,19 @@
 (ns com.ben-allred.audiophile.ui.app.views.teams
   (:refer-clojure :exclude [list])
   (:require
-    [com.ben-allred.audiophile.ui.app.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
-    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.domain.validations.core :as val]
+    [com.ben-allred.audiophile.common.domain.validations.specs :as specs]
+    [com.ben-allred.audiophile.ui.app.forms.standard :as form]
+    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
 (def ^:private validator
-  (constantly nil))
+  (val/validator {:spec specs/team:create}))
 
 (def ^:private team-type->icon
   {:PERSONAL      ["Personal Team" :user]
