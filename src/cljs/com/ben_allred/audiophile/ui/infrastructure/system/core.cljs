@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.ui.infrastructure.store.core :as store]
     [com.ben-allred.audiophile.ui.infrastructure.store.hooks :as store.hooks]
     [integrant.core :as ig]
-    com.ben-allred.audiophile.common.infrastructure.system.services.core
+    com.ben-allred.audiophile.common.infrastructure.system.core
     com.ben-allred.audiophile.ui.infrastructure.system.services.resources
     com.ben-allred.audiophile.ui.infrastructure.system.views))
 

@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.app.repositories.teams.core
   (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.api.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
     [com.ben-allred.audiophile.api.app.repositories.teams.protocols :as pt]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))

@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.ui.app.views.projects
   (:refer-clojure :exclude [list])
   (:require
-    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -9,7 +9,7 @@
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
     [com.ben-allred.audiophile.common.domain.validations.specs :as specs]
     [com.ben-allred.audiophile.ui.app.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
+    [com.ben-allred.audiophile.ui.app.forms.submittable :as form.sub]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
@@ -70,12 +70,12 @@
                      (colls/split-on personal?)
                      (apply concat)
                      (map (juxt :team/id identity)))
-        *form (vres/create *projects (form/create {:project/team-id (ffirst options)}
-                                                  validator))
+        *form (form.sub/create *projects (form/create {:project/team-id (ffirst options)}
+                                                      validator))
         options-by-id (into {} options)]
     (fn [_teams _*projects cb]
       [:div
-       [comp/form {:form         *form
+       [comp/form {:*form        *form
                    :on-submitted (fn [vow]
                                    (v/peek vow cb nil))}
         (when (>= (count options-by-id) 2)
@@ -92,21 +92,21 @@
                                     *form
                                     [:project/name])]]])))
 
-(defmethod vres/internal->remote ::file
+(defmethod form.sub/internal->remote ::file
   [_ data]
   (merge data (:artifact/details data)))
 
 (defn version-form [{:keys [*artifacts *file-version *files]}]
   (fn [file _cb]
     (let [project-id (:file/project-id file)
-          *form (vres/create ::file
-                             *file-version
-                             (form/create nil version-validator)
-                             {:nav/params {:route-params {:file-id    (:file/id file)
+          *form (form.sub/create ::file
+                                 *file-version
+                                 (form/create nil version-validator)
+                                 {:nav/params {:route-params {:file-id    (:file/id file)
                                                           :project-id project-id}}})
           file-opts {:nav/params {:route-params {:project-id project-id}}}]
       (fn [_file cb]
-        [comp/form {:form         *form
+        [comp/form {:*form        *form
                     :disabled     (res/requesting? *artifacts)
                     :on-submitted (fn [vow]
                                     (v/peek vow
@@ -117,22 +117,22 @@
          [in/input (forms/with-attrs {:label "Version name"}
                                      *form
                                      [:version/name])]
-         [in/uploader (-> {:label    "File"
-                           :resource *artifacts
-                           :display  (if-let [filename (get-in @*form [:artifact/details :artifact/filename])]
-                                       filename
-                                       "Select file…")}
+         [in/uploader (-> {:label     "File"
+                           :*resource *artifacts
+                           :display   (if-let [filename (get-in @*form [:artifact/details :artifact/filename])]
+                                        filename
+                                        "Select file…")}
                           (forms/with-attrs *form [:artifact/details]))]]))))
 
 (defn file-form [{:keys [*artifacts *file *files]}]
   (fn [project-id _cb]
-    (let [*form (vres/create ::file
-                             *file
-                             (form/create nil file-validator)
-                             {:nav/params {:route-params {:project-id project-id}}})
+    (let [*form (form.sub/create ::file
+                                 *file
+                                 (form/create nil file-validator)
+                                 {:nav/params {:route-params {:project-id project-id}}})
           file-opts {:nav/params {:route-params {:project-id project-id}}}]
       (fn [_project-id cb]
-        [comp/form {:form         *form
+        [comp/form {:*form        *form
                     :disabled     (res/requesting? *artifacts)
                     :on-submitted (fn [vow]
                                     (v/peek vow
@@ -146,11 +146,11 @@
          [in/input (forms/with-attrs {:label "Version name"}
                                      *form
                                      [:version/name])]
-         [in/uploader (-> {:label    "File"
-                           :resource *artifacts
-                           :display  (if-let [filename (get-in @*form [:artifact/details :artifact/filename])]
-                                       filename
-                                       "Select file…")}
+         [in/uploader (-> {:label     "File"
+                           :*resource *artifacts
+                           :display   (if-let [filename (get-in @*form [:artifact/details :artifact/filename])]
+                                        filename
+                                        "Select file…")}
                           (forms/with-attrs *form [:artifact/details]))]]))))
 
 (defn track-list [{:keys [file-form nav *modals version-form]}]

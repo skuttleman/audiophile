@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
     [com.ben-allred.audiophile.common.domain.validations.specs :as specs]
     [com.ben-allred.audiophile.ui.app.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
+    [com.ben-allred.audiophile.ui.app.forms.submittable :as form.sub]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
@@ -20,15 +20,15 @@
    :COLLABORATIVE ["Collaborative Team" :users]})
 
 (defn ^:private create* [*teams _cb]
-  (let [form (vres/create *teams (form/create {:team/type :COLLABORATIVE} validator))]
+  (let [*form (form.sub/create *teams (form/create {:team/type :COLLABORATIVE} validator))]
     (fn [_*teams cb]
       [:div
-       [comp/form {:form         form
+       [comp/form {:*form        *form
                    :on-submitted (fn [vow]
                                    (v/peek vow cb nil))}
         [in/input (forms/with-attrs {:label       "Name"
                                      :auto-focus? true}
-                                    form
+                                    *form
                                     [:team/name])]]])))
 
 (defn list [_]

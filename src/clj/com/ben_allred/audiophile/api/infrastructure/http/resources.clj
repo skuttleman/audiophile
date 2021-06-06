@@ -3,7 +3,7 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.api.infrastructure.templates.html :as html]
-    [com.ben-allred.audiophile.common.core.resources.http :as http]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn assets [_]

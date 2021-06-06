@@ -2,7 +2,7 @@
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.app.navigation.base :as bnav]
-    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (deftest router-test

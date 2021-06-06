@@ -176,13 +176,13 @@
                                                        dom/prevent-default)))
                (:display attrs "Select file…")]]]))))))
 
-(defn uploader [{:keys [multi? on-change resource] :as attrs}]
+(defn uploader [{:keys [multi? on-change *resource] :as attrs}]
   [file (-> attrs
             (assoc :on-change (fn [file-set]
-                                (-> resource
+                                (-> *resource
                                     (res/request! {:files file-set :multi? multi?})
                                     (v/then on-change))))
-            (update :disabled #(or % (res/requesting? resource))))])
+            (update :disabled #(or % (res/requesting? *resource))))])
 
 (defn openable [& _]
   (let [open? (r/atom false)

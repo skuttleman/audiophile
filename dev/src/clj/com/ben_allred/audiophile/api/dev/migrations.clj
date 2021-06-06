@@ -2,16 +2,17 @@
   (:require
     [clojure.java.io :as io]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.api.dev.protocols :as pdev]
-    [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.api.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.api.dev.protocols :as pdev]
+    [com.ben-allred.audiophile.api.dev.uml :as uml]
+    [com.ben-allred.audiophile.api.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [migratus.core :as migratus]
-    com.ben-allred.audiophile.common.infrastructure.system.services.core
-    com.ben-allred.audiophile.api.infrastructure.system.core))
+    com.ben-allred.audiophile.api.infrastructure.system.core
+    com.ben-allred.audiophile.common.infrastructure.system.core))
 
 (deftype Migrator [cfg]
   pdev/IMigrate
@@ -75,6 +76,7 @@
         "redo" (redo! migrator)
         "create" (create! migrator (string/join "_" args))
         "seed" (seed! transactor (or arg "db/seed.sql"))
+        "generate-erd" (uml/generate! transactor "resources/db/erd.puml")
         (throw (ex-info (str "unknown command: " command) {:command command :args args})))
       (finally
         (ig/halt! system)))))
@@ -82,4 +84,6 @@
 (comment
   (-main "create" "DESCRIPTION")
   (-main "migrate")
-  (-main "redo"))
+  (-main "redo")
+
+  (-main "generate-erd"))

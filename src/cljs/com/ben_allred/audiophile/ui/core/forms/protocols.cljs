@@ -10,7 +10,8 @@
 (defprotocol IAttempt
   "Tracks whether the form has been attempted"
   (attempt! [this] "Mark the entire entity as \"attempted\".")
-  (attempted? [this] "Has the entity been \"attempted\"?"))
+  (attempted? [this] "Has the entity been \"attempted\"?")
+  (attempting? [this] "Is the entity currently being \"attempted\"."))
 
 (defprotocol IChange
   "Can change the value of itself at a leaf node."

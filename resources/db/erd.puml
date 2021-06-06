@@ -1,0 +1,78 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+entity "projects" as projects {
+  * id : uuid <<generated>>
+  --
+  * team_id : uuid <<FK>>
+  * created_at : timestamp without time zone <<generated>>
+  * name : character varying
+  * created_by : uuid
+}
+
+entity "file_versions" as file_versions {
+  * id : uuid <<generated>>
+  --
+  * created_at : timestamp without time zone <<generated>>
+  * file_id : uuid <<FK>>
+  * name : character varying
+  * artifact_id : uuid <<FK>>
+  * created_by : uuid
+}
+
+entity "files" as files {
+  * id : uuid <<generated>>
+  --
+  * project_id : uuid <<FK>>
+  * created_by : uuid
+  * created_at : timestamp without time zone <<generated>>
+  * idx : integer
+  * name : character varying
+}
+
+entity "artifacts" as artifacts {
+  * id : uuid <<generated>>
+  --
+  * uri : character varying
+  * key : character varying
+  * content_length : integer
+  * created_by : uuid
+  * content_type : character varying
+  * created_at : timestamp without time zone <<generated>>
+  * filename : character varying
+}
+
+entity "users" as users {
+  * id : uuid <<generated>>
+  --
+  * mobile_number : character varying
+  * handle : character varying
+  * created_at : timestamp without time zone <<generated>>
+  * last_name : character varying
+  * first_name : character varying
+  * email : character varying
+}
+
+entity "user_teams" as user_teams {
+  * user_id : uuid <<FK>>
+  * team_id : uuid <<FK>>
+}
+
+entity "teams" as teams {
+  * id : uuid <<generated>>
+  --
+  * created_by : uuid
+  * type : USER-DEFINED
+  * name : character varying
+  * created_at : timestamp without time zone <<generated>>
+}
+
+teams ..o projects
+files ..o file_versions
+artifacts ..o file_versions
+projects ..o files
+users ..o user_teams
+teams ..o user_teams
+
+@enduml

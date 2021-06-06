@@ -48,8 +48,8 @@
  {}
 
  :audiophile.views.components/audio-player
- {:*artifact #ig/ref :audiophile.views.components/audio-resource}
+ {:*artifact #ig/ref :audiophile.resource.audio/artifact}
 
- :audiophile.views.components/audio-resource
+ :audiophile.resource.audio/artifact
  {:http-client #ig/ref :services/http
   :nav         #ig/ref :services/nav}}

@@ -11,7 +11,7 @@
     [ring.middleware.reload :as rel]
     com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
-    com.ben-allred.audiophile.common.infrastructure.system.services.core))
+    com.ben-allred.audiophile.common.infrastructure.system.core))
 
 (defonce system nil)
 
@@ -32,7 +32,7 @@
       (require 'com.ben-allred.audiophile.api.app.repositories.teams.core :reload)
       (require 'com.ben-allred.audiophile.api.app.repositories.users.core :reload)
       (require 'com.ben-allred.audiophile.api.infrastructure.resources.s3 :reload)
-      (require 'com.ben-allred.audiophile.common.core.navigation.core :reload)
+      (require 'com.ben-allred.audiophile.common.app.navigation.core :reload)
       (require 'com.ben-allred.audiophile.common.core.serdes.core :reload))))
 
 (defn reset-sys!

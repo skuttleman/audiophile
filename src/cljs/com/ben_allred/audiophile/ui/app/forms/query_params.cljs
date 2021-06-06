@@ -1,9 +1,7 @@
 (ns com.ben-allred.audiophile.ui.app.forms.query-params
   (:require
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
-    [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
+    [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]))
 
 (defn ^:private qp-updater [qp path value]
   (let [pre-path (butlast path)
@@ -27,6 +25,8 @@
     (pforms/attempt! *form))
   (attempted? [_]
     (pforms/attempted? *form))
+  (attempting? [_]
+    (pforms/attempting? *form))
 
   pforms/IChange
   (change! [_ path value]

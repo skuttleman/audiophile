@@ -1,10 +1,8 @@
 (ns com.ben-allred.audiophile.ui.core.forms.core
   (:require
-    [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.core.resources.core :as res]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]))
 
 (defn ^:private derefable? [x]
   (satisfies? IDeref x))
@@ -20,6 +18,9 @@
 
 (defn attempted? [*form]
   (pforms/attempted? *form))
+
+(defn attempting? [*form]
+  (pforms/attempting? *form))
 
 (defn change! [*form path value]
   (pforms/change! *form path value))
@@ -61,13 +62,13 @@
                     (touched? *form path))
          errors (when (satisfies? pforms/IValidate *form)
                   (get-in (errors *form) path))
-         attempted? (when (satisfies? pforms/IAttempt *form)
-                      (attempted? *form))]
+         [attempted? attempting?] (when (satisfies? pforms/IAttempt *form)
+                                    [(attempted? *form)
+                                     (attempting? *form)])]
      (-> attrs
          (assoc :visited? visited? :attempted? attempted?)
-         (maps/assoc-defaults :disabled (when (satisfies? pres/IResource *form)
-                                          (res/requesting? *form))
-                              :on-blur (constantly nil))
+         (maps/assoc-defaults :disabled attempting?
+                              :on-blur  (constantly nil))
 
          (cond->
            tracks?

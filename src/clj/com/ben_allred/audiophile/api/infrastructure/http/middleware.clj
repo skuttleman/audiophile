@@ -3,9 +3,9 @@
     [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.core.resources.http :as http]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps])
   (:import
