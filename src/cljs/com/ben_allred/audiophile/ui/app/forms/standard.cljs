@@ -22,6 +22,8 @@
     nil)
   (attempted? [_]
     (:form/attempted @state))
+  (attempting? [_]
+    false)
 
   pforms/IChange
   (change! [_ path value]

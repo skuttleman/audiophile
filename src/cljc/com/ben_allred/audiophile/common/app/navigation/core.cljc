@@ -1,7 +1,7 @@
-(ns com.ben-allred.audiophile.common.core.navigation.core
+(ns com.ben-allred.audiophile.common.app.navigation.core
   (:require
     #?(:cljs [com.ben-allred.audiophile.ui.core.utils.dom :as dom])
-    [com.ben-allred.audiophile.common.core.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 

@@ -2,7 +2,7 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.api.app.protocols :as papp]
-    [com.ben-allred.audiophile.common.core.resources.http :as http]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.vow.core :as v]))

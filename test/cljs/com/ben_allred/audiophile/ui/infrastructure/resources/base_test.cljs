@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.ui.app.resources.base-test
+(ns ^:unit com.ben-allred.audiophile.ui.infrastructure.resources.base-test
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.ui.app.resources.base :as bres]
+    [com.ben-allred.audiophile.ui.infrastructure.resources.base :as bres]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.vow.core :as v]
     [test.utils :refer [async] :as tu]

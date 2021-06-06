@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.store.hooks
   (:require
     [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.core.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

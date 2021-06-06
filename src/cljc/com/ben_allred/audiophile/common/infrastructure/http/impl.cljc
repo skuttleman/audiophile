@@ -1,12 +1,12 @@
-(ns com.ben-allred.audiophile.common.infrastructure.http
+(ns com.ben-allred.audiophile.common.infrastructure.http.impl
   (:require
     #?(:clj [clj-http.cookies :as cook])
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.common.core.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.core.resources.http :as http]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
@@ -32,7 +32,7 @@
     (-> response
         (update :status #(http/code->status % %))
         (update :body #(cond->> %
-                         (and serde (string? %)) (serdes/deserialize serde))))))
+                                (and serde (string? %)) (serdes/deserialize serde))))))
 
 (defn ^:private with-headers*
   ([]
@@ -66,19 +66,19 @@
       pres/IResource
       (request! [_ request]
         (log/with-ctx (assoc log-ctx :sub :request)
-          (log/info (select-keys request #{:method :url}))
-          (v/peek (pres/request! http-client request)
-                  (fn [result]
-                    (log/with-ctx {:sub :response}
-                      (log/info (-> request
-                                    (select-keys #{:method :url})
-                                    (assoc :status (:status result))))))
-                  (fn [result]
-                    (log/with-ctx {:sub :response}
-                      (log/error (-> request
-                                     (select-keys #{:method :url})
-                                     (assoc :status (:status result)
-                                            :body (:body result))))))))))))
+                      (log/info (select-keys request #{:method :url}))
+                      (v/peek (pres/request! http-client request)
+                              (fn [result]
+                                (log/with-ctx {:sub :response}
+                                              (log/info (-> request
+                                                            (select-keys #{:method :url})
+                                                            (assoc :status (:status result))))))
+                              (fn [result]
+                                (log/with-ctx {:sub :response}
+                                              (log/error (-> request
+                                                             (select-keys #{:method :url})
+                                                             (assoc :status (:status result)
+                                                                    :body (:body result))))))))))))
 
 (defn with-headers [_]
   (fn [http-client]

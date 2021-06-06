@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.infrastructure.system.services.http
   (:require
-    [com.ben-allred.audiophile.common.infrastructure.http :as client]
+    [com.ben-allred.audiophile.common.infrastructure.http.impl :as client]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.services.http/base [_ cfg]

@@ -29,7 +29,9 @@
 
                   pforms/IAttempt
                   (attempted? [_]
-                    ::attempted))]
+                    ::attempted)
+                  (attempting? [_]
+                    ::attempting))]
       (testing "updates form attrs"
         (let [[{:keys [on-blur on-change]} attrs] (-> {:some     :attrs
                                                        :disabled ::disabled}

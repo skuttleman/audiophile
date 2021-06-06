@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.ui.app.resources.multi
+(ns com.ben-allred.audiophile.ui.infrastructure.resources.multi
   (:require
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

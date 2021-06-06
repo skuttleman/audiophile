@@ -1,13 +1,12 @@
 (ns com.ben-allred.audiophile.ui.core.components.core
   (:require
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
-    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
+    [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
+    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]))
 
 (def ^:private level->class
   {:error "is-danger"})
@@ -27,12 +26,10 @@
 (defn with-resource [[*resource opts] _component & _args]
   (res/request! *resource opts)
   (fn [_resource component & args]
-    (let [status (res/status *resource)
-          data @*resource]
-      (case status
-        :success (into [component data] args)
-        :error [:div.error "an error occurred"]
-        [spinner {:size (:spinner/size opts)}]))))
+    (case (res/status *resource)
+      :success (into [component @*resource] args)
+      :error [:div.error "an error occurred"]
+      [spinner {:size (:spinner/size opts)}])))
 
 (defn not-found [_]
   [:div {:style {:display         :flex
@@ -46,22 +43,21 @@
   ([attrs icon-class]
    [:i.fas (update attrs :class conj (str "fa-" (name icon-class)))]))
 
-(defn form [{:keys [buttons disabled form on-submitted] :as attrs} & fields]
-  (let [resource? (satisfies? pres/IResource form)
-        ready? (if resource?
-                 (res/ready? form)
+(defn form [{:keys [buttons disabled *form on-submitted] :as attrs} & fields]
+  (let [submittable? (satisfies? pforms/IAttempt *form)
+        ready? (if submittable?
+                 (not (forms/attempting? *form))
                  true)
         disabled (or disabled
                      (not ready?)
-                     (->> (forms/errors form)
-                          maps/flatten
-                          (filter (fn [[path]]
-                                    (forms/touched? form path)))
-                          seq))]
+                     (and (forms/errors *form)
+                          (or (not submittable?)
+                              (and submittable?
+                                   (forms/attempted? *form)))))]
     (-> [:form.form.layout--stack-between
          {:on-submit (comp (fn [_]
-                             (when resource?
-                               (cond-> (res/request! form attrs)
+                             (when submittable?
+                               (cond-> (forms/attempt! *form)
                                  on-submitted on-submitted)))
                            dom/prevent-default)}]
         (into fields)

@@ -1,15 +1,15 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.system.views
   (:require
-    [com.ben-allred.audiophile.ui.core.components.audio :as audio]
-    [com.ben-allred.audiophile.ui.core.components.modal :as modal]
-    [com.ben-allred.audiophile.ui.core.components.tiles :as tiles]
-    [com.ben-allred.audiophile.ui.core.components.toast :as toast]
     [com.ben-allred.audiophile.ui.app.views.core :as views]
     [com.ben-allred.audiophile.ui.app.views.files :as views.files]
     [com.ben-allred.audiophile.ui.app.views.home :as views.home]
     [com.ben-allred.audiophile.ui.app.views.login :as views.login]
     [com.ben-allred.audiophile.ui.app.views.projects :as views.projects]
     [com.ben-allred.audiophile.ui.app.views.teams :as views.teams]
+    [com.ben-allred.audiophile.ui.core.components.audio :as audio]
+    [com.ben-allred.audiophile.ui.core.components.modal :as modal]
+    [com.ben-allred.audiophile.ui.core.components.tiles :as tiles]
+    [com.ben-allred.audiophile.ui.core.components.toast :as toast]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.views/app [_ cfg]
@@ -56,9 +56,6 @@
 
 (defmethod ig/init-key :audiophile.views.components/audio-player [_ cfg]
   (audio/player cfg))
-
-(defmethod ig/init-key :audiophile.views.components/audio-resource [_ cfg]
-  (audio/resource cfg))
 
 (defmethod ig/init-key :audiophile.views.components/modals [_ cfg]
   (modal/modals cfg))

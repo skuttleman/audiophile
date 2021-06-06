@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.ui.app.resources.cached-test
+(ns ^:unit com.ben-allred.audiophile.ui.infrastructure.resources.cached-test
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.ui.app.resources.cached :as cached]
+    [com.ben-allred.audiophile.ui.infrastructure.resources.cached :as cached]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.vow.core :as v]

@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.core.resources.http
+(ns com.ben-allred.audiophile.common.infrastructure.http.core
   (:refer-clojure :exclude [get])
   (:require
     [clojure.set :as set]
@@ -95,4 +95,3 @@
    (delete client url nil))
   ([client url request]
    (http* client :delete url request)))
-

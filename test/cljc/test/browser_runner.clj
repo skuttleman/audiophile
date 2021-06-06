@@ -21,15 +21,29 @@
                    (.findElements driver (By/id "summary")))]
     (string/includes? (str xs) "Totals")))
 
+(defmulti print-failure! :type)
+
+(defmethod print-failure! :failure
+  [{:keys [ns var line context expected actual]}]
+  (println "")
+  (println (str RED "FAILURE" RESET))
+  (println (str ns var))
+  (println (str "at " CYAN line RESET))
+  (println (str "  " context))
+  (println (str "    EXPECTED: " expected))
+  (println (str "    ACTUAL:   " GOLD actual RESET)))
+
+(defmethod print-failure! :error
+  [{:keys [ns var line context]}]
+  (println "")
+  (println (str RED "ERROR" RESET))
+  (println (str ns var))
+  (println (str "at " CYAN line RESET))
+  (println (str "  " GOLD context RESET)))
+
 (defn print-failures! [failures]
-  (doseq [{:keys [ns var line context expected actual]} failures]
-    (println "")
-    (println (str RED "FAILURE" RESET))
-    (println (str ns var))
-    (println (str "at " CYAN line RESET))
-    (println (str "  " context))
-    (println (str "    EXPECTED: " expected))
-    (println (str "    ACTUAL:   " GOLD actual RESET))))
+  (doseq [failure failures]
+    (print-failure! failure)))
 
 (defn ^:private by-css [^SearchContext element selector]
   (.findElements element (By/cssSelector selector)))
@@ -57,18 +71,25 @@
           (let [tests (count (by-css driver ".test-var"))
                 passes (count (by-css driver ".test-passing"))
                 fails (count (by-css driver ".test-fail"))
-                failures (for [^WebElement el (by-css driver ".test-ns.has-failures")
+                failures (for [^WebElement el (concat (by-css driver ".test-ns.has-failures")
+                                                      (by-css driver ".test-ns.has-errors"))
                                :let [ns (text (by-css el "h2"))]
-                               ^WebElement el (by-css el ".test-var.has-failures")
+                               [type ^WebElement el] (concat (map (partial vector :failure)
+                                                                  (by-css el ".test-var.has-failures"))
+                                                             (map (partial vector :error)
+                                                                  (by-css el ".test-var.has-errors")))
                                :let [line (text (by-css el ".test-var-line"))
                                      var (-> (by-css el ".var-header")
                                              text
                                              (string/replace line "")
                                              string/trim)]
-                               ^WebElement el (by-css el ".test-fail")
-                               :let [context (text (by-css el ".contexts"))
+                               ^WebElement el (by-css el (case type
+                                                           :failure ".test-fail:not(.test-error)"
+                                                           :error ".test-error"))
+                               :let [context (text (concat (by-css el ".contexts")
+                                                           (by-css el ".error-message")))
                                      [expected actual] (texts (by-css el "pre > code"))]]
-                           (maps/->m ns var line context expected actual))
+                           (maps/->m type ns var line context expected actual))
                 [color code] (if (zero? fails)
                                [GREEN 0]
                                [RED 1])]

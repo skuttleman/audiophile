@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.ui.app.resources.toaster
+(ns com.ben-allred.audiophile.ui.infrastructure.resources.toaster
   (:require
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]

@@ -3,7 +3,7 @@
     [bidi.bidi :as bidi]
     [clojure.set :as set]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.core.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.stubs.pushy :as pushy]

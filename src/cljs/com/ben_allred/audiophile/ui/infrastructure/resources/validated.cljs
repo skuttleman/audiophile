@@ -1,9 +1,9 @@
-(ns com.ben-allred.audiophile.ui.app.resources.validated
+(ns com.ben-allred.audiophile.ui.infrastructure.resources.validated
   (:require
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]))
 
@@ -11,41 +11,41 @@
   id)
 
 (defmulti remote->internal converter)
+
+(defmulti internal->remote converter)
+
+(defn ^:private attempt* [id *form *resource opts]
+  (if-let [errors (forms/errors *form)]
+    (do (forms/touch! *form)
+        (v/reject [:local/rejected errors]))
+    (-> *resource
+        (res/request! opts)
+        (v/then (partial remote->internal id))
+        (v/peek (partial forms/init! *form) nil))))
+
 (defmethod remote->internal :default
   [_ data]
   data)
 
-(defmulti internal->remote converter)
 (defmethod internal->remote :default
   [_ data]
   data)
 
 (deftype ValidatedResource [id *resource *form opts*]
-  pres/IResource
-  (request! [this opts]
-    (let [opts (-> opts*
-                   (merge opts)
-                   (assoc :form/value (internal->remote id @*form)))]
-      (forms/attempt! this)
-      (if-let [errors (forms/errors this)]
-        (do (forms/touch! *form)
-            (v/reject [:local/rejected errors]))
-        (-> *resource
-            (pres/request! opts)
-            (v/then (partial remote->internal id))
-            (v/peek (partial forms/init! *form) nil)))))
-  (status [_]
-    (pres/status *resource))
-
   pforms/IInit
   (init! [_ value]
     (forms/init! *form value))
 
   pforms/IAttempt
-  (attempt! [_]
-    (forms/attempt! *form))
+  (attempt! [this]
+    (forms/attempt! *form)
+    (attempt* id this *resource (assoc opts*
+                                       :form/value
+                                       (internal->remote id @*form))))
   (attempted? [_]
     (forms/attempted? *form))
+  (attempting? [_]
+    (res/requesting? *resource))
 
   pforms/IChange
   (change! [_ path value]

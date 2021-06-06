@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.common.infrastructure.http-test
+(ns ^:unit com.ben-allred.audiophile.common.infrastructure.http.impl-test
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.infrastructure.http :as client]
+    [com.ben-allred.audiophile.common.infrastructure.http.impl :as client]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]

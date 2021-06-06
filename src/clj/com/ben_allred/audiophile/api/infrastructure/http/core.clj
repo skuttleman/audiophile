@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.api.domain.interactors.core :as int]
     [com.ben-allred.audiophile.api.domain.validations.selectors :as selectors]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
-    [com.ben-allred.audiophile.common.core.resources.http :as http]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.domain.validations.core :as val]))

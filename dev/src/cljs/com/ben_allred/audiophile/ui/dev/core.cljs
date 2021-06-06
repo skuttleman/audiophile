@@ -7,7 +7,7 @@
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
     [com.ben-allred.audiophile.ui.app :as app]
     [com.ben-allred.audiophile.ui.app.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.app.resources.validated :as vres]
+    [com.ben-allred.audiophile.ui.infrastructure.resources.validated :as vres]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
@@ -44,14 +44,14 @@
 
 (defmethod ig/init-key :audiophile.dev/login-form [_ {:keys [login-resource]}]
   (fn [_route]
-    (let [form (vres/create login-resource (form/create nil login-validator))]
+    (let [*form (vres/create login-resource (form/create nil login-validator))]
       (fn [route]
-        [comp/form {:form        form
+        [comp/form {:*form       *form
                     :route       route
                     :submit/text "Login"}
          [in/input (forms/with-attrs {:label       "email"
                                       :auto-focus? true}
-                                     form
+                                     *form
                                      [:email])]]))))
 
 (defn component [k]
