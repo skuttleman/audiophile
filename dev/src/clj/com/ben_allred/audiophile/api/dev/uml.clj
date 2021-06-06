@@ -13,13 +13,15 @@
    ""])
 
 (defn ^:private field [{:keys [default name nilable? type]}]
-  (indent (str (when-not nilable? "* ")
-               name
-               " : "
-               type
-               " "
-               (when default "<<generated>>")
-               (when (string/ends-with? name "_id") "<<FK>>"))))
+  (let [fk? (string/ends-with? name "_id")]
+    (indent (str (when-not nilable? "* ")
+                 name
+                 " : "
+                 type
+                 (when (or default fk?)
+                   " ")
+                 (when default "<<generated>>")
+                 (when fk? "<<FK>>")))))
 
 (defn ^:private entity [[table {:keys [id fields]}]]
   (concat [(format "entity \"%s\" as %s {" table table)]
