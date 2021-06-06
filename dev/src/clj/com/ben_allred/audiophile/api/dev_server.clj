@@ -11,7 +11,7 @@
     [ring.middleware.reload :as rel]
     com.ben-allred.audiophile.api.infrastructure.system.core
     com.ben-allred.audiophile.api.dev.handler
-    com.ben-allred.audiophile.common.infrastructure.system.services.core))
+    com.ben-allred.audiophile.common.infrastructure.system.core))
 
 (defonce system nil)
 

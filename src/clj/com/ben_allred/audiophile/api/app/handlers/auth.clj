@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.app.handlers.auth
   (:require
-    [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.api.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn login [{:keys [auth]}]

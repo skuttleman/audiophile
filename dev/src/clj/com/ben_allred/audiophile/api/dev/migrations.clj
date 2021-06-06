@@ -10,7 +10,7 @@
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [migratus.core :as migratus]
-    com.ben-allred.audiophile.common.infrastructure.system.services.core
+    com.ben-allred.audiophile.common.infrastructure.system.core
     com.ben-allred.audiophile.api.infrastructure.system.core))
 
 (deftype Migrator [cfg]

@@ -1,6 +1,6 @@
-(ns com.ben-allred.audiophile.api.app.interactors.core
+(ns com.ben-allred.audiophile.api.domain.interactors.core
   (:require
-    [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]))
+    [com.ben-allred.audiophile.api.domain.interactors.protocols :as pint]))
 
 (def ^:const INVALID_INPUT :interactor/INVALID_INPUT)
 (def ^:const NOT_AUTHENTICATED :interactor/NOT_AUTHENTICATED)

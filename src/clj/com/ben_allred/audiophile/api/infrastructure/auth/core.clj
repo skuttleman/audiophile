@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.infrastructure.auth.core
   (:require
-    [com.ben-allred.audiophile.api.app.interactors.core :as int]
-    [com.ben-allred.audiophile.api.app.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.api.domain.interactors.core :as int]
+    [com.ben-allred.audiophile.api.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.api.app.protocols :as papp]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.core.navigation.core :as nav]

@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.ui.infrastructure.system :as cfg]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
-    com.ben-allred.audiophile.common.infrastructure.system.services.core
+    com.ben-allred.audiophile.common.infrastructure.system.core
     com.ben-allred.audiophile.ui.infrastructure.system.core))
 
 (defn ^:private app [app* store]

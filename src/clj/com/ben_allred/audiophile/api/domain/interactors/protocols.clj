@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.api.app.interactors.protocols)
+(ns com.ben-allred.audiophile.api.domain.interactors.protocols)
 
 (defprotocol IAccessor
   "Abstraction for interacting with a repository"

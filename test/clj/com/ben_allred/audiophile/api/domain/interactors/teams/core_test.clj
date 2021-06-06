@@ -1,7 +1,7 @@
-(ns ^:unit com.ben-allred.audiophile.api.app.interactors.teams.core-test
+(ns ^:unit com.ben-allred.audiophile.api.domain.interactors.teams.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.api.app.interactors.core :as int]
+    [com.ben-allred.audiophile.api.domain.interactors.core :as int]
     [com.ben-allred.audiophile.api.app.repositories.teams.core :as rteams]
     [com.ben-allred.audiophile.api.infrastructure.db.teams :as qteams]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]

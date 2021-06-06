@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.api.app.handlers.projects
   (:require
-    [com.ben-allred.audiophile.api.app.interactors.core :as int]
+    [com.ben-allred.audiophile.api.domain.interactors.core :as int]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn fetch-all [{:keys [interactor]}]
