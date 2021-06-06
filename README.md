@@ -52,4 +52,4 @@ $ bin/test.sh
 
 ## ERD
 
-![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/blob/uml/resources/db/erd.puml)
+![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/db/erd.puml)
