@@ -49,3 +49,7 @@ ui nREPL listens at `localhost {UI_NREPL_PORT:-7100}` (can be overridden with UI
 ```bash
 $ bin/test.sh
 ```
+
+## ERD
+
+![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/blob/uml/resources/db/erd.puml)
