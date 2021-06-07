@@ -1,8 +1,9 @@
 (ns com.ben-allred.audiophile.ui.app.forms.standard
   (:require
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
 (deftype StandardForm [state errors-fn]
   pforms/IInit

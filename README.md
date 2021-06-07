@@ -11,6 +11,7 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 - Install [Clojure runtime](https://clojure.org/guides/getting_started)
 - Install [Sass](https://sass-lang.com/install)
 - Install [Foreman](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html)
+- Install [Graphviz](https://graphviz.org/download/)
 
 ### Install
 

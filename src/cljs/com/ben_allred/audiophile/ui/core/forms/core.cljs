@@ -66,7 +66,7 @@
                                     [(attempted? *form)
                                      (attempting? *form)])]
      (-> attrs
-         (assoc :visited? visited? :attempted? attempted?)
+         (assoc :visited? visited? :attempted? attempted? :errors errors)
          (maps/assoc-defaults :disabled attempting?
                               :on-blur  (constantly nil))
 
@@ -79,7 +79,4 @@
            (assoc :value (get-in @*form path))
 
            (satisfies? pforms/IChange *form)
-           (assoc :on-change (partial pforms/change! *form path))
-
-           (and visited? errors)
-           (assoc :errors errors))))))
+           (assoc :on-change (partial pforms/change! *form path)))))))

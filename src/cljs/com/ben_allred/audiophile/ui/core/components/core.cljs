@@ -73,26 +73,15 @@
                 buttons
                 (into buttons))))))
 
-(defn create! [alert level body]
-  (pcomp/create! alert level body))
+(defn create! [alert opts]
+  (pcomp/create! alert opts))
 
 (defn remove! [alert id]
   (pcomp/remove! alert id))
 
-(defn modal!
-  ([modals body]
-   (modal! modals nil body))
-  ([modals header body]
-   (modal! modals header body nil))
-  ([modals header body buttons]
-   (pcomp/modal! modals header body buttons)))
-
-(defn remove-one! [modals id]
-  (pcomp/remove-one! modals id))
-
-(defn remove-all! [modals]
-  (pcomp/remove-all! modals))
+(defn remove-all! [alert]
+  (pcomp/remove-all! alert))
 
 (defn modal-opener [*modals title view]
   (fn [_]
-    (modal! *modals [:h2.subtitle title] view)))
+    (create! *modals {:header [:h2.subtitle title] :body view})))

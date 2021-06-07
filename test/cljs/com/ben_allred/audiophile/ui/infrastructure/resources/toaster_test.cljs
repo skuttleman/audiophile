@@ -30,7 +30,7 @@
                                       ::value)))
           toaster (stubs/create (reify
                                   pcomp/IAlert
-                                  (create! [_ _ _])))]
+                                  (create! [_ _])))]
       (async done
         (async/go
           (testing "#request!"
@@ -44,7 +44,7 @@
                 (let [result (tu/<p! (res/request! *redirect ::opts))
                       toast (colls/only! (stubs/calls toaster :create!))]
                   (testing "issues a toast message"
-                    (is (= [:success [:good ::opts]]
+                    (is (= [{:level :success :body [:good ::opts]}]
                            toast)))
 
                   (testing "returns the result"
@@ -56,7 +56,7 @@
                 (let [result (tu/<p! (res/request! *redirect ::opts))
                       toast (colls/only! (stubs/calls toaster :create!))]
                   (testing "issues a toast message"
-                    (is (= [:error [:bad ::opts]]
+                    (is (= [{:level :error :body [:bad ::opts]}]
                            toast)))
 
                   (testing "returns the result"

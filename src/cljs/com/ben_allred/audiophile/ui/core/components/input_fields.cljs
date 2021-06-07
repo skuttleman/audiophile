@@ -8,9 +8,9 @@
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
-(defn form-field [{:keys [attempted? errors form-field-class id label label-small? visited?]} & body]
+(defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
   (let [errors (seq (remove nil? errors))
-        show-errors? (and errors (or visited? attempted?))]
+        show-errors? (and errors attempted?)]
     [:div.form-field
      {:class (into [(when show-errors? "errors")] form-field-class)}
      [:<>

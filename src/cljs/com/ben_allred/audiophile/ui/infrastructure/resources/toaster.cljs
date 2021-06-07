@@ -2,15 +2,16 @@
   (:require
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
-    [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.vow.core :as v]
     [com.ben-allred.vow.impl.protocol :as pv]))
 
 (defn ^:private ->toast [*toasts level f]
   (fn [result]
     (when-let [body (when f (f result))]
-      (comp/create! *toasts level body))))
+      (comp/create! *toasts (maps/->m level body)))))
 
 (deftype ToastResource [*resource *toasts success-fn error-fn]
   pres/IResource

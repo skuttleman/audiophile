@@ -29,21 +29,31 @@
   ([base]
    (mocked-cfg base nil))
   ([base opts]
-   (-> base
-       (assoc [:duct/const :services/oauth]
-              (stubs/create (reify
-                              papp/IOAuthProvider
-                              (redirect-uri [_ _])
-                              (profile [_ _]))))
-       (cond->
-         (not (:db/enabled? opts))
-         (assoc [:duct/const :services/transactor]
+   (let [store (atom {})]
+     (-> base
+         (assoc [:duct/const :services/oauth]
                 (stubs/create (reify
-                                prepos/ITransact
-                                (transact! [this f]
-                                  (f this))
-                                prepos/IExecute
-                                (execute! [_ _ _]))))))))
+                                papp/IOAuthProvider
+                                (redirect-uri [_ _])
+                                (profile [_ _]))))
+         (assoc [:duct/const :services/s3-client]
+                (stubs/create (reify
+                                prepos/IKVStore
+                                (uri [_ _ _]
+                                  "test://uri")
+                                (get [_ k _]
+                                  (get @store k))
+                                (put! [_ k v _]
+                                  (swap! store assoc-in [k :Body] v)))))
+         (cond->
+           (not (:db/enabled? opts))
+           (assoc [:duct/const :services/transactor]
+                  (stubs/create (reify
+                                  prepos/ITransact
+                                  (transact! [this f]
+                                    (f this))
+                                  prepos/IExecute
+                                  (execute! [_ _ _])))))))))
 
 (defn setup-stub [config & args]
   (->> args

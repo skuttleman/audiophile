@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.common.domain.validations.specs
   (:require
     [clojure.string :as string]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [malli.util :as mu])
   #?(:clj
      (:import

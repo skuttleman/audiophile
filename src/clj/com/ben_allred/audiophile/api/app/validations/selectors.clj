@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.api.domain.validations.selectors
+(ns com.ben-allred.audiophile.api.app.validations.selectors
   (:require
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 

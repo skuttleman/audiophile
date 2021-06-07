@@ -13,7 +13,7 @@
   pnav/ITrackNavigation
   (on-change [_ route]
     (if-let [err (keyword (get-in route [:query-params :error-msg]))]
-      (comp/create! *banners :error err)
+      (comp/create! *banners {:level :error :body err})
       (store/dispatch! store [:router/updated route]))))
 
 (defn tracker [{:keys [*banners nav store]}]
@@ -21,8 +21,7 @@
 
 (deftype Toaster [store]
   pcomp/IAlert
-  (create! [_ level body]
-    (log/warn "TOAST")
+  (create! [_ {:keys [level body]}]
     (store/dispatch! store (actions/toast! level body)))
   (remove! [_ id]
     (store/dispatch! store (actions/remove-toast! id))))
@@ -32,7 +31,7 @@
 
 (deftype Banner [store]
   pcomp/IAlert
-  (create! [_ level body]
+  (create! [_ {:keys [level body]}]
     (store/dispatch! store (actions/banner! level body)))
   (remove! [_ id]
     (store/dispatch! store (actions/remove-banner! id))))
@@ -41,11 +40,13 @@
   (->Banner store))
 
 (deftype Modals [store]
-  pcomp/IModal
-  (modal! [_ header body buttons]
+  pcomp/IAlert
+  (create! [_ {:keys [body buttons header]}]
     (store/dispatch! store (actions/modal! header body buttons)))
-  (remove-one! [_ id]
+  (remove! [_ id]
     (store/dispatch! store (actions/remove-modal! id)))
+
+  pcomp/IMultiAlert
   (remove-all! [_]
     (store/dispatch! store actions/remove-modal-all!)))
 

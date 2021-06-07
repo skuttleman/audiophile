@@ -2,10 +2,12 @@
   (:require
     [clojure.java.io :as io]
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
     [test.utils.assertions :as assert]))
@@ -250,3 +252,87 @@
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
+
+(deftest artifact-test
+  (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (let [edn (int/component system :serdes/edn)
+          serde (reify
+                  pserdes/ISerde
+                  (serialize [_ val opts]
+                    (serdes/serialize edn val opts))
+                  (deserialize [_ val _]
+                    val)
+
+                  pserdes/IMime
+                  (mime-type [_]
+                    (serdes/mime-type edn)))
+          handler (-> system
+                      (int/component :api/handler#api)
+                      (ihttp/with-serde edn))
+          artifact-handler (-> system
+                               (int/component :api/handler#api)
+                               (ihttp/with-serde serde))]
+      (testing "when authenticated"
+        (let [user (int/lookup-user system "joe@example.com")]
+          (testing "and when uploading the artifact"
+            (let [response (-> "empty.mp3"
+                               ihttp/file-upload
+                               (ihttp/login system user)
+                               (ihttp/post system :api/artifacts)
+                               handler)
+                  artifact-id (get-in response [:body :data :artifact/id])]
+              (testing "successfully uploads"
+                (is (uuid? artifact-id))
+                (is (= "empty.mp3" (get-in response [:body :data :artifact/filename]))))
+
+              (testing "cannot access the artifact"
+                (let [response (-> {}
+                                   (ihttp/login system user)
+                                   (ihttp/get system
+                                              :api/artifact
+                                              {:route-params {:artifact-id artifact-id}})
+                                   handler)]
+                  (is (http/client-error? response))))
+
+              (testing "and when creating a file"
+                (let [project-id (:project/id (int/lookup-project system "Project Seed"))
+                      response (-> {:file/name    "file name"
+                                    :version/name "version name"
+                                    :artifact/id  artifact-id}
+                                   ihttp/body-data
+                                   (ihttp/login system user)
+                                   (ihttp/post system
+                                               :api/project.files
+                                               {:route-params {:project-id project-id}})
+                                   handler)]
+                  (is (http/success? response))
+                  (testing "can access the artifact"
+                    (let [response (-> {}
+                                       (ihttp/login system user)
+                                       (ihttp/get system
+                                                  :api/artifact
+                                                  {:route-params {:artifact-id artifact-id}})
+                                       artifact-handler)]
+                      (is (http/success? response))
+                      (is (= (slurp (io/resource "empty.mp3"))
+                             (slurp (:body response)))))))
+
+                (testing "and when authenticated as a user with no artifacts"
+                  (let [user {:user/id (uuids/random)}
+                        response (-> {}
+                                     (ihttp/login system user)
+                                     (ihttp/get system
+                                                :api/artifact
+                                                {:route-params {:artifact-id artifact-id}})
+                                     artifact-handler)]
+                    (testing "returns an error"
+                      (is (http/client-error? response)))))
+
+                (testing "and when not authenticated"
+                  (let [response (-> {}
+                                     (ihttp/get system
+                                                :api/artifact
+                                                {:route-params {:artifact-id artifact-id}})
+                                     artifact-handler)]
+                    (testing "returns an error"
+                      (is (http/client-error? response)))))))))))))

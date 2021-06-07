@@ -9,7 +9,7 @@
 
 (defn modal* [*modals _idx id _frame]
   (let [close! (comp (fn [_]
-                       (comp/remove-one! *modals id))
+                       (comp/remove! *modals id))
                      dom/stop-propagation)
         listener (dom/add-listener dom/window
                                    :keydown

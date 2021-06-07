@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.api.infrastructure.http.core
   (:require
     [com.ben-allred.audiophile.api.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.api.domain.validations.selectors :as selectors]
+    [com.ben-allred.audiophile.api.app.validations.selectors :as selectors]
     [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
@@ -66,10 +66,13 @@
                handler
                ->response)
            (catch Throwable ex
-             (if (contains? (:paths (ex-data ex))
-                            [:user/id])
-               (int/not-authenticated!)
-               (int/invalid-input!)))))))
+             (let [{:keys [details paths]} (ex-data ex)]
+               (if (contains? paths [:user/id])
+                 (int/not-authenticated!)
+                 (do (if details
+                       (log/warn "Invalid data" spec details)
+                       (log/error ex spec))
+                     (int/invalid-input!)))))))))
 
 (defn ok [_]
   (partial into [::http/ok]))

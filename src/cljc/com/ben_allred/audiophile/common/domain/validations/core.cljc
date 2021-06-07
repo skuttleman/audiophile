@@ -9,13 +9,16 @@
      (:import
        (clojure.lang IFn))))
 
+(defn ^:private error-fn [missing-keys]
+  (fn [{:keys [path]} _]
+    (or (get-in missing-keys path)
+        (str (name (peek path)) " is required"))))
+
 (defn ^:private humanize-opts [missing-keys]
-  {:errors (assoc me/default-errors
-                  ::m/missing-key
-                  {:error/fn
-                   (fn [{:keys [path]} _]
-                     (or (get-in missing-keys path)
-                         (str (name (peek path)) " is required")))})})
+  (let [f (error-fn missing-keys)]
+    {:errors (assoc me/default-errors
+                    ::me/unknown {:error/fn f}
+                    ::m/missing-key {:error/fn f})}))
 
 (def ^:private lookup
   {:api.common/auth       specs/auth
@@ -42,8 +45,8 @@
 
 (defn validate! [spec data]
   (if-let [result (m/explain (lookup spec) data)]
-    (do (log/warn "Invalid data" spec (me/humanize result))
-        (throw (ex-info "invalid input" {:paths (into #{} (map :path) (:errors result))})))
+    (throw (ex-info "invalid input" {:paths   (into #{} (map :path) (:errors result))
+                                     :details (me/humanize result)}))
     data))
 
 (defn select-keys [spec m]

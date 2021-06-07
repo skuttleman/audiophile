@@ -8,7 +8,9 @@
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.integration.common :as int]))
+    [com.ben-allred.audiophile.integration.common :as int])
+  (:import
+    (org.apache.commons.io FileUtils)))
 
 (defn login
   ([request system]
@@ -40,6 +42,16 @@
 
 (defn body-data [payload]
   {:body {:data payload}})
+
+(defn file-upload
+  ([filename]
+   (file-upload filename "audio/mp3"))
+  ([filename content-type]
+   (let [file (io/file (io/resource filename))]
+     {:params {"files[]" {:tempfile     file
+                          :filename     filename
+                          :content-type content-type
+                          :size         (FileUtils/sizeOf file)}}})))
 
 (defn upload
   ([request res]
