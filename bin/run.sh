@@ -6,7 +6,7 @@ case "${PROFILE}" in
 prod)
   echo "running with profile: ${PROFILE}"
   $(dirname ${BASH_SOURCE[0]})/build-ui.sh
-  clj -m com.ben-allred.audiophile.api.core
+  clj -m com.ben-allred.audiophile.backend.core
   ;;
 dev)
   echo "running with profile: ${PROFILE}"

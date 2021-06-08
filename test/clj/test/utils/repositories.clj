@@ -1,6 +1,6 @@
 (ns test.utils.repositories
   (:require
-    [com.ben-allred.audiophile.api.app.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.app.repositories.protocols :as prepos]
     [test.utils.stubs :as stubs]))
 
 (def models

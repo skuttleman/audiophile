@@ -1,5 +1,5 @@
 {:duct.profile/base #duct/include "duct/api/base.edn"
- :duct.profile/prod {[:com.ben-allred.audiophile.api.core/server :duct/daemon]
+ :duct.profile/prod {[:com.ben-allred.audiophile.backend.core/server :duct/daemon]
                      {:handler     #ig/ref :api/handler
                       :server-port #ig/ref :env/server-port#api}
 

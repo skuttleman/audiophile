@@ -1,7 +1,7 @@
 (ns test.browser-runner
   (:require
     [clojure.string :as string]
-    [com.ben-allred.audiophile.api.infrastructure.http.ring :as ring]
+    [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [immutant.web :as web*])
   (:import

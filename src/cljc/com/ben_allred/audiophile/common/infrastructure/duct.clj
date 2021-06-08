@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.common.infrastructure.duct
   (:require
     [clojure.edn :as edn*]
-    [com.ben-allred.audiophile.api.infrastructure.db.models.sql :as sql]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [duct.core :as duct]
     [duct.core.env :as env*]))
