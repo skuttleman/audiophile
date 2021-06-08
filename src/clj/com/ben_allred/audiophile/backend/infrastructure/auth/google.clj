@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.auth.google
   (:require
     [clojure.string :as string]
-    [com.ben-allred.audiophile.backend.app.protocols :as papp]
+    [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]

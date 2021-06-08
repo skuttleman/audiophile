@@ -2,7 +2,7 @@
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.infrastructure.resources.s3 :as s3]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]))
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]))
 
 (deftest s3-client-test
   (testing "S3Client"

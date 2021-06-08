@@ -1,7 +1,7 @@
 (ns ^:unit com.ben-allred.audiophile.ui.infrastructure.pubsub.ws-test
   (:require
     [clojure.test :refer [deftest is testing]]
-    [com.ben-allred.audiophile.common.app.navigation.base :as bnav]
+    [com.ben-allred.audiophile.common.api.navigation.base :as bnav]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.ui.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.ui.infrastructure.store.protocols :as pstore]

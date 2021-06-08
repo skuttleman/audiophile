@@ -3,7 +3,7 @@
     [clojure.java.io :as io]
     [cognitect.aws.client.api :as aws]
     [cognitect.aws.credentials :as aws.creds]
-    [com.ben-allred.audiophile.backend.app.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 

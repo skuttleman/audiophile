@@ -2,9 +2,9 @@
   (:require
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.app.protocols :as papp]
+    [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))

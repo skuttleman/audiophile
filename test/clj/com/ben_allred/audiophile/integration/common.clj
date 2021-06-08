@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.integration.common
   (:require
-    [com.ben-allred.audiophile.backend.app.protocols :as papp]
+    [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.app.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [duct.core :as duct]

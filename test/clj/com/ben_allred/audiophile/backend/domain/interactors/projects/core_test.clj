@@ -2,7 +2,7 @@
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.app.repositories.projects.core :as rprojects]
+    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as rprojects]
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]

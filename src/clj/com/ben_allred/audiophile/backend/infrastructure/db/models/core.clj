@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.models.core
   (:require
     [camel-snake-kebab.core :as csk]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]

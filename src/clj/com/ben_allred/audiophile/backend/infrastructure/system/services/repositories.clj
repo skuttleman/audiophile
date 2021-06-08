@@ -6,11 +6,11 @@
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
     [com.ben-allred.audiophile.backend.infrastructure.db.teams :as db.teams]
     [com.ben-allred.audiophile.backend.infrastructure.db.users :as db.users]
-    [com.ben-allred.audiophile.backend.app.repositories.common :as crepos]
-    [com.ben-allred.audiophile.backend.app.repositories.files.core :as files]
-    [com.ben-allred.audiophile.backend.app.repositories.projects.core :as projects]
-    [com.ben-allred.audiophile.backend.app.repositories.teams.core :as teams]
-    [com.ben-allred.audiophile.backend.app.repositories.users.core :as users]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
+    [com.ben-allred.audiophile.backend.api.repositories.files.core :as files]
+    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as projects]
+    [com.ben-allred.audiophile.backend.api.repositories.teams.core :as teams]
+    [com.ben-allred.audiophile.backend.api.repositories.users.core :as users]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.repositories/models [_ cfg]

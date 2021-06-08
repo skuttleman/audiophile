@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
     [com.ben-allred.audiophile.ui.app :as app]
-    [com.ben-allred.audiophile.ui.app.forms.standard :as form]
+    [com.ben-allred.audiophile.ui.api.forms.standard :as form]
     [com.ben-allred.audiophile.ui.infrastructure.resources.validated :as vres]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]

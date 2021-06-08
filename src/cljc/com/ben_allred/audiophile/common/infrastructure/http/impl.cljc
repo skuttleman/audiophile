@@ -3,7 +3,7 @@
     #?(:clj [clj-http.cookies :as cook])
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]

@@ -1,7 +1,8 @@
 (ns com.ben-allred.audiophile.backend.dev.uml
-  (:require [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
-            [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-            [clojure.string :as string]))
+  (:require
+    [clojure.string :as string]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defn ^:private indent [x]
   (str "  " x))

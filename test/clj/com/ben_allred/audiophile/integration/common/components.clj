@@ -7,7 +7,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

@@ -2,9 +2,9 @@
   (:require
     [clojure.java.io :as io]
     [clojure.java.shell :as sh]
-    [com.ben-allred.audiophile.backend.app.protocols :as papp]
-    [com.ben-allred.audiophile.backend.app.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.app.navigation.core :as nav]
+    [com.ben-allred.audiophile.backend.api.protocols :as papp]
+    [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [integrant.core :as ig]))
 

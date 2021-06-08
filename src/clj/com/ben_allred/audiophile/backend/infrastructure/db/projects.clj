@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.projects
   (:require
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
-    [com.ben-allred.audiophile.backend.app.repositories.projects.protocols :as pp]
+    [com.ben-allred.audiophile.backend.api.repositories.projects.protocols :as pp]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]))
 
 (defn ^:private has-team-clause [user-teams user-id]

@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.teams
   (:require
-    [com.ben-allred.audiophile.backend.app.repositories.common :as crepos]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
-    [com.ben-allred.audiophile.backend.app.repositories.teams.protocols :as pt]
+    [com.ben-allred.audiophile.backend.api.repositories.teams.protocols :as pt]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 

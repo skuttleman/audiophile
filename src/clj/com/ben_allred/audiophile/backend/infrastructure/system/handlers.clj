@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.handlers
   (:require
-    [com.ben-allred.audiophile.backend.app.handlers.auth :as auth]
+    [com.ben-allred.audiophile.backend.api.handlers.auth :as auth]
     [com.ben-allred.audiophile.backend.infrastructure.http.core :as handlers]
-    [com.ben-allred.audiophile.backend.app.handlers.files :as files]
-    [com.ben-allred.audiophile.backend.app.handlers.projects :as projects]
-    [com.ben-allred.audiophile.backend.app.handlers.teams :as teams]
+    [com.ben-allred.audiophile.backend.api.handlers.files :as files]
+    [com.ben-allred.audiophile.backend.api.handlers.projects :as projects]
+    [com.ben-allred.audiophile.backend.api.handlers.teams :as teams]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.handlers/router [_ cfg]

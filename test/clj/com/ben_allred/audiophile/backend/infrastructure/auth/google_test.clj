@@ -2,7 +2,7 @@
   (:require
     [clojure.string :as string]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.app.protocols :as papp]
+    [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.infrastructure.auth.google :as goog]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]

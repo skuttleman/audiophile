@@ -2,7 +2,7 @@
   (:require
     [clojure.java.io :as io]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.dev.protocols :as pdev]
     [com.ben-allred.audiophile.backend.dev.uml :as uml]
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]

@@ -1,11 +1,11 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.system.views
   (:require
-    [com.ben-allred.audiophile.ui.app.views.core :as views]
-    [com.ben-allred.audiophile.ui.app.views.files :as views.files]
-    [com.ben-allred.audiophile.ui.app.views.home :as views.home]
-    [com.ben-allred.audiophile.ui.app.views.login :as views.login]
-    [com.ben-allred.audiophile.ui.app.views.projects :as views.projects]
-    [com.ben-allred.audiophile.ui.app.views.teams :as views.teams]
+    [com.ben-allred.audiophile.ui.api.views.core :as views]
+    [com.ben-allred.audiophile.ui.api.views.files :as views.files]
+    [com.ben-allred.audiophile.ui.api.views.home :as views.home]
+    [com.ben-allred.audiophile.ui.api.views.login :as views.login]
+    [com.ben-allred.audiophile.ui.api.views.projects :as views.projects]
+    [com.ben-allred.audiophile.ui.api.views.teams :as views.teams]
     [com.ben-allred.audiophile.ui.core.components.audio :as audio]
     [com.ben-allred.audiophile.ui.core.components.modal :as modal]
     [com.ben-allred.audiophile.ui.core.components.tiles :as tiles]

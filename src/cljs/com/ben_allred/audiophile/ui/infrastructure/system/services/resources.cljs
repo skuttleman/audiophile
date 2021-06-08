@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.system.services.resources
   (:require
-    [com.ben-allred.audiophile.ui.app.forms.submittable :as form.sub]
+    [com.ben-allred.audiophile.ui.api.forms.submittable :as form.sub]
     [com.ben-allred.audiophile.ui.infrastructure.resources.base :as bres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.cached :as cached]
     [com.ben-allred.audiophile.ui.infrastructure.resources.common :as cres]

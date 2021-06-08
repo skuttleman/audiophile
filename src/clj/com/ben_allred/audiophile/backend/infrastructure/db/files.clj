@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.files
   (:require
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.app.repositories.files.protocols :as pf]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]

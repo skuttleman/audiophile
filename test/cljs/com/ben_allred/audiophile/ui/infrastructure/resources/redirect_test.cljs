@@ -2,7 +2,7 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.app.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.api.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.redirect :as redirect]

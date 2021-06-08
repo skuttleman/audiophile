@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.users
   (:require
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
-    [com.ben-allred.audiophile.backend.app.repositories.users.protocols :as pu]
-    [com.ben-allred.audiophile.backend.app.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.users.protocols :as pu]
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]))
 
 (defn ^:private select-by [model clause]

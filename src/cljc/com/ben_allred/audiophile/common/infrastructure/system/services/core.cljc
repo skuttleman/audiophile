@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.common.infrastructure.system.services.core
   (:require
-    [com.ben-allred.audiophile.common.app.navigation.base :as bnav]
+    [com.ben-allred.audiophile.common.api.navigation.base :as bnav]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [integrant.core :as ig]
     com.ben-allred.audiophile.common.infrastructure.system.services.http
