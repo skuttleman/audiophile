@@ -16,7 +16,6 @@
 
  [:duct/const :routes/table#auth]
  {[:get :auth/callback]    #ig/ref :audiophile.handlers.auth/callback
-  [:get :auth/details]     #ig/ref :audiophile.handlers.auth/details
   [:get :auth/login]       #ig/ref :audiophile.handlers.auth/login
   [:get :auth/logout]      #ig/ref :audiophile.handlers.auth/logout
   [:get :resources/health] #ig/ref :handlers/health#auth}
@@ -147,9 +146,6 @@
   :redirect-path "/auth/callback"}
 
  :audiophile.handlers.auth/callback
- {:auth #ig/ref :audiophile.services.auth/provider}
-
- :audiophile.handlers.auth/details
  {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.services.auth/provider

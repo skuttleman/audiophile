@@ -17,7 +17,3 @@
 (defn callback [{:keys [auth]}]
   (fn [request]
     (pint/callback auth request)))
-
-(defn details [{:keys [auth]}]
-  (fn [request]
-    (pint/details auth request)))

@@ -36,6 +36,4 @@
   (logout [this params]
     "Redirects to app without token")
   (callback [this params]
-    "Handles callback from auth provider")
-  (details [this params]
-    "Extracts auth details from the request"))
+    "Handles callback from auth provider"))

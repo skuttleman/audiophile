@@ -7,7 +7,7 @@
 
 (defn ^:private select-by [model clause]
   (-> model
-      (models/remove-fields #{:mobile-number})
+      (models/select-fields #{:id})
       (models/select* clause)))
 
 (deftype UserExecutor [executor users user-teams]

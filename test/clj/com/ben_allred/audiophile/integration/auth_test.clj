@@ -9,23 +9,8 @@
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
     [test.utils :as tu]
+    [test.utils.assertions :as assert]
     [test.utils.stubs :as stubs]))
-
-(deftest auth-details-test
-  (testing "GET /auth/details"
-    (int/with-config [system [:api/handler#auth]]
-      (let [user (int/lookup-user system "joe@example.com")
-            handler (-> system
-                        (int/component :api/handler#auth)
-                        (ihttp/with-serde system :serdes/edn))
-            response (-> {}
-                         (ihttp/login system user)
-                         (ihttp/get system :auth/details)
-                         handler)]
-        (testing "returns the user details"
-          (is (http/success? response))
-          (is (= {:data user}
-                 (update (:body response) :data dissoc :user/created-at))))))))
 
 (deftest auth-callback-test
   (testing "GET /auth/callback"
@@ -51,16 +36,15 @@
               (is (http/redirect? response))
               (is (= (str base-url "/")
                      (get-in response [:headers "Location"])))
-              (is (= user
-                     (-> jwt-serde
-                         (serdes/deserialize (get-in cookies ["auth-token" :value]))
-                         (dissoc :user/created-at)))))))
+              (assert/is? {:user/id (:user/id user)}
+                          (-> jwt-serde
+                              (serdes/deserialize (get-in cookies ["auth-token" :value])))))))
 
         (testing "when the auth provider interactions fail"
           (-> system
               (int/component :services/oauth)
               (stubs/set-stub! :-token nil))
-          (testing "redirects with token cookie"
+          (testing "redirects and removes token cookie"
             (let [response (-> {}
                                (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
                                handler)

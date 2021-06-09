@@ -1,12 +1,11 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.auth.core
   (:require
+    [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmacro ^:private safely! [ctx & body]
@@ -24,9 +23,6 @@
                           [value]
                           ["" {:max-age 0}])]
      (assoc response :cookies (ring/->cookie "auth-token" value cookie)))))
-
-(def ^:private ^:const expire-token-response
-  (with-token {:status ::http/no-content}))
 
 (defn ^:private redirect-uri* [nav oauth params]
   (or (first (safely! "generating a redirect url to the auth provider"
@@ -86,11 +82,7 @@
       (-> nav
           (->redirect-url base-url (when-not token :login-failed))
           ring/redirect
-          (with-token token))))
-  (details [_ params]
-    (if-let [user (:auth/user params)]
-      [::http/ok {:data user}]
-      expire-token-response)))
+          (with-token token)))))
 
 (defn interactor [{:keys [base-url interactor jwt-serde nav oauth]}]
   (->AuthInteractor interactor oauth nav jwt-serde base-url))

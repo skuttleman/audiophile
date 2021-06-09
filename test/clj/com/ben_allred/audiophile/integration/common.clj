@@ -12,7 +12,6 @@
     [test.utils.stubs :as stubs]
     com.ben-allred.audiophile.backend.dev.handler
     com.ben-allred.audiophile.backend.infrastructure.system.core
-    com.ben-allred.audiophile.common.infrastructure.system.core
     com.ben-allred.audiophile.integration.common.components))
 
 (def ^:private config-base

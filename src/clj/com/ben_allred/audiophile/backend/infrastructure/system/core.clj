@@ -7,7 +7,8 @@
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
     [integrant.core :as ig]
     com.ben-allred.audiophile.backend.infrastructure.system.handlers
-    com.ben-allred.audiophile.backend.infrastructure.system.services.core))
+    com.ben-allred.audiophile.backend.infrastructure.system.services.core
+    com.ben-allred.audiophile.common.infrastructure.system.core))
 
 (defmethod ig/init-key :audiophile.core/server [_ cfg]
   (web/server cfg))

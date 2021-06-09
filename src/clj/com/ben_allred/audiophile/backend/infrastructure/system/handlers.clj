@@ -25,9 +25,6 @@
 (defmethod ig/init-key :audiophile.handlers.auth/callback [_ cfg]
   (auth/callback cfg))
 
-(defmethod ig/init-key :audiophile.handlers.auth/details [_ cfg]
-  (auth/details cfg))
-
 (defmethod ig/init-key :audiophile.handlers.files/upload [_ cfg]
   (files/upload cfg))
 
