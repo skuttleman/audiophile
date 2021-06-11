@@ -56,34 +56,66 @@
                :migration-table-name "db_migrations"
                :db                   {:datasource datasource}}))
 
-(defn -main [command & [arg :as args]]
-  (duct/load-hierarchy)
-  (let [{migrator   :audiophile.migrations/migrator
-         transactor :audiophile.repositories/transactor
-         :as        system} (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-migrations"]))]
+(defmacro ^:private with-migrator [sys & body]
+  `(let [system# (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-migrations"]))]
                               (-> "migrations.edn"
                                   duct/resource
                                   (duct/read-config uduct/readers)
                                   (duct/prep-config [:duct.profile/base
                                                      :duct.profile/dev
                                                      :duct.profile/migrations])
-                                  (ig/init [:audiophile.migrations/migrator :audiophile.repositories/transactor])))]
-    (try
-      (case command
-        "migrate" (migrate! migrator)
-        "rollback" (rollback! migrator (Long/parseLong (or arg "1")))
-        "speedbump" (speedbump! migrator)
-        "redo" (redo! migrator)
-        "create" (create! migrator (string/join "_" args))
-        "seed" (seed! transactor (or arg "db/seed.sql"))
-        "generate-erd" (uml/generate! transactor "resources/db/erd.puml")
-        (throw (ex-info (str "unknown command: " command) {:command command :args args})))
-      (finally
-        (ig/halt! system)))))
+                                  (ig/init [:audiophile.migrations/migrator :audiophile.repositories/transactor])))
+         ~sys system#]
+     (try
+       ~@body
+       (finally
+         (ig/halt! system#)))))
+
+(defmulti ^:private main* (fn [command & _] (keyword command)))
+
+(defmethod main* :migrate
+  [_]
+  (with-migrator {:audiophile.migrations/keys [migrator]}
+    (migrate! migrator)))
+
+(defmethod main* :rollback
+  [_ & [n]]
+  (with-migrator {:audiophile.migrations/keys [migrator]}
+    (rollback! migrator (Long/parseLong (or n "1")))))
+
+(defmethod main* :speedbump
+  [_]
+  (with-migrator {:audiophile.migrations/keys [migrator]}
+    (speedbump! migrator)))
+
+(defmethod main* :redo
+  [_]
+  (with-migrator {:audiophile.migrations/keys [migrator]}
+    (redo! migrator)))
+
+(defmethod main* :create
+  [_ & description]
+  (with-migrator {:audiophile.migrations/keys [migrator]}
+    (create! migrator (string/join "_" description))))
+
+(defmethod main* :seed
+  [_ & [seed-file]]
+  (with-migrator {:audiophile.repositories/keys [transactor]}
+    (seed! transactor (or seed-file "db/seed.sql"))))
+
+(defmethod main* :generate-erd
+  [_ & [output]]
+  (with-migrator {:audiophile.repositories/keys [transactor]}
+    (uml/generate! transactor (or output "resources/db/erd.puml"))))
+
+(defn -main [command & args]
+  (duct/load-hierarchy)
+  (apply main* command args))
 
 (comment
-  (-main "create" "DESCRIPTION")
-  (-main "migrate")
-  (-main "redo")
+  (duct/load-hierarchy)
+  (main* :create "SOME_DESCRIPTION")
+  (main* :migrate)
+  (main* :rollback)
 
-  (-main "generate-erd"))
+  (main* :generate-erd))
