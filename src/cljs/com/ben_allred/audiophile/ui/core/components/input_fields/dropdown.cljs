@@ -67,7 +67,7 @@
          [:div.dropdown-body
           (cond
             loading?
-            [comp/spinner nil]
+            [in/spinner]
 
             (seq options)
             [list-control attrs]

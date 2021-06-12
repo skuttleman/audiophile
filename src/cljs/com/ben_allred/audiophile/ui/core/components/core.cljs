@@ -17,19 +17,13 @@
    [:div.message-body
     body]])
 
-(defn spinner
-  ([]
-   (spinner nil))
-  ([{:keys [size]}]
-   [(keyword (str "div.loader." (name (or size :small))))]))
-
 (defn with-resource [[*resource opts] _component & _args]
   (res/request! *resource opts)
   (fn [_resource component & args]
     (case (res/status *resource)
       :success (into [component @*resource] args)
       :error [:div.error "an error occurred"]
-      [spinner {:size (:spinner/size opts)}])))
+      [in/spinner {:size (:spinner/size opts)}])))
 
 (defn not-found [_]
   [:div {:style {:display         :flex
@@ -68,7 +62,7 @@
                          :disabled disabled}
                         (:submit/text attrs "Submit")]]
                 (not ready?)
-                (conj [:div {:style {:margin-bottom "8px"}} [spinner nil]])
+                (conj [:div {:style {:margin-bottom "8px"}} [in/spinner]])
 
                 buttons
                 (into buttons))))))

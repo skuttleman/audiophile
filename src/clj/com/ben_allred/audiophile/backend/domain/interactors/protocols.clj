@@ -9,6 +9,11 @@
   (create! [this opts]
     "Creates a new entity"))
 
+(defprotocol IEmitter
+  "Abstraction for sending cross-cutting events"
+  (command-failed! [this request-id opts]
+    "A command to mutate the system failed"))
+
 (defprotocol IFileAccessor
   "Abstraction for saving and querying files and artifacts"
   (create-artifact! [this opts]

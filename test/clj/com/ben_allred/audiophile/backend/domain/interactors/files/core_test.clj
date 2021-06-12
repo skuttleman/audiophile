@@ -13,13 +13,14 @@
     [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [test.utils :as tu]
     [test.utils.repositories :as trepos]
-    [test.utils.stubs :as stubs]))
+    [test.utils.stubs :as stubs]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]))
 
 (defn ^:private ->file-executor
   ([config]
    (fn [executor models]
      (->file-executor executor (merge models config))))
-  ([executor {:keys [artifacts event-types events file-versions
+  ([executor {:keys [artifacts emitter event-types events file-versions
                      files projects pubsub store user-teams]}]
    (let [file-exec (db.files/->FilesRepoExecutor executor
                                                  artifacts
@@ -30,8 +31,8 @@
                                                  store
                                                  (constantly ::key))
          event-exec (db.events/->EventsExecutor executor event-types events)
-         emitter (db.files/->FilesEventEmitter event-exec pubsub)]
-     (db.files/->Executor file-exec emitter))))
+         emitter* (db.files/->FilesEventEmitter event-exec emitter pubsub)]
+     (db.files/->Executor file-exec emitter*))))
 
 (deftest create-artifact-test
   (testing "create-artifact"
@@ -42,24 +43,28 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          tx (trepos/stub-transactor (->file-executor {:pubsub pubsub
-                                                       :store  store}))
+          emitter (stubs/create (reify
+                                  pint/IEmitter
+                                  (command-failed! [_ _ _])))
+          tx (trepos/stub-transactor (->file-executor {:emitter emitter
+                                                       :pubsub  pubsub
+                                                       :store   store}))
           repo (rfiles/->FileAccessor tx)]
       (testing "when the content saves to the kv-store"
         (let [[artifact-id user-id] (repeatedly uuids/random)
-              artifact {:artifact/id artifact-id
-                        :artifact/uri "some-uri"
+              artifact {:artifact/id       artifact-id
+                        :artifact/uri      "some-uri"
                         :artifact/filename "file.name"}]
           (stubs/use! tx :execute!
                       [{:id artifact-id}]
                       [artifact]
                       [{:id "event-id"}])
-          (let [result (int/create-artifact! repo
-                                             {:filename     "file.name"
-                                              :size         12345
-                                              :content-type "content/type"
-                                              :tempfile     "…content…"
-                                              :user/id      user-id})
+          (let [result @(int/create-artifact! repo
+                                              {:filename     "file.name"
+                                               :size         12345
+                                               :content-type "content/type"
+                                               :tempfile     "…content…"
+                                               :user/id      user-id})
                 [store-k & stored] (colls/only! (stubs/calls store :put!))
                 [[insert-artifact] [query-artifact] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
@@ -94,11 +99,11 @@
             (testing "inserts the event in the repository"
               (let [{:keys [event-type-id] :as value} (colls/only! (:values insert-event))]
                 (is (= {:insert-into :events
-                        :returning [:id]}
+                        :returning   [:id]}
                        (dissoc insert-event :values)))
-                (is (= {:model-id      artifact-id
-                        :data          artifact
-                        :emitted-by    user-id}
+                (is (= {:model-id   artifact-id
+                        :data       artifact
+                        :emitted-by user-id}
                        (dissoc value :event-type-id)))
                 (is (= {:select #{[:event-types.id "event-type/id"]}
                         :from   [:event-types]
@@ -114,27 +119,64 @@
               (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
                 (is (= [::ws/user user-id] topic))
                 (is (= "event-id" event-id))
-                (is (= {:event/id "event-id"
-                        :event/type :artifact/created
-                        :event/model-id artifact-id
-                        :event/data artifact
+                (is (= {:event/id         "event-id"
+                        :event/type       :artifact/created
+                        :event/model-id   artifact-id
+                        :event/data       artifact
                         :event/emitted-by user-id}
                        event))))
 
             (testing "returns the result"
-              (is (= artifact result))))))
+              (is (= artifact result)))
+
+            (testing "emits a successful event"))))
 
       (testing "when the store throws an exception"
-        (stubs/use! store :put!
-                    (ex-info "Store" {}))
-        (testing "fails"
-          (is (thrown? Throwable (int/create-artifact! repo {:user/id (uuids/random)})))))
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/use! store :put!
+                      (ex-info "Store" {}))
+          @(int/create-artifact! repo {:user/id user-id :request/id request-id})
+          (testing "does not emit a successful event"
+            (empty? (stubs/calls pubsub :publish!)))
 
-      (testing "when the store throws an exception"
-        (stubs/use! tx :execute!
-                    (ex-info "Executor" {}))
-        (testing "fails"
-          (is (thrown? Throwable (int/create-artifact! repo {:user/id (uuids/random)}))))))))
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason)))))))
+
+      (testing "when the executor throws an exception"
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/init! emitter)
+          (stubs/use! tx :execute!
+                      (ex-info "Executor" {}))
+          @(int/create-artifact! repo {:user/id user-id :request/id request-id})
+          (testing "does not emit a successful event"
+            (empty? (stubs/calls pubsub :publish!)))
+
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason)))))))
+
+      (testing "when the pubsub throws an exception"
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/init! emitter)
+          (stubs/use! pubsub :publish!
+                      (ex-info "Executor" {}))
+          @(int/create-artifact! repo {:user/id user-id :request/id request-id})
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason))))))))))
 
 (deftest query-many-test
   (testing "query-many"

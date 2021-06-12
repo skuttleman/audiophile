@@ -4,25 +4,21 @@
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defn ^:private find-serde
   ([headers serdes]
    (find-serde headers serdes nil))
   ([{:keys [accept content-type]} serdes default-mime-type]
    (serdes/find-serde serdes (or content-type accept default-mime-type ""))))
-
-(defn ^:private response*
-  ([response?]
-   (fn [value]
-     (response* value response?)))
-  ([value response?]
-   (cond-> value (not response?) :body)))
 
 (defn ^:private deserialize* [ch-response serde serdes]
   (let [{:keys [headers] :as response} (update ch-response
@@ -52,7 +48,7 @@
                     (async/go
                       (try
                         (let [val (-> request
-                                      (->> (pres/request! http-client))
+                                      (->> (res/request! http-client))
                                       #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
                           (if (http/success? val)
                             (resolve val)
@@ -67,7 +63,7 @@
       (request! [_ request]
         (log/with-ctx (assoc log-ctx :sub :request)
                       (log/info (select-keys request #{:method :url}))
-                      (v/peek (pres/request! http-client request)
+                      (v/peek (res/request! http-client request)
                               (fn [result]
                                 (log/with-ctx {:sub :response}
                                               (log/info (-> request
@@ -90,7 +86,7 @@
           (-> request
               (update :headers (partial maps/map-keys name))
               #?(:clj (assoc :cookie-store cs))
-              (->> (pres/request! http-client))
+              (->> (res/request! http-client))
               (v/then result-fn (comp v/reject result-fn))))))))
 
 (defn with-serde [{:keys [serdes]}]
@@ -101,7 +97,7 @@
         (let [serde (find-serde (:headers request) serdes "application/edn")
               mime-type (serdes/mime-type serde)
               body (:body request)
-              deserde #(deserialize* % serde serdes)]
+              deserde (comp :body #(deserialize* % serde serdes))]
           (-> request
               (update :headers maps/assoc-defaults :accept mime-type)
               (cond->
@@ -110,11 +106,8 @@
 
                 (and serde body)
                 (update :body (partial serdes/serialize serde)))
-              (->> (pres/request! http-client))
-              (v/then (comp (response* (:response? request)) deserde)
-                      (comp v/reject
-                            (response* (:response? request))
-                            deserde))))))))
+              (->> (res/request! http-client))
+              (v/then deserde (comp v/reject deserde))))))))
 
 (defn with-nav [{:keys [nav]}]
   (fn [http-client]
@@ -124,15 +117,37 @@
         (-> request
             (dissoc :nav/route :nav/params)
             (cond-> route (assoc :url (nav/path-for nav route params)))
-            (->> (pres/request! http-client)))))))
+            (->> (res/request! http-client)))))))
 
-(defn create [->request middlewares]
+(defn with-pubsub [{:keys [pubsub]}]
+  (fn [http-client]
+    (reify
+      pres/IResource
+      (request! [_ request]
+        (if (:http/async? request)
+          (let [pubsub-id (uuids/random)]
+            (-> (v/create (fn [resolve reject]
+                            (let [request-id (uuids/random)]
+                              (pubsub/subscribe! pubsub pubsub-id request-id (fn [_ event]
+                                                                               (if (:error event)
+                                                                                 (reject event)
+                                                                                 (resolve event))))
+                              (-> http-client
+                                  (res/request! (assoc-in request [:headers :x-request-id] request-id))
+                                  (v/catch reject))
+                              (v/and (v/sleep 30000)
+                                     (reject {:error [{:message "upload timed out"}]})))))
+                (v/peek (fn [_]
+                          (pubsub/unsubscribe! pubsub pubsub-id)))))
+          (res/request! http-client request))))))
+
+(defn create [respond-fn middlewares]
   (reduce (fn [client middleware]
             (middleware client))
           (reify
             pres/IResource
             (request! [_ request]
-              (->request request)))
+              (respond-fn request)))
           middlewares))
 
 (defn client [{:keys [middlewares]}]

@@ -30,7 +30,7 @@
            (let [{:keys [playing? surfer ready?] :as st} @state]
              [:div {:style {:width "100%"}}
               (when-not st
-                [comp/spinner {:size :large}])
+                [in/spinner {:size :large}])
               [:div.audio-player {:id id}]
               (when st
                 [:div.buttons
@@ -40,7 +40,7 @@
                                    :disabled (not ready?)}
                   [comp/icon (if playing? :pause :play)]]
                  (when-not ready?
-                   [comp/spinner])])]))
+                   [in/spinner])])]))
          :component-will-unmount
          (fn [_]
            (some-> @state :surfer .destroy))}))))

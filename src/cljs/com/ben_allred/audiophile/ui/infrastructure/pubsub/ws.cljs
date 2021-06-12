@@ -6,19 +6,25 @@
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.ui.infrastructure.store.core :as store]
     [com.ben-allred.ws-client-cljc.core :as ws*]))
 
-(defn handle-msg [store msg]
-  (some-> msg
-          (match/match
-            [msg-type event-id data] [:ws/message [msg-type {:id   event-id
-                                                             :data data}]]
-            [msg-type event-id data ctx] [:ws/message [msg-type {:id   event-id
-                                                                 :data data
-                                                                 :ctx  ctx}]]
-            event (log/warn "unknown msg" event))
-          (->> (store/dispatch! store))))
+(defn handle-msg [pubsub store msg]
+  (when-let [[msg-type event] (when msg
+                                (match/match msg
+                                  [msg-type event-id data ctx] [msg-type {:id   event-id
+                                                                          :data data
+                                                                          :ctx  ctx}]
+                                  _ nil))]
+    (when-let [request-id (get-in event [:ctx :request/id])]
+      (let [event (case (get-in event [:data :event/type])
+                    :command/failed {:error [(-> event
+                                                 (get-in [:data :event/data])
+                                                 (assoc :message "the request failed"))]}
+                    {:data (get-in event [:data :event/data])})]
+        (pubsub/publish! pubsub request-id event)))
+    (store/dispatch! store [:ws/message [msg-type event]])))
 
 (defn ws-uri [nav serde base-url]
   (let [mime-type (serdes/mime-type serde)
@@ -32,7 +38,7 @@
         uri/stringify
         (str (nav/path-for nav :ws/connection params)))))
 
-(defn client [{:keys [env nav reconnect-ms serde store]}]
+(defn client [{:keys [env nav pubsub reconnect-ms serde store]}]
   (let [url (ws-uri nav serde (:api-base env))
         {:auth/keys [user]} (store/get-state store)]
     (when user
@@ -45,7 +51,7 @@
                                  :out-xform    (map (partial serdes/serialize serde))})]
         (async/go-loop []
           (when-let [msg (async/<! ws)]
-            (handle-msg store msg)
+            (handle-msg pubsub store msg)
             (recur)))
         ws))))
 

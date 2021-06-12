@@ -23,12 +23,12 @@
 (defmethod handle-msg :conn/pong
   [_ _ _])
 
-(defn ^:private subscribe* [{:keys [ch-id pubsub]} channel topic ->event]
+(defn ^:private subscribe* [{:keys [ch-id pubsub]} channel topic event-type]
   (pubsub/subscribe! pubsub
                      ch-id
                      topic
-                     (fn [_ [event-id event]]
-                       (pws/send! channel (->event event-id event)))))
+                     (fn [_ event]
+                       (pws/send! channel (into [event-type] event)))))
 
 (defn ^:private ch-loop [{:keys [heartbeat-int-ms]} channel]
   (async/go-loop []
@@ -41,8 +41,8 @@
       (recur))))
 
 (defn ^:private handle-open [{:keys [user-id] :as ctx} channel]
-  (subscribe* ctx channel [::broadcast] (partial vector :event/broadcast))
-  (subscribe* ctx channel [::user user-id] #(vector :event/user %1 %2 {:user/id user-id}))
+  (subscribe* ctx channel [::broadcast] :event/broadcast)
+  (subscribe* ctx channel [::user user-id] :event/user)
   (ch-loop ctx channel))
 
 (defn ^:private handle-close [{:keys [ch-id pubsub user-id]} _]
@@ -129,15 +129,22 @@
          ch-map
          (web.async/as-channel request))))
 
+(defn ^:private ->ctx [ctx]
+  (some-> ctx (select-keys #{:request/id :user/id})))
+
 (defn broadcast!
   "Broadcast an event to all connections"
-  [pubsub event-id event]
-  (pubsub/publish! pubsub [::broadcast] [event-id event]))
+  ([pubsub event-id event]
+   (broadcast! pubsub event-id event nil))
+  ([pubsub event-id event ctx]
+   (pubsub/publish! pubsub [::broadcast] [event-id event (->ctx ctx)])))
 
 (defn send-user!
   "Broadcast an event to all connections for a specific user"
-  [pubsub user-id event-id event]
-  (pubsub/publish! pubsub [::user user-id] [event-id event]))
+  ([pubsub user-id event-id event]
+   (send-user! pubsub user-id event-id event nil))
+  ([pubsub user-id event-id event ctx]
+   (pubsub/publish! pubsub [::user user-id] [event-id event (assoc (->ctx ctx) :user/id user-id)])))
 
 (defn open? [ch]
   (pws/open? ch))

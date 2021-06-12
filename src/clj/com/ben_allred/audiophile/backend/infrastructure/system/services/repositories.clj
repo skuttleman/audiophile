@@ -1,5 +1,10 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.repositories
   (:require
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
+    [com.ben-allred.audiophile.backend.api.repositories.files.core :as files]
+    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as projects]
+    [com.ben-allred.audiophile.backend.api.repositories.teams.core :as teams]
+    [com.ben-allred.audiophile.backend.api.repositories.users.core :as users]
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
@@ -7,11 +12,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
     [com.ben-allred.audiophile.backend.infrastructure.db.teams :as db.teams]
     [com.ben-allred.audiophile.backend.infrastructure.db.users :as db.users]
-    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
-    [com.ben-allred.audiophile.backend.api.repositories.files.core :as files]
-    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as projects]
-    [com.ben-allred.audiophile.backend.api.repositories.teams.core :as teams]
-    [com.ben-allred.audiophile.backend.api.repositories.users.core :as users]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.emitter :as emitter]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.repositories/models [_ cfg]
@@ -52,6 +53,9 @@
 
 (defmethod ig/init-key :audiophile.repositories.events/->executor [_ cfg]
   (db.events/->executor cfg))
+
+(defmethod ig/init-key :audiophile.repositories.events/->emitter [_ cfg]
+  (emitter/->emitter cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
   (files/accessor cfg))

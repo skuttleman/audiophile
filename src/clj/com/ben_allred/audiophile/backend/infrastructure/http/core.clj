@@ -79,3 +79,6 @@
 
 (defn id [_]
   identity)
+
+(defn no-content [_]
+  (constantly [::http/no-content]))

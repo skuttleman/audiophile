@@ -8,7 +8,8 @@
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]))
 
 (defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]
@@ -202,24 +203,32 @@
                          store
                          #(str "artifacts/" (uuids/random)))))
 
-(deftype FilesEventEmitter [executor pubsub]
+(deftype FilesEventEmitter [executor emitter pubsub]
   pf/IFilesEventEmitter
-  (artifact-created! [_ user-id {:artifact/keys [id] :as artifact}]
+  (artifact-created! [_ user-id {:artifact/keys [id] :as artifact} ctx]
     (let [event {:event/model-id id
                  :event/data     artifact}
           event-id (events/insert-event! executor
                                          event
                                          {:event/type :artifact/created
                                           :user/id    user-id})]
-      (ws/send-user! pubsub user-id event-id (assoc event
-                                                    :event/id event-id
-                                                    :event/type :artifact/created
-                                                    :event/emitted-by user-id))
-      event-id)))
+      (ws/send-user! pubsub
+                     user-id
+                     event-id
+                     (assoc event
+                            :event/id event-id
+                            :event/type :artifact/created
+                            :event/emitted-by user-id)
+                     ctx)
+      event-id))
 
-(defn ->file-event-emitter [{:keys [pubsub]}]
+  pint/IEmitter
+  (command-failed! [_ request-id opts]
+    (pint/command-failed! emitter request-id opts)))
+
+(defn ->file-event-emitter [{:keys [->emitter pubsub]}]
   (fn [executor]
-    (->FilesEventEmitter executor pubsub)))
+    (->FilesEventEmitter executor (->emitter executor) pubsub)))
 
 (deftype Executor [executor emitter]
   pf/IFilesExecutor
@@ -239,8 +248,12 @@
     (pf/select-for-project executor project-id opts))
 
   pf/IFilesEventEmitter
-  (artifact-created! [_ user-id opts]
-    (pf/artifact-created! emitter user-id opts)))
+  (artifact-created! [_ user-id artifact ctx]
+    (pf/artifact-created! emitter user-id artifact ctx))
+
+  pint/IEmitter
+  (command-failed! [_ request-id opts]
+    (pint/command-failed! emitter request-id opts)))
 
 (defn ->executor [{:keys [->event-executor ->file-event-emitter ->file-executor]}]
   (fn [executor]

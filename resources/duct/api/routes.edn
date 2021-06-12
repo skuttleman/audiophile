@@ -70,8 +70,9 @@
   :spec       :api.ws/connect}
 
  [:audiophile.spec/with-spec :api.handler/artifacts#post]
- {:handler #ig/ref :audiophile.handlers.files/upload
-  :spec    :api.artifact/create}
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.files/upload
+  :spec       :api.artifact/create}
 
  [:audiophile.spec/with-spec :api.handler/file#post]
  {:handler #ig/ref :audiophile.handlers.files/create-version
@@ -93,6 +94,9 @@
  {}
 
  :audiophile.spec/id
+ {}
+
+ :audiophile.spec/no-content
  {}
 
  [:audiophile.routes/health :res.handler/health#api]

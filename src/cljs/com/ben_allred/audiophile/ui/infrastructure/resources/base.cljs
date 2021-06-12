@@ -60,4 +60,6 @@
 
 (defn file-uploader [_]
   (fn [{:keys [files] :as opts}]
-    (assoc opts :multipart-params (map (partial conj ["files[]"]) files))))
+    (assoc opts
+           :multipart-params (map (partial conj ["files[]"]) files)
+           :http/async? true)))

@@ -4,12 +4,13 @@
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
   (let [artifact-id (pf/insert-artifact! executor artifact opts)
         artifact (pf/find-event-artifact executor artifact-id)]
-    (pf/artifact-created! executor (:user/id opts) artifact)
+    (pf/artifact-created! executor (:user/id opts) artifact opts)
     artifact))
 
 (defn ^:private create-file* [executor file opts]
@@ -33,7 +34,13 @@
 
   pint/IFileAccessor
   (create-artifact! [_ opts]
-    (repos/transact! repo create-artifact* opts opts))
+    (future
+      (try
+        (repos/transact! repo create-artifact* opts opts)
+        (catch Throwable ex
+          (when-let [request-id (:request/id opts)]
+            (u/silent!
+              (repos/transact! repo pint/command-failed! request-id (assoc opts :error/reason (.getMessage ex)))))))))
   (create-file! [_ opts]
     (repos/transact! repo create-file* opts opts))
   (create-file-version! [_ opts]

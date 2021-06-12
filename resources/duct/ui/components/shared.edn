@@ -2,7 +2,7 @@
  #ig/ref :audiophile.services/store
 
  [:duct/const :resources/artifacts]
- #ig/ref [:audiophile.resources/base :artifacts/all]
+ #ig/ref [:audiophile.resources/toaster :artifacts/all]
 
  [:duct/const :ui/err-codes]
  {:login-failed "Authentication failed. Please try again."}
@@ -34,6 +34,12 @@
 
  :audiophile.resource.validated/opts->request
  {}
+
+ [:audiophile.resources/toaster :artifacts/all]
+ {:*toasts    #ig/ref :audiophile.core/toasts
+  :error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:audiophile.resources/base :artifacts/all]
+  :store      #ig/ref :services/store}
 
  [:audiophile.resources/base :artifacts/all]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :artifacts/all]}

@@ -14,4 +14,3 @@
 
 (defn res-artifact [{:keys [http-client nav]}]
   (->ArtifactResource http-client nav))
-

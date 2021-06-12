@@ -3,7 +3,8 @@
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.events.protocols :as pe]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
-    [com.ben-allred.audiophile.common.core.utils.colls :as colls]))
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private select-event-type-id [event-types event-type]
   (-> event-types

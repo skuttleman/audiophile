@@ -49,6 +49,9 @@
  {:event-types #ig/ref :models/event-types
   :events      #ig/ref :models/events}
 
+ :audiophile.repositories.events/->emitter
+ {:pubsub #ig/ref :services/pubsub}
+
  :audiophile.repositories.files/->file-executor
  {:artifacts     #ig/ref :models/artifacts
   :file-versions #ig/ref :models/file-versions
@@ -58,7 +61,8 @@
   :store         #ig/ref :audiophile.repositories/store}
 
  :audiophile.repositories.files/->file-event-emitter
- {:pubsub #ig/ref :services/pubsub}
+ {:->emitter #ig/ref :audiophile.repositories.events/->emitter
+  :pubsub    #ig/ref :services/pubsub}
 
  :audiophile.repositories.files/->executor
  {:->event-executor     #ig/ref :audiophile.repositories.events/->executor

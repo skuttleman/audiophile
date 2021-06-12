@@ -1,6 +1,8 @@
 (ns com.ben-allred.audiophile.backend.api.validations.selectors
   (:require
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defmulti select
           "extracts input data from"
@@ -48,7 +50,8 @@
   [_ request]
   (-> request
       (get-in [:params "files[]"])
-      (assoc :user/id (get-in request [:auth/user :user/id]))))
+      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defmethod select [:post :api/file]
   [_ request]

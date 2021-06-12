@@ -3,6 +3,7 @@
     [clojure.test :refer [deftest is testing]]
     [com.ben-allred.audiophile.common.api.navigation.base :as bnav]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.ui.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.ui.infrastructure.store.protocols :as pstore]
     [test.utils.stubs :as stubs]))
@@ -11,29 +12,30 @@
   (testing "handle-msg"
     (let [store (stubs/create (reify
                                 pstore/IStore
-                                (dispatch! [_ _])))]
-      (testing "handles default message"
-        (ws/handle-msg store [::msg-type ::event-id ::data])
-        (let [[event] (peek (stubs/calls store :dispatch!))]
-          (is (= [:ws/message [::msg-type {:id   ::event-id
-                                           :data ::data}]]
-                 event))))
-
+                                (dispatch! [_ _])))
+          pubsub (stubs/create (reify
+                                 ppubsub/IPubSub
+                                 (publish! [_ _ _])))]
       (testing "handles contextual message"
-        (ws/handle-msg store [::msg-type ::event-id ::data ::ctx])
-        (let [[event] (peek (stubs/calls store :dispatch!))]
+        (ws/handle-msg pubsub store [::msg-type ::event-id {:event/data ::data} {:some :ctx :request/id "request-id"}])
+        (let [[action] (peek (stubs/calls store :dispatch!))
+              [topic event] (peek (stubs/calls pubsub :publish!))]
           (is (= [:ws/message [::msg-type {:id   ::event-id
-                                           :data ::data
-                                           :ctx  ::ctx}]]
-                 event))))
+                                           :data {:event/data ::data}
+                                           :ctx  {:some :ctx :request/id "request-id"}}]]
+                 action))
+          (is (= "request-id" topic))
+          (is (= {:data ::data} event))))
 
       (testing "ignores other messages"
+        (stubs/init! pubsub)
         (stubs/init! store)
-        (ws/handle-msg store [:foo "here"])
-        (ws/handle-msg store :bar)
-        (ws/handle-msg store 13)
-        (ws/handle-msg store {:another :thing})
+        (ws/handle-msg pubsub store [:foo "here"])
+        (ws/handle-msg pubsub store :bar)
+        (ws/handle-msg pubsub store 13)
+        (ws/handle-msg pubsub store {:another :thing})
 
+        (is (empty? (stubs/calls pubsub :publish!)))
         (is (empty? (stubs/calls store :dispatch!)))))))
 
 (deftest ws-uri-test

@@ -2,10 +2,10 @@
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
-    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
-    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
@@ -27,6 +27,12 @@
           [:li.error
            {:key error}
            error])])]))
+
+(defn spinner
+  ([]
+   (spinner nil))
+  ([{:keys [size]}]
+   [(keyword (str "div.loader." (name (or size :small))))]))
 
 (defn ^:private with-auto-focus [component]
   (fn [{:keys [auto-focus?]} & _]
@@ -174,7 +180,9 @@
                                 (assoc :on-click (comp (fn [_]
                                                          (some-> @file-input .click))
                                                        dom/prevent-default)))
-               (:display attrs "Select file…")]]]))))))
+               (:display attrs "Select file…")
+               (when (:disabled attrs)
+                 [spinner])]]]))))))
 
 (defn uploader [{:keys [multi? on-change *resource] :as attrs}]
   [file (-> attrs

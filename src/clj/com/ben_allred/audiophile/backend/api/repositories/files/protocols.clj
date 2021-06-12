@@ -20,4 +20,4 @@
 
 (defprotocol IFilesEventEmitter
   "Abstraction for emitting events related to files"
-  (artifact-created! [this user-id artifact]))
+  (artifact-created! [this user-id artifact ctx]))

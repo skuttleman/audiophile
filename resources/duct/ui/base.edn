@@ -4,11 +4,15 @@
  #duct/include "duct/ui/services.edn"
  #duct/include "duct/ui/components.edn"
  {:audiophile.services.http/client
-  ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-nav]}
+  ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-nav
+                           #ig/ref :audiophile.services.http/with-pubsub]}
 
   :audiophile.services.http/with-nav
   {:env #ig/ref :services.ui/env
    :nav #ig/ref :services/nav}
+
+  :audiophile.services.http/with-pubsub
+  {:pubsub #ig/ref :services/pubsub}
 
   :audiophile.services.nav/router
   ^:promote {:base-urls #ig/ref :services.ui/base-urls}

@@ -7,6 +7,7 @@
  :audiophile.services.ws/client
  {:env          #ig/ref :services.ui/env
   :nav          #ig/ref :services/nav
+  :pubsub       #ig/ref :services/pubsub
   :reconnect-ms #ig/ref :env/ws-reconnect-ms
   :serde        #ig/ref :serdes/edn
   :store        #ig/ref :services/store}}

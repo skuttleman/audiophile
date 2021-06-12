@@ -59,12 +59,9 @@
    [:team/type [:fn #{:PERSONAL :COLLABORATIVE}]]])
 
 (def api-artifact:create
-  (mu/merge auth
-            [:map
-             [:filename trimmed-string?]
-             [:content-type trimmed-string?]
-             [:tempfile file?]
-             [:size nat-int?]]))
+  (-> auth
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge artifact:create)))
 
 (def api-ws:connect
   (mu/merge auth
