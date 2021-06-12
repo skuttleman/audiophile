@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.backend.infrastructure.db.core-test
+(ns ^:unit com.ben-allred.audiophile.backend.infrastructure.db.models.core-test
   (:require
     [clojure.set :as set]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [next.jdbc.result-set :as result-set])
   (:import
@@ -27,7 +27,7 @@
 
 (deftest ->builder-fn-test
   (testing "Builder"
-    (let [->builder-fn (db/->builder-fn {})
+    (let [->builder-fn (models/->builder-fn {})
           id (uuids/random)
           result-set (->StubResultSet "user/id" id)]
       (testing "#with-column"

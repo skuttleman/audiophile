@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.repositories
   (:require
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
+    [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
@@ -32,7 +33,7 @@
   (db/raw-formatter cfg))
 
 (defmethod ig/init-key :audiophile.repositories/->builder-fn [_ cfg]
-  (db/->builder-fn cfg))
+  (models/->builder-fn cfg))
 
 (defmethod ig/init-key :audiophile.repositories/->executor [_ cfg]
   (db/->executor cfg))
@@ -49,8 +50,17 @@
 (defmethod ig/init-key :audiophile.repositories/datasource#close [_ cfg]
   (db/datasource#close cfg))
 
+(defmethod ig/init-key :audiophile.repositories.events/->executor [_ cfg]
+  (db.events/->executor cfg))
+
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
   (files/accessor cfg))
+
+(defmethod ig/init-key :audiophile.repositories.files/->file-executor [_ cfg]
+  (db.files/->file-executor cfg))
+
+(defmethod ig/init-key :audiophile.repositories.files/->file-event-emitter [_ cfg]
+  (db.files/->file-event-emitter cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/->executor [_ cfg]
   (db.files/->executor cfg))

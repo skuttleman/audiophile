@@ -1,15 +1,16 @@
 (ns com.ben-allred.audiophile.backend.api.repositories.files.core
   (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
-  (let [artifact-id (pf/insert-artifact! executor artifact opts)]
-    {:artifact/id artifact-id
-     :artifact/filename (:filename artifact)}))
+  (let [artifact-id (pf/insert-artifact! executor artifact opts)
+        artifact (pf/find-event-artifact executor artifact-id)]
+    (pf/artifact-created! executor (:user/id opts) artifact)
+    artifact))
 
 (defn ^:private create-file* [executor file opts]
   (let [file-id (pf/insert-file! executor file opts)]

@@ -1,39 +1,59 @@
 (ns ^:unit com.ben-allred.audiophile.backend.domain.interactors.files.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
-    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.backend.api.repositories.files.core :as rfiles]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
+    [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
+    [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [test.utils :as tu]
-    [test.utils.stubs :as stubs]
-    [test.utils.repositories :as trepos]))
+    [test.utils.repositories :as trepos]
+    [test.utils.stubs :as stubs]))
 
 (defn ^:private ->file-executor
-  ([store]
+  ([config]
    (fn [executor models]
-     (->file-executor executor (assoc models :store store))))
-  ([executor {:keys [artifacts file-versions files projects store user-teams]}]
-   (db.files/->FilesExecutor executor
-                             artifacts
-                             file-versions
-                             files
-                             projects
-                             user-teams
-                             store
-                             (constantly ::key))))
+     (->file-executor executor (merge models config))))
+  ([executor {:keys [artifacts event-types events file-versions
+                     files projects pubsub store user-teams]}]
+   (let [file-exec (db.files/->FilesRepoExecutor executor
+                                                 artifacts
+                                                 file-versions
+                                                 files
+                                                 projects
+                                                 user-teams
+                                                 store
+                                                 (constantly ::key))
+         event-exec (db.events/->EventsExecutor executor event-types events)
+         emitter (db.files/->FilesEventEmitter event-exec pubsub)]
+     (db.files/->Executor file-exec emitter))))
 
 (deftest create-artifact-test
   (testing "create-artifact"
     (let [store (trepos/stub-kv-store)
-          tx (trepos/stub-transactor (->file-executor store))
+          pubsub (stubs/create (reify
+                                 ppubsub/IPubSub
+                                 (publish! [_ _ _])
+                                 (subscribe! [_ _ _ _])
+                                 (unsubscribe! [_ _])
+                                 (unsubscribe! [_ _ _])))
+          tx (trepos/stub-transactor (->file-executor {:pubsub pubsub
+                                                       :store  store}))
           repo (rfiles/->FileAccessor tx)]
       (testing "when the content saves to the kv-store"
-        (let [[artifact-id user-id] (repeatedly uuids/random)]
-          (stubs/set-stub! tx :execute! [{:id artifact-id}])
+        (let [[artifact-id user-id] (repeatedly uuids/random)
+              artifact {:artifact/id artifact-id
+                        :artifact/uri "some-uri"
+                        :artifact/filename "file.name"}]
+          (stubs/use! tx :execute!
+                      [{:id artifact-id}]
+                      [artifact]
+                      [{:id "event-id"}])
           (let [result (int/create-artifact! repo
                                              {:filename     "file.name"
                                               :size         12345
@@ -41,26 +61,68 @@
                                               :tempfile     "…content…"
                                               :user/id      user-id})
                 [store-k & stored] (colls/only! (stubs/calls store :put!))
-                [query] (colls/only! (stubs/calls tx :execute!))]
+                [[insert-artifact] [query-artifact] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
               (is (= ["…content…" {:content-type   "content/type"
                                    :content-length 12345
                                    :metadata       {:filename "file.name"}}]
                      stored)))
 
-            (testing "sends a query to the repository"
+            (testing "inserts the artifact in the repository"
               (is (= {:insert-into :artifacts
                       :values      [{:filename     "file.name"
                                      :content-type "content/type"
                                      :uri          (repos/uri store store-k)
                                      :created-by   user-id}]
                       :returning   [:id]}
-                     query)))
+                     insert-artifact)))
+
+            (testing "queries the event payload"
+              (let [{:keys [select from where]} query-artifact]
+                (is (= #{[:artifacts.filename "artifact/filename"]
+                         [:artifacts.created-by "artifact/created-by"]
+                         [:artifacts.id "artifact/id"]
+                         [:artifacts.content-type "artifact/content-type"]
+                         [:artifacts.uri "artifact/uri"]
+                         [:artifacts.content-size "artifact/content-size"]
+                         [:artifacts.created-at "artifact/created-at"]}
+                       (set select)))
+                (is (= [:artifacts] from))
+                (is (= [:= #{:artifacts.id artifact-id}]
+                       (tu/op-set where)))))
+
+            (testing "inserts the event in the repository"
+              (let [{:keys [event-type-id] :as value} (colls/only! (:values insert-event))]
+                (is (= {:insert-into :events
+                        :returning [:id]}
+                       (dissoc insert-event :values)))
+                (is (= {:model-id      artifact-id
+                        :data          artifact
+                        :emitted-by    user-id}
+                       (dissoc value :event-type-id)))
+                (is (= {:select #{[:event-types.id "event-type/id"]}
+                        :from   [:event-types]
+                        :where  [:and #{[:= #{:event-types.category "artifact"}]
+                                        [:= #{:event-types.name "created"}]}]}
+                       (-> event-type-id
+                           (update :select set)
+                           (update-in [:where 1] tu/op-set)
+                           (update-in [:where 2] tu/op-set)
+                           (update :where tu/op-set))))))
+
+            (testing "emits an event"
+              (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
+                (is (= [::ws/user user-id] topic))
+                (is (= "event-id" event-id))
+                (is (= {:event/id "event-id"
+                        :event/type :artifact/created
+                        :event/model-id artifact-id
+                        :event/data artifact
+                        :event/emitted-by user-id}
+                       event))))
 
             (testing "returns the result"
-              (is (= {:artifact/id       artifact-id
-                      :artifact/filename "file.name"}
-                     result))))))
+              (is (= artifact result))))))
 
       (testing "when the store throws an exception"
         (stubs/use! store :put!

@@ -45,13 +45,25 @@
  {:->executor #ig/ref :audiophile.repositories.users/->executor
   :tx         #ig/ref :services/transactor}
 
- :audiophile.repositories.files/->executor
+ :audiophile.repositories.events/->executor
+ {:event-types #ig/ref :models/event-types
+  :events      #ig/ref :models/events}
+
+ :audiophile.repositories.files/->file-executor
  {:artifacts     #ig/ref :models/artifacts
   :file-versions #ig/ref :models/file-versions
   :files         #ig/ref :models/files
   :projects      #ig/ref :models/projects
   :user-teams    #ig/ref :models/user-teams
   :store         #ig/ref :audiophile.repositories/store}
+
+ :audiophile.repositories.files/->file-event-emitter
+ {:pubsub #ig/ref :services/pubsub}
+
+ :audiophile.repositories.files/->executor
+ {:->event-executor     #ig/ref :audiophile.repositories.events/->executor
+  :->file-event-emitter #ig/ref :audiophile.repositories.files/->file-event-emitter
+  :->file-executor      #ig/ref :audiophile.repositories.files/->file-executor}
 
  :audiophile.repositories.projects/->executor
  {:projects   #ig/ref :models/projects

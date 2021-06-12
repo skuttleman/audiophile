@@ -7,10 +7,13 @@
 
 (defn ->model-fn [model]
   (fn [[k v]]
-    (let [k' (keyword (name k))]
-      [k (cond-> v
-           (contains? (:casts model) k')
-           keyword)])))
+    (let [k' (keyword (name k))
+          cast-fn (if-let [cast (get-in model [:casts k'])]
+                    (case cast
+                      :jsonb (partial serdes/deserialize (serdes/json {}))
+                      keyword)
+                    identity)]
+      [k (cast-fn v)])))
 
 (deftype Repository [tx ->executor]
   prepos/ITransact

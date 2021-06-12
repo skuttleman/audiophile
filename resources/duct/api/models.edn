@@ -3,6 +3,16 @@
   :namespace  :artifact
   :table-name :artifacts}
 
+ [:audiophile.repositories/model :models/event-types]
+ {:models     #ig/ref :audiophile.repositories/models
+  :namespace  :event-type
+  :table-name :event-types}
+
+ [:audiophile.repositories/model :models/events]
+ {:models     #ig/ref :audiophile.repositories/models
+  :namespace  :event
+  :table-name :events}
+
  [:audiophile.repositories/model :models/file-versions]
  {:models     #ig/ref :audiophile.repositories/models
   :namespace  :file-version

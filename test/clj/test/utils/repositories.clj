@@ -9,6 +9,16 @@
     :table     :artifacts
     :namespace :artifact}
 
+   :events
+   {:fields    #{:id :data :event-type-id :model-id :emitted-at :emitted-by}
+    :table     :events
+    :namespace :event}
+
+   :event-types
+   {:fields    #{:id :category :name}
+    :table     :event-types
+    :namespace :event-type}
+
    :files
    {:fields    #{:name :created-by :id :idx :project-id :created-at}
     :table     :files

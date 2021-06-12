@@ -1,9 +1,11 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.files
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.events.core :as events]
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
@@ -123,7 +125,7 @@
                                      :name        (:version/name version)
                                      :created-by  user-id}))
 
-(deftype FilesExecutor [executor artifacts file-versions files projects user-teams store keygen]
+(deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams store keygen]
   pf/IFilesExecutor
   (insert-file! [_ file {project-id :project/id user-id :user/id}]
     (access! executor :project (access-project projects user-teams project-id user-id))
@@ -178,6 +180,10 @@
                        (repos/execute! (select-artifact artifacts artifact-id))
                        colls/only!)]
       (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
+  (find-event-artifact [_ artifact-id]
+    (-> executor
+        (repos/execute! (select-artifact artifacts artifact-id))
+        colls/only!))
   (select-for-project [_ project-id opts]
     (repos/execute! executor (select-for-user* files
                                                projects
@@ -185,13 +191,58 @@
                                                project-id
                                                (:user/id opts)))))
 
-(defn ->executor [{:keys [artifacts file-versions files projects user-teams store]}]
+(defn ->file-executor [{:keys [artifacts file-versions files projects user-teams store]}]
   (fn [executor]
-    (->FilesExecutor executor
-                     artifacts
-                     file-versions
-                     files
-                     projects
-                     user-teams
-                     store
-                     #(str "artifacts/" (uuids/random)))))
+    (->FilesRepoExecutor executor
+                         artifacts
+                         file-versions
+                         files
+                         projects
+                         user-teams
+                         store
+                         #(str "artifacts/" (uuids/random)))))
+
+(deftype FilesEventEmitter [executor pubsub]
+  pf/IFilesEventEmitter
+  (artifact-created! [_ user-id {:artifact/keys [id] :as artifact}]
+    (let [event {:event/model-id id
+                 :event/data     artifact}
+          event-id (events/insert-event! executor
+                                         event
+                                         {:event/type :artifact/created
+                                          :user/id    user-id})]
+      (ws/send-user! pubsub user-id event-id (assoc event
+                                                    :event/id event-id
+                                                    :event/type :artifact/created
+                                                    :event/emitted-by user-id))
+      event-id)))
+
+(defn ->file-event-emitter [{:keys [pubsub]}]
+  (fn [executor]
+    (->FilesEventEmitter executor pubsub)))
+
+(deftype Executor [executor emitter]
+  pf/IFilesExecutor
+  (insert-file! [_ file opts]
+    (pf/insert-file! executor file opts))
+  (insert-version! [_ version opts]
+    (pf/insert-version! executor version opts))
+  (insert-artifact! [_ artifact opts]
+    (pf/insert-artifact! executor artifact opts))
+  (find-by-file-id [_ file-id opts]
+    (pf/find-by-file-id executor file-id opts))
+  (find-by-artifact-id [_ artifact-id opts]
+    (pf/find-by-artifact-id executor artifact-id opts))
+  (find-event-artifact [_ artifact-id]
+    (pf/find-event-artifact executor artifact-id))
+  (select-for-project [_ project-id opts]
+    (pf/select-for-project executor project-id opts))
+
+  pf/IFilesEventEmitter
+  (artifact-created! [_ user-id opts]
+    (pf/artifact-created! emitter user-id opts)))
+
+(defn ->executor [{:keys [->event-executor ->file-event-emitter ->file-executor]}]
+  (fn [executor]
+    (->Executor (->file-executor executor)
+                (->file-event-emitter (->event-executor executor)))))

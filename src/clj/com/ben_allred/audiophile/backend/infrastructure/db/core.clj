@@ -4,10 +4,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [hikari-cp.core :as hikari]
-    [next.jdbc :as jdbc]
-    [next.jdbc.result-set :as result-set])
-  (:import
-    (java.sql Date ResultSet)))
+    [next.jdbc :as jdbc]))
 
 (deftype QueryFormatter []
   prepos/IFormatQuery
@@ -19,21 +16,6 @@
   (format [_ sql]
     (cond-> sql
       (not (vector? sql)) vector)))
-
-(deftype Builder [cols col-cnt collect! ->row! rs]
-  result-set/RowBuilder
-  (->row [_] (transient {}))
-  (column-count [_] col-cnt)
-  (with-column [_ row i]
-    (let [k (nth cols (dec i))
-          v (result-set/read-column-by-index (.getObject ^ResultSet rs ^Integer i) meta i)]
-      (->row! row k (cond-> v (instance? Date v) .toLocalDate))))
-  (row! [_ row] (persistent! row))
-
-  result-set/ResultSetBuilder
-  (->rs [_] (transient []))
-  (with-row [_ mrs row] (collect! mrs row))
-  (rs! [_ mrs] (persistent! mrs)))
 
 (deftype Executor [conn ->builder-fn query-formatter]
   prepos/IExecute
@@ -56,21 +38,6 @@
 
 (defn raw-formatter [_]
   (->RawFormatter))
-
-(defn ->builder-fn [_]
-  (fn [{:keys [model-fn result-xform]}]
-    (let [xform (or result-xform identity)
-          model-fn (cond->> (fn [[k v]]
-                              [(keyword k) v])
-                     model-fn (comp model-fn))
-          ->row! (fn [t k v]
-                   (conj! t (model-fn [k v])))]
-      (fn [^ResultSet rs _opts]
-        (let [meta (.getMetaData rs)
-              col-cnt (.getColumnCount meta)
-              cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
-                         (range col-cnt))]
-          (->Builder cols col-cnt (xform conj!) ->row! rs))))))
 
 (defn ->executor [{:keys [->builder-fn query-formatter]}]
   (fn [conn]

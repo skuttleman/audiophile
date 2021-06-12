@@ -13,5 +13,11 @@
      Otherwise includes only most recent version.")
   (find-by-artifact-id [this artifact-id opts]
     "Finds artifact by id.")
+  (find-event-artifact [this artifact-id]
+    "Finds event-ready artifact by id.")
   (select-for-project [this project-id opts]
     "Finds all files for a project."))
+
+(defprotocol IFilesEventEmitter
+  "Abstraction for emitting events related to files"
+  (artifact-created! [this user-id artifact]))

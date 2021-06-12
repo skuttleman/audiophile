@@ -5,18 +5,62 @@
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [jsonista.core :as jsonista]
+    [next.jdbc.result-set :as result-set])
+  (:import
+    (java.sql Date ResultSet)
+    (org.postgresql.util PGobject)))
+
+(extend-protocol jsonista/ReadValue
+  PGobject
+  (-read-value [this mapper]
+    (.readValue mapper (str this) ^Class Object)))
+
+(deftype Builder [cols col-cnt collect! ->row! rs]
+  result-set/RowBuilder
+  (->row [_] (transient {}))
+  (column-count [_] col-cnt)
+  (with-column [_ row i]
+    (let [k (nth cols (dec i))
+          v (result-set/read-column-by-index (.getObject ^ResultSet rs ^Integer i) meta i)]
+      (->row! row k (cond-> v (instance? Date v) .toLocalDate))))
+  (row! [_ row] (persistent! row))
+
+  result-set/ResultSetBuilder
+  (->rs [_] (transient []))
+  (with-row [_ mrs row] (collect! mrs row))
+  (rs! [_ mrs] (persistent! mrs)))
+
+(defn ->builder-fn [_]
+  (fn [{:keys [model-fn result-xform]}]
+    (let [xform (or result-xform identity)
+          model-fn (cond->> (fn [[k v]]
+                              [(keyword k) v])
+                            model-fn (comp model-fn))
+          ->row! (fn [t k v]
+                   (conj! t (model-fn [k v])))]
+      (fn [^ResultSet rs _opts]
+        (let [meta (.getMetaData rs)
+              col-cnt (.getColumnCount meta)
+              cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
+                         (range col-cnt))]
+          (->Builder cols col-cnt (xform conj!) ->row! rs))))))
 
 (defn models [{:keys [tx]}]
-  (reduce (fn [models row]
-            (let [table (csk/->kebab-case-keyword (:table_name row))
-                  column (csk/->kebab-case-keyword (:column_name row))]
+  (reduce (fn [models {table :table_name column :column_name type :data_type name :udt_name}]
+            (let [table (csk/->kebab-case-keyword table)
+                  column (csk/->kebab-case-keyword column)]
               (update models
                       table
                       (fns/=> (update :fields (fnil conj #{}) column)
                               (cond->
-                                (= "USER-DEFINED" (:data_type row))
-                                (assoc-in [:casts column] (keyword (:udt_name row))))))))
+                                (= "USER-DEFINED" type)
+                                (assoc-in [:casts column] (keyword name))
+
+                                (contains? #{"jsonb"} type)
+                                (assoc-in [:casts column] (keyword type)))))))
           {}
           (repos/transact! tx repos/execute!
                            {:select [:table-name :column-name :data-type :udt-name]
@@ -70,10 +114,14 @@
                   (into {}
                         (keep (fn [[k v]]
                                 (let [k' (keyword (name k))
-                                      cast (get casts k')]
+                                      cast (get casts k')
+                                      pre-cast (when cast
+                                                 (case cast
+                                                   :jsonb (partial serdes/serialize (serdes/json {}))
+                                                   name))]
                                   (when (valid-column? model k' (namespace k))
                                     [k' (cond-> v
-                                          cast (-> name (sql/cast cast)))]))))
+                                          pre-cast (-> pre-cast (sql/cast cast)))]))))
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
 
