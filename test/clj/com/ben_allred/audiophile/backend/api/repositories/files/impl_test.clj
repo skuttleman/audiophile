@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.backend.api.repositories.files.core-test
+(ns ^:unit com.ben-allred.audiophile.backend.api.repositories.files.impl-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.api.repositories.files.core :as rfiles]
+    [com.ben-allred.audiophile.backend.api.repositories.files.impl :as rfiles]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]

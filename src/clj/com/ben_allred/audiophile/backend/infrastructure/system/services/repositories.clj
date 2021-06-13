@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.repositories
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
-    [com.ben-allred.audiophile.backend.api.repositories.files.core :as files]
-    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as projects]
-    [com.ben-allred.audiophile.backend.api.repositories.teams.core :as teams]
-    [com.ben-allred.audiophile.backend.api.repositories.users.core :as users]
+    [com.ben-allred.audiophile.backend.api.repositories.files.impl :as files]
+    [com.ben-allred.audiophile.backend.api.repositories.projects.impl :as projects]
+    [com.ben-allred.audiophile.backend.api.repositories.teams.impl :as teams]
+    [com.ben-allred.audiophile.backend.api.repositories.users.impl :as rusers]
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
@@ -94,7 +94,7 @@
   (db.teams/->executor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.users/accessor [_ cfg]
-  (users/accessor cfg))
+  (rusers/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.users/->executor [_ cfg]
   (db.users/->executor cfg))

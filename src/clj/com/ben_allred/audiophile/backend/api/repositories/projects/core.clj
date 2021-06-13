@@ -1,28 +1,30 @@
 (ns com.ben-allred.audiophile.backend.api.repositories.projects.core
-  (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.api.repositories.projects.protocols :as pp]
-    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]))
+    [com.ben-allred.audiophile.backend.api.repositories.projects.protocols :as pp]))
 
-(defn ^:private create* [executor opts]
-  (let [project-id (pp/insert-project! executor opts opts)
-        project (pp/find-event-project executor project-id)]
-    (pp/project-created! executor (:user/id opts) project opts)))
+(defn find-by-project-id
+  ([accessor project-id]
+   (find-by-project-id accessor project-id nil))
+  ([accessor project-id opts]
+   (pp/find-by-project-id accessor project-id opts)))
 
-(deftype ProjectAccessor [repo]
-  pint/IProjectAccessor
-  pint/IAccessor
-  (query-many [_ opts]
-    (repos/transact! repo pp/select-for-user (:user/id opts) opts))
-  (query-one [_ opts]
-    (repos/transact! repo pp/find-by-project-id (:project/id opts) opts))
-  (create! [_ opts]
-    (crepos/command! repo opts
-      (repos/transact! repo create* opts))))
+(defn select-for-user
+  ([accessor user-id]
+   (select-for-user accessor user-id nil))
+  ([accessor user-id opts]
+   (pp/select-for-user accessor user-id opts)))
 
-(defn accessor
-  "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."
-  [{:keys [repo]}]
-  (->ProjectAccessor repo))
+(defn insert-project!
+  ([accessor project]
+   (insert-project! accessor project nil))
+  ([accessor project opts]
+   (pp/insert-project! accessor project opts)))
+
+(defn find-event-project [accessor project-id]
+  (pp/find-event-project accessor project-id))
+
+(defn project-created!
+  ([accessor user-id project]
+   (project-created! accessor user-id project nil))
+  ([accessor user-id project ctx]
+   (pp/project-created! accessor user-id project ctx)))

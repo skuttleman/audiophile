@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.backend.api.repositories.users.core-test
+(ns ^:unit com.ben-allred.audiophile.backend.api.repositories.users.impl-test
   (:require
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.backend.api.repositories.users.impl :as rusers]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.api.repositories.users.core :as rusers]
     [com.ben-allred.audiophile.backend.infrastructure.db.users :as db.users]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
