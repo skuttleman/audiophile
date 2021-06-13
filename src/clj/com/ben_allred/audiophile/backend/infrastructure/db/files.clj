@@ -123,27 +123,7 @@
                                      :created-by  user-id}))
 
 (deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams store keygen]
-  pf/IFilesExecutor
-  (insert-file! [_ file {project-id :project/id user-id :user/id}]
-    (access! executor :project (access-project projects user-teams project-id user-id))
-    (let [file-id (-> files
-                      (insert {:name       (:file/name file)
-                               :project-id project-id
-                               :created-by user-id})
-                      (->> (repos/execute! executor))
-                      colls/only!
-                      :id)]
-      (-> file-versions
-          (insert-version file file-id user-id)
-          (->> (repos/execute! executor)))
-      file-id))
-  (insert-version! [_ version opts]
-    (access! executor :file (access-file projects files user-teams (:file/id opts) (:user/id opts)))
-    (-> file-versions
-        (insert-version version (:file/id opts) (:user/id opts))
-        (->> (repos/execute! executor))
-        colls/only!
-        :id))
+  pf/IArtifactsExecutor
   (insert-artifact! [_ artifact opts]
     (let [key (keygen)]
       (with-async
@@ -159,6 +139,31 @@
              (repos/execute! executor)
              colls/only!
              :id))))
+  (find-by-artifact-id [_ artifact-id opts]
+    (access! executor :artifact (access-artifact projects files file-versions user-teams artifact-id (:user/id opts)))
+    (let [artifact (-> executor
+                       (repos/execute! (models/select-by-id* artifacts artifact-id))
+                       colls/only!)]
+      (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
+  (find-event-artifact [_ artifact-id]
+    (-> executor
+        (repos/execute! (models/select-by-id* artifacts artifact-id))
+        colls/only!))
+
+  pf/IFilesExecutor
+  (insert-file! [_ file {project-id :project/id user-id :user/id}]
+    (access! executor :project (access-project projects user-teams project-id user-id))
+    (let [file-id (-> files
+                      (insert {:name       (:file/name file)
+                               :project-id project-id
+                               :created-by user-id})
+                      (->> (repos/execute! executor))
+                      colls/only!
+                      :id)]
+      (-> file-versions
+          (insert-version file file-id user-id)
+          (->> (repos/execute! executor)))
+      file-id))
   (find-by-file-id [_ file-id opts]
     (when-not (:internal/verified? opts)
       (access! executor :file (access-file projects files user-teams file-id (:user/id opts))))
@@ -171,12 +176,6 @@
         (:includes/versions? opts)
         (assoc :file/versions (repos/execute! executor
                                               (select-versions file-versions file-id))))))
-  (find-by-artifact-id [_ artifact-id opts]
-    (access! executor :artifact (access-artifact projects files file-versions user-teams artifact-id (:user/id opts)))
-    (let [artifact (-> executor
-                       (repos/execute! (models/select-by-id* artifacts artifact-id))
-                       colls/only!)]
-      (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
   (select-for-project [_ project-id opts]
     (repos/execute! executor (select-for-user* files
                                                projects
@@ -187,13 +186,18 @@
     (-> executor
         (repos/execute! (select-one files file-id))
         colls/only!))
+
+  pf/IFileVersionsExecutor
+  (insert-version! [_ version opts]
+    (access! executor :file (access-file projects files user-teams (:file/id opts) (:user/id opts)))
+    (-> file-versions
+        (insert-version version (:file/id opts) (:user/id opts))
+        (->> (repos/execute! executor))
+        colls/only!
+        :id))
   (find-event-version [_ version-id]
     (-> executor
         (repos/execute! (models/select-by-id* file-versions version-id))
-        colls/only!))
-  (find-event-artifact [_ artifact-id]
-    (-> executor
-        (repos/execute! (models/select-by-id* artifacts artifact-id))
         colls/only!)))
 
 (defn ->file-executor
@@ -210,13 +214,17 @@
                          #(str "artifacts/" (uuids/random)))))
 
 (deftype FilesEventEmitter [executor emitter pubsub]
+  pf/IArtifactsEventEmitter
+  (artifact-created! [_ user-id artifact ctx]
+    (cdb/emit! executor pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
+
   pf/IFilesEventEmitter
   (file-created! [_ user-id file ctx]
     (cdb/emit! executor pubsub user-id (:file/id file) :file/created file ctx))
+
+  pf/IFileVersionsEventEmitter
   (version-created! [_ user-id version ctx]
     (cdb/emit! executor pubsub user-id (:file-version/id version) :file-version/created version ctx))
-  (artifact-created! [_ user-id artifact ctx]
-    (cdb/emit! executor pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
 
   pint/IEmitter
   (command-failed! [_ request-id opts]
@@ -229,33 +237,41 @@
     (->FilesEventEmitter executor (->emitter executor) pubsub)))
 
 (deftype Executor [executor emitter]
+  pf/IArtifactsExecutor
+  (insert-artifact! [_ artifact opts]
+    (pf/insert-artifact! executor artifact opts))
+  (find-by-artifact-id [_ artifact-id opts]
+    (pf/find-by-artifact-id executor artifact-id opts))
+  (find-event-artifact [_ artifact-id]
+    (pf/find-event-artifact executor artifact-id))
+
   pf/IFilesExecutor
   (insert-file! [_ file opts]
     (pf/insert-file! executor file opts))
-  (insert-version! [_ version opts]
-    (pf/insert-version! executor version opts))
-  (insert-artifact! [_ artifact opts]
-    (pf/insert-artifact! executor artifact opts))
   (find-by-file-id [_ file-id opts]
     (pf/find-by-file-id executor file-id opts))
-  (find-by-artifact-id [_ artifact-id opts]
-    (pf/find-by-artifact-id executor artifact-id opts))
   (select-for-project [_ project-id opts]
     (pf/select-for-project executor project-id opts))
+
   (find-event-file [_ file-id]
     (pf/find-event-file executor file-id))
+  pf/IFileVersionsExecutor
+  (insert-version! [_ version opts]
+    (pf/insert-version! executor version opts))
   (find-event-version [_ version-id]
     (pf/find-event-version executor version-id))
-  (find-event-artifact [_ artifact-id]
-    (pf/find-event-artifact executor artifact-id))
+
+  pf/IArtifactsEventEmitter
+  (artifact-created! [_ user-id artifact ctx]
+    (pf/artifact-created! emitter user-id artifact ctx))
 
   pf/IFilesEventEmitter
   (file-created! [_ user-id file ctx]
     (pf/file-created! emitter user-id file ctx))
+
+  pf/IFileVersionsEventEmitter
   (version-created! [_ user-id version ctx]
     (pf/version-created! emitter user-id version ctx))
-  (artifact-created! [_ user-id artifact ctx]
-    (pf/artifact-created! emitter user-id artifact ctx))
 
   pint/IEmitter
   (command-failed! [_ request-id opts]
