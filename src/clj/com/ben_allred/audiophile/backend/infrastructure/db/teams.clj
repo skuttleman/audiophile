@@ -2,8 +2,10 @@
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.api.repositories.teams.protocols :as pt]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
@@ -17,47 +19,40 @@
                                 [:= :user-teams.user-id user-id]])
                (assoc :select [1]))])
 
-(defn ^:private select-by [model clause]
-  (models/select* model clause))
-
-(defn ^:private select-one [model team-id]
-  (select-by model [:= :teams.id team-id]))
-
 (defn ^:private select-one-for-user [teams user-teams team-id user-id]
-  (select-by teams [:and
-                    [:= :teams.id team-id]
-                    (has-team-clause user-teams user-id)]))
+  (models/select* teams [:and
+                         [:= :teams.id team-id]
+                         (has-team-clause user-teams user-id)]))
 
 (defn ^:private insert-user-team [model team-id user-id]
   (models/insert-into model {:user-id user-id :team-id team-id}))
 
-(defn ^:private select-team [model user-teams team-id]
-  (-> model
+(defn ^:private select-team [users user-teams team-id]
+  (-> users
       (assoc :alias :member)
       (models/select-fields #{:id :first-name :last-name})
-      (select-by [:= :user-teams.team-id team-id])
+      (models/select* [:= :user-teams.team-id team-id])
       (models/join (-> user-teams
                        (assoc :namespace :member)
                        (models/select-fields #{:team-id}))
                    [:= :user-teams.user-id :member.id])))
 
-(deftype TeamExecutor [executor teams user-teams users]
+(deftype TeamsRepoExecutor [executor teams user-teams users]
   pt/ITeamsExecutor
   (find-by-team-id [_ team-id opts]
     (colls/only! (repos/execute! executor
                                  (if-let [user-id (:user/id opts)]
                                    (select-one-for-user teams user-teams team-id user-id)
-                                   (select-one teams team-id)))))
+                                   (models/select-by-id* teams team-id)))))
   (select-team-members [_ team-id opts]
     (repos/execute! executor
                     (select-team users user-teams team-id)
                     opts))
   (select-for-user [_ user-id opts]
     (repos/execute! executor
-                    (select-by teams (has-team-clause user-teams user-id))
+                    (models/select* teams (has-team-clause user-teams user-id))
                     (merge opts (opts* teams))))
-  (insert-team! [_ team {user-id :user/id :as thing}]
-    (log/warn thing)
+  (insert-team! [_ team {user-id :user/id}]
     (let [team-id (-> executor
                       (repos/execute! (models/insert-into teams (assoc team :created-by user-id)))
                       colls/only!
@@ -66,8 +61,51 @@
                       (insert-user-team user-teams
                                         team-id
                                         user-id))
-      team-id)))
+      team-id))
+  (find-event-team [_ team-id]
+    (-> executor
+        (repos/execute! (models/select-by-id* teams team-id))
+        colls/only!)))
 
-(defn ->executor [{:keys [teams user-teams users]}]
+(defn ->team-executor [{:keys [teams user-teams users]}]
   (fn [executor]
-    (->TeamExecutor executor teams user-teams users)))
+    (->TeamsRepoExecutor executor teams user-teams users)))
+
+(deftype TeamsEventEmitter [executor emitter pubsub]
+  pt/ITeamsEventEmitter
+  (team-created! [_ user-id team ctx]
+    (cdb/emit! executor pubsub user-id (:team/id team) :team/created team ctx))
+
+  pint/IEmitter
+  (command-failed! [_ request-id opts]
+    (pint/command-failed! emitter request-id opts)))
+
+(defn ->team-event-emitter [{:keys [->emitter pubsub]}]
+  (fn [executor]
+    (->TeamsEventEmitter executor (->emitter executor) pubsub)))
+
+(deftype Executor [executor emitter]
+  pt/ITeamsExecutor
+  (find-by-team-id [_ team-id opts]
+    (pt/find-by-team-id executor team-id opts))
+  (select-for-user [_ user-id opts]
+    (pt/select-for-user executor user-id opts))
+  (select-team-members [_ team-id opts]
+    (pt/select-team-members executor team-id opts))
+  (insert-team! [_ team opts]
+    (pt/insert-team! executor team opts))
+  (find-event-team [_ team-id]
+    (pt/find-event-team executor team-id))
+
+  pt/ITeamsEventEmitter
+  (team-created! [_ user-id team ctx]
+    (pt/team-created! emitter user-id team ctx))
+
+  pint/IEmitter
+  (command-failed! [_ request-id opts]
+    (pint/command-failed! emitter request-id opts)))
+
+(defn ->executor [{:keys [->event-executor ->team-event-emitter ->team-executor]}]
+  (fn [executor]
+    (->Executor (->team-executor executor)
+                (->team-event-emitter (->event-executor executor)))))

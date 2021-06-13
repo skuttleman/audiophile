@@ -6,9 +6,14 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.integration.common :as int])
+    [com.ben-allred.audiophile.common.core.utils.uri :as uri]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.integration.common :as int]
+    [test.utils :as tu])
   (:import
     (org.apache.commons.io FileUtils)))
 
@@ -19,6 +24,15 @@
    (let [serde (int/component system :serdes/jwt)
          token (serdes/serialize serde user)]
      (assoc-in request [:headers "cookie"] (str "auth-token=" token)))))
+
+(defmacro with-ws [[sym response] & body]
+  `(let [~sym (:body ~response)]
+     (try ~@body
+          (finally
+            (u/silent! (async/close! ~sym))))))
+
+(defn as-ws [request]
+  (assoc request :websocket? true))
 
 (defn ^:private go [request system method handle params]
   (let [nav (int/component system :services/nav)
@@ -39,6 +53,18 @@
    (post request system handle nil))
   ([request system handle params]
    (go request system :post handle params)))
+
+(defn as-async [request system handler]
+  (with-ws [ch (-> request
+                   (get system :ws/connection)
+                   as-ws
+                   handler)]
+    (let [result (-> request
+                     (assoc-in [:headers :x-request-id] (uuids/random))
+                     handler)]
+      (cond-> result
+        (http/success? result)
+        (assoc-in [:body :data] (:event/data (second (rest (tu/<!!ms ch)))))))))
 
 (defn body-data [payload]
   {:body {:data payload}})
@@ -65,23 +91,22 @@
                 :tempfile     file
                 :size         (.length file)}))))
 
-(defn as-ws [request]
-  (assoc request :websocket? true))
-
 (defn with-serde
   ([handler system serde]
    (with-serde handler (int/component system serde)))
   ([handler serde]
    (let [mime-type (serdes/mime-type serde)]
-     (fn [request]
+     (fn [{:keys [websocket?] :as request}]
        (-> request
-           (update :headers assoc :content-type mime-type :accept mime-type)
-           (maps/update-maybe :body (partial serdes/serialize serde))
-           handler
-           (maps/update-maybe :body (partial serdes/deserialize serde)))))))
+           (cond->
+             (not websocket?)
+             (-> (update :headers assoc :content-type mime-type :accept mime-type)
+                 (maps/update-maybe :body (partial serdes/serialize serde)))
 
-(defmacro with-ws [[sym response] & body]
-  `(let [~sym (:body ~response)]
-     (try ~@body
-          (finally
-            (async/close! ~sym)))))
+             websocket?
+             (assoc :query-string (uri/join-query {:content-type mime-type
+                                                   :accept       mime-type})))
+           handler
+           (cond->
+             (not (:websocket? request))
+             (maps/update-maybe :body (partial serdes/deserialize serde))))))))

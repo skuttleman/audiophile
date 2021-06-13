@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.system.views
   (:require
+    [com.ben-allred.audiophile.ui.api.views.common :as cviews]
     [com.ben-allred.audiophile.ui.api.views.core :as views]
     [com.ben-allred.audiophile.ui.api.views.files :as views.files]
     [com.ben-allred.audiophile.ui.api.views.home :as views.home]
@@ -53,6 +54,9 @@
 
 (defmethod ig/init-key :audiophile.views.teams/create [_ cfg]
   (views.teams/create cfg))
+
+(defmethod ig/init-key :audiophile.views.common/re-fetch [_ cfg]
+  (cviews/re-fetch cfg))
 
 (defmethod ig/init-key :audiophile.views.components/audio-player [_ cfg]
   (audio/player cfg))

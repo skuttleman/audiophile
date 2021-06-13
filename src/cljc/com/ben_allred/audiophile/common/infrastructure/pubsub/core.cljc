@@ -6,12 +6,13 @@
 (defn ^:private publish* [state this topic event]
   (let [state @state
         subs (get-in state [:subs topic])]
-    (doseq [key subs
-            :let [handler (get-in state [:listeners key topic])]
-            :when handler]
-      (try (handler topic event)
-           (catch #?(:clj Throwable :default :default) _
-             (ppubsub/unsubscribe! this key topic))))))
+    (#?(:cljs identity :default future)
+      (doseq [key subs
+              :let [handler (get-in state [:listeners key topic])]
+              :when handler]
+        (try (handler topic event)
+             (catch #?(:clj Throwable :default :default) _
+               (ppubsub/unsubscribe! this key topic)))))))
 
 (defn subscribe* [state key topic listener]
   (swap! state (fn [state]
@@ -46,32 +47,33 @@
                          (not next-topics) (-> (update :topics dissoc key)
                                                (update :listeners dissoc key))))))))
 
-(deftype PubSub [state]
+(deftype PubSub [state sync?]
   ppubsub/IPubSub
   (publish! [this topic event]
-    (publish* state this topic event)
-    this)
-  (subscribe! [this key topic listener]
-    (subscribe* state key topic listener)
-    this)
-  (unsubscribe! [this key]
-    (unsubscribe-all state key)
-    this)
-  (unsubscribe! [this key topic]
-    (unsubscribe* state key topic)
-    this))
+    (cond-> (publish* state this topic event)
+      sync? #?(:cljs identity :default deref)))
+  (subscribe! [_ key topic listener]
+    (subscribe* state key topic listener))
+  (unsubscribe! [_ key]
+    (unsubscribe-all state key))
+  (unsubscribe! [_ key topic]
+    (unsubscribe* state key topic)))
 
-(defn pubsub [_]
-  (->PubSub (atom nil)))
+(defn pubsub [{:keys [sync?]}]
+  (->PubSub (atom nil) sync?))
 
 (defn publish! [pubsub topic event]
-  (ppubsub/publish! pubsub topic event))
+  (ppubsub/publish! pubsub topic event)
+  pubsub)
 
 (defn subscribe! [pubsub key topic listener]
-  (ppubsub/subscribe! pubsub key topic listener))
+  (ppubsub/subscribe! pubsub key topic listener)
+  pubsub)
 
 (defn unsubscribe!
   ([pubsub key]
-   (ppubsub/unsubscribe! pubsub key))
+   (ppubsub/unsubscribe! pubsub key)
+   pubsub)
   ([pubsub key topic]
-   (ppubsub/unsubscribe! pubsub key topic)))
+   (ppubsub/unsubscribe! pubsub key topic)
+   pubsub))

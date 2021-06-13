@@ -3,11 +3,13 @@
   (:require
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.api.repositories.projects.protocols :as pp]))
+    [com.ben-allred.audiophile.backend.api.repositories.projects.protocols :as pp]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]))
 
 (defn ^:private create* [executor opts]
-  (let [project-id (pp/insert-project! executor opts opts)]
-    (pp/find-by-project-id executor project-id nil)))
+  (let [project-id (pp/insert-project! executor opts opts)
+        project (pp/find-event-project executor project-id)]
+    (pp/project-created! executor (:user/id opts) project opts)))
 
 (deftype ProjectAccessor [repo]
   pint/IProjectAccessor
@@ -17,7 +19,8 @@
   (query-one [_ opts]
     (repos/transact! repo pp/find-by-project-id (:project/id opts) opts))
   (create! [_ opts]
-    (repos/transact! repo create* opts)))
+    (crepos/command! repo opts
+      (repos/transact! repo create* opts))))
 
 (defn accessor [{:keys [repo]}]
   (->ProjectAccessor repo))

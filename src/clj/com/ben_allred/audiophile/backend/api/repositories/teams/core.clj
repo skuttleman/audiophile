@@ -1,9 +1,10 @@
 (ns com.ben-allred.audiophile.backend.api.repositories.teams.core
   (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.teams.protocols :as pt]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
@@ -13,8 +14,9 @@
            (pt/select-team-members executor team-id opts))))
 
 (defn ^:private create* [executor opts]
-  (let [team-id (pt/insert-team! executor opts opts)]
-    (pt/find-by-team-id executor team-id nil)))
+  (let [team-id (pt/insert-team! executor opts opts)
+        team (pt/find-event-team executor team-id)]
+    (pt/team-created! executor (:user/id opts) team opts)))
 
 (deftype TeamAccessor [repo]
   pint/ITeamAccessor
@@ -24,7 +26,8 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ opts]
-    (repos/transact! repo create* opts)))
+    (crepos/command! repo opts
+      (repos/transact! repo create* opts))))
 
 (defn accessor [{:keys [repo]}]
   (->TeamAccessor repo))

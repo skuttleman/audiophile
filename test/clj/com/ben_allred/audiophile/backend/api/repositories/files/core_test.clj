@@ -1,20 +1,21 @@
-(ns ^:unit com.ben-allred.audiophile.backend.domain.interactors.files.core-test
+(ns ^:unit com.ben-allred.audiophile.backend.api.repositories.files.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.files.core :as rfiles]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [test.utils :as tu]
     [test.utils.repositories :as trepos]
-    [test.utils.stubs :as stubs]
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]))
+    [test.utils.stubs :as stubs]))
 
 (defn ^:private ->file-executor
   ([config]
@@ -51,7 +52,7 @@
                                                        :store   store}))
           repo (rfiles/->FileAccessor tx)]
       (testing "when the content saves to the kv-store"
-        (let [[artifact-id user-id] (repeatedly uuids/random)
+        (let [[artifact-id user-id request-id] (repeatedly uuids/random)
               artifact {:artifact/id       artifact-id
                         :artifact/uri      "some-uri"
                         :artifact/filename "file.name"}]
@@ -59,13 +60,14 @@
                       [{:id artifact-id}]
                       [artifact]
                       [{:id "event-id"}])
-          (let [result @(int/create-artifact! repo
-                                              {:filename     "file.name"
-                                               :size         12345
-                                               :content-type "content/type"
-                                               :tempfile     "…content…"
-                                               :user/id      user-id})
-                [store-k & stored] (colls/only! (stubs/calls store :put!))
+          @(int/create-artifact! repo
+                                 {:filename     "file.name"
+                                  :size         12345
+                                  :content-type "content/type"
+                                  :tempfile     "…content…"
+                                  :user/id      user-id
+                                  :request/id   request-id})
+          (let [[store-k & stored] (colls/only! (stubs/calls store :put!))
                 [[insert-artifact] [query-artifact] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
               (is (= ["…content…" {:content-type   "content/type"
@@ -124,12 +126,7 @@
                         :event/model-id   artifact-id
                         :event/data       artifact
                         :event/emitted-by user-id}
-                       event))))
-
-            (testing "returns the result"
-              (is (= artifact result)))
-
-            (testing "emits a successful event"))))
+                       event)))))))
 
       (testing "when the store throws an exception"
         (let [request-id (uuids/random)
@@ -245,22 +242,35 @@
 (deftest create-file-test
   (testing "create-file"
     (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor ->file-executor)
+          file {:file/id         file-id
+                :file/name       "file name"
+                :file/project-id project-id}
+          pubsub (stubs/create (reify
+                                 ppubsub/IPubSub
+                                 (publish! [_ _ _])
+                                 (subscribe! [_ _ _ _])
+                                 (unsubscribe! [_ _])
+                                 (unsubscribe! [_ _ _])))
+          emitter (stubs/create (reify
+                                  pint/IEmitter
+                                  (command-failed! [_ _ _])))
+          tx (trepos/stub-transactor (->file-executor {:emitter emitter
+                                                       :pubsub  pubsub}))
           repo (rfiles/->FileAccessor tx)]
       (testing "when creating a file"
         (stubs/use! tx :execute!
                     [{:id project-id}]
                     [{:id file-id}]
                     nil
-                    [{:id file-id :other :data}])
-        (let [result (int/create-file! repo
-                                       {:project/id   project-id
-                                        :file/name    "file name"
-                                        :version/name "version"
-                                        :artifact/id  artifact-id
-                                        :user/id      user-id})
-              [[access-query] [file-insert] [version-insert] [query] & more] (stubs/calls tx :execute!)]
-          (is (empty? more))
+                    [file]
+                    [{:id "event-id"}])
+        @(int/create-file! repo
+                           {:project/id   project-id
+                            :file/name    "file name"
+                            :version/name "version"
+                            :artifact/id  artifact-id
+                            :user/id      user-id})
+        (let [[[access-query] [file-insert] [version-insert] [query-for-event] [insert-event]] (colls/only! 5 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
             (is (= [:and
@@ -301,7 +311,7 @@
                    (update version-insert :returning set))))
 
           (testing "queries a file from the repository"
-            (let [{:keys [select from where join]} query]
+            (let [{:keys [select from where join]} query-for-event]
               (is (= #{[:files.name "file/name"]
                        [:files.id "file/id"]
                        [:files.idx "file/idx"]
@@ -331,37 +341,97 @@
                          (update-in [3 2] tu/op-set)
                          (update 3 tu/op-set))))))
 
-          (testing "returns the result"
-            (is (= {:id    file-id
-                    :other :data}
-                   result)))))
+          (testing "inserts the event in the repository"
+            (let [{:keys [event-type-id] :as value} (colls/only! (:values insert-event))]
+              (is (= {:insert-into :events
+                      :returning   [:id]}
+                     (dissoc insert-event :values)))
+              (is (= {:model-id   file-id
+                      :data       file
+                      :emitted-by user-id}
+                     (dissoc value :event-type-id)))
+              (is (= {:select #{[:event-types.id "event-type/id"]}
+                      :from   [:event-types]
+                      :where  [:and #{[:= #{:event-types.category "file"}]
+                                      [:= #{:event-types.name "created"}]}]}
+                     (-> event-type-id
+                         (update :select set)
+                         (update-in [:where 1] tu/op-set)
+                         (update-in [:where 2] tu/op-set)
+                         (update :where tu/op-set))))))
 
-      (testing "when the executor throws"
-        (stubs/use! tx :execute!
-                    (ex-info "Executor" {}))
-        (testing "fails"
-          (is (thrown? Throwable (int/create-file! repo
-                                                   {:project/id (uuids/random)
-                                                    :user/id    (uuids/random)}))))))))
+          (testing "emits an event"
+            (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
+              (is (= [::ws/user user-id] topic))
+              (is (= "event-id" event-id))
+              (is (= {:event/id         "event-id"
+                      :event/type       :file/created
+                      :event/model-id   file-id
+                      :event/data       file
+                      :event/emitted-by user-id}
+                     event))))))
+
+      (testing "when the executor throws an exception"
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/init! emitter)
+          (stubs/use! tx :execute!
+                      (ex-info "Executor" {}))
+          @(int/create-file! repo {:user/id user-id :request/id request-id})
+          (testing "does not emit a successful event"
+            (empty? (stubs/calls pubsub :publish!)))
+
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason)))))))
+
+      (testing "when the pubsub throws an exception"
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/init! emitter)
+          (stubs/use! pubsub :publish!
+                      (ex-info "Executor" {}))
+          @(int/create-file! repo {:user/id user-id :request/id request-id})
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason))))))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
-    (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor ->file-executor)
+    (let [[artifact-id file-id project-id user-id version-id] (repeatedly uuids/random)
+          version {:file-version/name "version name here"
+                   :file-version/id   version-id}
+          pubsub (stubs/create (reify
+                                 ppubsub/IPubSub
+                                 (publish! [_ _ _])
+                                 (subscribe! [_ _ _ _])
+                                 (unsubscribe! [_ _])
+                                 (unsubscribe! [_ _ _])))
+          emitter (stubs/create (reify
+                                  pint/IEmitter
+                                  (command-failed! [_ _ _])))
+          tx (trepos/stub-transactor (->file-executor {:emitter emitter
+                                                       :pubsub  pubsub}))
           repo (rfiles/->FileAccessor tx)]
       (testing "when creating a version"
         (stubs/use! tx :execute!
                     [{:id project-id}]
-                    nil
-                    [{:id file-id :other :data}])
-        (let [result (int/create-file-version! repo
-                                               {:file/id      file-id
-                                                :file/name    "file name"
-                                                :version/name "version"
-                                                :artifact/id  artifact-id
-                                                :user/id      user-id})
-              [[access-query] [version-insert] [query] & more] (stubs/calls tx :execute!)]
-          (is (empty? more))
+                    [{:id version-id}]
+                    [version]
+                    [{:id "event-id"}])
+        @(int/create-file-version! repo
+                                   {:file/id      file-id
+                                    :file/name    "file name"
+                                    :version/name "version"
+                                    :artifact/id  artifact-id
+                                    :user/id      user-id})
+        (let [[[access-query] [version-insert] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
             (is (= [:and
@@ -391,45 +461,75 @@
                    (update version-insert :returning set))))
 
           (testing "queries a file from the repository"
-            (let [{:keys [select from where join]} query]
-              (is (= #{[:files.name "file/name"]
-                       [:files.id "file/id"]
-                       [:files.idx "file/idx"]
-                       [:files.project-id "file/project-id"]
-                       [:version.created-at "version/created-at"]
-                       [:fv.id "version/id"]
-                       [:fv.name "version/name"]
-                       [:fv.artifact-id "version/artifact-id"]}
+            (let [{:keys [select from where]} query-for-event]
+              (is (= #{[:file-versions.id "file-version/id"]
+                       [:file-versions.name "file-version/name"]
+                       [:file-versions.artifact-id "file-version/artifact-id"]
+                       [:file-versions.created-by "file-version/created-by"]
+                       [:file-versions.created-at "file-version/created-at"]
+                       [:file-versions.file-id "file-version/file-id"]}
                      (set select)))
-              (is (= [:files] from))
-              (is (= [:= #{:files.id file-id}] (tu/op-set where)))
-              (is (= [[{:select   #{:file-versions.file-id
-                                    [(sql/max :file-versions.created-at) :created-at]}
-                        :from     [:file-versions]
-                        :group-by [:file-versions.file-id]}
-                       :version]
-                      [:= #{:version.file-id :files.id}]
+              (is (= [:file-versions] from))
+              (is (= [:= #{:file-versions.id version-id}]
+                     (tu/op-set where)))))
 
-                      [:file-versions :fv]
-                      [:and
-                       #{[:= #{:fv.file-id :version.file-id}]
-                         [:= #{:fv.created-at :version.created-at}]}]]
-                     (-> join
-                         (update-in [0 0 :select] set)
-                         (update 1 tu/op-set)
-                         (update-in [3 1] tu/op-set)
-                         (update-in [3 2] tu/op-set)
-                         (update 3 tu/op-set))))))
+          (testing "inserts the event in the repository"
+            (let [{:keys [event-type-id] :as value} (colls/only! (:values insert-event))]
+              (is (= {:insert-into :events
+                      :returning   [:id]}
+                     (dissoc insert-event :values)))
+              (is (= {:model-id   version-id
+                      :data       version
+                      :emitted-by user-id}
+                     (dissoc value :event-type-id)))
+              (is (= {:select #{[:event-types.id "event-type/id"]}
+                      :from   [:event-types]
+                      :where  [:and #{[:= #{:event-types.category "file-version"}]
+                                      [:= #{:event-types.name "created"}]}]}
+                     (-> event-type-id
+                         (update :select set)
+                         (update-in [:where 1] tu/op-set)
+                         (update-in [:where 2] tu/op-set)
+                         (update :where tu/op-set)))))))
 
-          (testing "returns the result"
-            (is (= {:id    file-id
-                    :other :data}
-                   result)))))
+        (testing "emits an event"
+          (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
+            (is (= [::ws/user user-id] topic))
+            (is (= "event-id" event-id))
+            (is (= {:event/id         "event-id"
+                    :event/type       :file-version/created
+                    :event/model-id   version-id
+                    :event/data       version
+                    :event/emitted-by user-id}
+                   event)))))
 
-      (testing "when the executor throws"
-        (stubs/use! tx :execute!
-                    (ex-info "Executor" {}))
-        (testing "fails"
-          (is (thrown? Throwable (int/create-file-version! repo
-                                                           {:file/id (uuids/random)
-                                                            :user/id (uuids/random)}))))))))
+      (testing "when the executor throws an exception"
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/init! emitter)
+          (stubs/use! tx :execute!
+                      (ex-info "Executor" {}))
+          @(int/create-file-version! repo {:user/id user-id :request/id request-id})
+          (testing "does not emit a successful event"
+            (empty? (stubs/calls pubsub :publish!)))
+
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason)))))))
+
+      (testing "when the pubsub throws an exception"
+        (let [request-id (uuids/random)
+              user-id (uuids/random)]
+          (stubs/init! emitter)
+          (stubs/use! pubsub :publish!
+                      (ex-info "Executor" {}))
+          @(int/create-file-version! repo {:user/id user-id :request/id request-id})
+          (testing "emits a command-failed event"
+            (is (= [request-id {:user/id user-id :request/id request-id}]
+                   (-> emitter
+                       (stubs/calls :command-failed!)
+                       colls/only!
+                       (update 1 dissoc :error/reason))))))))))

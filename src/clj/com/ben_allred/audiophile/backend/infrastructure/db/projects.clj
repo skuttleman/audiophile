@@ -1,8 +1,10 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.projects
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.api.repositories.projects.protocols :as pp]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]))
 
 (defn ^:private has-team-clause [user-teams user-id]
@@ -12,9 +14,6 @@
                                 [:= :user-teams.user-id user-id]])
                (assoc :select [1]))])
 
-(defn ^:private select-one [projects project-id]
-  (models/select* projects [:= :projects.id project-id]))
-
 (defn ^:private select-one-for-user [projects project-id user-teams user-id]
   (models/select* projects [:and
                             [:= :projects.id project-id]
@@ -23,13 +22,13 @@
 (defn ^:private insert [projects value user-id]
   (models/insert-into projects (assoc value :created-by user-id)))
 
-(deftype ProjectExecutor [executor projects user-teams users]
+(deftype ProjectsRepoExecutor [executor projects user-teams users]
   pp/IProjectsExecutor
   (find-by-project-id [_ project-id opts]
     (colls/only! (repos/execute! executor
                                  (if-let [user-id (:user/id opts)]
                                    (select-one-for-user projects project-id user-teams user-id)
-                                   (select-one projects project-id))
+                                   (models/select-by-id* projects project-id))
                                  opts)))
   (select-for-user [_ user-id opts]
     (repos/execute! executor
@@ -39,8 +38,49 @@
     (-> executor
         (repos/execute! (insert projects project (:user/id opts)))
         colls/only!
-        :id)))
+        :id))
+  (find-event-project [_ project-id]
+    (-> executor
+        (repos/execute! (models/select-by-id* projects project-id))
+        colls/only!)))
 
-(defn ->executor [{:keys [projects user-teams users]}]
+(defn ->project-executor [{:keys [projects user-teams users]}]
   (fn [executor]
-    (->ProjectExecutor executor projects user-teams users)))
+    (->ProjectsRepoExecutor executor projects user-teams users)))
+
+(deftype ProjectsEventEmitter [executor emitter pubsub]
+  pp/IProjectsEventEmitter
+  (project-created! [_ user-id project ctx]
+    (cdb/emit! executor pubsub user-id (:project/id project) :project/created project ctx))
+
+  pint/IEmitter
+  (command-failed! [_ request-id opts]
+    (pint/command-failed! emitter request-id opts)))
+
+(defn ->project-event-emitter [{:keys [->emitter pubsub]}]
+  (fn [executor]
+    (->ProjectsEventEmitter executor (->emitter executor) pubsub)))
+
+(deftype Executor [executor emitter]
+  pp/IProjectsExecutor
+  (find-by-project-id [_ project-id opts]
+    (pp/find-by-project-id executor project-id opts))
+  (select-for-user [_ user-id opts]
+    (pp/select-for-user executor user-id opts))
+  (insert-project! [_ project opts]
+    (pp/insert-project! executor project opts))
+  (find-event-project [_ project-id]
+    (pp/find-event-project executor project-id))
+
+  pp/IProjectsEventEmitter
+  (project-created! [_ user-id project ctx]
+    (pp/project-created! emitter user-id project ctx))
+
+  pint/IEmitter
+  (command-failed! [_ request-id opts]
+    (pint/command-failed! emitter request-id opts)))
+
+(defn ->executor [{:keys [->event-executor ->project-event-emitter ->project-executor]}]
+  (fn [executor]
+    (->Executor (->project-executor executor)
+                (->project-event-emitter (->event-executor executor)))))

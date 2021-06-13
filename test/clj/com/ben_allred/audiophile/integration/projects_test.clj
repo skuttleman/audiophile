@@ -96,7 +96,7 @@
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system :api/projects)
-                             handler)]
+                             (ihttp/as-async system handler))]
             (testing "creates the project"
               (is (http/success? response))
               (assert/is? {:project/team-id team-id

@@ -101,6 +101,10 @@
    {:select (mapv (->field model) fields)
     :from   [(from model)]}))
 
+(defn select-by-id* [{:keys [alias table] :as model} id]
+  (let [primary-key (keyword (str (name (or alias table)) ".id"))]
+    (select* model [:= primary-key id])))
+
 (defn ^:private valid-column? [{ns :namespace :keys [fields]} normalized-k ns-k]
   (and (contains? fields normalized-k)
        (or (nil? ns-k)

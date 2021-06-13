@@ -119,27 +119,31 @@
             (cond-> route (assoc :url (nav/path-for nav route params)))
             (->> (res/request! http-client)))))))
 
-(defn with-pubsub [{:keys [pubsub]}]
-  (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ request]
-        (if (:http/async? request)
-          (let [pubsub-id (uuids/random)]
-            (-> (v/create (fn [resolve reject]
-                            (let [request-id (uuids/random)]
-                              (pubsub/subscribe! pubsub pubsub-id request-id (fn [_ event]
-                                                                               (if (:error event)
-                                                                                 (reject event)
-                                                                                 (resolve event))))
-                              (-> http-client
-                                  (res/request! (assoc-in request [:headers :x-request-id] request-id))
-                                  (v/catch reject))
-                              (v/and (v/sleep 30000)
-                                     (reject {:error [{:message "upload timed out"}]})))))
-                (v/peek (fn [_]
-                          (pubsub/unsubscribe! pubsub pubsub-id)))))
-          (res/request! http-client request))))))
+(defn with-pubsub* [http-client pubsub ms request]
+  (let [pubsub-id (uuids/random)]
+    (-> (v/create (fn [resolve reject]
+                    (let [request-id (uuids/random)]
+                      (pubsub/subscribe! pubsub pubsub-id request-id (fn [_ event]
+                                                                       (if (:error event)
+                                                                         (reject event)
+                                                                         (resolve event))))
+                      (-> http-client
+                          (res/request! (assoc-in request [:headers :x-request-id] request-id))
+                          (v/catch reject))
+                      (v/and (v/sleep ms)
+                             (reject {:error [{:message "upload timed out"}]})))))
+        (v/peek (fn [_]
+                  (pubsub/unsubscribe! pubsub pubsub-id))))))
+
+(defn with-pubsub [{:keys [pubsub timeout]}]
+  (let [timeout (or timeout 30000)]
+    (fn [http-client]
+      (reify
+        pres/IResource
+        (request! [_ request]
+          (if (:http/async? request)
+            (with-pubsub* http-client pubsub timeout request)
+            (res/request! http-client request)))))))
 
 (defn create [respond-fn middlewares]
   (reduce (fn [client middleware]

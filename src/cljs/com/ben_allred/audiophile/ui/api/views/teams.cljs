@@ -48,9 +48,6 @@
            team-name])]
        [:p "You don't have any teams. Why not create one?"])]))
 
-(defn create [{:keys [*all-teams *teams]}]
+(defn create [{:keys [*teams done]}]
   (fn [cb]
-    [create* *teams (fn [result]
-                      (res/request! *all-teams)
-                      (when cb
-                        (cb result)))]))
+    [create* *teams (done cb)]))

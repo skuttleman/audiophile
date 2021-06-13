@@ -89,4 +89,5 @@
 
 (defn opts->request [_]
   (fn [opts]
-    {:body {:data (:form/value opts)}}))
+    {:body {:data (:form/value opts)}
+     :http/async? true}))

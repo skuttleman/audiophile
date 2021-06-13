@@ -11,11 +11,10 @@ CREATE UNIQUE INDEX event_types_category_name_unique on event_types (category, n
 INSERT INTO event_types (category, name) VALUES
     ('command', 'failed'),
     ('artifact', 'created'),
-    ('artifact', 'archived'),
-    ('file', 'created'),
     ('file-version', 'created'),
-    ('user', 'authenticated'),
-    ('team', 'user-joined');
+    ('file', 'created'),
+    ('project', 'created'),
+    ('team', 'created');
 --;;
 
 CREATE TABLE events (

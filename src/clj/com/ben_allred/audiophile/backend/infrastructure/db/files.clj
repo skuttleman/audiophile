@@ -1,15 +1,14 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.files
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
-    [com.ben-allred.audiophile.backend.api.repositories.events.core :as events]
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]
@@ -94,7 +93,7 @@
 (defn ^:private select-one-plain [files file-id]
   (-> files
       (models/select-fields #{:id :idx :name :project-id})
-      (models/select* [:= :files.id file-id])))
+      (models/select-by-id* file-id)))
 
 (defn ^:private select-versions [file-versions file-id]
   (-> file-versions
@@ -116,9 +115,6 @@
              :content-length (:size artifact)
              :created-by user-id)
       (->> (models/insert-into artifacts))))
-
-(defn ^:private select-artifact [artifacts artifact-id]
-  (models/select* artifacts [:= :artifacts.id artifact-id]))
 
 (defn ^:private insert-version [file-versions version file-id user-id]
   (models/insert-into file-versions {:artifact-id (:artifact/id version)
@@ -178,19 +174,27 @@
   (find-by-artifact-id [_ artifact-id opts]
     (access! executor :artifact (access-artifact projects files file-versions user-teams artifact-id (:user/id opts)))
     (let [artifact (-> executor
-                       (repos/execute! (select-artifact artifacts artifact-id))
+                       (repos/execute! (models/select-by-id* artifacts artifact-id))
                        colls/only!)]
       (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
-  (find-event-artifact [_ artifact-id]
-    (-> executor
-        (repos/execute! (select-artifact artifacts artifact-id))
-        colls/only!))
   (select-for-project [_ project-id opts]
     (repos/execute! executor (select-for-user* files
                                                projects
                                                user-teams
                                                project-id
-                                               (:user/id opts)))))
+                                               (:user/id opts))))
+  (find-event-file [_ file-id]
+    (-> executor
+        (repos/execute! (select-one files file-id))
+        colls/only!))
+  (find-event-version [_ version-id]
+    (-> executor
+        (repos/execute! (models/select-by-id* file-versions version-id))
+        colls/only!))
+  (find-event-artifact [_ artifact-id]
+    (-> executor
+        (repos/execute! (models/select-by-id* artifacts artifact-id))
+        colls/only!)))
 
 (defn ->file-executor [{:keys [artifacts file-versions files projects user-teams store]}]
   (fn [executor]
@@ -205,22 +209,12 @@
 
 (deftype FilesEventEmitter [executor emitter pubsub]
   pf/IFilesEventEmitter
-  (artifact-created! [_ user-id {:artifact/keys [id] :as artifact} ctx]
-    (let [event {:event/model-id id
-                 :event/data     artifact}
-          event-id (events/insert-event! executor
-                                         event
-                                         {:event/type :artifact/created
-                                          :user/id    user-id})]
-      (ws/send-user! pubsub
-                     user-id
-                     event-id
-                     (assoc event
-                            :event/id event-id
-                            :event/type :artifact/created
-                            :event/emitted-by user-id)
-                     ctx)
-      event-id))
+  (file-created! [_ user-id file ctx]
+    (cdb/emit! executor pubsub user-id (:file/id file) :file/created file ctx))
+  (version-created! [_ user-id version ctx]
+    (cdb/emit! executor pubsub user-id (:file-version/id version) :file-version/created version ctx))
+  (artifact-created! [_ user-id artifact ctx]
+    (cdb/emit! executor pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
 
   pint/IEmitter
   (command-failed! [_ request-id opts]
@@ -242,12 +236,20 @@
     (pf/find-by-file-id executor file-id opts))
   (find-by-artifact-id [_ artifact-id opts]
     (pf/find-by-artifact-id executor artifact-id opts))
-  (find-event-artifact [_ artifact-id]
-    (pf/find-event-artifact executor artifact-id))
   (select-for-project [_ project-id opts]
     (pf/select-for-project executor project-id opts))
+  (find-event-file [_ file-id]
+    (pf/find-event-file executor file-id))
+  (find-event-version [_ version-id]
+    (pf/find-event-version executor version-id))
+  (find-event-artifact [_ artifact-id]
+    (pf/find-event-artifact executor artifact-id))
 
   pf/IFilesEventEmitter
+  (file-created! [_ user-id file ctx]
+    (pf/file-created! emitter user-id file ctx))
+  (version-created! [_ user-id version ctx]
+    (pf/version-created! emitter user-id version ctx))
   (artifact-created! [_ user-id artifact ctx]
     (pf/artifact-created! emitter user-id artifact ctx))
 

@@ -46,6 +46,11 @@
       (assoc :user/id (get-in request [:auth/user :user/id]))
       (merge (:headers request) (get-in request [:nav/route :query-params]))))
 
+(defmethod select [:get :api/artifact]
+  [_ request]
+  {:user/id     (get-in request [:auth/user :user/id])
+   :artifact/id (get-in request [:nav/route :route-params :artifact-id])})
+
 (defmethod select [:post :api/artifacts]
   [_ request]
   (-> request
@@ -58,28 +63,27 @@
   (-> request
       (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :file/id (get-in request [:nav/route :route-params :file-id]))))
+      (assoc :file/id (get-in request [:nav/route :route-params :file-id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defmethod select [:post :api/project.files]
   [_ request]
   (-> request
       (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :project/id (get-in request [:nav/route :route-params :project-id]))))
+      (assoc :project/id (get-in request [:nav/route :route-params :project-id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defmethod select [:post :api/projects]
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))))
+      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defmethod select [:post :api/teams]
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))))
-
-(defmethod select [:get :api/artifact]
-  [_ request]
-  {:user/id     (get-in request [:auth/user :user/id])
-   :artifact/id (get-in request [:nav/route :route-params :artifact-id])})
+      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

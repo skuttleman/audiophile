@@ -99,9 +99,12 @@
   :view      #ig/ref :audiophile.views.projects/list}
 
  :audiophile.views.projects/create
- {:*all-projects #ig/ref :resources/projects.all
-  :*teams        #ig/ref :resources/teams#all
-  :projects      #ig/ref [:audiophile.resources/redirect :projects/create]}
+ {:*teams    #ig/ref :resources/teams#all
+  :*projects #ig/ref [:audiophile.resources/redirect :projects/create]
+  :done      #ig/ref [:audiophile.views.common/re-fetch :projects/create]}
+
+ [:audiophile.views.common/re-fetch :projects/create]
+ {:*resource #ig/ref :resources/projects.all}
 
  :audiophile.views.projects/one
  {:*files     #ig/ref :resources/project.files

@@ -103,7 +103,7 @@
                                  *file-version
                                  (form/create nil version-validator)
                                  {:nav/params {:route-params {:file-id    (:file/id file)
-                                                          :project-id project-id}}})
+                                                              :project-id project-id}}})
           file-opts {:nav/params {:route-params {:project-id project-id}}}]
       (fn [_file cb]
         [comp/form {:*form        *form
@@ -204,8 +204,6 @@
             [:span name]]])]
        [:p "You don't have any projects. Why not create one?"])]))
 
-(defn create [{:keys [*all-projects projects *teams]}]
+(defn create [{:keys [*projects *teams done]}]
   (fn [cb]
-    [comp/with-resource [*teams] create* projects (fn [result]
-                                                    (res/request! *all-projects)
-                                                    (when cb (cb result)))]))
+    [comp/with-resource [*teams] create* *projects (done cb)]))

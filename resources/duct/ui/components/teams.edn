@@ -8,8 +8,11 @@
  {}
 
  :audiophile.views.teams/create
- {:*all-teams #ig/ref :resources/teams.all
-  :*teams     #ig/ref [:audiophile.resources/redirect :teams/create]}
+ {:*teams #ig/ref [:audiophile.resources/redirect :teams/create]
+  :done   #ig/ref [:audiophile.views.common/re-fetch :teams/create]}
+
+ [:audiophile.views.common/re-fetch :teams/create]
+ {:*resource #ig/ref :resources/teams.all}
 
  [:audiophile.resources/http-handler :teams/all]
  {:http-client #ig/ref :services/http
@@ -17,9 +20,9 @@
   :route       :api/teams}
 
  [:audiophile.resources/http-handler :teams/one]
- {:http-client  #ig/ref :services/http
-  :method       :get
-  :route        :api/team}
+ {:http-client #ig/ref :services/http
+  :method      :get
+  :route       :api/team}
 
  [:audiophile.resources/http-handler :teams/create]
  {:http-client   #ig/ref :services/http

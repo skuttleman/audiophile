@@ -74,13 +74,19 @@
   (mu/merge project-id file:create))
 
 (def api-version:create
-  (mu/merge file-id version:create))
+  (-> file-id
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge version:create)))
 
 (def api-project:create
-  (mu/merge auth project:create))
+  (-> auth
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge project:create)))
 
 (def api-team:create
-  (mu/merge auth team:create))
+  (-> auth
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge team:create)))
 
 (def res-version:download
   (mu/merge auth

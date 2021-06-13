@@ -26,7 +26,7 @@
                              (ihttp/login system user)
                              (ihttp/upload (io/resource "empty.mp3"))
                              (ihttp/post system :api/artifacts)
-                             handler)]
+                             (ihttp/as-async system handler))]
             (testing "returns a the artifact details"
               (is (http/success? response)))))
 
@@ -115,7 +115,7 @@
                              (ihttp/post system
                                          :api/project.files
                                          {:route-params {:project-id project-id}})
-                             handler)]
+                             (ihttp/as-async system handler))]
             (testing "creates the file"
               (is (http/success? response))
               (assert/is? {:file/name       "file name"
@@ -148,7 +148,7 @@
                              (ihttp/post system
                                          :api/project.files
                                          {:route-params {:project-id project-id}})
-                             handler)]
+                             (ihttp/as-async system handler))]
             (testing "returns an error"
               (is (http/client-error? response)))))
 
@@ -184,11 +184,11 @@
                              (ihttp/post system
                                          :api/file
                                          {:route-params {:file-id file-id}})
-                             handler)]
+                             (ihttp/as-async system handler))]
             (testing "creates the file version"
               (is (http/success? response))
-              (assert/is? {:version/name "version name"
-                           :version/id   uuid?}
+              (assert/is? {:file-version/name "version name"
+                           :file-version/id   uuid?}
                           (get-in response [:body :data])))
 
             (testing "and when querying for the file"
@@ -234,7 +234,7 @@
                              (ihttp/post system
                                          :api/file
                                          {:route-params {:file-id file-id}})
-                             handler)]
+                             (ihttp/as-async system handler))]
             (testing "returns an error"
               (is (http/client-error? response)))))
 
@@ -273,80 +273,65 @@
       (testing "when authenticated"
         (let [user (int/lookup-user system "joe@example.com")]
           (testing "and when uploading the artifact"
-            (let [mime-type (serdes/mime-type edn)]
-              (ihttp/with-ws [ch (-> {}
-                                     (ihttp/login system user)
-                                     (ihttp/get system :ws/connection {:query-params {:content-type mime-type
-                                                                                      :accept       mime-type}})
-                                     ihttp/as-ws
-                                     ((int/component system :api/handler#api)))]
-                (let [request-id (uuids/random)
-                      response (-> "empty.mp3"
-                                   ihttp/file-upload
-                                   (ihttp/login system user)
-                                   (ihttp/post system :api/artifacts)
-                                   (assoc-in [:headers :x-request-id] request-id)
-                                   handler)]
-                  (testing "successfully uploads"
-                    (is (http/success? response))
-                    (let [[event-id {artifact-id :event/model-id :as event} ctx]
-                          (match/match (tu/<!!ms ch)
-                            [:event/user event-id event ctx] [event-id event ctx]
-                            _ nil)]
-                      (is (= (:event/id event) event-id))
-                      (is (= request-id (:request/id ctx)))
-                      (is (= :artifact/created (:event/type event)))
-                      (is (uuid? artifact-id))
-                      (is (= "empty.mp3" (get-in event [:event/data :artifact/filename])))
+            (let [response (-> "empty.mp3"
+                               ihttp/file-upload
+                               (ihttp/login system user)
+                               (ihttp/post system :api/artifacts)
+                               (ihttp/as-async system handler))]
+              (testing "successfully uploads"
+                (is (http/success? response))
+                (let [{artifact-id :artifact/id filename :artifact/filename} (get-in response [:body :data])]
+                  (is (uuid? artifact-id))
+                  (is (= "empty.mp3" filename))
 
-                      (testing "cannot access the artifact"
+                  (testing "cannot access the artifact"
+                    (let [response (-> {}
+                                       (ihttp/login system user)
+                                       (ihttp/get system
+                                                  :api/artifact
+                                                  {:route-params {:artifact-id artifact-id}})
+                                       handler)]
+                      (is (http/client-error? response))))
+
+                  (testing "and when creating a file"
+                    (let [project-id (:project/id (int/lookup-project system "Project Seed"))
+                          response (-> {:file/name    "file name"
+                                        :version/name "version name"
+                                        :artifact/id  artifact-id}
+                                       ihttp/body-data
+                                       (ihttp/login system user)
+                                       (ihttp/post system
+                                                   :api/project.files
+                                                   {:route-params {:project-id project-id}})
+                                       (ihttp/as-async system handler))]
+                      (is (http/success? response))
+                      (testing "can access the artifact"
                         (let [response (-> {}
                                            (ihttp/login system user)
                                            (ihttp/get system
                                                       :api/artifact
                                                       {:route-params {:artifact-id artifact-id}})
-                                           handler)]
-                          (is (http/client-error? response))))
-
-                      (testing "and when creating a file"
-                        (let [project-id (:project/id (int/lookup-project system "Project Seed"))
-                              response (-> {:file/name    "file name"
-                                            :version/name "version name"
-                                            :artifact/id  artifact-id}
-                                           ihttp/body-data
-                                           (ihttp/login system user)
-                                           (ihttp/post system
-                                                       :api/project.files
-                                                       {:route-params {:project-id project-id}})
-                                           handler)]
+                                           artifact-handler)]
                           (is (http/success? response))
-                          (testing "can access the artifact"
-                            (let [response (-> {}
-                                               (ihttp/login system user)
-                                               (ihttp/get system
-                                                          :api/artifact
-                                                          {:route-params {:artifact-id artifact-id}})
-                                               artifact-handler)]
-                              (is (http/success? response))
-                              (is (= (slurp (io/resource "empty.mp3"))
-                                     (slurp (:body response)))))))
+                          (is (= (slurp (io/resource "empty.mp3"))
+                                 (slurp (:body response)))))))
 
-                        (testing "and when authenticated as a user with no artifacts"
-                          (let [user {:user/id (uuids/random)}
-                                response (-> {}
-                                             (ihttp/login system user)
-                                             (ihttp/get system
-                                                        :api/artifact
-                                                        {:route-params {:artifact-id artifact-id}})
-                                             artifact-handler)]
-                            (testing "returns an error"
-                              (is (http/client-error? response)))))
+                    (testing "and when authenticated as a user with no artifacts"
+                      (let [user {:user/id (uuids/random)}
+                            response (-> {}
+                                         (ihttp/login system user)
+                                         (ihttp/get system
+                                                    :api/artifact
+                                                    {:route-params {:artifact-id artifact-id}})
+                                         artifact-handler)]
+                        (testing "returns an error"
+                          (is (http/client-error? response)))))
 
-                        (testing "and when not authenticated"
-                          (let [response (-> {}
-                                             (ihttp/get system
-                                                        :api/artifact
-                                                        {:route-params {:artifact-id artifact-id}})
-                                             artifact-handler)]
-                            (testing "returns an error"
-                              (is (http/client-error? response)))))))))))))))))
+                    (testing "and when not authenticated"
+                      (let [response (-> {}
+                                         (ihttp/get system
+                                                    :api/artifact
+                                                    {:route-params {:artifact-id artifact-id}})
+                                         artifact-handler)]
+                        (testing "returns an error"
+                          (is (http/client-error? response)))))))))))))))

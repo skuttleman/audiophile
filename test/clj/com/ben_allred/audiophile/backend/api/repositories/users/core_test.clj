@@ -1,4 +1,4 @@
-(ns ^:unit com.ben-allred.audiophile.backend.domain.interactors.users.core-test
+(ns ^:unit com.ben-allred.audiophile.backend.api.repositories.users.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]

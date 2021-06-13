@@ -9,7 +9,7 @@
     [test.utils.stubs :as stubs]))
 
 (deftest ->handler-test
-  (let [pubsub (pubsub/pubsub {})
+  (let [pubsub (pubsub/pubsub {:sync? true})
         ->handler (ws/->handler {:heartbeat-int-ms 100
                                  :pubsub           pubsub
                                  :serdes           {:foo/bar (reify

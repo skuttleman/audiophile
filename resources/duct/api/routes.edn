@@ -75,20 +75,24 @@
   :spec       :api.artifact/create}
 
  [:audiophile.spec/with-spec :api.handler/file#post]
- {:handler #ig/ref :audiophile.handlers.files/create-version
-  :spec    :api.version/create}
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.files/create-version
+  :spec       :api.version/create}
 
  [:audiophile.spec/with-spec :api.handler/project.files#post]
- {:handler #ig/ref :audiophile.handlers.files/create
-  :spec    :api.file/create}
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.files/create
+  :spec       :api.file/create}
 
  [:audiophile.spec/with-spec :api.handler/projects#post]
- {:handler #ig/ref :audiophile.handlers.projects/create
-  :spec    :api.project/create}
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.projects/create
+  :spec       :api.project/create}
 
  [:audiophile.spec/with-spec :api.handler/teams#post]
- {:handler #ig/ref :audiophile.handlers.teams/create
-  :spec    :api.team/create}
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.teams/create
+  :spec       :api.team/create}
 
  :audiophile.spec/ok
  {}
