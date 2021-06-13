@@ -54,7 +54,7 @@
                     (merge opts (opts* teams))))
   (insert-team! [_ team {user-id :user/id}]
     (let [team-id (-> executor
-                      (repos/execute! (models/insert-into teams (assoc team :created-by user-id)))
+                      (repos/execute! (models/insert-into teams team))
                       colls/only!
                       :id)]
       (repos/execute! executor

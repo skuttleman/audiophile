@@ -42,7 +42,6 @@
           (testing "sends a query to the repository"
             (is (= #{[:teams.name "team/name"]
                      [:teams.type "team/type"]
-                     [:teams.created-by "team/created-by"]
                      [:teams.id "team/id"]
                      [:teams.created-at "team/created-at"]}
                    (set select)))
@@ -82,7 +81,6 @@
             (let [{:keys [from select where]} select-team]
               (is (= #{[:teams.name "team/name"]
                        [:teams.type "team/type"]
-                       [:teams.created-by "team/created-by"]
                        [:teams.id "team/id"]
                        [:teams.created-at "team/created-at"]}
                      (set select)))
@@ -155,8 +153,7 @@
         (let [[[insert-team] [insert-user-team] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
-                    :values      [{:created-at :whenever
-                                   :created-by user-id}]
+                    :values      [{:created-at :whenever}]
                     :returning   [:id]}
                    insert-team))
             (is (= {:insert-into :user-teams
@@ -169,8 +166,7 @@
             (is (= {:select #{[:teams.created-at "team/created-at"]
                               [:teams.name "team/name"]
                               [:teams.type "team/type"]
-                              [:teams.id "team/id"]
-                              [:teams.created-by "team/created-by"]}
+                              [:teams.id "team/id"]}
                     :from   [:teams]
                     :where  [:= #{:teams.id team-id}]}
                    (-> query-for-event

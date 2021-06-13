@@ -42,7 +42,6 @@
           (testing "sends a query to the repository"
             (is (= #{[:projects.team-id "project/team-id"]
                      [:projects.name "project/name"]
-                     [:projects.created-by "project/created-by"]
                      [:projects.id "project/id"]
                      [:projects.created-at "project/created-at"]}
                    (set select)))
@@ -77,7 +76,6 @@
               (is (= [:projects] from))
               (is (= #{[:projects.team-id "project/team-id"]
                        [:projects.name "project/name"]
-                       [:projects.created-by "project/created-by"]
                        [:projects.id "project/id"]
                        [:projects.created-at "project/created-at"]}
                      (set select)))
@@ -132,15 +130,13 @@
         (let [[[insert] [query-for-event] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :projects
-                    :values      [{:created-at :whenever
-                                   :created-by user-id}]
+                    :values      [{:created-at :whenever}]
                     :returning   [:id]}
                    insert)))
 
           (testing "queries from the repository"
             (is (= {:select #{[:projects.team-id "project/team-id"]
                               [:projects.name "project/name"]
-                              [:projects.created-by "project/created-by"]
                               [:projects.id "project/id"]
                               [:projects.created-at "project/created-at"]}
                     :from   [:projects]

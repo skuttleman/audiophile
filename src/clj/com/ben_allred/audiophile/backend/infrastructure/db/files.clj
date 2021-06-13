@@ -108,23 +108,21 @@
                                       (models/select* [:= :files.project-id (:project-id file)])
                                       (assoc :select [(sql/count :idx)])))))
 
-(defn ^:private insert-artifact [artifacts uri artifact user-id]
+(defn ^:private insert-artifact [artifacts uri artifact]
   (-> artifact
       (select-keys #{:content-type :filename :key})
       (assoc :uri uri
-             :content-length (:size artifact)
-             :created-by user-id)
+             :content-length (:size artifact))
       (->> (models/insert-into artifacts))))
 
 (defn ^:private insert-version [file-versions version file-id user-id]
   (models/insert-into file-versions {:artifact-id (:artifact/id version)
                                      :file-id     file-id
-                                     :name        (:version/name version)
-                                     :created-by  user-id}))
+                                     :name        (:version/name version)}))
 
 (deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams store keygen]
   pf/IArtifactsExecutor
-  (insert-artifact! [_ artifact opts]
+  (insert-artifact! [_ artifact _]
     (let [key (keygen)]
       (with-async
         (repos/put! store
@@ -133,9 +131,8 @@
                     {:content-type   (:content-type artifact)
                      :content-length (:size artifact)
                      :metadata       {:filename (:filename artifact)}})
-        (->> opts
-             :user/id
-             (insert-artifact artifacts (repos/uri store key) (assoc artifact :key key))
+        (->> (assoc artifact :key key)
+             (insert-artifact artifacts (repos/uri store key))
              (repos/execute! executor)
              colls/only!
              :id))))
@@ -155,8 +152,7 @@
     (access! executor :project (access-project projects user-teams project-id user-id))
     (let [file-id (-> files
                       (insert {:name       (:file/name file)
-                               :project-id project-id
-                               :created-by user-id})
+                               :project-id project-id})
                       (->> (repos/execute! executor))
                       colls/only!
                       :id)]

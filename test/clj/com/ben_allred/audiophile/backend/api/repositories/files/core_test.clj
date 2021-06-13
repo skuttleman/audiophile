@@ -79,15 +79,13 @@
               (is (= {:insert-into :artifacts
                       :values      [{:filename     "file.name"
                                      :content-type "content/type"
-                                     :uri          (repos/uri store store-k)
-                                     :created-by   user-id}]
+                                     :uri          (repos/uri store store-k)}]
                       :returning   [:id]}
                      insert-artifact)))
 
             (testing "queries the event payload"
               (let [{:keys [select from where]} query-artifact]
                 (is (= #{[:artifacts.filename "artifact/filename"]
-                         [:artifacts.created-by "artifact/created-by"]
                          [:artifacts.id "artifact/id"]
                          [:artifacts.content-type "artifact/content-type"]
                          [:artifacts.uri "artifact/uri"]
@@ -292,7 +290,6 @@
             (let [value (colls/only! (:values file-insert))]
               (is (= "file name" (:name value)))
               (is (= project-id (:project-id value)))
-              (is (= user-id (:created-by value)))
               (let [query (:idx value)
                     {:keys [select from where]} query]
                 (is (= #{(sql/count :idx)} (set select)))
@@ -305,8 +302,7 @@
             (is (= {:insert-into :file-versions
                     :values      [{:artifact-id artifact-id
                                    :file-id     file-id
-                                   :name        "version"
-                                   :created-by  user-id}]
+                                   :name        "version"}]
                     :returning   #{:id}}
                    (update version-insert :returning set))))
 
@@ -455,8 +451,7 @@
             (is (= {:insert-into :file-versions
                     :values      [{:artifact-id artifact-id
                                    :file-id     file-id
-                                   :name        "version"
-                                   :created-by  user-id}]
+                                   :name        "version"}]
                     :returning   #{:id}}
                    (update version-insert :returning set))))
 
@@ -465,7 +460,6 @@
               (is (= #{[:file-versions.id "file-version/id"]
                        [:file-versions.name "file-version/name"]
                        [:file-versions.artifact-id "file-version/artifact-id"]
-                       [:file-versions.created-by "file-version/created-by"]
                        [:file-versions.created-at "file-version/created-at"]
                        [:file-versions.file-id "file-version/file-id"]}
                      (set select)))

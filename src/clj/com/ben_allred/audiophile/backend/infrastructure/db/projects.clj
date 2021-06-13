@@ -19,9 +19,6 @@
                             [:= :projects.id project-id]
                             (has-team-clause user-teams user-id)]))
 
-(defn ^:private insert [projects value user-id]
-  (models/insert-into projects (assoc value :created-by user-id)))
-
 (deftype ProjectsRepoExecutor [executor projects user-teams users]
   pp/IProjectsExecutor
   (find-by-project-id [_ project-id opts]
@@ -34,9 +31,9 @@
     (repos/execute! executor
                     (models/select* projects (has-team-clause user-teams user-id))
                     opts))
-  (insert-project! [_ project opts]
+  (insert-project! [_ project _]
     (-> executor
-        (repos/execute! (insert projects project (:user/id opts)))
+        (repos/execute! (models/insert-into projects project))
         colls/only!
         :id))
   (find-event-project [_ project-id]

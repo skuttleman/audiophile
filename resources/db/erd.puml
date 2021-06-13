@@ -5,41 +5,38 @@ skinparam linetype ortho
 entity "artifacts" as artifacts {
   * id : uuid <<generated>>
   --
-  * uri : character varying
-  * filename : character varying
-  * content_type : character varying
   * content_length : integer
-  * created_by : uuid
   * created_at : timestamp without time zone <<generated>>
+  * uri : character varying
+  * content_type : character varying
+  * filename : character varying
   * key : character varying
 }
 
 entity "teams" as teams {
   * id : uuid <<generated>>
   --
-  * name : character varying
   * type : USER-DEFINED
-  * created_by : uuid
   * created_at : timestamp without time zone <<generated>>
+  * name : character varying
 }
 
 entity "files" as files {
   * id : uuid <<generated>>
   --
   * project_id : uuid <<FK>>
-  * idx : integer
-  * name : character varying
-  * created_by : uuid
   * created_at : timestamp without time zone <<generated>>
+  * name : character varying
+  * idx : integer
 }
 
 entity "all_events" as all_events {
   id : uuid
   --
-  data : jsonb
   emitted_by : uuid
   emitted_at : timestamp without time zone
   event_type : text
+  data : jsonb
 }
 
 entity "event_types" as event_types {
@@ -52,54 +49,52 @@ entity "event_types" as event_types {
 entity "users" as users {
   * id : uuid <<generated>>
   --
-  * first_name : character varying
-  * last_name : character varying
-  * handle : character varying
-  * email : character varying
   * mobile_number : character varying
   * created_at : timestamp without time zone <<generated>>
+  * last_name : character varying
+  * handle : character varying
+  * first_name : character varying
+  * email : character varying
 }
 
 entity "file_versions" as file_versions {
   * id : uuid <<generated>>
   --
-  * artifact_id : uuid <<FK>>
   * file_id : uuid <<FK>>
   * name : character varying
-  * created_by : uuid
+  * artifact_id : uuid <<FK>>
   * created_at : timestamp without time zone <<generated>>
 }
 
 entity "events" as events {
   * id : uuid <<generated>>
   --
-  * event_type_id : uuid <<FK>>
+  * emitted_at : timestamp without time zone <<generated>>
   * model_id : uuid <<FK>>
   data : jsonb
+  * event_type_id : uuid <<FK>>
   * emitted_by : uuid
-  * emitted_at : timestamp without time zone <<generated>>
 }
 
 entity "projects" as projects {
   * id : uuid <<generated>>
   --
   * team_id : uuid <<FK>>
-  * name : character varying
-  * created_by : uuid
   * created_at : timestamp without time zone <<generated>>
+  * name : character varying
 }
 
 entity "user_teams" as user_teams {
-  * user_id : uuid <<FK>>
   * team_id : uuid <<FK>>
+  * user_id : uuid <<FK>>
 }
 
 projects ..o files
-artifacts ..o file_versions
 files ..o file_versions
+artifacts ..o file_versions
 event_types ..o events
 teams ..o projects
-users ..o user_teams
 teams ..o user_teams
+users ..o user_teams
 
 @enduml

@@ -5,7 +5,7 @@
 
 (def models
   {:artifacts
-   {:fields    #{:filename :created-by :id :content-type :uri :content-size :created-at}
+   {:fields    #{:filename :id :content-type :uri :content-size :created-at}
     :table     :artifacts
     :namespace :artifact}
 
@@ -20,22 +20,22 @@
     :namespace :event-type}
 
    :files
-   {:fields    #{:name :created-by :id :idx :project-id :created-at}
+   {:fields    #{:name :id :idx :project-id :created-at}
     :table     :files
     :namespace :file}
 
    :file-versions
-   {:fields    #{:file-id :artifact-id :name :created-by :id :created-at}
+   {:fields    #{:file-id :artifact-id :name :id :created-at}
     :table     :file-versions
     :namespace :file-version}
 
    :projects
-   {:fields    #{:team-id :name :created-by :id :created-at}
+   {:fields    #{:team-id :name :id :created-at}
     :table     :projects
     :namespace :project}
 
    :teams
-   {:fields    #{:type :name :created-by :id :created-at}
+   {:fields    #{:type :name :id :created-at}
     :table     :teams
     :namespace :team}
 
