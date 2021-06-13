@@ -196,7 +196,9 @@
         (repos/execute! (models/select-by-id* artifacts artifact-id))
         colls/only!)))
 
-(defn ->file-executor [{:keys [artifacts file-versions files projects user-teams store]}]
+(defn ->file-executor
+  "Factory function for creating [[FilesRepoExecutor]] which provide access to the file repository."
+  [{:keys [artifacts file-versions files projects user-teams store]}]
   (fn [executor]
     (->FilesRepoExecutor executor
                          artifacts
@@ -220,7 +222,9 @@
   (command-failed! [_ request-id opts]
     (pint/command-failed! emitter request-id opts)))
 
-(defn ->file-event-emitter [{:keys [->emitter pubsub]}]
+(defn ->file-event-emitter
+  "Factory function for creating [[FilesEventEmitter]] used to emit events related to files."
+  [{:keys [->emitter pubsub]}]
   (fn [executor]
     (->FilesEventEmitter executor (->emitter executor) pubsub)))
 
@@ -257,7 +261,10 @@
   (command-failed! [_ request-id opts]
     (pint/command-failed! emitter request-id opts)))
 
-(defn ->executor [{:keys [->event-executor ->file-event-emitter ->file-executor]}]
+(defn ->executor
+  "Factory function for creating [[Executor]] which aggregates [[FilesEventEmitter]]
+   and [[FilesRepoExecutor]]."
+  [{:keys [->event-executor ->file-event-emitter ->file-executor]}]
   (fn [executor]
     (->Executor (->file-executor executor)
                 (->file-event-emitter (->event-executor executor)))))

@@ -3,13 +3,13 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [test.utils.stubs :as stubs]))
 
 (deftest ->handler-test
-  (let [pubsub (pubsub/pubsub {:sync? true})
+  (let [pubsub (pubsub.mem/pubsub {:sync? true})
         ->handler (ws/->handler {:heartbeat-int-ms 100
                                  :pubsub           pubsub
                                  :serdes           {:foo/bar (reify

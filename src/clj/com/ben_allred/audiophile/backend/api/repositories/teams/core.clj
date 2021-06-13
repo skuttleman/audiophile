@@ -29,5 +29,7 @@
     (crepos/command! repo opts
       (repos/transact! repo create* opts))))
 
-(defn accessor [{:keys [repo]}]
+(defn accessor
+  "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."
+  [{:keys [repo]}]
   (->TeamAccessor repo))

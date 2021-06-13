@@ -99,12 +99,16 @@
              (deliver handler)))
       @handler)))
 
-(defn ->channel [{:keys [serdes]}]
+(defn ->channel
+  "Constructor for [[SerdeChannel]] used to serialize/deserialize websocket messages."
+  [{:keys [serdes]}]
   (fn [params channel]
     (let [serializer (serdes/find-serde! serdes (:accept params))]
       (->SerdeChannel channel serializer))))
 
-(defn ->handler [{:keys [heartbeat-int-ms pubsub serdes]}]
+(defn ->handler
+  "Constructor for an anonymous [[pws/IHandler]] that links websocket connections with [[ppubsub/IPubsub]]."
+  [{:keys [heartbeat-int-ms pubsub serdes]}]
   (fn [params channel]
     (let [deserializer (serdes/find-serde serdes (:content-type params))
           ctx {:ch-id            (uuids/random)
@@ -122,7 +126,9 @@
         (on-close [_]
           (handle-close ctx channel))))))
 
-(defn handler [cfg]
+(defn handler
+  "Wraps ws handler to integrate with immutant HTTP server for websockets."
+  [cfg]
   (fn [request]
     (->> cfg
          (->handler-fn request)

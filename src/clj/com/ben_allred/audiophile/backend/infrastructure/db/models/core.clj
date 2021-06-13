@@ -33,7 +33,9 @@
   (with-row [_ mrs row] (collect! mrs row))
   (rs! [_ mrs] (persistent! mrs)))
 
-(defn ->builder-fn [_]
+(defn ->builder-fn
+  "Factory function for constructing a [[Builder]] used to process SQL results."
+  [_]
   (fn [{:keys [model-fn result-xform]}]
     (let [xform (or result-xform identity)
           model-fn (cond->> (fn [[k v]]
@@ -48,7 +50,9 @@
                          (range col-cnt))]
           (->Builder cols col-cnt (xform conj!) ->row! rs))))))
 
-(defn models [{:keys [tx]}]
+(defn models
+  "Loads table information from the database to generate models needed for db interactions."
+  [{:keys [tx]}]
   (reduce (fn [models {table :table_name column :column_name type :data_type name :udt_name}]
             (let [table (csk/->kebab-case-keyword table)
                   column (csk/->kebab-case-keyword column)]
@@ -69,7 +73,9 @@
                                      [:= :table-schema "public"]
                                      [:not= :table-name "db_migrations"]]})))
 
-(defn model [{:keys [models namespace table-name]}]
+(defn model
+  "Constructor for db model."
+  [{:keys [models namespace table-name]}]
   (-> models
       (get table-name)
       (assoc :table table-name :namespace namespace)))

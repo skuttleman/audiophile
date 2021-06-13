@@ -46,5 +46,7 @@
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* (:artifact/id opts) opts)))
 
-(defn accessor [{:keys [repo]}]
+(defn accessor
+  "Constructor for [[FileAccessor]] which provides semantic access for storing and retrieving files."
+  [{:keys [repo]}]
   (->FileAccessor repo))

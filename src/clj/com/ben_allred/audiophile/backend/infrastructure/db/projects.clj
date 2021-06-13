@@ -44,7 +44,9 @@
         (repos/execute! (models/select-by-id* projects project-id))
         colls/only!)))
 
-(defn ->project-executor [{:keys [projects user-teams users]}]
+(defn ->project-executor
+  "Factory function for creating [[ProjectsRepoExecutor]] which provide access to the project repository."
+  [{:keys [projects user-teams users]}]
   (fn [executor]
     (->ProjectsRepoExecutor executor projects user-teams users)))
 
@@ -57,7 +59,9 @@
   (command-failed! [_ request-id opts]
     (pint/command-failed! emitter request-id opts)))
 
-(defn ->project-event-emitter [{:keys [->emitter pubsub]}]
+(defn ->project-event-emitter
+  "Factory function for creating [[ProjectsEventEmitter]] used to emit events related to projects."
+  [{:keys [->emitter pubsub]}]
   (fn [executor]
     (->ProjectsEventEmitter executor (->emitter executor) pubsub)))
 
@@ -80,7 +84,10 @@
   (command-failed! [_ request-id opts]
     (pint/command-failed! emitter request-id opts)))
 
-(defn ->executor [{:keys [->event-executor ->project-event-emitter ->project-executor]}]
+(defn ->executor
+  "Factory function for creating [[Executor]] which aggregates [[ProjectsEventEmitter]]
+   and [[ProjectsRepoExecutor]]."
+  [{:keys [->event-executor ->project-event-emitter ->project-executor]}]
   (fn [executor]
     (->Executor (->project-executor executor)
                 (->project-event-emitter (->event-executor executor)))))

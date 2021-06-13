@@ -33,20 +33,30 @@
                    (comp f ->executor)
                    opts)))
 
-(defn query-formatter [_]
+(defn query-formatter
+  "Constructor for [[QueryFormatter]] to convert query maps into a prepared SQL statement."
+  [_]
   (->QueryFormatter))
 
-(defn raw-formatter [_]
+(defn raw-formatter
+  "Constructor for [[RawFormatter]] used to query with raw SQL directly."
+  [_]
   (->RawFormatter))
 
-(defn ->executor [{:keys [->builder-fn query-formatter]}]
+(defn ->executor
+  "Factor function for constructing an [[Executor]] used to run individual queries inside a transaction."
+  [{:keys [->builder-fn query-formatter]}]
   (fn [conn]
     (->Executor conn ->builder-fn query-formatter)))
 
-(defn transactor [{:keys [->executor datasource]}]
+(defn transactor
+  "Constructor for [[Transactor]] used for running operations inside a transaction."
+  [{:keys [->executor datasource]}]
   (->Transactor datasource nil ->executor))
 
-(defn cfg [{:keys [db-name host password port user]}]
+(defn cfg
+  "Generates configuration used for [[javax.sql.DataSource]]"
+  [{:keys [db-name host password port user]}]
   {:auto-commit           true
    :read-only             false
    :connection-timeout    10000
@@ -65,8 +75,12 @@
    :port-number           port
    :register-mbeans       false})
 
-(defn datasource [{:keys [spec]}]
+(defn datasource
+  "Constructor for a [[javax.sql.DataSource]]."
+  [{:keys [spec]}]
   (hikari/make-datasource spec))
 
-(defn datasource#close [datasource]
+(defn datasource#close
+  "Closes the [[javax.sql.DataSource]]."
+  [datasource]
   (hikari/close-datasource datasource))

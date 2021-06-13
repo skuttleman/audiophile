@@ -80,7 +80,9 @@
   (deserialize [_ path _]
     (deserialize* routes path)))
 
-(defn router [{:keys [base-urls routes]}]
+(defn router
+  "Constructor for creating [[Router]] used for controlling app navigation."
+  [{:keys [base-urls routes]}]
   (->Router base-urls routes))
 
 (deftype LinkedNavigator [pushy router]
@@ -104,12 +106,16 @@
   (deserialize [_ path opts]
     (pserdes/deserialize router path opts)))
 
-(defn nav [{:keys [router tracker]}]
+(defn nav
+  "Constructor for [[LinkedNavigator]] which links the [[Router]] to the browser history API."
+  [{:keys [router tracker]}]
   (let [pushy (volatile! nil)]
     (vreset! pushy (pushy/pushy #(on-nav router tracker @pushy %)
                                 #(serdes/deserialize router %)))
     (doto (->LinkedNavigator @pushy router)
       pnav/start!)))
 
-(defn nav#stop [nav]
+(defn nav#stop
+  "Unlinks [[LinkedNavigator]] from the browser history API."
+  [nav]
   (pnav/stop! nav))

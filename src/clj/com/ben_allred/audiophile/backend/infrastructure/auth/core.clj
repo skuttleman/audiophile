@@ -84,5 +84,7 @@
           ring/redirect
           (with-token token)))))
 
-(defn interactor [{:keys [base-url interactor jwt-serde nav oauth]}]
+(defn interactor
+  "Constructor for [[AuthInteractor]] used to provide authentication interaction flows."
+  [{:keys [base-url interactor jwt-serde nav oauth]}]
   (->AuthInteractor interactor oauth nav jwt-serde base-url))

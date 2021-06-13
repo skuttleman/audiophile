@@ -55,5 +55,7 @@
   (profile [this opts]
     (profile* (.getSimpleName (class this)) http-client cfg opts)))
 
-(defn provider [{:keys [cfg http-client]}]
+(defn provider
+  "Constructor for [[GoogleOAuthProvider]] used to provide asynchronous authentication flows."
+  [{:keys [cfg http-client]}]
   (->GoogleOAuthProvider http-client cfg))

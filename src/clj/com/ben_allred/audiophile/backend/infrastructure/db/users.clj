@@ -17,6 +17,9 @@
                                  (select-by users [:= :users.email email])
                                  opts))))
 
-(defn ->executor [{:keys [users user-teams]}]
+(defn ->executor
+  "Factory function for creating [[UserExecutor]] which provides access to the user repository
+   inside of a transaction."
+  [{:keys [users user-teams]}]
   (fn [executor]
     (->UserExecutor executor users user-teams)))

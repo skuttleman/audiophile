@@ -25,6 +25,8 @@
           colls/only!
           :id))))
 
-(defn ->executor [{:keys [event-types events]}]
+(defn ->executor
+  "Factory constructor for [[EventsExecutor]] for interacting with the events repository."
+  [{:keys [event-types events]}]
   (fn [executor]
     (->EventsExecutor executor event-types events)))

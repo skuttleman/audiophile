@@ -22,7 +22,9 @@
   (transact! [_ f]
     (repos/transact! tx (comp f ->executor))))
 
-(defn repo [{:keys [->executor tx]}]
+(defn repo
+  "Constructor for [[Repository]] used for running processes inside a transaction."
+  [{:keys [->executor tx]}]
   (->Repository tx ->executor))
 
 (deftype KVStore [client stream-serde]
@@ -34,10 +36,14 @@
   (put! [_ key value opts]
     (prepos/put! client key (serdes/serialize stream-serde value) opts)))
 
-(defn store [{:keys [client stream-serde]}]
+(defn store
+  "Constructor for [[KVStore]] used to store and retrieve binary objects."
+  [{:keys [client stream-serde]}]
   (->KVStore client stream-serde))
 
-(defmacro command! [repo opts & body]
+(defmacro command!
+  "Utility for expressing async commands with error handling."
+  [repo opts & body]
   `(let [opts# ~opts]
      (future
        (try
@@ -45,6 +51,8 @@
          (catch Throwable ex#
            (if-let [request-id# (:request/id opts#)]
              (do (log/error ex# "command failed" request-id#)
-                 (u/silent!
-                   (repos/transact! ~repo pint/command-failed! request-id# (assoc opts# :error/reason (.getMessage ex#)))))
+                 (try
+                   (repos/transact! ~repo pint/command-failed! request-id# (assoc opts# :error/reason (.getMessage ex#)))
+                   (catch Throwable ex#
+                     (log/fatal ex# "command/failed not emitted."))))
              (log/error ex# "processing failed")))))))

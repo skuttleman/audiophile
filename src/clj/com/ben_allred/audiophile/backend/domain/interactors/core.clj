@@ -4,7 +4,7 @@
 
 (def ^:const INVALID_INPUT :interactor/INVALID_INPUT)
 (def ^:const NOT_AUTHENTICATED :interactor/NOT_AUTHENTICATED)
-(def ^:const NOT_IMPLEMENTED :interactor/NOT_IMPLEMENTED)
+(def ^:const INTERNAL_ERROR :interactor/INTERNAL_ERROR)
 
 (defn ^:private throw-reason! [code]
   (throw (ex-info (name code) {:interactor/reason code})))
@@ -15,8 +15,8 @@
 (defn not-authenticated! []
   (throw-reason! NOT_AUTHENTICATED))
 
-(defn not-implemented! []
-  (throw-reason! NOT_IMPLEMENTED))
+(defn internal-error! []
+  (throw-reason! INTERNAL_ERROR))
 
 (defn query-many [accessor opts]
   (pint/query-many accessor opts))

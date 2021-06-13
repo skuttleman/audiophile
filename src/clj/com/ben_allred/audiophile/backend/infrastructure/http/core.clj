@@ -23,9 +23,9 @@
   [_]
   (ring/error ::http/unauthorized "not authenticated"))
 
-(defmethod ex->response int/NOT_IMPLEMENTED
+(defmethod ex->response int/INTERNAL_ERROR
   [_]
-  (ring/error ::http/not-implemented "not implemented"))
+  (ring/error ::http/internal-server-error "internal server error"))
 
 (defn ^:private route-dispatch [route-table request]
   (let [route (get-in request [:nav/route :handle])]
@@ -41,13 +41,25 @@
          (catch Throwable ex
            (ex->response ex)))))
 
-(defn router [route-table]
+(defn router
+  "Builds an http router out of a map of handle->handler. Handle should match method+route
+   definitions used with [[middleware/with-route]].
+
+   ```clojure
+   (let [handler (router {[:get :some/handle] (constantly :get)
+                          [:post :some/handle] (constantly :post)
+                          [:any :some.other/handle] (constantly :any)})]
+     (handler {:nav/route :some.other/handle :request-method :patch}) ;; => :any
+   ```"
+  [route-table]
   (let [multi (fns/->multi-fn route-dispatch)]
     (doseq [[route handler] (assoc route-table :default (constantly [::http/not-found]))]
       (.addMethod multi route (handler->method route handler)))
     (partial multi route-table)))
 
-(defn app [{:keys [middleware router]}]
+(defn app
+  "Builds middleware and router into a single function that handles all http requests."
+  [{:keys [middleware router]}]
   (reduce (fn [handler mw]
             (mw handler))
           router
@@ -58,7 +70,9 @@
     [::http/ok {:data result}]
     [::http/not-found]))
 
-(defn with-spec [{:keys [->response handler spec]}]
+(defn with-spec
+  "Checks input against spec and passes it to the handler and handles exceptions"
+  [{:keys [->response handler spec]}]
   (let [->response (or ->response data-responder)]
     (fn [data]
       (try (-> spec
@@ -74,11 +88,17 @@
                        (log/error ex spec))
                      (int/invalid-input!)))))))))
 
-(defn ok [_]
+(defn ok
+  "Wraps result in an http success response"
+  [_]
   (partial into [::http/ok]))
 
-(defn id [_]
+(defn id
+  "Expects http response and does not wrap again."
+  [_]
   identity)
 
-(defn no-content [_]
+(defn no-content
+  "Ignores result and issues an http no-content response"
+  [_]
   (constantly [::http/no-content]))

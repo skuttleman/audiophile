@@ -1,16 +1,17 @@
-(ns ^:unit com.ben-allred.audiophile.common.infrastructure.pubsub.core-test
+(ns ^:unit com.ben-allred.audiophile.common.infrastructure.pubsub.memory-test
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [test.utils :refer [async] :as tu]
     [test.utils.spies :as spies]))
 
 (deftest PubSub-test
   (testing "PubSub"
     (testing "with sync behavior"
-      (let [pubsub (pubsub/pubsub {:sync? true})
+      (let [pubsub (pubsub.mem/pubsub {:sync? true})
             spy (spies/create)]
         (pubsub/subscribe! pubsub ::id [:topic/one] spy)
         (pubsub/subscribe! pubsub ::id [:topic/two :a] spy)
@@ -56,7 +57,7 @@
 
     #?(:clj
        (testing "with async behavior"
-         (let [pubsub (pubsub/pubsub {})
+         (let [pubsub (pubsub.mem/pubsub {})
                spies (repeatedly 1000 spies/create)]
            (doseq [[idx spy] (map-indexed vector spies)]
              (pubsub/subscribe! pubsub idx [:some/topic] spy))

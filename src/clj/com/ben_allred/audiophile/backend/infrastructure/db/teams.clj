@@ -67,7 +67,9 @@
         (repos/execute! (models/select-by-id* teams team-id))
         colls/only!)))
 
-(defn ->team-executor [{:keys [teams user-teams users]}]
+(defn ->team-executor
+  "Factory function for creating [[TeamsRepoExecutor]] which provide access to the team repository."
+  [{:keys [teams user-teams users]}]
   (fn [executor]
     (->TeamsRepoExecutor executor teams user-teams users)))
 
@@ -80,7 +82,9 @@
   (command-failed! [_ request-id opts]
     (pint/command-failed! emitter request-id opts)))
 
-(defn ->team-event-emitter [{:keys [->emitter pubsub]}]
+(defn ->team-event-emitter
+  "Factory function for creating [[TeamsEventEmitter]] used to emit events related to teams."
+  [{:keys [->emitter pubsub]}]
   (fn [executor]
     (->TeamsEventEmitter executor (->emitter executor) pubsub)))
 
@@ -105,7 +109,10 @@
   (command-failed! [_ request-id opts]
     (pint/command-failed! emitter request-id opts)))
 
-(defn ->executor [{:keys [->event-executor ->team-event-emitter ->team-executor]}]
+(defn ->executor
+  "Factory function for creating [[Executor]] which aggregates [[TeamsEventEmitter]]
+   and [[TeamsRepoExecutor]]."
+  [{:keys [->event-executor ->team-event-emitter ->team-executor]}]
   (fn [executor]
     (->Executor (->team-executor executor)
                 (->team-event-emitter (->event-executor executor)))))

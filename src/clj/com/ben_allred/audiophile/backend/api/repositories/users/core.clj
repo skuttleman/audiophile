@@ -12,5 +12,7 @@
   (query-one [_ opts]
     (repos/transact! repo pu/find-by-email (:user/email opts) opts)))
 
-(defn accessor [{:keys [repo]}]
+(defn accessor
+  "Constructor for [[UserAccessor]] which provides semantic access for storing and retrieving users."
+  [{:keys [repo]}]
   (->UserAccessor repo))

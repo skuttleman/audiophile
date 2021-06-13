@@ -3,17 +3,25 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
-(defn login [{:keys [auth]}]
+(defn login
+  "Handles a request to authenticate in the system."
+  [{:keys [auth]}]
   (fn [request]
     (pint/login auth request)))
 
-(defn logout [{:keys [auth]}]
+(defn logout
+  "Handles a request to revoke authentication in the system."
+  [{:keys [auth]}]
   (fn [request]
     (pint/logout auth request)))
 
-(defn callback-url [{:keys [base-url auth-callback]}]
+(defn callback-url
+  "Generates url for calling the system back to finish asynchronous authentication flow."
+  [{:keys [base-url auth-callback]}]
   (str base-url auth-callback))
 
-(defn callback [{:keys [auth]}]
+(defn callback
+  "Handles a callback from external authentication service."
+  [{:keys [auth]}]
   (fn [request]
     (pint/callback auth request)))

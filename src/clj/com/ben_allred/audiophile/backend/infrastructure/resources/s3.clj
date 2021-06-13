@@ -24,7 +24,9 @@
                               :Metadata      (:metadata opts)
                               :Body          content}})))
 
-(defn client [{:keys [access-key bucket region secret-key]}]
+(defn client
+  "Constructor for [[S3Client]] used for storing and retrieving s3 objects."
+  [{:keys [access-key bucket region secret-key]}]
   (let [client (aws/client {:api                  :s3
                             :region               region
                             :credentials-provider (aws.creds/basic-credentials-provider
@@ -32,7 +34,9 @@
                                                      :secret-access-key secret-key})})]
     (->S3Client client bucket aws/invoke)))
 
-(defn stream-serde [_]
+(defn stream-serde
+  "Constructs an anonymous [[pserdes/ISerde]] that converts s3 input/output to be used within the system."
+  [_]
   (reify pserdes/ISerde
     (serialize [_ file _]
       (io/input-stream file))

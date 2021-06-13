@@ -23,6 +23,18 @@
              {}
              files))
 
-(defn base-url [{:keys [base-url server-port]}]
+(defn base-url
+  "formats a base-url string. Uses existing base-url if one is supplied.
+
+  ```clojure
+  (base-url {:server-port 1234 :protocol \"https\"}) ;; => https://my-host:1234
+  (base-url {:base-url \"protocol://some-base-url\"}) ;; => protocol://some-base-url
+  ```"
+  [{:keys [base-url host protocol server-port]}]
   (or base-url
-      (format "http://%s:%d" (.getCanonicalHostName (InetAddress/getLocalHost)) server-port)))
+      (format "%s://%s%s"
+              (or protocol "http")
+              (or host (.getCanonicalHostName (InetAddress/getLocalHost)))
+              (if server-port
+                (str ":" server-port)
+                ""))))
