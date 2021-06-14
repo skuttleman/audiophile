@@ -59,12 +59,13 @@
                    (get system :ws/connection)
                    as-ws
                    handler)]
-    (let [result (-> request
+    (let [ws (async/pipe ch (async/chan 10 (remove #{[:conn/ping] [:conn/pong]})))
+          result (-> request
                      (assoc-in [:headers :x-request-id] (uuids/random))
                      handler)]
       (cond-> result
         (http/success? result)
-        (assoc-in [:body :data] (:event/data (second (rest (tu/<!!ms ch)))))))))
+        (assoc-in [:body :data] (:event/data (second (rest (tu/<!!ms ws)))))))))
 
 (defn body-data [payload]
   {:body {:data payload}})
