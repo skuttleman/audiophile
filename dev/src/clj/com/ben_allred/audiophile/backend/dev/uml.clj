@@ -24,8 +24,11 @@
                  (when default "<<generated>>")
                  (when fk? "<<FK>>")))))
 
-(defn ^:private entity [[table {:keys [id fields]}]]
-  (concat [(format "entity \"%s\" as %s {" table table)]
+(defn ^:private entity [[table {:keys [id fields view?]}]]
+  (concat [(format "entity \"%s\" as %s {"
+                   (cond-> table
+                     view? (str " *VIEW*"))
+                   table)]
           (when id
             [(field id) (indent "--")])
           (map field fields)
@@ -44,20 +47,27 @@
    ""])
 
 (defn ^:private select-schema [tx]
-  (->> "SELECT table_name, column_name, data_type, column_default, is_nullable
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name <> 'db_migrations'"
+  (->> "SELECT c.table_name, c.column_name, c.data_type,
+               c.column_default, c.is_nullable, t.table_type
+        FROM information_schema.columns c
+        JOIN information_schema.tables t
+          ON t.table_catalog = c.table_catalog
+          AND t.table_schema = c.table_schema
+          AND t.table_name = c.table_name
+        WHERE c.table_schema = 'public'
+          AND c.table_name <> 'db_migrations'"
        (repos/transact! tx repos/execute!)
-       (reduce (fn [entities {table    :table_name
-                              column   :column_name
-                              type     :data_type
-                              default  :column_default
-                              nilable? :is_nullable}]
-                 (let [field (maps/->m [:name column]
-                                       [:nilable? ({"YES" true "NO" false} nilable?)]
+       (reduce (fn [entities {table      :table_name
+                              column     :column_name
+                              type       :data_type
+                              default    :column_default
+                              nilable?   :is_nullable
+                              table-type :table_type}]
+                 (let [field (maps/->m {:name     column
+                                        :nilable? ({"YES" true "NO" false} nilable?)}
                                        type
-                                       default)]
+                                       default)
+                       entities (update entities table assoc :view? (boolean ({"VIEW" true} table-type)))]
                    (if (= "id" column)
                      (update entities table assoc :id field)
                      (update-in entities [table :fields] (fnil conj []) field))))

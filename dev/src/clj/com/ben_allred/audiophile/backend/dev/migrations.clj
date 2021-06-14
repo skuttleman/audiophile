@@ -113,10 +113,9 @@
   (apply main* command args))
 
 (comment
-  (duct/load-hierarchy)
+  (-main :create "user_events_view")
+  (-main :migrate)
+  (-main :rollback)
 
-  (main* :create "SOME_DESCRIPTION")
-  (main* :migrate)
-  (main* :rollback)
+  (-main :generate-erd))
 
-  (main* :generate-erd))
