@@ -1,7 +1,8 @@
 (ns com.ben-allred.audiophile.backend.api.handlers.projects
   (:require
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defn fetch-all
   "Handles a request to fetch all projects for a user."
@@ -18,5 +19,6 @@
 (defn create
   "Handles a request to create a project."
   [{:keys [interactor]}]
-  (fn [project]
-    (int/create! interactor project)))
+  (fn [data]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
+      (int/create! interactor data opts))))

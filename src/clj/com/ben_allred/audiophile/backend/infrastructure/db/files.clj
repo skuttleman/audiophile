@@ -115,7 +115,7 @@
              :content-length (:size artifact))
       (->> (models/insert-into artifacts))))
 
-(defn ^:private insert-version [file-versions version file-id user-id]
+(defn ^:private insert-version [file-versions version file-id]
   (models/insert-into file-versions {:artifact-id (:artifact/id version)
                                      :file-id     file-id
                                      :name        (:version/name version)}))
@@ -157,7 +157,7 @@
                       colls/only!
                       :id)]
       (-> file-versions
-          (insert-version file file-id user-id)
+          (insert-version file file-id)
           (->> (repos/execute! executor)))
       file-id))
   (find-by-file-id [_ file-id opts]
@@ -187,7 +187,7 @@
   (insert-version! [_ version opts]
     (access! executor :file (access-file projects files user-teams (:file/id opts) (:user/id opts)))
     (-> file-versions
-        (insert-version version (:file/id opts) (:user/id opts))
+        (insert-version version (:file/id opts))
         (->> (repos/execute! executor))
         colls/only!
         :id))

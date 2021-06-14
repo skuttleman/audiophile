@@ -60,13 +60,13 @@
                       [{:id artifact-id}]
                       [artifact]
                       [{:id "event-id"}])
-          @(int/create-artifact! repo
-                                 {:filename     "file.name"
-                                  :size         12345
-                                  :content-type "content/type"
-                                  :tempfile     "…content…"
-                                  :user/id      user-id
-                                  :request/id   request-id})
+          @(int/create! repo
+                        {:filename     "file.name"
+                         :size         12345
+                         :content-type "content/type"
+                         :tempfile     "…content…"}
+                        {:user/id    user-id
+                         :request/id request-id})
           (let [[store-k & stored] (colls/only! (stubs/calls store :put!))
                 [[insert-artifact] [query-artifact] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
@@ -131,7 +131,7 @@
               user-id (uuids/random)]
           (stubs/use! store :put!
                       (ex-info "Store" {}))
-          @(int/create-artifact! repo {:user/id user-id :request/id request-id})
+          @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -148,7 +148,7 @@
           (stubs/init! emitter)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create-artifact! repo {:user/id user-id :request/id request-id})
+          @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -165,7 +165,7 @@
           (stubs/init! emitter)
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
-          @(int/create-artifact! repo {:user/id user-id :request/id request-id})
+          @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
             (is (= [request-id {:user/id user-id :request/id request-id}]
                    (-> emitter
@@ -263,11 +263,11 @@
                     [file]
                     [{:id "event-id"}])
         @(int/create-file! repo
-                           {:project/id   project-id
-                            :file/name    "file name"
+                           {:file/name    "file name"
                             :version/name "version"
-                            :artifact/id  artifact-id
-                            :user/id      user-id})
+                            :artifact/id  artifact-id}
+                           {:user/id    user-id
+                            :project/id project-id})
         (let [[[access-query] [file-insert] [version-insert] [query-for-event] [insert-event]] (colls/only! 5 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
@@ -373,7 +373,7 @@
           (stubs/init! emitter)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create-file! repo {:user/id user-id :request/id request-id})
+          @(int/create-file! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -390,7 +390,7 @@
           (stubs/init! emitter)
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
-          @(int/create-file! repo {:user/id user-id :request/id request-id})
+          @(int/create-file! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
             (is (= [request-id {:user/id user-id :request/id request-id}]
                    (-> emitter
@@ -422,11 +422,11 @@
                     [version]
                     [{:id "event-id"}])
         @(int/create-file-version! repo
-                                   {:file/id      file-id
-                                    :file/name    "file name"
+                                   {:file/name    "file name"
                                     :version/name "version"
-                                    :artifact/id  artifact-id
-                                    :user/id      user-id})
+                                    :artifact/id  artifact-id}
+                                   {:file/id file-id
+                                    :user/id user-id})
         (let [[[access-query] [version-insert] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
@@ -503,7 +503,7 @@
           (stubs/init! emitter)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create-file-version! repo {:user/id user-id :request/id request-id})
+          @(int/create-file-version! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -520,7 +520,7 @@
           (stubs/init! emitter)
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
-          @(int/create-file-version! repo {:user/id user-id :request/id request-id})
+          @(int/create-file-version! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
             (is (= [request-id {:user/id user-id :request/id request-id}]
                    (-> emitter

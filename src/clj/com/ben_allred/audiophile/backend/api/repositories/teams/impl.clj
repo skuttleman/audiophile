@@ -13,8 +13,8 @@
            :team/members
            (rteams/select-team-members executor team-id opts))))
 
-(defn ^:private create* [executor opts]
-  (let [team-id (rteams/insert-team! executor opts opts)
+(defn ^:private create* [executor data opts]
+  (let [team-id (rteams/insert-team! executor data opts)
         team (rteams/find-event-team executor team-id)]
     (rteams/team-created! executor (:user/id opts) team opts)))
 
@@ -25,9 +25,9 @@
     (repos/transact! repo rteams/select-for-user (:user/id opts) opts))
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
-  (create! [_ opts]
+  (create! [_ data opts]
     (crepos/command! repo opts
-      (repos/transact! repo create* opts))))
+      (repos/transact! repo create* data opts))))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."

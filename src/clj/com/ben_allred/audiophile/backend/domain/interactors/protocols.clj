@@ -6,7 +6,7 @@
     "Queries one entity")
   (query-many [this opts]
     "Queries many entities")
-  (create! [this opts]
+  (create! [this data opts]
     "Creates a new entity"))
 
 (defprotocol IEmitter
@@ -16,11 +16,9 @@
 
 (defprotocol IFileAccessor
   "Abstraction for saving and querying files and artifacts"
-  (create-artifact! [this opts]
-    "Create an artifact in the repository and upload the content to a kv store.")
-  (create-file! [this opts]
+  (create-file! [this data opts]
     "Create a new file with a version to the repository.")
-  (create-file-version! [this opts]
+  (create-file-version! [this data opts]
     "Create a new version of an existing file")
   (get-artifact [this opts]
     "Get artifact data from a kv store"))

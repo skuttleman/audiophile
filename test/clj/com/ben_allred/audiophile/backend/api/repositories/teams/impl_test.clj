@@ -148,8 +148,8 @@
                     [{:id "event-id"}])
         @(int/create! repo
                       {:created-at :whenever
-                       :other      :junk
-                       :user/id    user-id})
+                       :other      :junk}
+                      {:user/id user-id})
         (let [[[insert-team] [insert-user-team] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
@@ -210,7 +210,7 @@
           (stubs/init! emitter)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create! repo {:user/id user-id :request/id request-id})
+          @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -227,7 +227,7 @@
           (stubs/init! emitter)
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
-          @(int/create! repo {:user/id user-id :request/id request-id})
+          @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
             (is (= [request-id {:user/id user-id :request/id request-id}]
                    (-> emitter
