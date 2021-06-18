@@ -22,7 +22,7 @@
    (fn [executor models]
      (->file-executor executor (merge models config))))
   ([executor {:keys [artifacts emitter event-types events file-versions
-                     files projects pubsub store user-teams]}]
+                     files projects pubsub store user-events user-teams] :as models}]
    (let [file-exec (db.files/->FilesRepoExecutor executor
                                                  artifacts
                                                  file-versions
@@ -31,7 +31,11 @@
                                                  user-teams
                                                  store
                                                  (constantly ::key))
-         event-exec (db.events/->EventsExecutor executor event-types events)
+         event-exec (db.events/->EventsExecutor executor
+                                                event-types
+                                                events
+                                                user-events
+                                                (db.events/->conform-fn models))
          emitter* (db.files/->FilesEventEmitter event-exec emitter pubsub)]
      (db.files/->Executor file-exec emitter*))))
 

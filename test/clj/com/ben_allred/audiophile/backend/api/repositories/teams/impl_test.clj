@@ -19,12 +19,17 @@
   ([config]
    (fn [executor models]
      (->team-executor executor (merge models config))))
-  ([executor {:keys [emitter event-types events teams pubsub user-teams users]}]
+  ([executor {:keys [emitter event-types events teams pubsub user-events user-teams users]
+              :as   models}]
    (let [team-exec (db.teams/->TeamsRepoExecutor executor
                                                  teams
                                                  user-teams
                                                  users)
-         event-exec (db.events/->EventsExecutor executor event-types events)
+         event-exec (db.events/->EventsExecutor executor
+                                                event-types
+                                                events
+                                                user-events
+                                                (db.events/->conform-fn models))
          emitter* (db.teams/->TeamsEventEmitter event-exec emitter pubsub)]
      (db.teams/->Executor team-exec emitter*))))
 

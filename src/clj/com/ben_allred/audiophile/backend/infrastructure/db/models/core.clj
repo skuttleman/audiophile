@@ -1,12 +1,14 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.models.core
   (:require
     [camel-snake-kebab.core :as csk]
+    [clojure.string :as string]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
+    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.domain.validations.core :as val]
     [jsonista.core :as jsonista]
     [next.jdbc.result-set :as result-set])
   (:import
@@ -53,21 +55,24 @@
 (defn models
   "Loads table information from the database to generate models needed for db interactions."
   [{:keys [tx]}]
-  (reduce (fn [models {table :table_name column :column_name type :data_type name :udt_name}]
+  (reduce (fn [models {table :table_name column :column_name type :data_type name :udt_name nilable? :is_nullable}]
             (let [table (csk/->kebab-case-keyword table)
-                  column (csk/->kebab-case-keyword column)]
+                  column (csk/->kebab-case-keyword column)
+                  type (csk/->kebab-case-keyword (string/replace type #"\s+" "-"))
+                  nilable? (= "YES" nilable?)]
               (update models
                       table
                       (fns/=> (update :fields (fnil conj #{}) column)
+                              (assoc-in [:spec column] [type nilable?])
                               (cond->
-                                (= "USER-DEFINED" type)
+                                (= :user-defined type)
                                 (assoc-in [:casts column] (keyword name))
 
-                                (contains? #{"jsonb"} type)
+                                (contains? #{:jsonb} type)
                                 (assoc-in [:casts column] (keyword type)))))))
           {}
           (repos/transact! tx repos/execute!
-                           {:select [:table-name :column-name :data-type :udt-name]
+                           {:select [:table-name :column-name :data-type :udt-name :is-nullable]
                             :from   [:information-schema.columns]
                             :where  [:and
                                      [:= :table-schema "public"]
@@ -78,7 +83,8 @@
   [{:keys [models namespace table-name]}]
   (-> models
       (get table-name)
-      (assoc :table table-name :namespace namespace)))
+      (assoc :table table-name :namespace namespace)
+      (update :spec val/->model-spec namespace)))
 
 (defn ^:private from [{:keys [alias table]}]
   (cond-> table

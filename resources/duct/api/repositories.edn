@@ -1,4 +1,7 @@
-{[:duct/const :interactors/files]
+{[:duct/const :interactors/events]
+ #ig/ref :audiophile.repositories.events/accessor
+
+ [:duct/const :interactors/files]
  #ig/ref :audiophile.repositories.files/accessor
 
  [:duct/const :interactors/projects]
@@ -17,6 +20,9 @@
  :audiophile.services.s3/stream-serde
  {}
 
+ :audiophile.repositories.events/accessor
+ {:repo #ig/ref :repositories/events}
+
  :audiophile.repositories.files/accessor
  {:repo #ig/ref :repositories/files}
 
@@ -28,6 +34,10 @@
 
  :audiophile.repositories.users/accessor
  {:repo #ig/ref :repositories/users}
+
+ [:audiophile.repositories/repo :repositories/events]
+ {:->executor #ig/ref :audiophile.repositories.events/->executor
+  :tx         #ig/ref :services/transactor}
 
  [:audiophile.repositories/repo :repositories/files]
  {:->executor #ig/ref :audiophile.repositories.files/->executor
@@ -47,7 +57,9 @@
 
  :audiophile.repositories.events/->executor
  {:event-types #ig/ref :models/event-types
-  :events      #ig/ref :models/events}
+  :events      #ig/ref :models/events
+  :models      #ig/ref :models/models
+  :user-events #ig/ref :models/user-events}
 
  :audiophile.repositories.events/->emitter
  {:pubsub #ig/ref :services/pubsub}

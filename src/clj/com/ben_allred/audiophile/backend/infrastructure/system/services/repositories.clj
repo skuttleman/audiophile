@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.repositories
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
+    [com.ben-allred.audiophile.backend.api.repositories.events.impl :as events]
     [com.ben-allred.audiophile.backend.api.repositories.files.impl :as files]
     [com.ben-allred.audiophile.backend.api.repositories.projects.impl :as projects]
     [com.ben-allred.audiophile.backend.api.repositories.teams.impl :as teams]
@@ -50,6 +51,9 @@
 
 (defmethod ig/init-key :audiophile.repositories/datasource#close [_ cfg]
   (db/datasource#close cfg))
+
+(defmethod ig/init-key :audiophile.repositories.events/accessor [_ cfg]
+  (events/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.events/->executor [_ cfg]
   (db.events/->executor cfg))

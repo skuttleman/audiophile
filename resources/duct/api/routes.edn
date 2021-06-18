@@ -1,5 +1,6 @@
 {[:duct/const :routes/table#api]
  {[:get :api/artifact]       #ig/ref :res.handler/file-version#get
+  [:get :api/events]         #ig/ref :api.handler/events#get
   [:get :api/file]           #ig/ref :api.handler/file#get
   [:get :api/project.files]  #ig/ref :api.handler/project.files#get
   [:get :api/project]        #ig/ref :api.handler/project#get
@@ -34,6 +35,10 @@
 
  [:audiophile.handlers/router :api/router#ui]
  #ig/ref :routes/table#ui
+
+ [:audiophile.spec/with-spec :api.handler/events#get]
+ {:handler #ig/ref :audiophile.handlers.events/fetch-all
+  :spec    :api.events/fetch-all}
 
  [:audiophile.spec/with-spec :api.handler/file#get]
  {:handler #ig/ref :audiophile.handlers.files/fetch
@@ -180,6 +185,9 @@
 
  :audiophile.handlers.teams/create
  {:interactor #ig/ref :interactors/teams}
+
+ :audiophile.handlers.events/fetch-all
+ {:interactor #ig/ref :interactors/events}
 
  :audiophile.handlers.files/upload
  {:interactor #ig/ref :interactors/files}

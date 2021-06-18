@@ -1,4 +1,9 @@
-{[:audiophile.repositories/model :models/artifacts]
+{[:audiophile.repositories/model :models/user-events]
+ {:models     #ig/ref :audiophile.repositories/models
+  :namespace  :event
+  :table-name :user-events}
+
+ [:audiophile.repositories/model :models/artifacts]
  {:models     #ig/ref :audiophile.repositories/models
   :namespace  :artifact
   :table-name :artifacts}
@@ -42,6 +47,10 @@
  {:models     #ig/ref :audiophile.repositories/models
   :namespace  :user
   :table-name :users}
+
+ [:audiophile.utils/ref-map :models/models]
+ {:id-fn  :namespace
+  :refset #ig/refset :audiophile.repositories/model}
 
  :audiophile.repositories/models
  {:tx #ig/ref :services/transactor}}

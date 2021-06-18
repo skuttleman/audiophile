@@ -1,53 +1,69 @@
 (ns test.utils.repositories
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [test.utils.stubs :as stubs]))
 
+(defn ^:private ->model [[table-name {:keys [spec namespace]}]]
+  [table-name (models/model {:models     {table-name {:fields (set (keys spec))
+                                                      :spec   spec}}
+                             :table-name table-name
+                             :namespace  namespace})])
+
 (def models
-  {:artifacts
-   {:fields    #{:filename :id :content-type :uri :content-size :created-at}
-    :table     :artifacts
-    :namespace :artifact}
-
-   :events
-   {:fields    #{:id :data :event-type-id :model-id :emitted-at :emitted-by}
-    :table     :events
-    :namespace :event}
-
-   :event-types
-   {:fields    #{:id :category :name}
-    :table     :event-types
-    :namespace :event-type}
-
-   :files
-   {:fields    #{:name :id :idx :project-id :created-at}
-    :table     :files
-    :namespace :file}
-
-   :file-versions
-   {:fields    #{:file-id :artifact-id :name :id :created-at}
-    :table     :file-versions
-    :namespace :file-version}
-
-   :projects
-   {:fields    #{:team-id :name :id :created-at}
-    :table     :projects
-    :namespace :project}
-
-   :teams
-   {:fields    #{:type :name :id :created-at}
-    :table     :teams
-    :namespace :team}
-
-   :user-teams
-   {:fields    #{:team-id :user-id}
-    :table     :user-teams
-    :namespace :user-team}
-
-   :users
-   {:fields    #{:id :first-name :last-name :handle :email :mobile-number :created-at}
-    :table     :users
-    :namespace :user}})
+  (into {}
+        (map ->model)
+        {:artifacts     {:spec      {:id           [:uuid]
+                                     :filename     [:text]
+                                     :content-type [:text]
+                                     :uri          [:text]
+                                     :content-size [:text]
+                                     :created-at   [:timestamp-without-time-zone]}
+                         :namespace :artifact}
+         :events        {:spec      {:id            [:uuid]
+                                     :data          [:jsonb true]
+                                     :event-type-id [:uuid]
+                                     :model-id      [:uuid]
+                                     :emitted-at    [:timestamp-without-time-zone]
+                                     :emitted-by    [:uuid]}
+                         :namespace :event}
+         :event-types   {:spec      {:id       [:uuid]
+                                     :category [:text]
+                                     :name     [:text]}
+                         :namespace :event-type}
+         :files         {:spec      {:name       [:text]
+                                     :id         [:uuid]
+                                     :idx        [:integer]
+                                     :project-id [:uuid]
+                                     :created-at [:timestamp-without-time-zone]}
+                         :namespace :file}
+         :file-versions {:spec      {:file-id     [:uuid]
+                                     :artifact-id [:uuid]
+                                     :name        [:text]
+                                     :id          [:uuid]
+                                     :created-at  [:timestamp-without-time-zone]}
+                         :namespace :file-version}
+         :projects      {:spec      {:team-id    [:uuid]
+                                     :name       [:text]
+                                     :id         [:uuid]
+                                     :created-at [:timestamp-without-time-zone]}
+                         :namespace :project}
+         :teams         {:spec      {:type       [:user-defined]
+                                     :name       [:text]
+                                     :id         [:uuid]
+                                     :created-at [:timestamp-without-time-zone]}
+                         :namespace :team}
+         :user-teams    {:spec      {:team-id [:uuid]
+                                     :user-id [:uuid]}
+                         :namespace :user-team}
+         :users         {:spec      {:id            [:uuid]
+                                     :first-name    [:text]
+                                     :last-name     [:text]
+                                     :handle        [:text]
+                                     :email         [:text]
+                                     :mobile-number [:text]
+                                     :created-at    [:timestamp-without-time-zone]}
+                         :namespace :user}}))
 
 (defn stub-kv-store []
   (stubs/create (reify

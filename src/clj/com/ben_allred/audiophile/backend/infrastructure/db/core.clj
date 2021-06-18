@@ -4,7 +4,9 @@
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [hikari-cp.core :as hikari]
-    [next.jdbc :as jdbc]))
+    [next.jdbc :as jdbc])
+  (:import
+    (java.sql Timestamp)))
 
 (deftype QueryFormatter []
   prepos/IFormatQuery
@@ -20,7 +22,7 @@
 (deftype Executor [conn ->builder-fn query-formatter]
   prepos/IExecute
   (execute! [_ query opts]
-    (let [formatted (prepos/format query-formatter query)]
+    (let [formatted (mapv #(cond-> % (inst? %) (-> .getTime Timestamp.)) (prepos/format query-formatter query))]
       (log/debug "[TX] - formatting:" query)
       (log/debug "[TX] - executing:" formatted)
       (jdbc/execute! conn formatted (assoc (:sql/opts opts)

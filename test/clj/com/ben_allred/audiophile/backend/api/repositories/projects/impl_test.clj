@@ -20,12 +20,17 @@
   ([config]
    (fn [executor models]
      (->project-executor executor (merge models config))))
-  ([executor {:keys [emitter event-types events projects pubsub user-teams users]}]
+  ([executor {:keys [emitter event-types events projects pubsub user-events user-teams users]
+              :as   models}]
    (let [project-exec (db.projects/->ProjectsRepoExecutor executor
                                                           projects
                                                           user-teams
                                                           users)
-         event-exec (db.events/->EventsExecutor executor event-types events)
+         event-exec (db.events/->EventsExecutor executor
+                                                event-types
+                                                events
+                                                user-events
+                                                (db.events/->conform-fn models))
          emitter* (db.projects/->ProjectsEventEmitter event-exec emitter pubsub)]
      (db.projects/->Executor project-exec emitter*))))
 

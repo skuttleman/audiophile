@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.backend.api.handlers.auth :as auth]
     [com.ben-allred.audiophile.backend.infrastructure.http.core :as handlers]
+    [com.ben-allred.audiophile.backend.api.handlers.events :as events]
     [com.ben-allred.audiophile.backend.api.handlers.files :as files]
     [com.ben-allred.audiophile.backend.api.handlers.projects :as projects]
     [com.ben-allred.audiophile.backend.api.handlers.teams :as teams]
@@ -24,6 +25,9 @@
 
 (defmethod ig/init-key :audiophile.handlers.auth/callback [_ cfg]
   (auth/callback cfg))
+
+(defmethod ig/init-key :audiophile.handlers.events/fetch-all [_ cfg]
+  (events/fetch-all cfg))
 
 (defmethod ig/init-key :audiophile.handlers.files/upload [_ cfg]
   (files/upload cfg))

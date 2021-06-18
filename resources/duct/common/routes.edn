@@ -14,6 +14,8 @@
      ["/artifacts"
       [["" :api/artifacts]
        [["/" #audiophile/uuid-param :artifact-id] :api/artifact]]]
+     ["/events"
+      [["" :api/events]]]
      ["/files"
       [[["/" #audiophile/uuid-param :file-id] :api/file]]]
      ["/projects"

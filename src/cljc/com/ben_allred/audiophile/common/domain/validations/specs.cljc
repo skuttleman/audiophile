@@ -37,6 +37,10 @@
    [:tempfile file?]
    [:size nat-int?]])
 
+(def event:fetch-all
+  [:map
+   [:filter/since {:optional true} inst?]])
+
 (def file:create
   [:map
    [:artifact/id uuid?]
@@ -69,6 +73,9 @@
              [:accept trimmed-string?]
              [:content-type trimmed-string?]
              [:websocket? [:fn #{true}]]]))
+
+(def api-event:fetch-all
+  (mu/merge auth event:fetch-all))
 
 (def api-file:create
   (mu/merge project-id file:create))
