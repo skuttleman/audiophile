@@ -1,6 +1,5 @@
 (ns com.ben-allred.audiophile.backend.api.validations.selectors
   (:require
-    [com.ben-allred.audiophile.common.core.utils.dates :as dates]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
@@ -18,7 +17,7 @@
   (-> {:user/id (get-in request [:auth/user :user/id])}
       (maps/assoc-maybe :filter/since (some-> request
                                               (get-in [:nav/route :query-params :since])
-                                              dates/parse))))
+                                              uuids/->uuid))))
 
 (defmethod select [:get :api/file]
   [_ request]

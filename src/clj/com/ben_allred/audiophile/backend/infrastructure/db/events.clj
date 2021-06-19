@@ -38,8 +38,14 @@
 
   (select-for-user [_ user-id {:filter/keys [since]}]
     (-> user-events
+        (models/remove-fields #{:user-id})
         (models/select* (cond->> [:= :user-events.user-id user-id]
-                          since (conj [:and [:>= :user-events.emitted-at since]])))
+                          since (conj [:and [:>=
+                                             :user-events.emitted-at
+                                             (-> events
+                                                 (models/select-fields #{:emitted-at})
+                                                 (models/select* [:= :events.id since]))]
+                                       [:not= :user-events.id since]])))
         (models/order-by [:user-events.emitted-at :desc])
         (as-> $query (repos/execute! executor
                                      $query

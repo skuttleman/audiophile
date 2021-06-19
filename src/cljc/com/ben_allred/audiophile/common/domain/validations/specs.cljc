@@ -39,7 +39,7 @@
 
 (def event:fetch-all
   [:map
-   [:filter/since {:optional true} inst?]])
+   [:filter/since {:optional true} uuid?]])
 
 (def file:create
   [:map

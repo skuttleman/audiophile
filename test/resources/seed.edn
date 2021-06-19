@@ -26,4 +26,17 @@
  {:insert-into :file-versions
   :values      [{:file-id     #audiophile/fk [:files :name "File Seed"]
                  :artifact-id #audiophile/fk [:artifacts :filename "example.mp3"]
-                 :name        "File Version Seed"}]}]
+                 :name        "File Version Seed"}]}
+ {:insert-into :events
+  :values      [{:event-type-id #audiophile/event-type :team/created
+                 :model-id #audiophile/fk [:teams :name "Team Seed"]
+                 :emitted-by #audiophile/fk [:users :email "joe@example.com"]
+                 :emitted-at #inst "2020-04-17T07:14:51.01Z"}
+                {:event-type-id #audiophile/event-type :project/created
+                 :model-id #audiophile/fk [:projects :name "Project Seed"]
+                 :emitted-by #audiophile/fk [:users :email "joe@example.com"]
+                 :emitted-at #inst "2020-04-17T07:18:27.406Z"}
+                {:event-type-id #audiophile/event-type :artifact/created
+                 :model-id #audiophile/fk [:artifacts :key "some-key"]
+                 :emitted-by #audiophile/fk [:users :email "joe@example.com"]
+                 :emitted-at #inst "2020-04-17T09:38:47.599Z"}]}]

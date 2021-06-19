@@ -14,6 +14,14 @@
                             {:select [:id]
                              :from   [table]
                              :where  [:= col val]})
+   'audiophile/event-type (fn [k]
+                            (let [category (namespace k)
+                                  name (name k)]
+                              {:select [:id]
+                               :from [:event-types]
+                               :where [:and
+                                       [:= :category category]
+                                       [:= :name name]]}))
    'audiophile/sql-call   sql/call})
 
 (defmethod env*/coerce 'Edn [s _]
