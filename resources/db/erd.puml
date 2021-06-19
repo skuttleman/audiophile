@@ -91,6 +91,8 @@ entity "user_teams" as user_teams {
 }
 
 entity "user_events *VIEW*" as user_events {
+  id : uuid
+  --
   event_type : text
   model_id : uuid <<FK>>
   data : jsonb

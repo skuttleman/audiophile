@@ -8,7 +8,7 @@ CREATE VIEW all_events AS
 --;;
 
 CREATE VIEW user_events AS
-    SELECT ae.event_type, ae.model_id, ae.data, ae.emitted_at,
+    SELECT ae.id, ae.event_type, ae.model_id, ae.data, ae.emitted_at,
            ae.emitted_by, COALESCE(ut.user_id, ae.emitted_by) AS user_id
     FROM all_events ae
     LEFT JOIN artifacts a ON a.id = ae.model_id
