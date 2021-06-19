@@ -34,7 +34,7 @@
         str
         uri/parse
         (assoc :path nil :query nil :fragment nil)
-        (update :scheme {"http" "ws" "https" "wss"})
+        (update :scheme {"https" "wss"} "ws")
         uri/stringify
         (str (nav/path-for nav :ws/connection params)))))
 

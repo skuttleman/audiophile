@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.system.services.resources
   (:require
+    [com.ben-allred.audiophile.ui.api.components.player :as player]
     [com.ben-allred.audiophile.ui.api.forms.submittable :as form.sub]
     [com.ben-allred.audiophile.ui.infrastructure.resources.base :as bres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.cached :as cached]
-    [com.ben-allred.audiophile.ui.infrastructure.resources.common :as cres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.multi :as multi]
     [com.ben-allred.audiophile.ui.infrastructure.resources.redirect :as redirect]
     [com.ben-allred.audiophile.ui.infrastructure.resources.toaster :as toaster]
@@ -41,4 +41,7 @@
   (form.sub/opts->request cfg))
 
 (defmethod ig/init-key :audiophile.resource.audio/artifact [_ cfg]
-  (cres/res-artifact cfg))
+  (player/res-artifact cfg))
+
+(defmethod ig/init-key :audiophile.views.components/artifact-player [_ cfg]
+  (player/artifact-player cfg))

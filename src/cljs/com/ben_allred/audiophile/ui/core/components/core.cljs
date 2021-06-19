@@ -79,3 +79,30 @@
 (defn modal-opener [*modals title view]
   (fn [_]
     (create! *modals {:header [:h2.subtitle title] :body view})))
+
+(defn load! [player artifact-id]
+  (pcomp/load! player artifact-id))
+
+(defn id [player]
+  (pcomp/id player))
+
+(defn play-pause! [player]
+  (pcomp/play-pause! player))
+
+(defn destroy! [player]
+  (pcomp/destroy! player))
+
+(defn set-region!
+  ([player]
+   (set-region! player nil))
+  ([player opts]
+   (pcomp/set-region! player opts)))
+
+(defn region [player]
+  (pcomp/region player))
+
+(defn ready? [player]
+  (pcomp/ready? player))
+
+(defn playing? [player]
+  (pcomp/playing? player))
