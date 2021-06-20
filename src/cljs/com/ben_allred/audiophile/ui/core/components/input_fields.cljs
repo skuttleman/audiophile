@@ -166,6 +166,7 @@
              [:div
               [:input {:ref       #(some->> % (vreset! file-input))
                        :type      :file
+                       :accept    ".mp3,.wav,.ogg"
                        :multiple  multi?
                        :style     {:display :none}
                        :on-change (comp on-change

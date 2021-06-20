@@ -31,8 +31,9 @@
     id)
 
   pcomp/ISelectRegion
-  (set-region! [_ opts]
-    (when-let [^js/WaveSurfer surfer (:surfer @state)]
+  (set-region! [this opts]
+    (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
+                                       (:surfer @state))]
       (.clearRegions surfer)
       (if-let [{:keys [start end]} opts]
         (do (.addRegion surfer #js {:start start :end end})
@@ -50,20 +51,23 @@
                   (doto (on-load this id blob)
                     (.on "ready" (fn [_]
                                    (swap! state assoc :ready? true)))
-                    (->> (swap! state assoc :loaded? true :surfer)))))))
+                    (->> (swap! state assoc :surfer)))))))
   (ready? [_]
-    (boolean (:ready? @state)))
+    (:ready? @state))
   (destroy! [_]
     (when-let [^js/WaveSurfer surfer (:surfer @state)]
       (.destroy surfer)))
 
   pcomp/IPlayer
-  (play-pause! [_]
-    (when-let [^js/WaveSurfer surfer (:surfer @state)]
+  (play-pause! [this]
+    (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
+                                       (:surfer @state))]
       (swap! state update :playing? not)
       (.playPause surfer)))
-  (playing? [_]
-    (boolean (:playing? @state))))
+  (playing? [this]
+    (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
+                                       (:surfer @state))]
+      (.isPlaying surfer))))
 
 (defn artifact-player [{:keys [*artifact]}]
   (->ArtifactPlayer (name (gensym)) (r/atom nil) *artifact))
