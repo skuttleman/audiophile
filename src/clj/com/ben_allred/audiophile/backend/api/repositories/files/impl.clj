@@ -32,11 +32,11 @@
     (repos/transact! repo rfiles/select-for-project (:project/id opts) opts))
   (query-one [_ opts]
     (repos/transact! repo rfiles/find-by-file-id (:file/id opts) (assoc opts :includes/versions? true)))
-  (create! [_ data opts]
-    (crepos/command! repo opts
-      (repos/transact! repo create-artifact* data opts)))
 
   pint/IFileAccessor
+  (create-artifact! [_ data opts]
+    (crepos/command! repo opts
+      (repos/transact! repo create-artifact* data opts)))
   (create-file! [_ data opts]
     (crepos/command! repo opts
       (repos/transact! repo create-file* data opts)))

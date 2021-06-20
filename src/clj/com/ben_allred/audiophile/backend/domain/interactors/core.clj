@@ -27,6 +27,9 @@
 (defn create! [accessor data opts]
   (pint/create! accessor data opts))
 
+(defn create-artifact! [interactor data opts]
+  (pint/create-artifact! interactor data opts))
+
 (defn create-file! [interactor data opts]
   (pint/create-file! interactor data opts))
 

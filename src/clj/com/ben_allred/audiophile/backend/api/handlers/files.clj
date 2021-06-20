@@ -9,7 +9,7 @@
   [{:keys [interactor]}]
   (fn [data]
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
-      (int/create! interactor data opts))))
+      (int/create-artifact! interactor data opts))))
 
 (defn fetch-all
   "Handles a request for all project files."

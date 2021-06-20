@@ -64,13 +64,13 @@
                       [{:id artifact-id}]
                       [artifact]
                       [{:id "event-id"}])
-          @(int/create! repo
-                        {:filename     "file.name"
-                         :size         12345
-                         :content-type "content/type"
-                         :tempfile     "…content…"}
-                        {:user/id    user-id
-                         :request/id request-id})
+          @(int/create-artifact! repo
+                                 {:filename     "file.name"
+                                  :size         12345
+                                  :content-type "content/type"
+                                  :tempfile     "…content…"}
+                                 {:user/id    user-id
+                                  :request/id request-id})
           (let [[store-k & stored] (colls/only! (stubs/calls store :put!))
                 [[insert-artifact] [query-artifact] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
             (testing "sends the data to the kv store"
@@ -135,7 +135,7 @@
               user-id (uuids/random)]
           (stubs/use! store :put!
                       (ex-info "Store" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -152,7 +152,7 @@
           (stubs/init! emitter)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -169,7 +169,7 @@
           (stubs/init! emitter)
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
             (is (= [request-id {:user/id user-id :request/id request-id}]
                    (-> emitter

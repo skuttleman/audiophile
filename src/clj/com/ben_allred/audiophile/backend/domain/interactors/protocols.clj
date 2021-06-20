@@ -9,6 +9,9 @@
   (create! [this data opts]
     "Creates a new entity"))
 
+(defprotocol IEventAccessor
+  "Abstraction for saving and querying events")
+
 (defprotocol IEmitter
   "Abstraction for sending cross-cutting events"
   (command-failed! [this request-id opts]
@@ -16,6 +19,8 @@
 
 (defprotocol IFileAccessor
   "Abstraction for saving and querying files and artifacts"
+  (create-artifact! [this data opts]
+    "Create a new artifact in the repository.")
   (create-file! [this data opts]
     "Create a new file with a version to the repository.")
   (create-file-version! [this data opts]
