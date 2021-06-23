@@ -20,10 +20,11 @@
   ([config]
    (fn [executor models]
      (->project-executor executor (merge models config))))
-  ([executor {:keys [emitter event-types events projects pubsub user-events user-teams users]
+  ([executor {:keys [emitter event-types events projects pubsub teams user-events user-teams users]
               :as   models}]
    (let [project-exec (db.projects/->ProjectsRepoExecutor executor
                                                           projects
+                                                          teams
                                                           user-teams
                                                           users)
          event-exec (db.events/->EventsExecutor executor
@@ -120,22 +121,38 @@
           tx (trepos/stub-transactor (->project-executor {:emitter emitter
                                                           :pubsub  pubsub}))
           repo (rprojects/->ProjectAccessor tx)
-          [project-id user-id] (repeatedly uuids/random)
+          [project-id team-id user-id] (repeatedly uuids/random)
           project {:project/id   project-id
-                   :project/name "some project"}]
+                   :project/name "some project"
+                   :project/team-id team-id}]
       (testing "when creating a project"
         (stubs/use! tx :execute!
+                    [{:id "team-id"}]
                     [{:id project-id}]
                     [project]
                     [{:id "event-id"}])
         @(int/create! repo
                       {:created-at :whenever
+                       :project/team-id team-id
                        :other      :junk}
                       {:user/id user-id})
-        (let [[[insert] [query-for-event] [insert-event]] (colls/only! 3 (stubs/calls tx :execute!))]
+        (let [[[access] [insert] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
+          (testing "verifies team access"
+            (is (= {:select [1]
+                    :from   [:teams]
+                    :where  [:and
+                             #{[:= #{:teams.id team-id}]
+                               [:= #{:user-teams.user-id user-id}]}]
+                    :join   [:user-teams [:= :user-teams.team-id :teams.id]]}
+                   (-> access
+                       (update-in [:where 1] tu/op-set)
+                       (update-in [:where 2] tu/op-set)
+                       (update :where tu/op-set)))))
+
           (testing "saves to the repository"
             (is (= {:insert-into :projects
-                    :values      [{:created-at :whenever}]
+                    :values      [{:created-at :whenever
+                                   :team-id team-id}]
                     :returning   [:id]}
                    insert)))
 

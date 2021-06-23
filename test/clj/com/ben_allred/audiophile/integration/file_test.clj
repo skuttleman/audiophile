@@ -139,7 +139,7 @@
         (testing "when authenticated as a user with no projects"
           (let [user {:user/id (uuids/random)}
                 project-id (:project/id (int/lookup-project system "Project Seed"))
-                artifact-id (:artifact/id (int/lookup-artifact system "empty.mp3"))
+                artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))
                 response (-> {:file/name    "file name"
                               :version/name "version name"
                               :artifact/id  artifact-id}
@@ -305,6 +305,7 @@
                                                    {:route-params {:project-id project-id}})
                                        (ihttp/as-async system handler))]
                       (is (http/success? response))
+
                       (testing "can access the artifact"
                         (let [response (-> {}
                                            (ihttp/login system user)

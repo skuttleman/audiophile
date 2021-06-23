@@ -62,10 +62,14 @@
     (let [ws (async/pipe ch (async/chan 10 (remove #{[:conn/ping] [:conn/pong]})))
           result (-> request
                      (assoc-in [:headers :x-request-id] (uuids/random))
-                     handler)]
-      (cond-> result
-        (http/success? result)
-        (assoc-in [:body :data] (:event/data (second (rest (tu/<!!ms ws)))))))))
+                     handler)
+          {:event/keys [type data]} (if (http/success? result)
+                                      (second (rest (tu/<!!ms ws)))
+                                      (get-in result [:body :data]))]
+      (-> result
+          (assoc-in [:body :data] data)
+          (cond->
+            (= :command/failed type) (assoc :status 400))))))
 
 (defn body-data [payload]
   {:body {:data payload}})

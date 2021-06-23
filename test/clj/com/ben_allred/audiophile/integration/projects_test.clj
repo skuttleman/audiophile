@@ -87,10 +87,10 @@
     (int/with-config [system [:api/handler#api]] {:db/enabled? true}
       (let [handler (-> system
                         (int/component :api/handler#api)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/edn))
+            team-id (:team/id (int/lookup-team system "Team Seed"))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
-                team-id (:team/id (int/lookup-team system "Team Seed"))
                 response (-> {:project/name    "project name"
                               :project/team-id team-id}
                              ihttp/body-data
@@ -115,19 +115,22 @@
                                 :project/id      uuid?}
                                (get-in response [:body :data])))))))
 
-        (testing "when authenticated as a user with no projects"
+        (testing "when authenticated as a user without team access"
           (let [user {:user/id (uuids/random)}
-                response (-> {}
+                response (-> {:project/name    "project name"
+                              :project/team-id team-id}
+                             ihttp/body-data
                              (ihttp/login system user)
-                             (ihttp/get system :api/projects)
-                             handler)]
-            (testing "returns no projects"
-              (is (http/success? response))
-              (is (empty? (get-in response [:body :data]))))))
+                             (ihttp/post system :api/projects)
+                             (ihttp/as-async system handler))]
+            (testing "fails"
+              (is (http/client-error? response)))))
 
         (testing "when not authenticated"
-          (let [response (-> {}
-                             (ihttp/get system :api/projects)
+          (let [response (-> {:project/name    "project name"
+                              :project/team-id team-id}
+                             ihttp/body-data
+                             (ihttp/post system :api/projects)
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))

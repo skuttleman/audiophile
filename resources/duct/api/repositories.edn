@@ -83,6 +83,7 @@
 
  :audiophile.repositories.projects/->project-executor
  {:projects   #ig/ref :models/projects
+  :teams      #ig/ref :models/teams
   :user-teams #ig/ref :models/user-teams
   :users      #ig/ref :models/users}
 
