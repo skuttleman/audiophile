@@ -91,7 +91,11 @@
 (defn ok
   "Wraps result in an http success response"
   [_]
-  (partial into [::http/ok]))
+  (fn [[body :as args]]
+    (into [(if body
+             ::http/ok
+             ::http/not-found)]
+          args)))
 
 (defn id
   "Expects http response and does not wrap again."

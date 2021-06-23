@@ -47,12 +47,18 @@
       (update :where conj [:= :files.id file-id])
       (assoc :select [1])))
 
-(defn ^:private access-artifact [projects files file-versions user-teams artifact-id user-id]
+(defn ^:private file-access-clause [projects user-teams user-id]
+  (-> projects
+      (access* user-teams user-id)
+      (update :where conj [:= :projects.id :files.project-id])
+      (assoc :select [1])))
+
+(defn ^:private artifact-access-clause [projects files file-versions user-teams user-id]
   (-> projects
       (access* user-teams user-id)
       (models/join files [:= :files.project-id :projects.id])
       (models/join file-versions [:= :file-versions.file-id :files.id])
-      (update :where conj [:= :file-versions.artifact-id artifact-id])
+      (update :where conj [:= :file-versions.artifact-id :artifacts.id])
       (assoc :select [1])))
 
 (defn ^:private access! [executor type query]
@@ -137,10 +143,17 @@
              colls/only!
              :id))))
   (find-by-artifact-id [_ artifact-id opts]
-    (access! executor :artifact (access-artifact projects files file-versions user-teams artifact-id (:user/id opts)))
-    (let [artifact (-> executor
-                       (repos/execute! (models/select-by-id* artifacts artifact-id))
-                       colls/only!)]
+    (when-let [artifact (-> artifacts
+                            models/select*
+                            (assoc :where [:and
+                                           [:= :artifacts.id artifact-id]
+                                           [:exists (artifact-access-clause projects
+                                                                            files
+                                                                            file-versions
+                                                                            user-teams
+                                                                            (:user/id opts))]])
+                            (->> (repos/execute! executor))
+                            colls/only!)]
       (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
   (find-event-artifact [_ artifact-id]
     (-> executor
@@ -161,12 +174,18 @@
           (->> (repos/execute! executor)))
       file-id))
   (find-by-file-id [_ file-id opts]
-    (when-not (:internal/verified? opts)
-      (access! executor :file (access-file projects files user-teams file-id (:user/id opts))))
-    (when-let [file (-> executor
-                        (repos/execute! (if (:includes/versions? opts)
-                                          (select-one-plain files file-id)
-                                          (select-one files file-id)))
+    (when-let [file (-> (if (:includes/versions? opts)
+                          (select-one-plain files file-id)
+                          (select-one files file-id))
+                        (cond->
+                          (not (:internal/verified? opts))
+                          (update :where (fn [clause]
+                                           [:and
+                                            clause
+                                            [:exists (file-access-clause projects
+                                                                         user-teams
+                                                                         (:user/id opts))]])))
+                        (->> (repos/execute! executor))
                         colls/only!)]
       (cond-> file
         (:includes/versions? opts)

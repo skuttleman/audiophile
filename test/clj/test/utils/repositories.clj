@@ -70,6 +70,7 @@
                   prepos/IKVStore
                   (uri [_ key _]
                     (str "test://uri/" key))
+                  (get [_ _ _])
                   (put! [_ _ _ _]))))
 
 (defn stub-transactor [cb]
