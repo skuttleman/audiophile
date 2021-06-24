@@ -61,10 +61,6 @@
       (update :where conj [:= :file-versions.artifact-id :artifacts.id])
       (assoc :select [1])))
 
-(defn ^:private access! [executor type query]
-  (when (empty? (repos/execute! executor query))
-    (throw (ex-info (str "User cannot access this " (name type)) query))))
-
 (defn ^:private select-by [files clause]
   (-> files
       (models/select-fields #{:id :idx :name :project-id})
@@ -128,6 +124,8 @@
 
 (deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams store keygen]
   pf/IArtifactsExecutor
+  (insert-artifact-access? [_ _ _]
+    true)
   (insert-artifact! [_ artifact _]
     (let [key (keygen)]
       (with-async
@@ -161,8 +159,9 @@
         colls/only!))
 
   pf/IFilesExecutor
-  (insert-file! [_ file {project-id :project/id user-id :user/id}]
-    (access! executor :project (access-project projects user-teams project-id user-id))
+  (insert-file-access? [_ _ {project-id :project/id user-id :user/id}]
+    (cdb/access? executor (access-project projects user-teams project-id user-id)))
+  (insert-file! [_ file {project-id :project/id}]
     (let [file-id (-> files
                       (insert {:name       (:file/name file)
                                :project-id project-id})
@@ -203,10 +202,11 @@
         colls/only!))
 
   pf/IFileVersionsExecutor
-  (insert-version! [_ version opts]
-    (access! executor :file (access-file projects files user-teams (:file/id opts) (:user/id opts)))
+  (insert-version-access? [_ _ {file-id :file/id user-id :user/id}]
+    (cdb/access? executor (access-file projects files user-teams file-id user-id)))
+  (insert-version! [_ version {file-id :file/id}]
     (-> file-versions
-        (insert-version version (:file/id opts))
+        (insert-version version file-id)
         (->> (repos/execute! executor))
         colls/only!
         :id))
@@ -253,6 +253,8 @@
 
 (deftype Executor [executor emitter]
   pf/IArtifactsExecutor
+  (insert-artifact-access? [_ artifact opts]
+    (pf/insert-artifact-access? executor artifact opts))
   (insert-artifact! [_ artifact opts]
     (pf/insert-artifact! executor artifact opts))
   (find-by-artifact-id [_ artifact-id opts]
@@ -261,6 +263,8 @@
     (pf/find-event-artifact executor artifact-id))
 
   pf/IFilesExecutor
+  (insert-file-access? [_ file opts]
+    (pf/insert-file-access? executor file opts))
   (insert-file! [_ file opts]
     (pf/insert-file! executor file opts))
   (find-by-file-id [_ file-id opts]
@@ -271,6 +275,8 @@
   (find-event-file [_ file-id]
     (pf/find-event-file executor file-id))
   pf/IFileVersionsExecutor
+  (insert-version-access? [_ version opts]
+    (pf/insert-version-access? executor version opts))
   (insert-version! [_ version opts]
     (pf/insert-version! executor version opts))
   (find-event-version [_ version-id]

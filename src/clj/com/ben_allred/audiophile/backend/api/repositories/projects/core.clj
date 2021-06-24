@@ -14,6 +14,12 @@
   ([accessor user-id opts]
    (pp/select-for-user accessor user-id opts)))
 
+(defn insert-project-access?
+  ([accessor project]
+   (insert-project-access? accessor project nil))
+  ([accessor project opts]
+   (pp/insert-project-access? accessor project opts)))
+
 (defn insert-project!
   ([accessor project]
    (insert-project! accessor project nil))

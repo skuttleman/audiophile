@@ -8,19 +8,22 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
-  (let [artifact-id (rfiles/insert-artifact! executor artifact opts)
-        artifact (rfiles/find-event-artifact executor artifact-id)]
-    (rfiles/artifact-created! executor (:user/id opts) artifact opts)))
+  (crepos/with-access (rfiles/insert-artifact-access? executor artifact opts)
+    (let [artifact-id (rfiles/insert-artifact! executor artifact opts)
+          artifact (rfiles/find-event-artifact executor artifact-id)]
+      (rfiles/artifact-created! executor (:user/id opts) artifact opts))))
 
 (defn ^:private create-file* [executor file opts]
-  (let [file-id (rfiles/insert-file! executor file opts)
-        file (rfiles/find-event-file executor file-id)]
-    (rfiles/file-created! executor (:user/id opts) file opts)))
+  (crepos/with-access (rfiles/insert-file-access? executor file opts)
+    (let [file-id (rfiles/insert-file! executor file opts)
+          file (rfiles/find-event-file executor file-id)]
+      (rfiles/file-created! executor (:user/id opts) file opts))))
 
 (defn ^:private create-file-version* [executor version opts]
-  (let [version-id (rfiles/insert-version! executor version opts)
-        version (rfiles/find-event-version executor version-id)]
-    (rfiles/version-created! executor (:user/id opts) version opts)))
+  (crepos/with-access (rfiles/insert-version-access? executor version opts)
+    (let [version-id (rfiles/insert-version! executor version opts)
+          version (rfiles/find-event-version executor version-id)]
+      (rfiles/version-created! executor (:user/id opts) version opts))))
 
 (defn ^:private get-artifact* [executor artifact-id opts]
   (let [{:artifact/keys [data content-type]} (rfiles/find-by-artifact-id executor artifact-id opts)]
@@ -35,14 +38,23 @@
 
   pint/IFileAccessor
   (create-artifact! [_ data opts]
-    (crepos/command! repo opts
-      (repos/transact! repo create-artifact* data opts)))
+    (let [opts (assoc opts
+                      :error/command :artifact/create
+                      :error/reason "insufficient access to create artifact")]
+      (crepos/command! repo opts
+        (repos/transact! repo create-artifact* data opts))))
   (create-file! [_ data opts]
-    (crepos/command! repo opts
-      (repos/transact! repo create-file* data opts)))
+    (let [opts (assoc opts
+                      :error/command :file/create
+                      :error/reason "insufficient access to create file")]
+      (crepos/command! repo opts
+        (repos/transact! repo create-file* data opts))))
   (create-file-version! [_ data opts]
-    (crepos/command! repo opts
-      (repos/transact! repo create-file-version* data opts)))
+    (let [opts (assoc opts
+                      :error/command :file-version/create
+                      :error/reason "insufficient access to create file-version")]
+      (crepos/command! repo opts
+        (repos/transact! repo create-file-version* data opts))))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* (:artifact/id opts) opts)))
 

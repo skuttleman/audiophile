@@ -7,6 +7,8 @@
      by (:user/id opts) when included.")
   (select-for-user [this user-id opts]
     "Returns all projects for which the `user-id` is a member.")
+  (insert-project-access? [this project opts]
+    "Pre-flight check for access to create the project.")
   (insert-project! [this project opts]
     "Inserts a project and user/project relation. Returns primary id for new project")
   (find-event-project [this project-id]

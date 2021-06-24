@@ -9,7 +9,7 @@
   pint/IEmitter
   (command-failed! [_ command-id opts]
     (try
-      (let [event (select-keys opts #{:error/reason})
+      (let [event (select-keys opts #{:error/reason :error/command})
             event-id (try
                        (events/insert-event! executor
                                              {:event/model-id command-id

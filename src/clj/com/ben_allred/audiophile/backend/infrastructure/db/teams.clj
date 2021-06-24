@@ -52,6 +52,8 @@
     (repos/execute! executor
                     (models/select* teams (has-team-clause user-teams user-id))
                     (merge opts (opts* teams))))
+  (insert-team-access? [_ _ _]
+    true)
   (insert-team! [_ team {user-id :user/id}]
     (let [team-id (-> executor
                       (repos/execute! (models/insert-into teams team))
@@ -96,6 +98,8 @@
     (pt/select-for-user executor user-id opts))
   (select-team-members [_ team-id opts]
     (pt/select-team-members executor team-id opts))
+  (insert-team-access? [_ team opts]
+    (pt/insert-team-access? executor team opts))
   (insert-team! [_ team opts]
     (pt/insert-team! executor team opts))
   (find-event-team [_ team-id]

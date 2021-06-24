@@ -2,6 +2,8 @@
 
 (defprotocol IArtifactsExecutor
   "Abstraction for querying artifacts"
+  (insert-artifact-access? [this artifact opts]
+    "Pre-flight check for access to create the artifact.")
   (insert-artifact! [this artifact opts]
     "Inserts a new artifact. Returns primary id for new artifact")
   (find-by-artifact-id [this artifact-id opts]
@@ -11,6 +13,8 @@
 
 (defprotocol IFilesExecutor
   "Abstraction for querying files"
+  (insert-file-access? [this file opts]
+    "Pre-flight check for access to create the file.")
   (insert-file! [this file opts]
     "Inserts a file and version. Returns primary id for new file")
   (find-by-file-id [this file-id opts]
@@ -23,6 +27,8 @@
 
 (defprotocol IFileVersionsExecutor
   "Abstraction for querying file-versions"
+  (insert-version-access? [this version opts]
+    "Pre-flight check for access to create the version.")
   (insert-version! [this version opts]
     "Inserts a new version for an existing file. Returns primary id for new version")
   (find-event-version [this version-id]

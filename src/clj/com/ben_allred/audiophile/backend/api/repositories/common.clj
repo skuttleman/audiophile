@@ -55,3 +55,11 @@
                    (catch Throwable ex#
                      (log/fatal ex# "command/failed not emitted."))))
              (log/error ex# "processing failed")))))))
+
+(defmacro with-access [[_ executor _ opts :as access?] & body]
+  `(let [opts# ~opts]
+     (if ~access?
+       (do ~@body)
+       (pint/command-failed! ~executor
+                             (:request/id opts#)
+                             opts#))))

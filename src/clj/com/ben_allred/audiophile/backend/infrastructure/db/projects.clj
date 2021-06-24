@@ -20,10 +20,6 @@
                             [:= :projects.id project-id]
                             (has-team-clause user-teams user-id)]))
 
-(defn ^:private access! [executor query]
-  (when (empty? (repos/execute! executor query))
-    (throw (ex-info "User cannot access this team" query))))
-
 (defn ^:private access-team [teams user-teams team-id user-id]
   (-> teams
       (models/select* [:and [:= :teams.id team-id]
@@ -43,8 +39,9 @@
     (repos/execute! executor
                     (models/select* projects (has-team-clause user-teams user-id))
                     opts))
-  (insert-project! [_ project opts]
-    (access! executor (access-team teams user-teams (:project/team-id project) (:user/id opts)))
+  (insert-project-access? [_ project opts]
+    (cdb/access? executor (access-team teams user-teams (:project/team-id project) (:user/id opts))))
+  (insert-project! [_ project _]
     (-> executor
         (repos/execute! (models/insert-into projects project))
         colls/only!
@@ -81,6 +78,8 @@
     (pp/find-by-project-id executor project-id opts))
   (select-for-user [_ user-id opts]
     (pp/select-for-user executor user-id opts))
+  (insert-project-access? [_ project opts]
+    (pp/insert-project-access? executor project opts))
   (insert-project! [_ project opts]
     (pp/insert-project! executor project opts))
   (find-event-project [_ project-id]

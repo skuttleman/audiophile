@@ -7,9 +7,10 @@
     [com.ben-allred.audiophile.backend.api.repositories.projects.core :as rprojects]))
 
 (defn ^:private create* [executor data opts]
-  (let [project-id (rprojects/insert-project! executor data opts)
-        project (rprojects/find-event-project executor project-id)]
-    (rprojects/project-created! executor (:user/id opts) project opts)))
+  (crepos/with-access (rprojects/insert-project-access? executor data opts)
+    (let [project-id (rprojects/insert-project! executor data opts)
+          project (rprojects/find-event-project executor project-id)]
+      (rprojects/project-created! executor (:user/id opts) project opts))))
 
 (deftype ProjectAccessor [repo]
   pint/IProjectAccessor
@@ -19,8 +20,11 @@
   (query-one [_ opts]
     (repos/transact! repo rprojects/find-by-project-id (:project/id opts) opts))
   (create! [_ data opts]
-    (crepos/command! repo opts
-      (repos/transact! repo create* data opts))))
+    (let [opts (assoc opts
+                      :error/command :project/create
+                      :error/reason "insufficient access to create project")]
+      (crepos/command! repo opts
+        (repos/transact! repo create* data opts)))))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."

@@ -2,6 +2,12 @@
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]))
 
+(defn insert-artifact-access?
+  ([accessor artifact]
+   (insert-artifact-access? accessor artifact nil))
+  ([accessor artifact opts]
+   (pf/insert-artifact-access? accessor artifact opts)))
+
 (defn insert-artifact!
   ([accessor artifact]
    (insert-artifact! accessor artifact nil))
@@ -13,6 +19,12 @@
    (find-by-artifact-id accessor artifact-id nil))
   ([accessor artifact-id opts]
    (pf/find-by-artifact-id accessor artifact-id opts)))
+
+(defn insert-file-access?
+  ([accessor file]
+   (insert-file-access? accessor file nil))
+  ([accessor file opts]
+   (pf/insert-file-access? accessor file opts)))
 
 (defn insert-file!
   ([accessor file]
@@ -31,6 +43,12 @@
    (select-for-project accessor project-id nil))
   ([accessor project-id opts]
    (pf/select-for-project accessor project-id opts)))
+
+(defn insert-version-access?
+  ([accessor version]
+   (insert-version-access? accessor version nil))
+  ([accessor version opts]
+   (pf/insert-version-access? accessor version opts)))
 
 (defn insert-version!
   ([accessor version]

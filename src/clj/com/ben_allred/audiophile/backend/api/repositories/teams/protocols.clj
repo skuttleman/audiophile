@@ -9,6 +9,8 @@
     "Find users as `members` that belong to `team-id`.")
   (select-for-user [this user-id opts]
     "Returns all teams for which the `user-id` is a member.")
+  (insert-team-access? [this team opts]
+    "Pre-flight check for access to create the team.")
   (insert-team! [this team opts]
     "Inserts a team and user/team relation. Returns primary id for new team")
   (find-event-team [this team-id]

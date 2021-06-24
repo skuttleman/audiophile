@@ -141,7 +141,9 @@
             (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :artifact/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -158,7 +160,9 @@
             (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :artifact/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -172,7 +176,9 @@
                       (ex-info "Executor" {}))
           @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :artifact/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -493,7 +499,9 @@
             (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :file/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -507,7 +515,9 @@
                       (ex-info "Executor" {}))
           @(int/create-file! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :file/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -623,7 +633,9 @@
             (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :file-version/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -637,7 +649,9 @@
                       (ex-info "Executor" {}))
           @(int/create-file-version! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :file-version/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!

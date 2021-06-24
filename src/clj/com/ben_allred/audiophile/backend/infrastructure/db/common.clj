@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.common
   (:require
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.events.core :as events]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]))
 
@@ -19,3 +20,6 @@
                           :event/emitted-by user-id)
                    ctx)
     event-id))
+
+(defn access? [executor query]
+  (boolean (seq (repos/execute! executor query))))

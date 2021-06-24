@@ -20,6 +20,12 @@
   ([accessor user-id opts]
    (pt/select-for-user accessor user-id opts)))
 
+(defn insert-team-access?
+  ([accessor team]
+   (insert-team-access? accessor team nil))
+  ([accessor team opts]
+   (pt/insert-team-access? accessor team opts)))
+
 (defn insert-team!
   ([accessor team]
    (insert-team! accessor team nil))

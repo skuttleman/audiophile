@@ -122,8 +122,8 @@
                                                           :pubsub  pubsub}))
           repo (rprojects/->ProjectAccessor tx)
           [project-id team-id user-id] (repeatedly uuids/random)
-          project {:project/id   project-id
-                   :project/name "some project"
+          project {:project/id      project-id
+                   :project/name    "some project"
                    :project/team-id team-id}]
       (testing "when creating a project"
         (stubs/use! tx :execute!
@@ -132,9 +132,9 @@
                     [project]
                     [{:id "event-id"}])
         @(int/create! repo
-                      {:created-at :whenever
+                      {:created-at      :whenever
                        :project/team-id team-id
-                       :other      :junk}
+                       :other           :junk}
                       {:user/id user-id})
         (let [[[access] [insert] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "verifies team access"
@@ -152,7 +152,7 @@
           (testing "saves to the repository"
             (is (= {:insert-into :projects
                     :values      [{:created-at :whenever
-                                   :team-id team-id}]
+                                   :team-id    team-id}]
                     :returning   [:id]}
                    insert)))
 
@@ -209,7 +209,9 @@
             (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :project/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
@@ -223,7 +225,9 @@
                       (ex-info "Executor" {}))
           @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id user-id :request/id request-id}]
+            (is (= [request-id {:user/id       user-id
+                                :request/id    request-id
+                                :error/command :project/create}]
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
