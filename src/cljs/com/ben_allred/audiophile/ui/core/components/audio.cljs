@@ -3,15 +3,14 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
-    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
-    [com.ben-allred.vow.core :as v :include-macros true]))
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
 (defn player [{:keys [player]}]
-  (fn [artifact-id]
-    (comp/load! player {:artifact-id artifact-id})
+  (fn [attrs artifact-id]
+    (comp/load! player (assoc attrs :artifact-id artifact-id))
     (r/create-class
       {:reagent-render
-       (fn [_artifact-id]
+       (fn [_attrs _artifact-id]
          (let [ready? (comp/ready? player)]
            [:div {:style {:width "100%"}}
             (when-not ready?

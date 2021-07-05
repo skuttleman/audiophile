@@ -58,7 +58,7 @@
     #?(:clj
        (testing "with async behavior"
          (let [pubsub (pubsub.mem/pubsub {})
-               spies (repeatedly 1000 spies/create)]
+               spies (repeatedly 5000 spies/create)]
            (doseq [[idx spy] (map-indexed vector spies)]
              (pubsub/subscribe! pubsub idx [:some/topic] spy))
            (async done

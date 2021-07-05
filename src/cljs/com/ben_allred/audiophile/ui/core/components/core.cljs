@@ -80,8 +80,8 @@
   (fn [_]
     (create! *modals {:header [:h2.subtitle title] :body view})))
 
-(defn load! [player artifact-id]
-  (pcomp/load! player artifact-id))
+(defn load! [player opts]
+  (pcomp/load! player opts))
 
 (defn id [player]
   (pcomp/id player))

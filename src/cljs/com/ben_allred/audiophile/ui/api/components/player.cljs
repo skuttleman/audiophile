@@ -44,14 +44,26 @@
     (:region @state))
 
   pcomp/ILoad
-  (load! [this {:keys [artifact-id]}]
+  (load! [this {:keys [artifact-id on-change]}]
+    (remove-watch state ::events)
+    (when on-change
+      (add-watch state ::events (fn [_ _ old new]
+                                  (let [data (select-keys new #{:region :position})]
+                                    (when (not= data (select-keys old #{:region :position}))
+                                      (on-change data))))))
     (-> *artifact
         (res/request! {:artifact-id artifact-id})
         (v/then (fn [blob]
-                  (doto (on-load this id blob)
-                    (.on "ready" (fn [_]
-                                   (swap! state assoc :ready? true)))
-                    (->> (swap! state assoc :surfer)))))))
+                  (let [^js/Object surfer (on-load this id blob)
+                        update-position (fn [_]
+                                          (swap! state assoc :position (.getCurrentTime surfer)))]
+                    (swap! state assoc :surfer surfer :position 0)
+                    (doto surfer
+                      (.on "ready" (fn [_]
+                                     (swap! state assoc :ready? true)))
+                      (.on "seek" update-position)
+                      (.on "finish" update-position)
+                      (.on "pause" update-position)))))))
   (ready? [_]
     (:ready? @state))
   (destroy! [_]
@@ -62,7 +74,6 @@
   (play-pause! [this]
     (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
                                        (:surfer @state))]
-      (swap! state update :playing? not)
       (.playPause surfer)))
   (playing? [this]
     (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
