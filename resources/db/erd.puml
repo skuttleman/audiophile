@@ -77,6 +77,16 @@ entity "events" as events {
   * emitted_at : timestamp without time zone <<generated>>
 }
 
+entity "comments" as comments {
+  * id : uuid <<generated>>
+  --
+  * file_version_id : uuid <<FK>>
+  * body : text
+  selection : numrange
+  comment_id : uuid <<FK>>
+  * created_at : timestamp without time zone <<generated>>
+}
+
 entity "projects" as projects {
   * id : uuid <<generated>>
   --
@@ -105,6 +115,8 @@ projects ..o files
 artifacts ..o file_versions
 files ..o file_versions
 event_types ..o events
+file_versions ..o comments
+comments ..o comments
 teams ..o projects
 users ..o user_teams
 teams ..o user_teams

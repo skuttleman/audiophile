@@ -37,7 +37,7 @@
   ([attrs icon-class]
    [:i.fas (update attrs :class conj (str "fa-" (name icon-class)))]))
 
-(defn form [{:keys [buttons disabled *form on-submitted] :as attrs} & fields]
+(defn form [{:keys [buttons disabled *form on-submitted style] :as attrs} & fields]
   (let [submittable? (satisfies? pforms/IAttempt *form)
         ready? (if submittable?
                  (not (forms/attempting? *form))
@@ -49,11 +49,12 @@
                               (and submittable?
                                    (forms/attempted? *form)))))]
     (-> [:form.form.layout--stack-between
-         {:on-submit (comp (fn [_]
-                             (when submittable?
-                               (cond-> (forms/attempt! *form)
-                                 on-submitted on-submitted)))
-                           dom/prevent-default)}]
+         (cond-> {:on-submit (comp (fn [_]
+                                     (when submittable?
+                                       (cond-> (forms/attempt! *form)
+                                         on-submitted on-submitted)))
+                                   dom/prevent-default)}
+           style (assoc :style style))]
         (into fields)
         (conj (cond-> [:div.buttons
                        [in/plain-button

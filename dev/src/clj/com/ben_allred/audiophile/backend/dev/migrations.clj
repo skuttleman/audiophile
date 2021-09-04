@@ -35,14 +35,6 @@
   ([migrator n]
    (pdev/rollback migrator n)))
 
-(defn redo! [migrator]
-  (rollback! migrator)
-  (migrate! migrator))
-
-(defn speedbump! [migrator]
-  (migrate! migrator)
-  (redo! migrator))
-
 (defn seed! [transactor file]
   (let [seed-sql (some->> file io/resource slurp)]
     (repos/transact! transactor repos/execute! seed-sql)))
@@ -58,13 +50,13 @@
 
 (defmacro ^:private with-migrator [sys & body]
   `(let [system# (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-migrations"]))]
-                              (-> "migrations.edn"
-                                  duct/resource
-                                  (duct/read-config uduct/readers)
-                                  (duct/prep-config [:duct.profile/base
-                                                     :duct.profile/dev
-                                                     :duct.profile/migrations])
-                                  (ig/init [:audiophile.migrations/migrator :audiophile.repositories/transactor])))
+                   (-> "migrations.edn"
+                       duct/resource
+                       (duct/read-config uduct/readers)
+                       (duct/prep-config [:duct.profile/base
+                                          :duct.profile/dev
+                                          :duct.profile/migrations])
+                       (ig/init [:audiophile.migrations/migrator :audiophile.repositories/transactor])))
          ~sys system#]
      (try
        ~@body
@@ -79,19 +71,24 @@
     (migrate! migrator)))
 
 (defmethod main* :rollback
-  [_ & [n]]
-  (with-migrator {:audiophile.migrations/keys [migrator]}
-    (rollback! migrator (Long/parseLong (or n "1")))))
+  ([_]
+   (main* :rollback "1"))
+  ([_ n]
+   (with-migrator {:audiophile.migrations/keys [migrator]}
+     (rollback! migrator (Long/parseLong n)))))
 
 (defmethod main* :speedbump
   [_]
   (with-migrator {:audiophile.migrations/keys [migrator]}
-    (speedbump! migrator)))
+    (migrate! migrator)
+    (rollback! migrator)
+    (migrate! migrator)))
 
 (defmethod main* :redo
   [_]
   (with-migrator {:audiophile.migrations/keys [migrator]}
-    (redo! migrator)))
+    (rollback! migrator)
+    (migrate! migrator)))
 
 (defmethod main* :create
   [_ & description]
@@ -99,23 +96,27 @@
     (create! migrator (string/join "_" description))))
 
 (defmethod main* :seed
-  [_ & [seed-file]]
-  (with-migrator {:audiophile.repositories/keys [transactor]}
-    (seed! transactor (or seed-file "db/seed.sql"))))
+  ([_]
+   (main* :seed "db/seed.sql"))
+  ([_ seed-file]
+   (with-migrator {:audiophile.repositories/keys [transactor]}
+     (seed! transactor seed-file))))
 
 (defmethod main* :generate-erd
-  [_ & [output]]
-  (with-migrator {:audiophile.repositories/keys [transactor]}
-    (uml/generate! transactor (or output "resources/db/erd.puml"))))
+  ([_]
+   (main* :generate-erd "resources/db/erd.puml"))
+  ([_ output]
+   (with-migrator {:audiophile.repositories/keys [transactor]}
+     (uml/generate! transactor output))))
 
 (defn -main [command & args]
   (duct/load-hierarchy)
   (apply main* command args))
 
 (comment
-  (-main :create "user_events_view")
+  (-main :create "track_comments")
   (-main :migrate)
   (-main :rollback)
+  (-main :redo)
 
   (-main :generate-erd))
-

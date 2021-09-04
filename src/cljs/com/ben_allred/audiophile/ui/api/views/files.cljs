@@ -24,48 +24,50 @@
     (strings/format "%d:%02d" min sec)))
 
 (defn ^:private ->selection-label [start end]
-  (if (= start end)
-    (->time start)
-    (str (->time start) " - " (->time end))))
+  (cond-> (str "@" (->time start))
+    (not= start end) (str " - " (->time end))))
 
 (defn ^:private ->selection [{:keys [position region]}]
   (cond
     region region
-    position [position position]))
+    position [position position]
+    :else [0 0]))
 
 (defn ^:private player* [{:keys [artifact-id file-version-id]} player]
   (let [*form (form.sub/create (reify pres/IResource
                                  (request! [_ opts]
-                                   (v/resolve (:form/value opts)))
+                                   (v/resolve (cond-> (dissoc (:form/value opts) :comment/with-selection?)
+                                                (not (get-in opts [:form/value :comment/with-selection?])) (dissoc :comment/selection))))
                                  (status [_]
                                    :init))
                                (form/create {:comment/file-version-id file-version-id
-                                             :comment/with-selection? true}
+                                             :comment/with-selection? true
+                                             :comment/selection [0 0]}
                                             (constantly nil)))]
     (fn [_attrs _player]
-      [:div.panel-block.layout--stack-between
-       [player
-        (-> *form
-            (forms/with-attrs [:comment/selection])
-            (update :on-change comp ->selection))
-        artifact-id]
-       [comp/form {:*form        *form
-                   :on-submitted (fn [vow]
-                                   (v/peek vow
-                                           (fn [_]
+      (let [[start end] (:comment/selection @*form)]
+        [:div.panel-block.layout--stack-between
+         [player
+          (-> *form
+              (forms/with-attrs [:comment/selection])
+              (update :on-change comp ->selection))
+          artifact-id]
+         [comp/form {:*form        *form
+                     :style        {:min-width "300px"}
+                     :on-submitted (fn [vow]
+                                     (v/peek vow
+                                             (fn [_]
 
-                                             (log/warn "SUBMITTED" _))
-                                           nil))}
-        [log/pprint @*form]
-        (when-let [[start end] (:comment/selection @*form)]
+                                               (log/warn "SUBMITTED" _))
+                                             nil))}
+          [in/textarea (forms/with-attrs {:label       "comment"
+                                          :auto-focus? true}
+                                         *form
+                                         [:comment/body])]
           [in/checkbox (forms/with-attrs {:label            (->selection-label start end)
                                           :form-field-class ["inline"]}
                                          *form
-                                         [:comment/with-selection?])])
-        [in/textarea (forms/with-attrs {:label       "comment"
-                                        :auto-focus? true}
-                                       *form
-                                       [:comment/body])]]])))
+                                         [:comment/with-selection?])]]]))))
 
 (defn ^:private one* [file *qp file-version-id _player]
   (let [versions (map (juxt :file-version/id identity) (:file/versions file))
