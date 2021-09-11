@@ -20,6 +20,13 @@
                                      :content-size [:text]
                                      :created-at   [:timestamp-without-time-zone]}
                          :namespace :artifact}
+         :comments      {:spec      {:id              [:uuid]
+                                     :body            [:text]
+                                     :file-version-id [:uuid]
+                                     :selection       [:numrange true]
+                                     :comment-id      [:uuid true]
+                                     :created-at      [:timestamp-without-time-zone]}
+                         :namespace :comment}
          :events        {:spec      {:id            [:uuid]
                                      :data          [:jsonb true]
                                      :event-type-id [:uuid]

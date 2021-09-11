@@ -50,3 +50,86 @@
       1 [1 2]
       3 [1 2 3 4]
       0 [nil])))
+
+(deftest nest-children-test
+  (testing "produces the expected output"
+    (let [coll [{:id  1
+                 :rev 10}
+                {:id  2
+                 :rev 9}
+                {:id  3
+                 :rev 8}
+                {:id        4
+                 :parent-id 2
+                 :rev       7}
+                {:id        5
+                 :parent-id 4
+                 :rev       6}
+                {:id        6
+                 :parent-id 2
+                 :rev       5}
+                {:id  7
+                 :rev 4}
+                {:id        8
+                 :parent-id 1
+                 :rev       3}
+                {:id        9
+                 :parent-id 8
+                 :rev       2}
+                {:id        10
+                 :parent-id 4
+                 :rev       1}]]
+      (is (= [{:id   1
+               :rev  10
+               :nest [{:id        8
+                       :parent-id 1
+                       :rev       3
+                       :nest      [{:id        9
+                                    :parent-id 8
+                                    :rev       2}]}]}
+              {:id   2
+               :rev  9
+               :nest [{:id        4
+                       :parent-id 2
+                       :rev       7
+                       :nest      [{:id        5
+                                    :parent-id 4
+                                    :rev       6}
+                                   {:id        10
+                                    :parent-id 4
+                                    :rev       1}]}
+                      {:id        6
+                       :parent-id 2
+                       :rev       5}]}
+              {:id  3
+               :rev 8}
+              {:id  7
+               :rev 4}]
+             (colls/nest-children :id :parent-id :nest coll)))
+      (is (= [{:id  7
+               :rev 4}
+              {:id  3
+               :rev 8}
+              {:id   2
+               :rev  9
+               :nest [{:id        6
+                       :parent-id 2
+                       :rev       5}
+                      {:id        4
+                       :parent-id 2
+                       :rev       7
+                       :nest      [{:id        10
+                                    :parent-id 4
+                                    :rev       1}
+                                   {:id        5
+                                    :parent-id 4
+                                    :rev       6}]}]}
+              {:id   1
+               :rev  10
+               :nest [{:id        8
+                       :parent-id 1
+                       :rev       3
+                       :nest      [{:id        9
+                                    :parent-id 8
+                                    :rev       2}]}]}]
+             (colls/nest-children :id :parent-id :nest (reverse coll)))))))

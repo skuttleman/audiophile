@@ -8,6 +8,11 @@
   :namespace  :artifact
   :table-name :artifacts}
 
+ [:audiophile.repositories/model :models/comments]
+ {:models     #ig/ref :audiophile.repositories/models
+  :namespace  :comment
+  :table-name :comments}
+
  [:audiophile.repositories/model :models/event-types]
  {:models     #ig/ref :audiophile.repositories/models
   :namespace  :event-type

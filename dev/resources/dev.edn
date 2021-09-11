@@ -33,6 +33,7 @@
   [:audiophile.handlers/app :api/handler#ui]
   {:middleware [#ig/ref :audiophile.middleware/with-auth
                 #ig/ref :audiophile.middleware/vector-response
+                #ig/ref :audiophile.middleware/with-serde
                 #ig/ref :audiophile.middleware/with-route
                 #ig/ref :audiophile.middleware/with-headers]
    :router     #ig/ref :api/router#ui}

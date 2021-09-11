@@ -68,8 +68,8 @@
                                 (= :user-defined type)
                                 (assoc-in [:casts column] (keyword name))
 
-                                (contains? #{:jsonb} type)
-                                (assoc-in [:casts column] (keyword type)))))))
+                                (contains? #{:jsonb :numrange} type)
+                                (assoc-in [:casts column] type))))))
           {}
           (repos/transact! tx repos/execute!
                            {:select [:table-name :column-name :data-type :udt-name :is-nullable]
@@ -133,7 +133,7 @@
                                       cast (get casts k')
                                       pre-cast (when cast
                                                  (case cast
-                                                   :jsonb (partial serdes/serialize (serdes/json {}))
+                                                   (:jsonb :numrange) (partial serdes/serialize (serdes/json {}))
                                                    name))]
                                   (when (valid-column? model k' (namespace k))
                                     [k' (cond-> v

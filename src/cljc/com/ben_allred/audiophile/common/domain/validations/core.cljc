@@ -17,7 +17,10 @@
     :integer integer?
     :jsonb any?
     :timestamp-without-time-zone inst?
-    :uuid uuid?))
+    :uuid uuid?
+    :numrange (every-pred vector?
+                          (comp number? first)
+                          (comp number? second))))
 
 (defn ^:private error-fn [missing-keys]
   (fn [{:keys [path]} _]
@@ -42,6 +45,7 @@
    :api.common/project-id specs/project-id
    :api.common/team-id    specs/team-id
    :api.artifact/create   specs/api-artifact:create
+   :api.comment/create    specs/api-comment:create
    :api.events/fetch-all  specs/api-event:fetch-all
    :api.file/create       specs/api-file:create
    :api.project/create    specs/api-project:create

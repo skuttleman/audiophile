@@ -107,6 +107,11 @@
                    :from   [:files]
                    :where  [:= :name filename]}))
 
+(defn lookup-file-version [system version-name]
+  (lookup* system {:select [[:id "file-version/id"]]
+                   :from   [:file-versions]
+                   :where  [:= :name version-name]}))
+
 (defn lookup-team [system name]
   (lookup* system {:select [[:id "team/id"]]
                    :from   [:teams]

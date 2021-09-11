@@ -1,12 +1,14 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.repositories
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
+    [com.ben-allred.audiophile.backend.api.repositories.comments.impl :as comments]
     [com.ben-allred.audiophile.backend.api.repositories.events.impl :as events]
     [com.ben-allred.audiophile.backend.api.repositories.files.impl :as files]
     [com.ben-allred.audiophile.backend.api.repositories.projects.impl :as projects]
     [com.ben-allred.audiophile.backend.api.repositories.teams.impl :as teams]
     [com.ben-allred.audiophile.backend.api.repositories.users.impl :as rusers]
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
+    [com.ben-allred.audiophile.backend.infrastructure.db.comments :as db.comments]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
@@ -48,6 +50,18 @@
 
 (defmethod ig/init-key :audiophile.repositories/datasource [_ cfg]
   (db/datasource cfg))
+
+(defmethod ig/init-key :audiophile.repositories.comments/accessor [_ cfg]
+  (comments/accessor cfg))
+
+(defmethod ig/init-key :audiophile.repositories.comments/->comment-executor [_ cfg]
+  (db.comments/->comment-executor cfg))
+
+(defmethod ig/init-key :audiophile.repositories.comments/->comment-event-emitter [_ cfg]
+  (db.comments/->comment-event-emitter cfg))
+
+(defmethod ig/init-key :audiophile.repositories.comments/->executor [_ cfg]
+  (db.comments/->executor cfg))
 
 (defmethod ig/init-key :audiophile.repositories/datasource#close [_ cfg]
   (db/datasource#close cfg))

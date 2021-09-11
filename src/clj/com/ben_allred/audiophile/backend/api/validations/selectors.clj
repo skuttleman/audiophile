@@ -19,6 +19,11 @@
                                               (get-in [:nav/route :query-params :since])
                                               uuids/->uuid))))
 
+(defmethod select [:get :api/file.comments]
+  [_ request]
+  {:user/id (get-in request [:auth/user :user/id])
+   :file/id (get-in request [:nav/route :route-params :file-id])})
+
 (defmethod select [:get :api/file]
   [_ request]
   {:user/id (get-in request [:auth/user :user/id])
@@ -62,6 +67,13 @@
   [_ request]
   (-> request
       (get-in [:params "files[]"])
+      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
+
+(defmethod select [:post :api/comments]
+  [_ request]
+  (-> request
+      (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 

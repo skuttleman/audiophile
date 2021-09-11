@@ -1,6 +1,7 @@
 {[:duct/const :routes/table#api]
  {[:get :api/artifact]       #ig/ref :res.handler/file-version#get
   [:get :api/events]         #ig/ref :api.handler/events#get
+  [:get :api/file.comments]  #ig/ref :api.handler/comments#get
   [:get :api/file]           #ig/ref :api.handler/file#get
   [:get :api/project.files]  #ig/ref :api.handler/project.files#get
   [:get :api/project]        #ig/ref :api.handler/project#get
@@ -10,6 +11,7 @@
   [:get :resources/health]   #ig/ref :res.handler/health#api
   [:get :ws/connection]      #ig/ref :api.handler/ws#connect
   [:post :api/file]          #ig/ref :api.handler/file#post
+  [:post :api/comments]      #ig/ref :api.handler/comments#post
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
   [:post :api/projects]      #ig/ref :api.handler/projects#post
@@ -35,6 +37,10 @@
 
  [:audiophile.handlers/router :api/router#ui]
  #ig/ref :routes/table#ui
+
+ [:audiophile.spec/with-spec :api.handler/comments#get]
+ {:handler #ig/ref :audiophile.handlers.comments/fetch-all
+  :spec    :api.common/file-id}
 
  [:audiophile.spec/with-spec :api.handler/events#get]
  {:handler #ig/ref :audiophile.handlers.events/fetch-all
@@ -78,6 +84,11 @@
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.files/upload
   :spec       :api.artifact/create}
+
+ [:audiophile.spec/with-spec :api.handler/comments#post]
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.comments/create
+  :spec       :api.comment/create}
 
  [:audiophile.spec/with-spec :api.handler/file#post]
  {:->response #ig/ref :audiophile.spec/no-content
@@ -185,6 +196,12 @@
 
  :audiophile.handlers.teams/create
  {:interactor #ig/ref :interactors/teams}
+
+ :audiophile.handlers.comments/fetch-all
+ {:interactor #ig/ref :interactors/comments}
+
+ :audiophile.handlers.comments/create
+ {:interactor #ig/ref :interactors/comments}
 
  :audiophile.handlers.events/fetch-all
  {:interactor #ig/ref :interactors/events}

@@ -68,7 +68,8 @@
     (:ready? @state))
   (destroy! [_]
     (when-let [^js/WaveSurfer surfer (:surfer @state)]
-      (.destroy surfer)))
+      (.destroy surfer)
+      (swap! state dissoc :surfer :position)))
 
   pcomp/IPlayer
   (play-pause! [this]

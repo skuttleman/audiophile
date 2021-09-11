@@ -14,10 +14,14 @@
      ["/artifacts"
       [["" :api/artifacts]
        [["/" #audiophile/uuid-param :artifact-id] :api/artifact]]]
+     ["/comments"
+      [["" :api/comments]]]
      ["/events"
       [["" :api/events]]]
      ["/files"
-      [[["/" #audiophile/uuid-param :file-id] :api/file]]]
+      [[["/" #audiophile/uuid-param :file-id]
+        [["" :api/file]
+         ["/comments" :api/file.comments]]]]]
      ["/projects"
       [["" :api/projects]
        [["/" #audiophile/uuid-param :project-id]

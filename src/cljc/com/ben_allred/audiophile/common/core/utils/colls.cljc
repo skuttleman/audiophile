@@ -44,3 +44,19 @@
    ```"
   [pred coll]
   [(filter pred coll) (remove pred coll)])
+
+
+(defn nest-children
+  "Recursively nests a collection of maps under the `nest-k` key where
+   `(= (get m1 parent-k) (get m2 id-k))`"
+  [id-k parent-k nest-k coll]
+  (let [m (group-by #(get % parent-k) coll)]
+    (letfn [(nest* [[item :as items] result]
+              (let [children (get m (get item id-k))]
+                (if (empty? items)
+                  result
+                  (recur (rest items)
+                         (conj result (cond-> item
+                                        (seq children)
+                                        (assoc nest-k (nest* children []))))))))]
+      (nest* (get m nil) []))))

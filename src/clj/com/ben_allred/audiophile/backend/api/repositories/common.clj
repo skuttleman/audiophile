@@ -12,6 +12,7 @@
           cast-fn (if-let [cast (get-in model [:casts k'])]
                     (case cast
                       :jsonb (partial serdes/deserialize (serdes/json {}))
+                      :numrange #(some->> % .getValue (serdes/deserialize (serdes/edn {})))
                       keyword)
                     identity)]
       [k (cast-fn v)])))

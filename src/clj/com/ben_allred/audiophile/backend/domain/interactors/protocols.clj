@@ -28,6 +28,9 @@
   (get-artifact [this opts]
     "Get artifact data from a kv store"))
 
+(defprotocol ICommentAccessor
+  "Abstraction for saving and querying comments")
+
 (defprotocol IProjectAccessor
   "Abstraction for saving and querying projects")
 

@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.ui.api.forms.submittable :as form.sub]
     [com.ben-allred.audiophile.ui.infrastructure.resources.base :as bres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.cached :as cached]
+    [com.ben-allred.audiophile.ui.infrastructure.resources.custom :as cres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.multi :as multi]
     [com.ben-allred.audiophile.ui.infrastructure.resources.redirect :as redirect]
     [com.ben-allred.audiophile.ui.infrastructure.resources.toaster :as toaster]
@@ -30,6 +31,12 @@
 
 (defmethod ig/init-key :audiophile.resources/toaster [_ cfg]
   (toaster/resource cfg))
+
+(defmethod ig/init-key :audiophile.resources.custom/comment-fetcher [_ cfg]
+  (cres/comments-fetcher cfg))
+
+(defmethod ig/init-key :audiophile.resources.custom/comment-poster [_ cfg]
+  (cres/comment-poster cfg))
 
 (defmethod ig/init-key :audiophile.resources.toaster/result-fn [_ cfg]
   (toaster/toast-fn cfg))

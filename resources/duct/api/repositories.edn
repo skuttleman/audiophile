@@ -1,4 +1,7 @@
-{[:duct/const :interactors/events]
+{[:duct/const :interactors/comments]
+ #ig/ref :audiophile.repositories.comments/accessor
+
+ [:duct/const :interactors/events]
  #ig/ref :audiophile.repositories.events/accessor
 
  [:duct/const :interactors/files]
@@ -20,6 +23,9 @@
  :audiophile.services.s3/stream-serde
  {}
 
+ :audiophile.repositories.comments/accessor
+ {:repo #ig/ref :repositories/comments}
+
  :audiophile.repositories.events/accessor
  {:repo #ig/ref :repositories/events}
 
@@ -34,6 +40,10 @@
 
  :audiophile.repositories.users/accessor
  {:repo #ig/ref :repositories/users}
+
+ [:audiophile.repositories/repo :repositories/comments]
+ {:->executor #ig/ref :audiophile.repositories.comments/->executor
+  :tx         #ig/ref :services/transactor}
 
  [:audiophile.repositories/repo :repositories/events]
  {:->executor #ig/ref :audiophile.repositories.events/->executor
@@ -73,6 +83,23 @@
   :store         #ig/ref :audiophile.repositories/store}
 
  :audiophile.repositories.files/->file-event-emitter
+ {:->emitter #ig/ref :audiophile.repositories.events/->emitter
+  :pubsub    #ig/ref :services/pubsub}
+
+ :audiophile.repositories.comments/->executor
+ {:->event-executor        #ig/ref :audiophile.repositories.events/->executor
+  :->comment-event-emitter #ig/ref :audiophile.repositories.comments/->comment-event-emitter
+  :->comment-executor      #ig/ref :audiophile.repositories.comments/->comment-executor}
+
+ :audiophile.repositories.comments/->comment-executor
+ {:comments      #ig/ref :models/comments
+  :files         #ig/ref :models/files
+  :file-versions #ig/ref :models/file-versions
+  :projects      #ig/ref :models/projects
+  :user-teams    #ig/ref :models/user-teams
+  :users         #ig/ref :models/users}
+
+ :audiophile.repositories.comments/->comment-event-emitter
  {:->emitter #ig/ref :audiophile.repositories.events/->emitter
   :pubsub    #ig/ref :services/pubsub}
 

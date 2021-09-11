@@ -1,15 +1,45 @@
 {[:duct/const :resources/file]
  #ig/ref [:audiophile.resources/base :file/one]
 
+ [:duct/const :resources/comments]
+ #ig/ref [:audiophile.resources/base :file/comments]
+
  :audiophile.views.files/one
- {:*file  #ig/ref :resources/file
-  :player #ig/ref :audiophile.views.components/audio-player
-  :*qp    #ig/ref :audiophile.core/route-link}
+ {:*comment  #ig/ref [:audiophile.resources/toaster :file/comment]
+  :*comments #ig/ref :resources/comments
+  :*file     #ig/ref :resources/file
+  :*qp       #ig/ref :audiophile.core/route-link
+  :player    #ig/ref :audiophile.views.components/audio-player}
 
  [:audiophile.resources/base :file/one]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :file/one]}
 
+ [:audiophile.resources/base :file/comments]
+ {:opts->vow #ig/ref :audiophile.resources.custom/comment-fetcher}
+
+ [:audiophile.resources/toaster :file/comment]
+ {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :resource   #ig/ref [:audiophile.resources/base :file/comment]
+  :store      #ig/ref :services/store
+  :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :*toasts    #ig/ref :audiophile.core/toasts}
+
+ [:audiophile.resources/base :file/comment]
+ {:opts->vow #ig/ref :audiophile.resources.custom/comment-poster}
+
  [:audiophile.resources/http-handler :file/one]
  {:http-client #ig/ref :services/http
   :method      :get
-  :route       :api/file}}
+  :route       :api/file}
+
+ [:audiophile.resources/http-handler :file/comments]
+ {:http-client #ig/ref :services/http
+  :method      :get
+  :route       :api/file.comments}
+
+ :audiophile.resources.custom/comment-fetcher
+ {:http-client #ig/ref :services/http}
+
+ :audiophile.resources.custom/comment-poster
+ {:http-client #ig/ref :services/http
+  :*comments   #ig/ref :resources/comments}}

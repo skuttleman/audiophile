@@ -37,6 +37,13 @@
    [:tempfile file?]
    [:size nat-int?]])
 
+(def comment:create
+  [:map
+   [:comment/file-version-id uuid?]
+   [:comment/body trimmed-string?]
+   [:comment/selection {:optional true} [:tuple number? number?]]
+   [:comment/comment-id {:optional true} uuid?]])
+
 (def event:fetch-all
   [:map
    [:filter/since {:optional true} uuid?]])
@@ -66,6 +73,11 @@
   (-> auth
       (mu/merge [:map [:request/id {:optional true} uuid?]])
       (mu/merge artifact:create)))
+
+(def api-comment:create
+  (-> auth
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge comment:create)))
 
 (def api-ws:connect
   (mu/merge auth

@@ -118,5 +118,6 @@
   (-main :migrate)
   (-main :rollback)
   (-main :redo)
+  (-main :speedbump)
 
   (-main :generate-erd))
