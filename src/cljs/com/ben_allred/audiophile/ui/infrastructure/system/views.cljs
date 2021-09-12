@@ -11,8 +11,9 @@
     [com.ben-allred.audiophile.ui.core.components.modal :as modal]
     [com.ben-allred.audiophile.ui.core.components.tiles :as tiles]
     [com.ben-allred.audiophile.ui.core.components.toast :as toast]
-    [com.ben-allred.audiophile.ui.infrastructure.interactors.teams :as int.teams]
+    [com.ben-allred.audiophile.ui.infrastructure.interactors.files :as int.files]
     [com.ben-allred.audiophile.ui.infrastructure.interactors.projects :as int.projects]
+    [com.ben-allred.audiophile.ui.infrastructure.interactors.teams :as int.teams]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.views/app [_ cfg]
@@ -20,6 +21,9 @@
 
 (defmethod ig/init-key :audiophile.views.files/one [_ cfg]
   (views.files/one cfg))
+
+(defmethod ig/init-key :audiophile.views.files/interactor [_ cfg]
+  (int.files/interactor cfg))
 
 (defmethod ig/init-key :audiophile.views.home/header [_ cfg]
   (views.home/header cfg))

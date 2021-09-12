@@ -2,9 +2,7 @@
   (:require
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.strings :as strings]
-    [com.ben-allred.audiophile.ui.api.forms.query-params :as form.qp]
-    [com.ben-allred.audiophile.ui.api.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.api.forms.submittable :as form.sub]
+    [com.ben-allred.audiophile.ui.api.views.core :as views]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
@@ -31,7 +29,7 @@
     position [position position]
     :else [0 0]))
 
-(defn ^:private comment-viewer [comments attrs player]
+(defn ^:private comment-viewer [comments]
   [:div "comments here: " (count comments)])
 
 (defn comment-label [*form]
@@ -39,19 +37,15 @@
     [:div.layout--space-between
      {:style {:align-items :center}}
      [:span "comment"]
-     [in/checkbox (forms/with-attrs {:label            (->selection-label start end)
-                                     :form-field-class ["inline"]}
-                                    *form
-                                    [:comment/with-selection?])]]))
+     [:div {:style {:margin-right "-10px"}}
+      [in/checkbox (forms/with-attrs {:label            (->selection-label start end)
+                                      :form-field-class ["inline"]}
+                                     *form
+                                     [:comment/with-selection?])]]]))
 
-(defn ^:private player* [{:keys [artifact-id file-id file-version-id]} _*comments *comment player]
-  (let [*form (form.sub/create *comment
-                               (form/create {:comment/file-version-id file-version-id
-                                             :comment/with-selection? true
-                                             :comment/selection       [0 0]
-                                             :file/id                 file-id}
-                                            (constantly nil)))]
-    (fn [attrs *comments _*comment _player]
+(defn ^:private player* [{:keys [artifact-id file-id file-version-id]} *int *comments player]
+  (let [*form (views/comment-form *int file-id file-version-id)]
+    (fn [_attrs _*int _*comments _player]
       [:div.panel-block.layout--stack-between
        [player
         (-> *form
@@ -59,25 +53,24 @@
             (update :on-change comp ->selection))
         artifact-id]
        [comp/form {:*form *form
-                   :style {:min-width "300px"}}
+                   :style {:min-width "300px"}
+                   :on-submitted (views/on-comment-created *int)}
         [in/textarea (forms/with-attrs {:label       [comment-label *form]
                                         :auto-focus? true}
                                        *form
                                        [:comment/body])]]
-       [comp/with-resource *comments comment-viewer attrs player]])))
+       [comp/with-resource *comments comment-viewer]])))
 
-(defn ^:private one* [file _*comments *qp *comment _file-id file-version-id _player]
+(defn ^:private one* [*int *comments file file-version-id _player]
   (let [versions (map (juxt :file-version/id identity) (:file/versions file))
-        *form (-> {:file-version-id file-version-id}
-                  form/create
-                  (form.qp/create *qp))
+        *form (views/qp-form *int {:file-version-id file-version-id})
         versions-by-id (into {} versions)]
-    (fn [file *comments _*qp _*comment file-id _file-version-id player]
+    (fn [_*int _*comments file _file-version-id player]
       (let [{:keys [file-version-id]} @*form
             version (get versions-by-id file-version-id)
             artifact-id (:file-version/artifact-id version)
             attrs {:artifact-id     artifact-id
-                   :file-id         file-id
+                   :file-id         (:file/id file)
                    :file-version-id file-version-id}]
         [:div.panel
          [:div.panel-heading
@@ -91,15 +84,15 @@
                               :options-by-id  versions-by-id}
                              (forms/with-attrs *form [:file-version-id])
                              dd/singleable)]]]]
-         ^{:key artifact-id} [player* attrs *comments *comment player]]))))
+         ^{:key artifact-id} [player* attrs *int *comments player]]))))
 
-(defn init* [file *comments {route :nav/params :as opts} *qp *comment player]
+(defn ^:private init* [file *int *comments route player]
   (let [file-id (get-in route [:route-params :file-id])]
     (if-let [file-version-id (get-in route [:query-params :file-version-id])]
-      ^{:key file-id} [one* file [*comments opts] *qp *comment file-id file-version-id player]
-      (forms/update-qp! *qp assoc :file-version-id (:file-version/id (first (:file/versions file)))))))
+      ^{:key file-id} [one* *int *comments file file-version-id player]
+      (views/update-qp! *int {:file-version-id (:file-version/id (first (:file/versions file)))}))))
 
-(defn one [{:keys [*comment *comments *file *qp player]}]
+(defn one [{:keys [*comments *file *int player]}]
   (fn [{:nav/keys [route]}]
     (let [opts {:nav/params route}]
-      [comp/with-resource [*file opts] init* *comments opts *qp *comment player])))
+      [comp/with-resource [*file opts] init* *int [*comments opts] route player])))

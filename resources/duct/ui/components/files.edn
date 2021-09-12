@@ -5,11 +5,14 @@
  #ig/ref [:audiophile.resources/base :file/comments]
 
  :audiophile.views.files/one
- {:*comment  #ig/ref [:audiophile.resources/toaster :file/comment]
-  :*comments #ig/ref :resources/comments
+ {:*comments #ig/ref :resources/comments
   :*file     #ig/ref :resources/file
-  :*qp       #ig/ref :audiophile.core/route-link
+  :*int      #ig/ref :audiophile.views.files/interactor
   :player    #ig/ref :audiophile.views.components/audio-player}
+
+ :audiophile.views.files/interactor
+ {:*comment  #ig/ref [:audiophile.resources/toaster :file/comment]
+  :*qp       #ig/ref :audiophile.core/route-link}
 
  [:audiophile.resources/base :file/one]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :file/one]}

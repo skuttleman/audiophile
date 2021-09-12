@@ -9,6 +9,15 @@
         component (get components-table handle comp/not-found)]
     [component state]))
 
+(defn comment-form [interactor file-id file-version-id]
+  (vp/comment-form interactor file-id file-version-id))
+
+(defn on-comment-created
+  ([interactor]
+   (on-comment-created interactor (constantly nil)))
+  ([interactor cb]
+   (vp/on-comment-created interactor cb)))
+
 (defn project-form [interactor team-options]
   (vp/project-form interactor team-options))
 
@@ -32,6 +41,12 @@
 
 (defn on-team-created [interactor cb]
   (vp/on-team-created interactor cb))
+
+(defn qp-form [interactor file-version-id]
+  (vp/qp-form interactor file-version-id))
+
+(defn update-qp! [interactor m]
+  (vp/update-qp! interactor m))
 
 (defn root [{:keys [banners components-table header modals toasts]}]
   (fn [state]

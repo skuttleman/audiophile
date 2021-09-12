@@ -18,4 +18,14 @@
 (defprotocol ITeamsViewInteractor
   "Infrastructural interactions from teams view"
   (team-form [this] "Creates a team form")
-  (on-team-created [_ cb] "Handle team creation"))
+  (on-team-created [this cb] "Handle team creation"))
+
+(defprotocol ICommentsViewInteractor
+  "Infrastructural interactions from comments view"
+  (comment-form [this file-id file-version-id] "Creates a comment form")
+  (on-comment-created [this cb] "Handle comment creation"))
+
+(defprotocol IQueryParamsViewInteractor
+  "Infrastructural interactions for query params"
+  (qp-form [this file-version-id] "Creates a comment form")
+  (update-qp! [this m]))
