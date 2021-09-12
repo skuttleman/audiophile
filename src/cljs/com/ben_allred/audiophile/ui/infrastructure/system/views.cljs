@@ -11,6 +11,8 @@
     [com.ben-allred.audiophile.ui.core.components.modal :as modal]
     [com.ben-allred.audiophile.ui.core.components.tiles :as tiles]
     [com.ben-allred.audiophile.ui.core.components.toast :as toast]
+    [com.ben-allred.audiophile.ui.infrastructure.interactors.teams :as int.teams]
+    [com.ben-allred.audiophile.ui.infrastructure.interactors.projects :as int.projects]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.views/app [_ cfg]
@@ -49,11 +51,17 @@
 (defmethod ig/init-key :audiophile.views.projects/create [_ cfg]
   (views.projects/create cfg))
 
+(defmethod ig/init-key :audiophile.views.projects/interactor [_ cfg]
+  (int.projects/interactor cfg))
+
 (defmethod ig/init-key :audiophile.views.teams/list [_ cfg]
   (views.teams/list cfg))
 
 (defmethod ig/init-key :audiophile.views.teams/create [_ cfg]
   (views.teams/create cfg))
+
+(defmethod ig/init-key :audiophile.views.teams/interactor [_ cfg]
+  (int.teams/interactor cfg))
 
 (defmethod ig/init-key :audiophile.views.common/re-fetch [_ cfg]
   (cviews/re-fetch cfg))

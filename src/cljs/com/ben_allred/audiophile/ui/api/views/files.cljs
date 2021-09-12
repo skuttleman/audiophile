@@ -1,6 +1,5 @@
 (ns com.ben-allred.audiophile.ui.api.views.files
   (:require
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.strings :as strings]
     [com.ben-allred.audiophile.ui.api.forms.query-params :as form.qp]
@@ -9,9 +8,7 @@
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
-    [com.ben-allred.vow.core :as v :include-macros true]
-    [com.ben-allred.audiophile.common.core.resources.core :as res]))
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]))
 
 (defn ^:private version-name [version]
   [:span (:file-version/name version)])
@@ -34,7 +31,7 @@
     position [position position]
     :else [0 0]))
 
-(defn ^:private comment-viewer [comments attrs *comment player]
+(defn ^:private comment-viewer [comments attrs player]
   [:div "comments here: " (count comments)])
 
 (defn comment-label [*form]

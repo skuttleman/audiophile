@@ -99,9 +99,16 @@
   :view      #ig/ref :audiophile.views.projects/list}
 
  :audiophile.views.projects/create
- {:*teams    #ig/ref :resources/teams#all
-  :*projects #ig/ref [:audiophile.resources/redirect :projects/create]
-  :done      #ig/ref [:audiophile.views.common/re-fetch :projects/create]}
+ {:*int   #ig/ref :audiophile.views.projects/interactor
+  :*teams #ig/ref :resources/teams#all}
+
+ :audiophile.views.projects/interactor
+ {:*file-version #ig/ref :resources/project.file#version
+  :*files        #ig/ref :resources/project.files
+  :*file         #ig/ref :resources/project.file#create
+  :*projects     #ig/ref [:audiophile.resources/redirect :projects/create]
+  :nav           #ig/ref :services/nav
+  :->project-cb  #ig/ref [:audiophile.views.common/re-fetch :projects/create]}
 
  [:audiophile.views.common/re-fetch :projects/create]
  {:*resource #ig/ref :resources/projects.all}
@@ -120,10 +127,8 @@
 
  :audiophile.views.projects/file-form
  {:*artifacts #ig/ref :resources/artifacts
-  :*file      #ig/ref :resources/project.file#create
-  :*files     #ig/ref :resources/project.files}
+  :*int       #ig/ref :audiophile.views.projects/interactor}
 
  :audiophile.views.projects/version-form
- {:*artifacts    #ig/ref :resources/artifacts
-  :*file-version #ig/ref :resources/project.file#version
-  :*files        #ig/ref :resources/project.files}}
+ {:*artifacts #ig/ref :resources/artifacts
+  :*int       #ig/ref :audiophile.views.projects/interactor}}

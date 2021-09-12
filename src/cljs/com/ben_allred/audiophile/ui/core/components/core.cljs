@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.ui.core.components.core
   (:require
     [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
@@ -17,13 +18,14 @@
    [:div.message-body
     body]])
 
-(defn with-resource [[*resource opts] _component & _args]
-  (res/request! *resource opts)
-  (fn [_resource component & args]
-    (case (res/status *resource)
-      :success (into [component @*resource] args)
-      :error [:div.error "an error occurred"]
-      [in/spinner {:size (:spinner/size opts)}])))
+(defn with-resource [*res _component & _args]
+  (let [[*resource opts] (colls/force-sequential *res)]
+    (res/request! *resource opts)
+    (fn [_*res component & args]
+      (case (res/status *resource)
+        :success (into [component @*resource] args)
+        :error [:div.error "an error occurred"]
+        [in/spinner {:size (:spinner/size opts)}]))))
 
 (defn not-found [_]
   [:div {:style {:display         :flex

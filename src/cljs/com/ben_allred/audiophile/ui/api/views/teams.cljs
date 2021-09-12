@@ -1,31 +1,22 @@
 (ns com.ben-allred.audiophile.ui.api.views.teams
   (:refer-clojure :exclude [list])
   (:require
-    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.domain.validations.core :as val]
-    [com.ben-allred.audiophile.common.domain.validations.specs :as specs]
-    [com.ben-allred.audiophile.ui.api.forms.standard :as form]
-    [com.ben-allred.audiophile.ui.api.forms.submittable :as form.sub]
+    [com.ben-allred.audiophile.ui.api.views.core :as views]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
-    [com.ben-allred.vow.core :as v :include-macros true]))
-
-(def ^:private validator
-  (val/validator {:spec specs/team:create}))
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]))
 
 (def ^:private team-type->icon
   {:PERSONAL      ["Personal Team" :user]
    :COLLABORATIVE ["Collaborative Team" :users]})
 
-(defn ^:private create* [*teams _cb]
-  (let [*form (form.sub/create *teams (form/create {:team/type :COLLABORATIVE} validator))]
-    (fn [_*teams cb]
+(defn ^:private create* [*int _cb]
+  (let [*form (views/team-form *int)]
+    (fn [_*int cb]
       [:div
        [comp/form {:*form        *form
-                   :on-submitted (fn [vow]
-                                   (v/peek vow cb nil))}
+                   :on-submitted (views/on-team-created *int cb)}
         [in/input (forms/with-attrs {:label       "Name"
                                      :auto-focus? true}
                                     *form
@@ -39,15 +30,14 @@
        [:ul
         (for [{team-name :team/name :team/keys [id type]} teams
               :let [[title icon] (team-type->icon type)]]
-          ^{:key id}
-          [:li {:style {:display :flex}}
-           [:div {:style {:display         :flex
-                          :justify-content :center
-                          :width           "32px"}}
-            [comp/icon {:title title} icon]]
-           team-name])]
+          ^{:key id} [:li {:style {:display :flex}}
+                      [:div {:style {:display         :flex
+                                     :justify-content :center
+                                     :width           "32px"}}
+                       [comp/icon {:title title} icon]]
+                      team-name])]
        [:p "You don't have any teams. Why not create one?"])]))
 
-(defn create [{:keys [*teams done]}]
+(defn create [{:keys [*int]}]
   (fn [cb]
-    [create* *teams (done cb)]))
+    [create* *int cb]))
