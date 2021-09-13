@@ -35,6 +35,4 @@
       (format "%s://%s%s"
               (or protocol "http")
               (or host (.getCanonicalHostName (InetAddress/getLocalHost)))
-              (if server-port
-                (str ":" server-port)
-                ""))))
+              (cond-> "" server-port (str ":" server-port)))))
