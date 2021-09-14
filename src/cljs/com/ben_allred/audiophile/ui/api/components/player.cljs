@@ -10,20 +10,33 @@
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
-(defn ^:private on-load ^js/WaveSurfer [player id blob]
-  (let [regions (js/WaveSurfer.regions.create #js {:regionsMinLength 2
-                                                   :dragSelection    #js {:slop 5}})]
-    (doto (js/WaveSurfer.create #js {:container         (str "#" id)
-                                     :waveColor         "lightblue"
-                                     :closeAudioContext true
-                                     :progressColor     "blue"
-                                     :plugins           #js [regions]})
-      (.loadBlob blob)
-      (.on "region-created" (fn [_]
-                              (comp/set-region! player)))
-      (.on "region-update-end" (fn [^js/Object e]
-                                 (comp/set-region! player {:start (.-start e)
-                                                           :end   (.-end e)}))))))
+(defn ^:private on-load ^js/WaveSurfer [player id]
+  (fn [blob]
+    (let [regions (js/WaveSurfer.regions.create #js {:regionsMinLength 2
+                                                     :dragSelection    #js {:slop 5}})]
+      (doto (js/WaveSurfer.create #js {:container         (str "#" id)
+                                       :waveColor         "lightblue"
+                                       :closeAudioContext true
+                                       :progressColor     "blue"
+                                       :plugins           #js [regions]})
+        (.loadBlob blob)
+        (.on "region-created" (fn [_]
+                                (comp/set-region! player)))
+        (.on "region-update-end" (fn [^js/Object e]
+                                   (comp/set-region! player {:start (.-start e)
+                                                             :end   (.-end e)})))))))
+
+(defn ^:private init-surfer [state]
+  (fn [^js/WaveSurfer surfer]
+    (let [update-position (fn [_]
+                            (swap! state assoc :position (.getCurrentTime surfer)))]
+      (swap! state assoc :surfer surfer :position 0)
+      (doto surfer
+        (.on "ready" (fn [_]
+                       (swap! state assoc :ready? true)))
+        (.on "seek" update-position)
+        (.on "finish" update-position)
+        (.on "pause" update-position)))))
 
 (deftype ArtifactPlayer [id state *artifact]
   pcomp/IIdentify
@@ -53,17 +66,7 @@
                                       (on-change data))))))
     (-> *artifact
         (res/request! {:artifact-id artifact-id})
-        (v/then (fn [blob]
-                  (let [^js/Object surfer (on-load this id blob)
-                        update-position (fn [_]
-                                          (swap! state assoc :position (.getCurrentTime surfer)))]
-                    (swap! state assoc :surfer surfer :position 0)
-                    (doto surfer
-                      (.on "ready" (fn [_]
-                                     (swap! state assoc :ready? true)))
-                      (.on "seek" update-position)
-                      (.on "finish" update-position)
-                      (.on "pause" update-position)))))))
+        (v/then (comp (init-surfer state) (on-load this id)))))
   (ready? [_]
     (:ready? @state))
   (destroy! [_]
