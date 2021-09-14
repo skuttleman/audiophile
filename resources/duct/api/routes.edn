@@ -29,15 +29,6 @@
   [:get :resources/health] #ig/ref :handlers/health#ui
   [:get :ui/home]          #ig/ref :audiophile.routes/ui}
 
- [:audiophile.handlers/router :api/router#api]
- #ig/ref :routes/table#api
-
- [:audiophile.handlers/router :api/router#auth]
- #ig/ref :routes/table#auth
-
- [:audiophile.handlers/router :api/router#ui]
- #ig/ref :routes/table#ui
-
  [:audiophile.spec/with-spec :api.handler/comments#get]
  {:handler #ig/ref :audiophile.handlers.comments/fetch-all
   :spec    :api.common/file-id}

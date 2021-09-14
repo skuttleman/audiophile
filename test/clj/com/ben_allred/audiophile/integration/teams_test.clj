@@ -11,9 +11,9 @@
 
 (deftest fetch-all-teams-test
   (testing "GET /api/teams"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with teams"
           (let [user (int/lookup-user system "joe@example.com")
@@ -50,10 +50,10 @@
 
 (deftest fetch-team-test
   (testing "GET /api/teams/:team-id"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [team-id (:team/id (int/lookup-team system "Team Seed"))
             handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with teams"
           (let [user (int/lookup-user system "joe@example.com")
@@ -85,9 +85,9 @@
 
 (deftest create-teams-test
   (testing "POST /api/teams"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")

@@ -11,9 +11,9 @@
 
 (deftest fetch-all-projects-test
   (testing "GET /api/projects"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
@@ -49,10 +49,10 @@
 
 (deftest fetch-project-test
   (testing "GET /api/projects/:project-id"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [project-id (:project/id (int/lookup-project system "Project Seed"))
             handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
@@ -84,9 +84,9 @@
 
 (deftest create-projects-test
   (testing "POST /api/projects"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))
             team-id (:team/id (int/lookup-team system "Team Seed"))]
         (testing "when authenticated"

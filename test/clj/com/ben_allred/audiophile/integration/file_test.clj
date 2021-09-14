@@ -16,9 +16,9 @@
 
 (deftest upload-artifact-test
   (testing "POST /api/artifacts"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
@@ -40,9 +40,9 @@
 
 (deftest fetch-all-files-test
   (testing "GET /api/projects/:project-id/files"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with files"
           (let [user (int/lookup-user system "joe@example.com")
@@ -99,9 +99,9 @@
 
 (deftest create-files-test
   (testing "POST /api/projects/:project-id/files"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
@@ -168,9 +168,9 @@
 
 (deftest create-file-versions-test
   (testing "POST /api/files/:file-id"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
@@ -252,7 +252,7 @@
               (is (http/client-error? response)))))))))
 
 (deftest artifact-test
-  (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+  (int/with-config [system [:api/handler]] {:db/enabled? true}
     (let [edn (int/component system :serdes/edn)
           serde (reify
                   pserdes/ISerde
@@ -265,10 +265,10 @@
                   (mime-type [_]
                     (serdes/mime-type edn)))
           handler (-> system
-                      (int/component :api/handler#api)
+                      (int/component :api/handler)
                       (ihttp/with-serde edn))
           artifact-handler (-> system
-                               (int/component :api/handler#api)
+                               (int/component :api/handler)
                                (ihttp/with-serde serde))]
       (testing "when authenticated"
         (let [user (int/lookup-user system "joe@example.com")]

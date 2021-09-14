@@ -15,14 +15,14 @@
     com.ben-allred.audiophile.integration.common.components))
 
 (def ^:private config-base
-  (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-test"]))]
+  (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev" ".env-test"]))]
     (duct/load-hierarchy)
     (-> "test.edn"
         duct/resource
         (duct/read-config uduct/readers)
-        (duct/prep-config [:duct.profile/base
-                           :duct.profile/dev
-                           :duct.profile/test]))))
+        (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
+                  #{(ig/ref :routes/table#api) (ig/ref :routes/table#auth)})
+        (duct/prep-config [:duct.profile/base :duct.profile/dev :duct.profile/test]))))
 
 (defn ^:private mocked-cfg
   ([base]

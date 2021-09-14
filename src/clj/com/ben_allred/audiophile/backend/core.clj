@@ -10,12 +10,18 @@
     com.ben-allred.audiophile.backend.infrastructure.system.core
     com.ben-allred.audiophile.common.infrastructure.system.core))
 
-(defn -main [& _]
+(defn -main [& routes]
   (duct/load-hierarchy)
-  (let [system (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-prod"]))]
+  (let [system (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-prod"]))]
                  (-> "config.edn"
                      duct/resource
                      (duct/read-config uduct/readers)
+                     (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
+                               (into #{}
+                                     (map (comp ig/ref
+                                                keyword
+                                                (partial str "routes/table#")))
+                                     routes))
                      (duct/prep-config [:duct.profile/base :duct.profile/prod])
                      (ig/init [:duct/daemon])))]
     (.addShutdownHook (Runtime/getRuntime)

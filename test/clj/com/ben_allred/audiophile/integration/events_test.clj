@@ -8,10 +8,10 @@
 
 (deftest fetch-all-events-test
   (testing "GET /api/events"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with events"
           (let [result (-> {}

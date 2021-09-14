@@ -11,53 +11,11 @@
   [:duct/const :services/oauth]
   #ig/ref :audiophile.dev/oauth
 
-  [:audiophile.handlers/app :api/handler#api]
-  {:middleware [#ig/ref :audiophile.middleware/with-auth
-                #ig/ref :audiophile.middleware/vector-response
-                #ig/ref :audiophile.middleware/with-serde
-                #ig/ref :audiophile.middleware/with-logging
-                #ig/ref :audiophile.middleware/with-route
-                #ig/ref :audiophile.middleware/with-cors
-                #ig/ref :audiophile.middleware/with-headers]
-   :router     #ig/ref :api/router#api}
+  [:audiophile.dev/app :api.dev/handler]
+  {:app #ig/ref :api/handler}
 
-  [:audiophile.handlers/app :api/handler#auth]
-  {:middleware [#ig/ref :audiophile.middleware/with-auth
-                #ig/ref :audiophile.middleware/vector-response
-                #ig/ref :audiophile.middleware/with-serde
-                #ig/ref :audiophile.middleware/with-route
-                #ig/ref :audiophile.middleware/with-cors
-                #ig/ref :audiophile.middleware/with-headers]
-   :router     #ig/ref :api/router#auth}
-
-  [:audiophile.handlers/app :api/handler#ui]
-  {:middleware [#ig/ref :audiophile.middleware/with-auth
-                #ig/ref :audiophile.middleware/vector-response
-                #ig/ref :audiophile.middleware/with-serde
-                #ig/ref :audiophile.middleware/with-route
-                #ig/ref :audiophile.middleware/with-headers]
-   :router     #ig/ref :api/router#ui}
-
-  [:audiophile.dev/app :api.dev/handler#api]
-  {:app #ig/ref :api/handler#api}
-
-  [:audiophile.dev/app :api.dev/handler#auth]
-  {:app #ig/ref :api/handler#auth}
-
-  [:audiophile.dev/app :api.dev/handler#ui]
-  {:app #ig/ref :api/handler#ui}
-
-  [:audiophile.core/server :duct/daemon :http/server#api]
-  {:handler     #ig/ref :api.dev/handler#api
-   :server-port #ig/ref :env/server-port#api}
-
-  [:audiophile.core/server :duct/daemon :http/server#auth]
-  {:handler     #ig/ref :api.dev/handler#auth
-   :server-port #ig/ref :env/server-port#auth}
-
-  [:audiophile.core/server :duct/daemon :http/server#ui]
-  {:handler     #ig/ref :api.dev/handler#ui
-   :server-port #ig/ref :env/server-port#ui}
+  [:audiophile.core/server :duct/daemon]
+  ^:promote {:handler #ig/ref :api.dev/handler}
 
   :audiophile.dev/s3-client
   {}

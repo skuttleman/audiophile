@@ -1,1 +1,1 @@
-web: API_PORT="${PORT}" java -jar target/audiophile.jar
+web: java -jar target/audiophile.jar $SERVICES

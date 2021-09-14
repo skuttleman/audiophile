@@ -10,9 +10,9 @@
 
 (deftest fetch-all-comments-test
   (testing "GET /api/files/:file-id/comments"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (testing "when authenticated as a user with comments"
           (let [user (int/lookup-user system "joe@example.com")
@@ -50,9 +50,9 @@
 
 (deftest create-comments-test
   (testing "POST /api/comments"
-    (int/with-config [system [:api/handler#api]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [handler (-> system
-                        (int/component :api/handler#api)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))
             file-id (:file/id (int/lookup-file system "File Seed"))
             file-version-id (:file-version/id (int/lookup-file-version system "File Version Seed"))]

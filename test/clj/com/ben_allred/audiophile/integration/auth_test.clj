@@ -14,10 +14,10 @@
 
 (deftest auth-callback-test
   (testing "GET /auth/callback"
-    (int/with-config [system [:api/handler#auth]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]] {:db/enabled? true}
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
-                        (int/component :api/handler#auth)
+                        (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
         (stubs/set-stub! (int/component system :services/oauth)
                          :profile

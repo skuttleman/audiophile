@@ -5,4 +5,19 @@
  #duct/include "duct/api/repositories.edn"
  #duct/include "duct/api/routes.edn"
  #duct/include "duct/api/serdes.edn"
- #duct/include "duct/api/services.edn"]
+ #duct/include "duct/api/services.edn"
+ {[:audiophile.handlers/router :api/router]
+  #ig/ref :routes/table
+
+  [:audiophile.handlers/app :api/handler]
+  {:middleware [#ig/ref :audiophile.middleware/with-auth
+                #ig/ref :audiophile.middleware/vector-response
+                #ig/ref :audiophile.middleware/with-serde
+                #ig/ref :audiophile.middleware/with-logging
+                #ig/ref :audiophile.middleware/with-route
+                #ig/ref :audiophile.middleware/with-cors
+                #ig/ref :audiophile.middleware/with-headers]
+   :router     #ig/ref :api/router}
+
+  [:audiophile.core/server :duct/daemon]
+  {:server-port #ig/ref :env/server-port}}]

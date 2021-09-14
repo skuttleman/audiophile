@@ -16,9 +16,6 @@
 (defmethod ig/halt-key! :audiophile.core/server [_ server]
   (web/server#stop server))
 
-(defmethod ig/init-key :audiophile.services.env/base-url [_ cfg]
-  (env/base-url cfg))
-
 (defmethod ig/init-key :audiophile.spec/with-spec [_ cfg]
   (handlers/with-spec cfg))
 

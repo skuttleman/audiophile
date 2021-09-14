@@ -17,8 +17,8 @@
 
 (defn callback-url
   "Generates url for calling the system back to finish asynchronous authentication flow."
-  [{:keys [base-url auth-callback]}]
-  (str base-url auth-callback))
+  [{:keys [base-url redirect-path]}]
+  (str base-url redirect-path))
 
 (defn callback
   "Handles a callback from external authentication service."

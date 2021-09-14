@@ -49,7 +49,7 @@
                :db                   {:datasource datasource}}))
 
 (defmacro ^:private with-migrator [sys & body]
-  `(let [system# (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev" ".env-migrations"]))]
+  `(let [system# (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev" ".env-migrations"]))]
                    (-> "migrations.edn"
                        duct/resource
                        (duct/read-config uduct/readers)

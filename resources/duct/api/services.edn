@@ -5,7 +5,7 @@
  #ig/ref :audiophile.repositories/datasource
 
  [:duct/const :services/oauth]
- #ig/ref :audiophile.services.auth.google/oauth-provider
+ #ig/ref :audiophile.services.auth.google/provider
 
  [:duct/const :services/s3-client]
  #ig/ref :audiophile.services.s3/client
@@ -34,7 +34,7 @@
  :audiophile.repositories/->builder-fn
  {}
 
- :audiophile.services.auth.google/oauth-provider
+ :audiophile.services.auth.google/provider
  {:cfg         {:client-id     #ig/ref :env.goauth/client-id
                 :client-secret #ig/ref :env.goauth/client-secret
                 :scopes        #ig/ref :env.goauth/scopes

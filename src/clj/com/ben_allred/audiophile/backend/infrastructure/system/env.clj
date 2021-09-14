@@ -4,9 +4,7 @@
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    com.ben-allred.audiophile.ui.infrastructure.system)
-  (:import
-    (java.net InetAddress)))
+    com.ben-allred.audiophile.ui.infrastructure.system))
 
 (defn ^:private file->env [file]
   (u/silent!
@@ -22,17 +20,3 @@
              merge
              {}
              files))
-
-(defn base-url
-  "formats a base-url string. Uses existing base-url if one is supplied.
-
-  ```clojure
-  (base-url {:server-port 1234 :protocol \"https\"}) ;; => https://my-host:1234
-  (base-url {:base-url \"protocol://some-base-url\"}) ;; => protocol://some-base-url
-  ```"
-  [{:keys [base-url host protocol server-port]}]
-  (or base-url
-      (format "%s://%s%s"
-              (or protocol "http")
-              (or host (.getCanonicalHostName (InetAddress/getLocalHost)))
-              (cond-> "" server-port (str ":" server-port)))))

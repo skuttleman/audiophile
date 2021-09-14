@@ -100,16 +100,19 @@
   "Ring middleware that logs response statistics."
   [_]
   (fn [handler]
-    (fn [request]
-      (let [start (System/nanoTime)
-            response (handler request)
-            end (System/nanoTime)
-            elapsed (- end start)
-            msg (log-msg request response elapsed)]
-        (if (::ex (meta response))
-          (log/warn msg)
-          (log/info msg))
-        response))))
+    (fn [{:keys [uri] :as request}]
+      (if (or (string/starts-with? uri "/js")
+              (string/starts-with? uri "/css"))
+        (handler request)
+        (let [start (System/nanoTime)
+              response (handler request)
+              end (System/nanoTime)
+              elapsed (- end start)
+              msg (log-msg request response elapsed)]
+          (if (::ex (meta response))
+            (log/warn msg)
+            (log/info msg))
+          response)))))
 
 (defn with-auth
   "Ring middleware to decodes JWT in request headers."

@@ -1,22 +1,3 @@
 {:duct.profile/base #duct/include "duct/api/base.edn"
- :duct.profile/prod {[:com.ben-allred.audiophile.backend.core/server :duct/daemon]
-                     {:handler     #ig/ref :api/handler
-                      :server-port #ig/ref :env/server-port#api}
-
-                     [:audiophile.handlers/app :api/handler]
-                     {:middleware [#ig/ref :audiophile.middleware/with-auth
-                                   #ig/ref :audiophile.middleware/vector-response
-                                   #ig/ref :audiophile.middleware/with-serde
-                                   #ig/ref :audiophile.middleware/with-logging
-                                   #ig/ref :audiophile.middleware/with-route
-                                   #ig/ref :audiophile.middleware/with-cors
-                                   #ig/ref :audiophile.middleware/with-headers]
-                      :router     #ig/ref :api.prod/router}
-
-                     [:duct.custom/merge :routes/table]
-                     [#ig/ref :routes/table#api
-                      #ig/ref :routes/table#auth
-                      #ig/ref :routes/table#ui]
-
-                     [:audiophile.handlers/router :api.prod/router]
-                     #ig/ref :routes/table}}
+ :duct.profile/prod {[:audiophile.core/server :duct/daemon]
+                     ^:promote {:handler #ig/ref :api/handler}}}

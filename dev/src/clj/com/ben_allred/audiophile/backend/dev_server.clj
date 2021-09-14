@@ -35,21 +35,26 @@
       (require 'com.ben-allred.audiophile.common.core.serdes.core :reload))))
 
 (defn reset-sys!
-  ([]
-   (reset-sys! system))
-  ([sys]
+  ([routes]
+   (reset-sys! system routes))
+  ([sys routes]
    (some-> sys ig/halt!)
    (reload!)
-   (binding [env*/*env* (merge env*/*env* (env/load-env [".env" ".env-dev"]))]
+   (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev"]))]
      (-> "dev.edn"
          duct/resource
          (duct/read-config uduct/readers)
+         (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]] routes)
          (duct/prep-config [:duct.profile/base :duct.profile/dev])
          (ig/init [:duct/daemon])))))
 
-(defn -main [& _]
+(defn -main [& routes]
   (duct/load-hierarchy)
-  (alter-var-root #'system reset-sys!)
+  (alter-var-root #'system reset-sys! (into #{}
+                                            (map (comp ig/ref
+                                                       keyword
+                                                       (partial str "routes/table#")))
+                                            routes))
   (let [nrepl-port (Long/parseLong (or (System/getenv "NREPL_PORT") "7000"))
         server (nrepl/start-server :port nrepl-port)]
     (log/info "[nREPL] is listening on port" nrepl-port)
@@ -65,4 +70,6 @@
   (second (colls/only! (ig/find-derived system k))))
 
 (comment
-  (do (alter-var-root #'system reset-sys!) nil))
+  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#api)
+                                            (ig/ref :routes/table#ui)
+                                            (ig/ref :routes/table#auth)}) nil))

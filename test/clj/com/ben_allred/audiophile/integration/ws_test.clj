@@ -12,9 +12,9 @@
 
 (deftest ws-connection-test
   (testing "GET /api/ws"
-    (int/with-config [system [:api/handler#api]]
+    (int/with-config [system [:api/handler]]
       (let [mime-type (serdes/mime-type (int/component system :serdes/edn))
-            handler (int/component system :api/handler#api)]
+            handler (int/component system :api/handler)]
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}
                                  (ihttp/login system {:user/id (uuids/random)})
