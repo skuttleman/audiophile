@@ -1,11 +1,12 @@
 (ns com.ben-allred.audiophile.integration.common
   (:require
     [com.ben-allred.audiophile.backend.api.protocols :as papp]
-    [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
+    [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
@@ -52,7 +53,11 @@
                                   (transact! [this f]
                                     (f this))
                                   prepos/IExecute
-                                  (execute! [_ _ _])))))))))
+                                  (execute! [_ _ _]))))
+
+           (not (:rabbitmq/enabled? opts))
+           (assoc [:duct/const :services/pubsub]
+                  (pubsub.mem/pubsub nil)))))))
 
 (defn setup-stub [config & args]
   (->> args

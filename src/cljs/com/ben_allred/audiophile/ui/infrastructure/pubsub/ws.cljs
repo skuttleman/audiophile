@@ -23,6 +23,7 @@
                                                  (get-in [:data :event/data])
                                                  (assoc :message "the request failed"))]}
                     {:data (get-in event [:data :event/data])})]
+        (log/info "[WS]" event)
         (pubsub/publish! pubsub request-id event)))
     (store/dispatch! store [:ws/message [msg-type event]])))
 

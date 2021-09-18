@@ -4,8 +4,8 @@
     [com.ben-allred.audiophile.backend.infrastructure.http.resources :as resources]
     [com.ben-allred.audiophile.backend.infrastructure.http.middleware :as middleware]
     [com.ben-allred.audiophile.backend.infrastructure.web :as web]
-    [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
     [integrant.core :as ig]
+    com.ben-allred.audiophile.backend.infrastructure.system.env
     com.ben-allred.audiophile.backend.infrastructure.system.handlers
     com.ben-allred.audiophile.backend.infrastructure.system.services.core
     com.ben-allred.audiophile.common.infrastructure.system.core))

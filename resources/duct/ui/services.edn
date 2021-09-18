@@ -1,4 +1,7 @@
-{[:audiophile.ui.services/env :services.ui/env]
+{[:duct/const :services/pubsub]
+ #ig/ref :audiophile.services.pubsub/memory
+
+ [:audiophile.ui.services/env :services.ui/env]
  {:edn #ig/ref :serdes/edn}
 
  [:audiophile.ui.services/base-urls :services.ui/base-urls]
@@ -10,4 +13,7 @@
   :pubsub       #ig/ref :services/pubsub
   :reconnect-ms #ig/ref :env/ws-reconnect-ms
   :serde        #ig/ref :serdes/edn
-  :store        #ig/ref :services/store}}
+  :store        #ig/ref :services/store}
+
+ :audiophile.services.pubsub/memory
+ {}}

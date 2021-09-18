@@ -3,5 +3,5 @@
 
  :audiophile.services.serdes/jwt
  {:data-serde #ig/ref :serdes/transit
-  :expiration #ig/ref :env/jwt-expiration
-  :secret     #ig/ref :env/jwt-secret}}
+  :expiration #ig/ref :env.jwt/expiration
+  :secret     #ig/ref :env.jwt/secret}}

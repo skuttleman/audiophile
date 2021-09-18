@@ -12,9 +12,6 @@
  [:duct/const :services/http]
  #ig/ref :audiophile.services.http/client
 
- [:duct/const :services/pubsub]
- #ig/ref :audiophile.services/pubsub
-
  :audiophile.services.http/client
  {:middlewares [#ig/ref :audiophile.services.http/base
                 #ig/ref :audiophile.services.http/with-logging
@@ -31,7 +28,4 @@
  {}
 
  :audiophile.services.http/with-logging
- {:log-ctx {:id :HTTP}}
-
- :audiophile.services/pubsub
- {}}
+ {:log-ctx {:id :HTTP}}}

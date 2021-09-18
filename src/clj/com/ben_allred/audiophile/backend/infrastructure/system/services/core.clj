@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.backend.infrastructure.auth.core :as auth]
     [com.ben-allred.audiophile.backend.infrastructure.auth.google :as goog]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit :as pubsub.rabbit]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.backend.infrastructure.resources.s3 :as s3]
     [integrant.core :as ig]
@@ -27,3 +28,9 @@
 
 (defmethod ig/init-key :audiophile.services.s3/stream-serde [_ cfg]
   (s3/stream-serde cfg))
+
+(defmethod ig/init-key :audiophile.services.pubsub/rabbitmq [_ cfg]
+  (pubsub.rabbit/rabbitmq cfg))
+
+(defmethod ig/halt-key! :audiophile.services.pubsub/rabbitmq [_ rabbitmq]
+  (pubsub.rabbit/rabbitmq#stop rabbitmq))

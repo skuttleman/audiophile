@@ -15,5 +15,5 @@
 (defmethod ig/halt-key! :audiophile.services.nav/nav [_ cfg]
   (bnav/nav#stop cfg))
 
-(defmethod ig/init-key :audiophile.services/pubsub [_ cfg]
+(defmethod ig/init-key :audiophile.services.pubsub/memory [_ cfg]
   (pubsub.mem/pubsub cfg))
