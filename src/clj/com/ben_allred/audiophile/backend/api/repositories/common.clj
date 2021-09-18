@@ -43,13 +43,16 @@
 
 (defmacro command!
   "Utility for expressing async commands with error handling."
-  [repo opts & body]
-  `(let [opts# ~opts]
+  [repo opts f & args]
+  `(let [{on-success# :on-success request-id# :request/id :as opts#} ~opts]
      (future
        (try
-         ~@body
+         (let [result# (repos/transact! ~repo ~f ~@args opts#)]
+           (when on-success#
+             (repos/transact! ~repo on-success# result# opts#))
+           result#)
          (catch Throwable ex#
-           (if-let [request-id# (:request/id opts#)]
+           (if request-id#
              (do (log/error ex# "command failed" request-id#)
                  (try
                    (repos/transact! ~repo pint/command-failed! request-id# (assoc opts# :error/reason (.getMessage ex#)))

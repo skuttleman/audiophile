@@ -10,7 +10,9 @@
 
 (defn subscribe! [pubsub key topic listener]
   (log/debug "[PubSub] subscribing" key "to topic" topic)
-  (ppubsub/subscribe! pubsub key topic listener)
+  (ppubsub/subscribe! pubsub key topic (fn [topic event]
+                                         (log/debug "[PubSub] received msg for topic" topic)
+                                         (listener topic event)))
   pubsub)
 
 (defn unsubscribe!

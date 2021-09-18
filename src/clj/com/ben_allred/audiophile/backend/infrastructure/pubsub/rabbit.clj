@@ -13,8 +13,7 @@
     (java.io Closeable)))
 
 (defn ^:private message-handler [serde topic listener]
-  (fn [_ch metadata ^bytes msg]
-    (log/debug "[PubSub] received msg for topic" topic metadata)
+  (fn [_ch _metadata ^bytes msg]
     (listener topic (serdes/deserialize serde (String. msg "UTF-8")))))
 
 (defn ^:private close! [ch]

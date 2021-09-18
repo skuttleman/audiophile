@@ -8,9 +8,11 @@
 
 (defn ^:private create* [executor data opts]
   (crepos/with-access (rprojects/insert-project-access? executor data opts)
-    (let [project-id (rprojects/insert-project! executor data opts)
-          project (rprojects/find-event-project executor project-id)]
-      (rprojects/project-created! executor (:user/id opts) project opts))))
+    (rprojects/insert-project! executor data opts)))
+
+(defn ^:private on-project-created! [executor project-id opts]
+  (let [project (rprojects/find-event-project executor project-id)]
+    (rprojects/project-created! executor (:user/id opts) project opts)))
 
 (deftype ProjectAccessor [repo]
   pint/IProjectAccessor
@@ -22,9 +24,9 @@
   (create! [_ data opts]
     (let [opts (assoc opts
                       :error/command :project/create
-                      :error/reason "insufficient access to create project")]
-      (crepos/command! repo opts
-        (repos/transact! repo create* data opts)))))
+                      :error/reason "insufficient access to create project"
+                      :on-success on-project-created!)]
+      (crepos/command! repo opts create* data))))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."

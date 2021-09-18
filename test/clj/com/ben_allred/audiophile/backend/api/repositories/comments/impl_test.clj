@@ -198,12 +198,14 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason)))))))
+                       (update 1 dissoc :error/reason :on-success)))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
           (stubs/init! emitter)
+          (stubs/use! tx :execute!
+                      [{:id "comment-id"}])
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
           @(int/create! repo {} {:user/id user-id :request/id request-id})
@@ -214,4 +216,4 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason))))))))))
+                       (update 1 dissoc :error/reason :on-success))))))))))

@@ -8,9 +8,11 @@
 
 (defn ^:private create* [executor data opts]
   (crepos/with-access (rcomments/insert-comment-access? executor data opts)
-    (let [comment-id (rcomments/insert-comment! executor data opts)
-          comment (rcomments/find-event-comment executor comment-id)]
-      (rcomments/comment-created! executor (:user/id opts) comment opts))))
+    (rcomments/insert-comment! executor data opts)))
+
+(defn ^:private on-comment-created! [executor comment-id opts]
+  (let [comment (rcomments/find-event-comment executor comment-id)]
+    (rcomments/comment-created! executor (:user/id opts) comment opts)))
 
 (deftype CommentAccessor [repo]
   pint/ICommentAccessor
@@ -20,9 +22,9 @@
   (create! [_ data opts]
     (let [opts (assoc opts
                       :error/command :comment/create
-                      :error/reason "insufficient access to create comment")]
-      (crepos/command! repo opts
-        (repos/transact! repo create* data opts)))))
+                      :error/reason "insufficient access to create comment"
+                      :on-success on-comment-created!)]
+      (crepos/command! repo opts create* data))))
 
 (defn accessor
   "Constructor for [[CommentAccessor]] which provides semantic access for storing and retrieving comments."

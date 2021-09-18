@@ -15,9 +15,11 @@
 
 (defn ^:private create* [executor data opts]
   (crepos/with-access (rteams/insert-team-access? executor data opts)
-    (let [team-id (rteams/insert-team! executor data opts)
-          team (rteams/find-event-team executor team-id)]
-      (rteams/team-created! executor (:user/id opts) team opts))))
+    (rteams/insert-team! executor data opts)))
+
+(defn ^:private on-team-created! [executor team-id opts]
+  (let [team (rteams/find-event-team executor team-id)]
+    (rteams/team-created! executor (:user/id opts) team opts)))
 
 (deftype TeamAccessor [repo]
   pint/ITeamAccessor
@@ -29,9 +31,9 @@
   (create! [_ data opts]
     (let [opts (assoc opts
                       :error/command :team/create
-                      :error/reason "insufficient access to create team")]
-      (crepos/command! repo opts
-        (repos/transact! repo create* data opts)))))
+                      :error/reason "insufficient access to create team"
+                      :on-success on-team-created!)]
+      (crepos/command! repo opts create* data))))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."

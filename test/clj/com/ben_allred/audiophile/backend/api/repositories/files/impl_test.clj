@@ -147,7 +147,7 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason)))))))
+                       (update 1 dissoc :error/reason :on-success)))))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -166,7 +166,7 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason)))))))
+                       (update 1 dissoc :error/reason :on-success)))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
@@ -182,7 +182,7 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason))))))))))
+                       (update 1 dissoc :error/reason :on-success))))))))))
 
 (deftest query-many-test
   (testing "query-many"
@@ -505,12 +505,14 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason)))))))
+                       (update 1 dissoc :error/reason :on-success)))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
           (stubs/init! emitter)
+          (stubs/use! tx :execute!
+                      [{:id "file-id"}])
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
           @(int/create-file! repo {} {:user/id user-id :request/id request-id})
@@ -521,7 +523,7 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason))))))))))
+                       (update 1 dissoc :error/reason :on-success))))))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
@@ -639,12 +641,14 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason)))))))
+                       (update 1 dissoc :error/reason :on-success)))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
           (stubs/init! emitter)
+          (stubs/use! tx :execute!
+                      [{:id "file-version-id"}])
           (stubs/use! pubsub :publish!
                       (ex-info "Executor" {}))
           @(int/create-file-version! repo {} {:user/id user-id :request/id request-id})
@@ -655,4 +659,4 @@
                    (-> emitter
                        (stubs/calls :command-failed!)
                        colls/only!
-                       (update 1 dissoc :error/reason))))))))))
+                       (update 1 dissoc :error/reason :on-success))))))))))
