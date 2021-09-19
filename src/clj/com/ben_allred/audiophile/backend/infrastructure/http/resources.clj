@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.http.resources
   (:require
     [clojure.string :as string]
+    [com.ben-allred.audiophile.backend.infrastructure.http.core :as handlers]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.backend.infrastructure.templates.html :as html]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -20,8 +21,20 @@
 
 (defn health
   "Ring handler for communicating the health of the system."
-  [_]
-  (constantly [::http/ok {:a :ok}]))
+  [{:keys [components]}]
+  (log/debug "Health Check components" (into #{} (map handlers/display-name) components))
+  (fn [_]
+    (let [health (into {}
+                       (map (juxt handlers/display-name
+                                  (fn [component]
+                                    (-> component
+                                        handlers/details
+                                        (assoc :heath/healthy? (handlers/healthy? component))))))
+                       components)
+          status (if (every? :heath/healthy? (vals health))
+                   ::http/ok
+                   ::http/service-unavailable)]
+      [status health])))
 
 (defn ui
   "Ring handler for dynamically generating html for authorized user."

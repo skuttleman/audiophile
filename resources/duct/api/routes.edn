@@ -8,7 +8,7 @@
   [:get :api/projects]       #ig/ref :api.handler/projects#get
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
-  [:get :resources/health]   #ig/ref :res.handler/health#api
+  [:get :resources/health]   #ig/ref :res.handler/health
   [:get :ws/connection]      #ig/ref :api.handler/ws#connect
   [:post :api/file]          #ig/ref :api.handler/file#post
   [:post :api/comments]      #ig/ref :api.handler/comments#post
@@ -21,12 +21,12 @@
  {[:get :auth/callback]    #ig/ref :audiophile.handlers.auth/callback
   [:get :auth/login]       #ig/ref :audiophile.handlers.auth/login
   [:get :auth/logout]      #ig/ref :audiophile.handlers.auth/logout
-  [:get :resources/health] #ig/ref :handlers/health#auth}
+  [:get :resources/health] #ig/ref :res.handler/health}
 
  [:duct/const :routes/table#ui]
  {[:get :resources/css]    #ig/ref :audiophile.routes/assets
   [:get :resources/js]     #ig/ref :audiophile.routes/assets
-  [:get :resources/health] #ig/ref :handlers/health#ui
+  [:get :resources/health] #ig/ref :res.handler/health
   [:get :ui/home]          #ig/ref :audiophile.routes/ui}
 
  [:audiophile.spec/with-spec :api.handler/comments#get]
@@ -110,14 +110,8 @@
  :audiophile.spec/no-content
  {}
 
- [:audiophile.routes/health :res.handler/health#api]
- #{}
-
- [:audiophile.routes/health :handlers/health#auth]
- #{}
-
- [:audiophile.routes/health :handlers/health#ui]
- #{}
+ [:audiophile.routes/health :res.handler/health]
+ {:components #ig/refset :component/health}
 
  :audiophile.routes/assets
  {}

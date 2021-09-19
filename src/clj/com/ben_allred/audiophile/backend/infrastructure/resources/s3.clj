@@ -4,6 +4,7 @@
     [cognitect.aws.client.api :as aws]
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
@@ -22,7 +23,20 @@
                               :ContentType   (:content-type opts)
                               :ContentLength (:content-length opts)
                               :Metadata      (:metadata opts)
-                              :Body          content}})))
+                              :Body          content}}))
+
+  phttp/ICheckHealth
+  (display-name [_]
+    ::S3Client)
+  (healthy? [_]
+    (let [result (invoke client {:op      :HeadBucket
+                                 :request {:Bucket bucket}})]
+      (if (or (:cognitect.anomalies/category result)
+              (:cognitect.http-client/throwable result))
+        false
+        true)))
+  (details [_]
+    {:bucket bucket}))
 
 (defn client
   "Constructor for [[S3Client]] used for storing and retrieving s3 objects."

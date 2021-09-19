@@ -1,7 +1,8 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.core
   (:require
-    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
+    [com.ben-allred.audiophile.backend.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [hikari-cp.core :as hikari]
     [next.jdbc :as jdbc])
@@ -33,7 +34,20 @@
   (transact! [_ f]
     (jdbc/transact datasource
                    (comp f ->executor)
-                   opts)))
+                   opts))
+
+  phttp/ICheckHealth
+  (display-name [_]
+    ::Transactor)
+  (healthy? [_]
+    (let [conn (.getConnection datasource)]
+      (try
+        (not (.isClosed conn))
+        (catch Throwable _
+          false)
+        (finally (.close conn)))))
+  (details [_]
+    nil))
 
 (defn query-formatter
   "Constructor for [[QueryFormatter]] to convert query maps into a prepared SQL statement."

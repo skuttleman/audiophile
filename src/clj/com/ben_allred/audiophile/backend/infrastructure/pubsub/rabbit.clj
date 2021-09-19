@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
+    [com.ben-allred.audiophile.backend.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -68,6 +69,14 @@
     (unsubscribe-all state key))
   (unsubscribe! [_ key topic]
     (unsubscribe* state key topic))
+
+  phttp/ICheckHealth
+  (display-name [_]
+    ::RabbitPubSub)
+  (healthy? [_]
+    (rmq/open? conn))
+  (details [_]
+    {:subscriptions (count (::keys @state))})
 
   Closeable
   (close [_]

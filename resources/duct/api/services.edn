@@ -23,9 +23,9 @@
  :audiophile.repositories/datasource
  {:spec #ig/ref :config/db}
 
- :audiophile.repositories/transactor
+ [:audiophile.repositories/transactor :component/health]
  {:->executor #ig/ref :audiophile.repositories/->executor
-  :datasource #ig/ref :audiophile.repositories/datasource}
+  :datasource #ig/ref :services/datasource}
 
  :audiophile.repositories/->executor
  {:->builder-fn    #ig/ref :audiophile.repositories/->builder-fn
@@ -47,12 +47,12 @@
                 :profile-uri   #ig/ref :env.goauth/profile-uri}
   :http-client #ig/ref :services/http}
 
- :audiophile.services.s3/client
+ [:audiophile.services.s3/client :component/health]
  {:access-key #ig/ref :env.s3/access-key
   :bucket     #ig/ref :env.s3/bucket
   :region     #ig/ref :env.s3/region
   :secret-key #ig/ref :env.s3/secret-key}
 
- :audiophile.services.pubsub/rabbitmq
+ [:audiophile.services.pubsub/rabbitmq :component/health]
  {:conn  {:uri #ig/ref :env.rabbitmq/uri}
   :serde #ig/ref :serdes/edn}}
