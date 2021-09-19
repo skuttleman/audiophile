@@ -10,12 +10,13 @@
 (deftype FilesViewInteractor [*comment *qp]
   vp/ICommentsViewInteractor
   (comment-form [_ file-id file-version-id]
-    (form.sub/create *comment
-                     (form/create {:comment/file-version-id file-version-id
-                                   :comment/with-selection? true
-                                   :comment/selection       [0 0]
-                                   :file/id                 file-id}
-                                  (constantly nil))))
+    (let [val {:comment/file-version-id file-version-id
+               :comment/with-selection? true
+               :comment/selection       [0 0]
+               :file/id                 file-id}]
+      (form.sub/create *comment
+                       (form/create val (constantly nil))
+                       {:form/reset-to val})))
   (on-comment-created [_ cb]
     (fn [vow]
       (v/peek vow cb nil)))

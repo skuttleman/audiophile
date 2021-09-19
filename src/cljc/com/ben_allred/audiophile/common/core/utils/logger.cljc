@@ -29,6 +29,9 @@
     `(binding [*ctx* (merge *ctx* ~ctx)]
        ~@body)))
 
+(defmacro log [level & args]
+  (log* &form level args))
+
 (defmacro trace [& args]
   (log* &form :trace args))
 

@@ -11,9 +11,9 @@
   (request! [this opts]
     (locking this
       (or @state
-          (reset! state (res/request! *resource opts)))))
+          (reset! state (pres/request! *resource opts)))))
   (status [_]
-    (res/status *resource))
+    (pres/status *resource))
 
   pv/IPromise
   (then [_ on-success on-error]

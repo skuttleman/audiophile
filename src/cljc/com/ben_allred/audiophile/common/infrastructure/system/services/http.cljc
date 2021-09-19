@@ -23,6 +23,3 @@
 
 (defmethod ig/init-key :audiophile.services.http/client [_ cfg]
   (client/client cfg))
-
-(defmethod ig/init-key :audiophile.services.http/stub [_ cfg]
-  (client/stub cfg))

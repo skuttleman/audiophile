@@ -70,6 +70,9 @@
   (second (colls/only! (ig/find-derived system k))))
 
 (comment
-  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#api)
-                                            (ig/ref :routes/table#ui)
-                                            (ig/ref :routes/table#auth)}) nil))
+  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#api)})
+      nil)
+  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#auth)})
+      nil)
+  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#ui)})
+      nil))

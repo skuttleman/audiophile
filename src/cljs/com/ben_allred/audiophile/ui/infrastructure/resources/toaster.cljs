@@ -16,11 +16,12 @@
 (deftype ToastResource [*resource *toasts success-fn error-fn]
   pres/IResource
   (request! [_ opts]
-    (-> (res/request! *resource opts)
+    (-> *resource
+        (pres/request! opts)
         (v/peek (->toast *toasts :success success-fn)
                 (->toast *toasts :error error-fn))))
   (status [_]
-    (res/status *resource))
+    (pres/status *resource))
 
   pv/IPromise
   (then [_ on-success on-error]

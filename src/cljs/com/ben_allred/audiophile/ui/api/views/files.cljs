@@ -52,8 +52,8 @@
             (forms/with-attrs [:comment/selection])
             (update :on-change comp ->selection))
         artifact-id]
-       [comp/form {:*form *form
-                   :style {:min-width "300px"}
+       [comp/form {:*form        *form
+                   :style        {:min-width "300px"}
                    :on-submitted (views/on-comment-created *int)}
         [in/textarea (forms/with-attrs {:label       [comment-label *form]
                                         :auto-focus? true}

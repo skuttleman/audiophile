@@ -21,7 +21,10 @@
     (-> *resource
         (res/request! opts)
         (v/then (partial remote->internal id))
-        (v/peek (partial forms/init! *form) nil))))
+        (v/peek (fn [result]
+                  (let [result (:form/reset-to opts result)]
+                    (forms/init! *form result)))
+                nil))))
 
 (defmethod remote->internal :default
   [_ data]
@@ -81,7 +84,7 @@
 
 (defn create
   ([resource form]
-   (create :default resource form nil))
+   (create resource form nil))
   ([resource form opts]
    (create :default resource form opts))
   ([id resource form opts]
@@ -89,5 +92,5 @@
 
 (defn opts->request [_]
   (fn [opts]
-    {:body {:data (:form/value opts)}
+    {:body        {:data (:form/value opts)}
      :http/async? true}))
