@@ -1,14 +1,16 @@
 (ns com.ben-allred.audiophile.backend.api.repositories.projects.impl
   (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
-    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as rprojects]))
+    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.repositories.projects.core :as rprojects]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
-(defn ^:private create* [executor data opts]
-  (crepos/with-access (rprojects/insert-project-access? executor data opts)
-    (rprojects/insert-project! executor data opts)))
+(defn ^:private create* [executor project opts]
+  (if (rprojects/insert-project-access? executor project opts)
+    (rprojects/insert-project! executor project opts)
+    (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private on-project-created! [executor project-id opts]
   (let [project (rprojects/find-event-project executor project-id)]

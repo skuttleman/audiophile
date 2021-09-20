@@ -1,6 +1,5 @@
 {[:duct/const :routes/table#api]
  {[:get :api/artifact]       #ig/ref :res.handler/file-version#get
-  [:get :api/events]         #ig/ref :api.handler/events#get
   [:get :api/file.comments]  #ig/ref :api.handler/comments#get
   [:get :api/file]           #ig/ref :api.handler/file#get
   [:get :api/project.files]  #ig/ref :api.handler/project.files#get
@@ -9,7 +8,6 @@
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :resources/health]   #ig/ref :res.handler/health
-  [:get :ws/connection]      #ig/ref :api.handler/ws#connect
   [:post :api/file]          #ig/ref :api.handler/file#post
   [:post :api/comments]      #ig/ref :api.handler/comments#post
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
@@ -22,6 +20,11 @@
   [:get :auth/login]       #ig/ref :audiophile.handlers.auth/login
   [:get :auth/logout]      #ig/ref :audiophile.handlers.auth/logout
   [:get :resources/health] #ig/ref :res.handler/health}
+
+ [:duct/const :routes/table#event]
+ {[:get :resources/health] #ig/ref :res.handler/health
+  [:get :api/events]       #ig/ref :api.handler/events#get
+  [:get :ws/connection]    #ig/ref :api.handler/ws#connect}
 
  [:duct/const :routes/table#ui]
  {[:get :resources/css]    #ig/ref :audiophile.routes/assets
@@ -67,9 +70,10 @@
   :spec    :api.common/auth}
 
  [:audiophile.spec/with-spec :api.handler/ws#connect]
- {:->response #ig/ref :audiophile.spec/id
-  :handler    #ig/ref :audiophile.services.ws/handler
-  :spec       :api.ws/connect}
+ {:->response    #ig/ref :audiophile.spec/id
+  :handler       #ig/ref :audiophile.services.ws/handler
+  :spec          :api.ws/connect
+  :internal/deps [#ig/ref :services/rabbitmq#sub]}
 
  [:audiophile.spec/with-spec :api.handler/artifacts#post]
  {:->response #ig/ref :audiophile.spec/no-content
@@ -117,9 +121,10 @@
  {}
 
  :audiophile.routes/ui
- {:api-base  #ig/ref :env/base-url#api
-  :auth-base #ig/ref :env/base-url#auth
-  :template  #duct/include "html.edn"}
+ {:api-base   #ig/ref :env/base-url#api
+  :auth-base  #ig/ref :env/base-url#auth
+  :event-base #ig/ref :env/base-url#event
+  :template   #duct/include "html.edn"}
 
  :audiophile.middleware/with-auth
  {:jwt-serde #ig/ref :serdes/jwt}

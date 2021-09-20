@@ -75,5 +75,7 @@
       nil)
   (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#auth)})
       nil)
+  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#event)})
+      nil)
   (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#ui)})
       nil))

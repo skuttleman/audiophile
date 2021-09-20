@@ -48,10 +48,12 @@
                                                (update :listeners dissoc key))))))))
 
 (deftype MemoryPubSub [state sync?]
-  ppubsub/IPubSub
+  ppubsub/IPub
   (publish! [this topic event]
     (cond-> (publish* state this topic event)
       sync? #?(:cljs identity :default deref)))
+
+  ppubsub/ISub
   (subscribe! [_ key topic listener]
     (subscribe* state key topic listener))
   (unsubscribe! [_ key]

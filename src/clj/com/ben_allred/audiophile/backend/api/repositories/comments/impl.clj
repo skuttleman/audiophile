@@ -6,9 +6,10 @@
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]))
 
-(defn ^:private create* [executor data opts]
-  (crepos/with-access (rcomments/insert-comment-access? executor data opts)
-    (rcomments/insert-comment! executor data opts)))
+(defn ^:private create* [executor comment opts]
+  (if (rcomments/insert-comment-access? executor comment opts)
+    (rcomments/insert-comment! executor comment opts)
+    (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private on-comment-created! [executor comment-id opts]
   (let [comment (rcomments/find-event-comment executor comment-id)]

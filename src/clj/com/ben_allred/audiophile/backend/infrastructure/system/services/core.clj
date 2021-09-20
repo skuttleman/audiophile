@@ -30,11 +30,17 @@
 (defmethod ig/init-key :audiophile.services.s3/stream-serde [_ cfg]
   (s3/stream-serde cfg))
 
-(defmethod ig/init-key :audiophile.services.pubsub/rabbitmq [_ cfg]
-  (pubsub.rabbit/rabbitmq cfg))
+(defmethod ig/init-key :audiophile.services.rabbitmq/conn [_ cfg]
+  (pubsub.rabbit/conn cfg))
 
-(defmethod ig/halt-key! :audiophile.services.pubsub/rabbitmq [_ rabbitmq]
-  (pubsub.rabbit/rabbitmq#stop rabbitmq))
+(defmethod ig/halt-key! :audiophile.services.rabbitmq/conn [_ cfg]
+  (pubsub.rabbit/conn#stop cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/publisher [_ rabbitmq]
+  (pubsub.rabbit/publisher rabbitmq))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/subscriber [_ rabbitmq]
+  (pubsub.rabbit/subscriber rabbitmq))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/db-handler [_ cfg]
   (cdb/db-handler cfg))

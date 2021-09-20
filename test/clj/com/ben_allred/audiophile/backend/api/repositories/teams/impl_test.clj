@@ -124,8 +124,9 @@
 (deftest create!-test
   (testing "create!"
     (let [pubsub (stubs/create (reify
-                                 ppubsub/IPubSub
+                                 ppubsub/IPub
                                  (publish! [_ _ _])
+                                 ppubsub/ISub
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
@@ -199,7 +200,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :team/create
-                                         :error/reason  "Executor"}
+                                         :error/reason  "insufficient access to create team"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -226,7 +227,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :team/create
-                                         :error/reason  "PubSub"}
+                                         :error/reason  "insufficient access to create team"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id

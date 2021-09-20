@@ -13,9 +13,10 @@
            :team/members
            (rteams/select-team-members executor team-id opts))))
 
-(defn ^:private create* [executor data opts]
-  (crepos/with-access (rteams/insert-team-access? executor data opts)
-    (rteams/insert-team! executor data opts)))
+(defn ^:private create* [executor team opts]
+  (if (rteams/insert-team-access? executor team opts)
+    (rteams/insert-team! executor team opts)
+    (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private on-team-created! [executor team-id opts]
   (let [team (rteams/find-event-team executor team-id)]

@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.events.core :as events]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]))
 
@@ -31,11 +32,17 @@
 
 (defn db-handler [{:keys [repo]}]
   (fn [_ {[_ event] :event}]
-    (repos/transact! repo
-                     events/insert-event!
-                     event
-                     (set/rename-keys event {:event/emitted-by :user/id}))))
+    (try
+      (repos/transact! repo
+                       events/insert-event!
+                       event
+                       (set/rename-keys event {:event/emitted-by :user/id}))
+      (catch Throwable ex
+        (log/error ex "failed to save event to the db" event)))))
 
 (defn ws-handler [{:keys [pubsub]}]
   (fn [_ {:keys [topic event]}]
-    (pubsub/publish! pubsub topic event)))
+    (try
+      (pubsub/publish! pubsub topic event)
+      (catch Throwable ex
+        (log/error ex "failed to publish event" (maps/->m topic event))))))

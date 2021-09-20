@@ -8,24 +8,27 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
-  (crepos/with-access (rfiles/insert-artifact-access? executor artifact opts)
-    (rfiles/insert-artifact! executor artifact opts)))
+  (if (rfiles/insert-artifact-access? executor artifact opts)
+    (rfiles/insert-artifact! executor artifact opts)
+    (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private on-artifact-created! [executor artifact-id opts]
   (let [artifact (rfiles/find-event-artifact executor artifact-id)]
     (rfiles/artifact-created! executor (:user/id opts) artifact opts)))
 
 (defn ^:private create-file* [executor file opts]
-  (crepos/with-access (rfiles/insert-file-access? executor file opts)
-    (rfiles/insert-file! executor file opts)))
+  (if (rfiles/insert-file-access? executor file opts)
+    (rfiles/insert-file! executor file opts)
+    (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private on-file-created! [executor file-id opts]
   (let [file (rfiles/find-event-file executor file-id)]
     (rfiles/file-created! executor (:user/id opts) file opts)))
 
-(defn ^:private create-file-version* [executor version opts]
-  (crepos/with-access (rfiles/insert-version-access? executor version opts)
-    (rfiles/insert-version! executor version opts)))
+(defn ^:private create-file-version* [executor file-version opts]
+  (if (rfiles/insert-version-access? executor file-version opts)
+    (rfiles/insert-version! executor file-version opts)
+    (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private on-file-version-created! [executor version-id opts]
   (let [version (rfiles/find-event-version executor version-id)]

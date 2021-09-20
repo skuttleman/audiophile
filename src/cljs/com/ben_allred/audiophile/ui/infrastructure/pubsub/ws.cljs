@@ -40,7 +40,7 @@
         (str (nav/path-for nav :ws/connection params)))))
 
 (defn client [{:keys [env nav pubsub reconnect-ms serde store]}]
-  (let [url (ws-uri nav serde (:api-base env))
+  (let [url (ws-uri nav serde (:event-base env))
         {:auth/keys [user]} (store/get-state store)]
     (when user
       (let [ws (ws*/keep-alive! url

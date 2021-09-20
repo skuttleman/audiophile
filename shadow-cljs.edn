@@ -1,5 +1,5 @@
 {:deps   true
- :nrepl  {:port #shadow/env ["UI_NREPL_PORT" :as :int :default 7100]}
+ :nrepl  {:port #shadow/env ["CLJS_NREPL_PORT" :as :int :default 8280]}
  :builds {:dev
           {:target     :browser
            :output-dir "resources/public/js"

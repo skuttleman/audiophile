@@ -37,8 +37,9 @@
   (testing "create-artifact"
     (let [store (trepos/stub-kv-store)
           pubsub (stubs/create (reify
-                                 ppubsub/IPubSub
+                                 ppubsub/IPub
                                  (publish! [_ _ _])
+                                 ppubsub/ISub
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
@@ -120,9 +121,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create}
+                      :event/data       {:error/command :artifact/create
+                                         :error/reason  "insufficient access to create artifact"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx))))))
@@ -146,9 +148,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create}
+                      :event/data       {:error/command :artifact/create
+                                         :error/reason  "insufficient access to create artifact"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx))))))
@@ -171,7 +174,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :artifact/create
-                                         :error/reason  "Executor"}
+                                         :error/reason  "insufficient access to create artifact"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -359,8 +362,9 @@
                 :file/name       "file name"
                 :file/project-id project-id}
           pubsub (stubs/create (reify
-                                 ppubsub/IPubSub
+                                 ppubsub/IPub
                                  (publish! [_ _ _])
+                                 ppubsub/ISub
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
@@ -478,9 +482,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file/create}
+                      :event/data       {:error/command :file/create
+                                         :error/reason  "insufficient access to create file"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx))))))
@@ -506,9 +511,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file/create}
+                      :event/data       {:error/command :file/create
+                                         :error/reason  "insufficient access to create file"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx)))))))))
@@ -519,8 +525,9 @@
           version {:file-version/name "version name here"
                    :file-version/id   version-id}
           pubsub (stubs/create (reify
-                                 ppubsub/IPubSub
+                                 ppubsub/IPub
                                  (publish! [_ _ _])
+                                 ppubsub/ISub
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
@@ -608,9 +615,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file-version/create}
+                      :event/data       {:error/command :file-version/create
+                                         :error/reason  "insufficient access to create file-version"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx))))))
@@ -634,9 +642,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file-version/create}
+                      :event/data       {:error/command :file-version/create
+                                         :error/reason  "insufficient access to create file-version"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx)))))))))

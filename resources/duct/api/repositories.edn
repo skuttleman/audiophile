@@ -81,7 +81,7 @@
 
  :audiophile.repositories.comments/->executor
  {:->comment-executor #ig/ref :audiophile.repositories.comments/->comment-executor
-  :pubsub             #ig/ref :services/pubsub}
+  :pubsub             #ig/ref :services/rabbitmq#pub}
 
  :audiophile.repositories.comments/->comment-executor
  {:comments      #ig/ref :models/comments
@@ -93,7 +93,7 @@
 
  :audiophile.repositories.files/->executor
  {:->file-executor #ig/ref :audiophile.repositories.files/->file-executor
-  :pubsub          #ig/ref :services/pubsub}
+  :pubsub          #ig/ref :services/rabbitmq#pub}
 
  :audiophile.repositories.projects/->project-executor
  {:projects   #ig/ref :models/projects
@@ -103,7 +103,7 @@
 
  :audiophile.repositories.projects/->executor
  {:->project-executor #ig/ref :audiophile.repositories.projects/->project-executor
-  :pubsub             #ig/ref :services/pubsub}
+  :pubsub             #ig/ref :services/rabbitmq#pub}
 
  :audiophile.repositories.teams/->team-executor
  {:teams      #ig/ref :models/teams
@@ -111,8 +111,8 @@
   :users      #ig/ref :models/users}
 
  :audiophile.repositories.teams/->executor
- {:->team-executor      #ig/ref :audiophile.repositories.teams/->team-executor
-  :pubsub    #ig/ref :services/pubsub}
+ {:->team-executor #ig/ref :audiophile.repositories.teams/->team-executor
+  :pubsub          #ig/ref :services/rabbitmq#pub}
 
  :audiophile.repositories.users/->executor
  {:users      #ig/ref :models/users

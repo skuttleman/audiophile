@@ -103,8 +103,9 @@
 (deftest create!-test
   (testing "create!"
     (let [pubsub (stubs/create (reify
-                                 ppubsub/IPubSub
+                                 ppubsub/IPub
                                  (publish! [_ _ _])
+                                 ppubsub/ISub
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
@@ -187,9 +188,10 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :project/create}
+                      :event/data       {:error/command :project/create
+                                         :error/reason  "insufficient access to create project"}
                       :event/emitted-by user-id}
-                     (update event :event/data dissoc :error/reason)))
+                     event))
               (is (= {:request/id request-id
                       :user/id    user-id}
                      ctx))))))
@@ -214,7 +216,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :project/create
-                                         :error/reason  "Pubsub"}
+                                         :error/reason  "insufficient access to create project"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id

@@ -14,7 +14,7 @@
                                 pstore/IStore
                                 (dispatch! [_ _])))
           pubsub (stubs/create (reify
-                                 ppubsub/IPubSub
+                                 ppubsub/IPub
                                  (publish! [_ _ _])))]
       (testing "handles contextual message"
         (ws/handle-msg pubsub store [::msg-type ::event-id {:event/data ::data} {:some :ctx :request/id "request-id"}])

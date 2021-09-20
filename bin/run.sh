@@ -6,7 +6,7 @@ case "${PROFILE}" in
 prod)
   echo "running with profile: ${PROFILE}"
   $(dirname ${BASH_SOURCE[0]})/build-ui.sh
-  clj -Sthreads 1 -m com.ben-allred.audiophile.backend.core api auth ui
+  clj -Sthreads 1 -m com.ben-allred.audiophile.backend.core api auth event ui
   ;;
 dev)
   echo "running with profile: ${PROFILE}"

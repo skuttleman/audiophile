@@ -22,7 +22,9 @@
         duct/resource
         (duct/read-config uduct/readers)
         (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
-                  #{(ig/ref :routes/table#api) (ig/ref :routes/table#auth)})
+                  #{(ig/ref :routes/table#api)
+                    (ig/ref :routes/table#auth)
+                    (ig/ref :routes/table#event)})
         (duct/prep-config [:duct.profile/base :duct.profile/dev :duct.profile/test]))))
 
 (defn ^:private mocked-cfg
@@ -53,11 +55,7 @@
                                   (transact! [this f]
                                     (f this))
                                   prepos/IExecute
-                                  (execute! [_ _ _]))))
-
-           (not (:rabbitmq/enabled? opts))
-           (assoc [:duct/const :services/pubsub]
-                  (pubsub.mem/pubsub nil)))))))
+                                  (execute! [_ _ _])))))))))
 
 (defn setup-stub [config & args]
   (->> args

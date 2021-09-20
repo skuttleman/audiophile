@@ -1,9 +1,12 @@
 (ns com.ben-allred.audiophile.common.infrastructure.pubsub.protocols)
 
-(defprotocol IPubSub
-  "PubSub Handler"
+(defprotocol IPub
+  "Handler for publishing events"
   (publish! [this topic event]
-    "Send an event to all subscribers of a topic")
+    "Send an event to all subscribers of a topic"))
+
+(defprotocol ISub
+  "Handler for subscribing and unsubscribing from events"
   (subscribe! [this key topic listener]
     "Subscribe a `listener` with an associated `key` to the specified `topic`.
      Subscriptions are uniquely identified by (key, topic) and grouped by key.
