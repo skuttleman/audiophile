@@ -1,12 +1,12 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.comments
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.comments.protocols :as pc]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private access* [projects user-teams user-id]
@@ -68,22 +68,7 @@
   (fn [executor]
     (->CommentsRepoExecutor executor comments projects files file-versions user-teams users)))
 
-(deftype CommentsEventEmitter [executor emitter pubsub]
-  pc/ICommentsEventEmitter
-  (comment-created! [_ user-id comment ctx]
-    (cdb/emit! executor pubsub user-id (:comment/id comment) :comment/created comment ctx))
-
-  pint/IEmitter
-  (command-failed! [_ request-id opts]
-    (pint/command-failed! emitter request-id opts)))
-
-(defn ->comment-event-emitter
-  "Factory function for creating [[CommentsEventEmitter]] used to emit events related to comments."
-  [{:keys [->emitter pubsub]}]
-  (fn [executor]
-    (->CommentsEventEmitter executor (->emitter executor) pubsub)))
-
-(deftype Executor [executor emitter]
+(deftype Executor [executor pubsub]
   pc/ICommentsExecutor
   (select-for-file [_ file-id opts]
     (pc/select-for-file executor file-id opts))
@@ -96,16 +81,15 @@
 
   pc/ICommentsEventEmitter
   (comment-created! [_ user-id comment ctx]
-    (pc/comment-created! emitter user-id comment ctx))
+    (cdb/emit! pubsub user-id (:comment/id comment) :comment/created comment ctx))
 
   pint/IEmitter
-  (command-failed! [_ request-id opts]
-    (pint/command-failed! emitter request-id opts)))
+  (command-failed! [_ model-id opts]
+    (cdb/command-failed! pubsub model-id opts)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[CommentsEventEmitter]]
    and [[CommentsRepoExecutor]]."
-  [{:keys [->event-executor ->comment-event-emitter ->comment-executor]}]
+  [{:keys [->comment-executor pubsub]}]
   (fn [executor]
-    (->Executor (->comment-executor executor)
-                (->comment-event-emitter (->event-executor executor)))))
+    (->Executor (->comment-executor executor) pubsub)))

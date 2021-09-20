@@ -4,7 +4,7 @@
     [cognitect.aws.client.api :as aws]
     [cognitect.aws.credentials :as aws.creds]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.backend.infrastructure.http.protocols :as phttp]
+    [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 

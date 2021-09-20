@@ -15,7 +15,6 @@
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
     [com.ben-allred.audiophile.backend.infrastructure.db.teams :as db.teams]
     [com.ben-allred.audiophile.backend.infrastructure.db.users :as db.users]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.emitter :as emitter]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.repositories/models [_ cfg]
@@ -57,9 +56,6 @@
 (defmethod ig/init-key :audiophile.repositories.comments/->comment-executor [_ cfg]
   (db.comments/->comment-executor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.comments/->comment-event-emitter [_ cfg]
-  (db.comments/->comment-event-emitter cfg))
-
 (defmethod ig/init-key :audiophile.repositories.comments/->executor [_ cfg]
   (db.comments/->executor cfg))
 
@@ -72,17 +68,11 @@
 (defmethod ig/init-key :audiophile.repositories.events/->executor [_ cfg]
   (db.events/->executor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.events/->emitter [_ cfg]
-  (emitter/->emitter cfg))
-
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
   (files/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/->file-executor [_ cfg]
   (db.files/->file-executor cfg))
-
-(defmethod ig/init-key :audiophile.repositories.files/->file-event-emitter [_ cfg]
-  (db.files/->file-event-emitter cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/->executor [_ cfg]
   (db.files/->executor cfg))
@@ -93,9 +83,6 @@
 (defmethod ig/init-key :audiophile.repositories.projects/->project-executor [_ cfg]
   (db.projects/->project-executor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.projects/->project-event-emitter [_ cfg]
-  (db.projects/->project-event-emitter cfg))
-
 (defmethod ig/init-key :audiophile.repositories.projects/->executor [_ cfg]
   (db.projects/->executor cfg))
 
@@ -104,9 +91,6 @@
 
 (defmethod ig/init-key :audiophile.repositories.teams/->team-executor [_ cfg]
   (db.teams/->team-executor cfg))
-
-(defmethod ig/init-key :audiophile.repositories.teams/->team-event-emitter [_ cfg]
-  (db.teams/->team-event-emitter cfg))
 
 (defmethod ig/init-key :audiophile.repositories.teams/->executor [_ cfg]
   (db.teams/->executor cfg))

@@ -26,6 +26,7 @@
       (require 'com.ben-allred.audiophile.backend.api.repositories.common :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.core :reload)
       (require 'com.ben-allred.audiophile.backend.infrastructure.db.core :reload)
+      (require 'com.ben-allred.audiophile.backend.api.repositories.events.impl :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.files.impl :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.projects.impl :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.teams.impl :reload)

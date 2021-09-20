@@ -2,7 +2,7 @@
   (:require
     [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.infrastructure.http.protocols :as phttp]
+    [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

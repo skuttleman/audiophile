@@ -2,7 +2,8 @@
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
+    [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
@@ -54,16 +55,14 @@
          (catch Throwable ex#
            (if request-id#
              (do (log/error ex# "command failed" request-id#)
-                 (try
-                   (repos/transact! ~repo pint/command-failed! request-id# (assoc opts# :error/reason (.getMessage ex#)))
-                   (catch Throwable ex#
-                     (log/fatal ex# "command/failed not emitted."))))
+                 (repos/transact! ~repo
+                                  int/command-failed!
+                                  request-id#
+                                  (assoc opts# :error/reason (.getMessage ex#))))
              (log/error ex# "processing failed")))))))
 
-(defmacro with-access [[_ executor _ opts :as access?] & body]
+(defmacro with-access [[_ pubsub _ opts :as access?] & body]
   `(let [opts# ~opts]
      (if ~access?
        (do ~@body)
-       (pint/command-failed! ~executor
-                             (:request/id opts#)
-                             opts#))))
+       (cdb/command-failed! ~pubsub (:request/id opts#) opts#))))

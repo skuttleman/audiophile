@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.backend.infrastructure.auth.core :as auth]
     [com.ben-allred.audiophile.backend.infrastructure.auth.google :as goog]
+    [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit :as pubsub.rabbit]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.backend.infrastructure.resources.s3 :as s3]
@@ -34,3 +35,9 @@
 
 (defmethod ig/halt-key! :audiophile.services.pubsub/rabbitmq [_ rabbitmq]
   (pubsub.rabbit/rabbitmq#stop rabbitmq))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/db-handler [_ cfg]
+  (cdb/db-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/ws-handler [_ cfg]
+  (cdb/ws-handler cfg))

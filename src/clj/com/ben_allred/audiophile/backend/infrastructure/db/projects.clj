@@ -57,22 +57,7 @@
   (fn [executor]
     (->ProjectsRepoExecutor executor projects teams user-teams users)))
 
-(deftype ProjectsEventEmitter [executor emitter pubsub]
-  pp/IProjectsEventEmitter
-  (project-created! [_ user-id project ctx]
-    (cdb/emit! executor pubsub user-id (:project/id project) :project/created project ctx))
-
-  pint/IEmitter
-  (command-failed! [_ request-id opts]
-    (pint/command-failed! emitter request-id opts)))
-
-(defn ->project-event-emitter
-  "Factory function for creating [[ProjectsEventEmitter]] used to emit events related to projects."
-  [{:keys [->emitter pubsub]}]
-  (fn [executor]
-    (->ProjectsEventEmitter executor (->emitter executor) pubsub)))
-
-(deftype Executor [executor emitter]
+(deftype Executor [executor pubsub]
   pp/IProjectsExecutor
   (find-by-project-id [_ project-id opts]
     (pp/find-by-project-id executor project-id opts))
@@ -87,16 +72,15 @@
 
   pp/IProjectsEventEmitter
   (project-created! [_ user-id project ctx]
-    (pp/project-created! emitter user-id project ctx))
+    (cdb/emit! pubsub user-id (:project/id project) :project/created project ctx))
 
   pint/IEmitter
-  (command-failed! [_ request-id opts]
-    (pint/command-failed! emitter request-id opts)))
+  (command-failed! [_ model-id opts]
+    (cdb/command-failed! pubsub model-id opts)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[ProjectsEventEmitter]]
    and [[ProjectsRepoExecutor]]."
-  [{:keys [->event-executor ->project-event-emitter ->project-executor]}]
+  [{:keys [->project-executor pubsub]}]
   (fn [executor]
-    (->Executor (->project-executor executor)
-                (->project-event-emitter (->event-executor executor)))))
+    (->Executor (->project-executor executor) pubsub)))

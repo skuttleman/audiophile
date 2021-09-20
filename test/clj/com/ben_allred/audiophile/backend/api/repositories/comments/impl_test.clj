@@ -20,23 +20,15 @@
   ([config]
    (fn [executor models]
      (->comment-executor executor (merge models config))))
-  ([executor {:keys [comments emitter event-types events file-versions
-                     files projects pubsub user-events user-teams users]
-              :as   models}]
+  ([executor {:keys [comments file-versions files projects pubsub user-teams users]}]
    (let [comment-exec (db.comments/->CommentsRepoExecutor executor
                                                           comments
                                                           projects
                                                           files
                                                           file-versions
                                                           user-teams
-                                                          users)
-         event-exec (db.events/->EventsExecutor executor
-                                                event-types
-                                                events
-                                                user-events
-                                                (db.events/->conform-fn models))
-         emitter* (db.comments/->CommentsEventEmitter event-exec emitter pubsub)]
-     (db.comments/->Executor comment-exec emitter*))))
+                                                          users)]
+     (db.comments/->Executor comment-exec pubsub))))
 
 (deftest query-all-test
   (testing "query-all"
@@ -89,11 +81,7 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          emitter (stubs/create (reify
-                                  pint/IEmitter
-                                  (command-failed! [_ _ _])))
-          tx (trepos/stub-transactor (->comment-executor {:emitter emitter
-                                                          :pubsub  pubsub}))
+          tx (trepos/stub-transactor (->comment-executor {:pubsub pubsub}))
           repo (rcomments/->CommentAccessor tx)
           [comment-id file-version-id user-id] (repeatedly uuids/random)
           comment {:comment/id              comment-id
@@ -103,14 +91,13 @@
         (stubs/use! tx :execute!
                     [{:id "team-id"}]
                     [{:id comment-id}]
-                    [comment]
-                    [{:id "event-id"}])
+                    [comment])
         @(int/create! repo
                       {:created-at              :whenever
                        :comment/file-version-id file-version-id
                        :other                   :junk}
                       {:user/id user-id})
-        (let [[[access] [insert] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
+        (let [[[access] [insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "verifies file access"
             (is (= {:select #{1}
                     :from   [:projects]
@@ -147,34 +134,13 @@
                     :where  [:= #{:comments.id comment-id}]}
                    (-> query-for-event
                        (update :select set)
-                       (update :where tu/op-set)))))
-
-          (testing "inserts the event in the repository"
-            (let [{:keys [event-type-id] :as value} (colls/only! (:values insert-event))]
-              (is (= {:insert-into :events
-                      :returning   [:id]}
-                     (dissoc insert-event :values)))
-              (is (= {:model-id   comment-id
-                      :data       {:comment/id              comment-id
-                                   :comment/name            "some comment"
-                                   :comment/file-version-id file-version-id}
-                      :emitted-by user-id}
-                     (dissoc value :event-type-id)))
-              (is (= {:select #{[:event-types.id "event-type/id"]}
-                      :from   [:event-types]
-                      :where  [:and #{[:= #{:event-types.category "comment"}]
-                                      [:= #{:event-types.name "created"}]}]}
-                     (-> event-type-id
-                         (update :select set)
-                         (update-in [:where 1] tu/op-set)
-                         (update-in [:where 2] tu/op-set)
-                         (update :where tu/op-set)))))))
+                       (update :where tu/op-set))))))
 
         (testing "emits an event"
           (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
             (is (= [::ws/user user-id] topic))
-            (is (= "event-id" event-id))
-            (is (= {:event/id         "event-id"
+            (is (uuid? event-id))
+            (is (= {:event/id         event-id
                     :event/type       :comment/created
                     :event/model-id   comment-id
                     :event/data       comment
@@ -184,36 +150,53 @@
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
-          (stubs/init! emitter)
+          (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
           @(int/create! repo {} {:user/id user-id :request/id request-id})
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id       user-id
-                                :request/id    request-id
-                                :error/command :comment/create}]
-                   (-> emitter
-                       (stubs/calls :command-failed!)
-                       colls/only!
-                       (update 1 dissoc :error/reason :on-success)))))))
+            (let [[topic [event-id event ctx]] (-> pubsub
+                                                   (stubs/calls :publish!)
+                                                   colls/only!)]
+              (is (= [::ws/user user-id] topic))
+              (is (uuid? event-id))
+              (is (= {:event/id         event-id
+                      :event/model-id   request-id
+                      :event/type       :command/failed
+                      :event/data       {:error/command :comment/create
+                                         :error/reason  "Executor"}
+                      :event/emitted-by user-id}
+                     event))
+              (is (= {:request/id request-id
+                      :user/id    user-id}
+                     ctx))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
-          (stubs/init! emitter)
+          (stubs/init! pubsub)
           (stubs/use! tx :execute!
-                      [{:id "comment-id"}])
+                      [{:id "comment-id"}]
+                      [{:id comment-id}]
+                      [comment])
           (stubs/use! pubsub :publish!
-                      (ex-info "Executor" {}))
+                      (ex-info "Pubsub" {}))
           @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id       user-id
-                                :request/id    request-id
-                                :error/command :comment/create}]
-                   (-> emitter
-                       (stubs/calls :command-failed!)
-                       colls/only!
-                       (update 1 dissoc :error/reason :on-success))))))))))
+            (let [[topic [event-id event ctx]] (-> pubsub
+                                                   (stubs/calls :publish!)
+                                                   rest
+                                                   colls/only!)]
+              (is (= [::ws/user user-id] topic))
+              (is (uuid? event-id))
+              (is (= {:event/id         event-id
+                      :event/model-id   request-id
+                      :event/type       :command/failed
+                      :event/data       {:error/command :comment/create
+                                         :error/reason  "Pubsub"}
+                      :event/emitted-by user-id}
+                     event))
+              (is (= {:request/id request-id
+                      :user/id    user-id}
+                     ctx)))))))))

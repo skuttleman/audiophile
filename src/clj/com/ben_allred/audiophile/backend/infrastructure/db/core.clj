@@ -2,7 +2,7 @@
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
-    [com.ben-allred.audiophile.backend.infrastructure.http.protocols :as phttp]
+    [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [hikari-cp.core :as hikari]
     [next.jdbc :as jdbc])

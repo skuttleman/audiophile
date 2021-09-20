@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.integration.events-test
+(ns ^:integration com.ben-allred.audiophile.integration.events-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]

@@ -19,19 +19,12 @@
   ([config]
    (fn [executor models]
      (->team-executor executor (merge models config))))
-  ([executor {:keys [emitter event-types events teams pubsub user-events user-teams users]
-              :as   models}]
+  ([executor {:keys [teams pubsub user-teams users]}]
    (let [team-exec (db.teams/->TeamsRepoExecutor executor
                                                  teams
                                                  user-teams
-                                                 users)
-         event-exec (db.events/->EventsExecutor executor
-                                                event-types
-                                                events
-                                                user-events
-                                                (db.events/->conform-fn models))
-         emitter* (db.teams/->TeamsEventEmitter event-exec emitter pubsub)]
-     (db.teams/->Executor team-exec emitter*))))
+                                                 users)]
+     (db.teams/->Executor team-exec pubsub))))
 
 (deftest query-all-test
   (testing "query-all"
@@ -136,11 +129,7 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          emitter (stubs/create (reify
-                                  pint/IEmitter
-                                  (command-failed! [_ _ _])))
-          tx (trepos/stub-transactor (->team-executor {:emitter emitter
-                                                       :pubsub  pubsub}))
+          tx (trepos/stub-transactor (->team-executor {:pubsub pubsub}))
           repo (rteams/->TeamAccessor tx)
           [team-id user-id] (repeatedly uuids/random)
           team {:team/id   team-id
@@ -155,7 +144,7 @@
                       {:created-at :whenever
                        :other      :junk}
                       {:user/id user-id})
-        (let [[[insert-team] [insert-user-team] [query-for-event] [insert-event]] (colls/only! 4 (stubs/calls tx :execute!))]
+        (let [[[insert-team] [insert-user-team] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
                     :values      [{:created-at :whenever}]
@@ -177,32 +166,13 @@
                    (-> query-for-event
                        (select-keys #{:select :from :where})
                        (update :select set)
-                       (update :where tu/op-set)))))
-
-          (testing "inserts the event in the repository"
-            (let [{:keys [event-type-id] :as value} (colls/only! (:values insert-event))]
-              (is (= {:insert-into :events
-                      :returning   [:id]}
-                     (dissoc insert-event :values)))
-              (is (= {:model-id   team-id
-                      :data       team
-                      :emitted-by user-id}
-                     (dissoc value :event-type-id)))
-              (is (= {:select #{[:event-types.id "event-type/id"]}
-                      :from   [:event-types]
-                      :where  [:and #{[:= #{:event-types.category "team"}]
-                                      [:= #{:event-types.name "created"}]}]}
-                     (-> event-type-id
-                         (update :select set)
-                         (update-in [:where 1] tu/op-set)
-                         (update-in [:where 2] tu/op-set)
-                         (update :where tu/op-set)))))))
+                       (update :where tu/op-set))))))
 
         (testing "emits an event"
           (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
             (is (= [::ws/user user-id] topic))
-            (is (= "event-id" event-id))
-            (is (= {:event/id         "event-id"
+            (is (uuid? event-id))
+            (is (= {:event/id         event-id
                     :event/type       :team/created
                     :event/model-id   team-id
                     :event/data       team
@@ -212,7 +182,7 @@
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
-          (stubs/init! emitter)
+          (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
           @(int/create! repo {} {:user/id user-id :request/id request-id})
@@ -220,28 +190,45 @@
             (empty? (stubs/calls pubsub :publish!)))
 
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id       user-id
-                                :request/id    request-id
-                                :error/command :team/create}]
-                   (-> emitter
-                       (stubs/calls :command-failed!)
-                       colls/only!
-                       (update 1 dissoc :error/reason :on-success)))))))
+            (let [[topic [event-id event ctx]] (-> pubsub
+                                                   (stubs/calls :publish!)
+                                                   colls/only!)]
+              (is (= [::ws/user user-id] topic))
+              (is (uuid? event-id))
+              (is (= {:event/id         event-id
+                      :event/model-id   request-id
+                      :event/type       :command/failed
+                      :event/data       {:error/command :team/create
+                                         :error/reason  "Executor"}
+                      :event/emitted-by user-id}
+                     event))
+              (is (= {:request/id request-id
+                      :user/id    user-id}
+                     ctx))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
-          (stubs/init! emitter)
+          (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       [{:id "team-id"}])
           (stubs/use! pubsub :publish!
-                      (ex-info "Executor" {}))
+                      (ex-info "PubSub" {}))
           @(int/create! repo {} {:user/id user-id :request/id request-id})
           (testing "emits a command-failed event"
-            (is (= [request-id {:user/id       user-id
-                                :request/id    request-id
-                                :error/command :team/create}]
-                   (-> emitter
-                       (stubs/calls :command-failed!)
-                       colls/only!
-                       (update 1 dissoc :error/reason :on-success))))))))))
+            (let [[topic [event-id event ctx]] (-> pubsub
+                                                   (stubs/calls :publish!)
+                                                   rest
+                                                   colls/only!)]
+              (is (= [::ws/user user-id] topic))
+              (is (uuid? event-id))
+              (is (= {:event/id         event-id
+                      :event/model-id   request-id
+                      :event/type       :command/failed
+                      :event/data       {:error/command :team/create
+                                         :error/reason  "PubSub"}
+                      :event/emitted-by user-id}
+                     event))
+              (is (= {:request/id request-id
+                      :user/id    user-id}
+                     ctx)))))))))

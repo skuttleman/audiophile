@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.backend.infrastructure.http.protocols)
+(ns com.ben-allred.audiophile.common.infrastructure.http.protocols)
 
 (defprotocol ICheckHealth
   "Protocol mixin to supply heath check details"

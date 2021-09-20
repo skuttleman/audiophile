@@ -228,30 +228,7 @@
                          store
                          #(str "artifacts/" (uuids/random)))))
 
-(deftype FilesEventEmitter [executor emitter pubsub]
-  pf/IArtifactsEventEmitter
-  (artifact-created! [_ user-id artifact ctx]
-    (cdb/emit! executor pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
-
-  pf/IFilesEventEmitter
-  (file-created! [_ user-id file ctx]
-    (cdb/emit! executor pubsub user-id (:file/id file) :file/created file ctx))
-
-  pf/IFileVersionsEventEmitter
-  (version-created! [_ user-id version ctx]
-    (cdb/emit! executor pubsub user-id (:file-version/id version) :file-version/created version ctx))
-
-  pint/IEmitter
-  (command-failed! [_ request-id opts]
-    (pint/command-failed! emitter request-id opts)))
-
-(defn ->file-event-emitter
-  "Factory function for creating [[FilesEventEmitter]] used to emit events related to files."
-  [{:keys [->emitter pubsub]}]
-  (fn [executor]
-    (->FilesEventEmitter executor (->emitter executor) pubsub)))
-
-(deftype Executor [executor emitter]
+(deftype Executor [executor pubsub]
   pf/IArtifactsExecutor
   (insert-artifact-access? [_ artifact opts]
     (pf/insert-artifact-access? executor artifact opts))
@@ -271,9 +248,9 @@
     (pf/find-by-file-id executor file-id opts))
   (select-for-project [_ project-id opts]
     (pf/select-for-project executor project-id opts))
-
   (find-event-file [_ file-id]
     (pf/find-event-file executor file-id))
+
   pf/IFileVersionsExecutor
   (insert-version-access? [_ version opts]
     (pf/insert-version-access? executor version opts))
@@ -284,24 +261,23 @@
 
   pf/IArtifactsEventEmitter
   (artifact-created! [_ user-id artifact ctx]
-    (pf/artifact-created! emitter user-id artifact ctx))
+    (cdb/emit! pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
 
   pf/IFilesEventEmitter
   (file-created! [_ user-id file ctx]
-    (pf/file-created! emitter user-id file ctx))
+    (cdb/emit! pubsub user-id (:file/id file) :file/created file ctx))
 
   pf/IFileVersionsEventEmitter
   (version-created! [_ user-id version ctx]
-    (pf/version-created! emitter user-id version ctx))
+    (cdb/emit! pubsub user-id (:file-version/id version) :file-version/created version ctx))
 
   pint/IEmitter
-  (command-failed! [_ request-id opts]
-    (pint/command-failed! emitter request-id opts)))
+  (command-failed! [_ model-id opts]
+    (cdb/command-failed! pubsub model-id opts)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[FilesEventEmitter]]
    and [[FilesRepoExecutor]]."
-  [{:keys [->event-executor ->file-event-emitter ->file-executor]}]
+  [{:keys [->file-executor pubsub]}]
   (fn [executor]
-    (->Executor (->file-executor executor)
-                (->file-event-emitter (->event-executor executor)))))
+    (->Executor (->file-executor executor) pubsub)))

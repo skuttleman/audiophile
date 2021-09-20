@@ -38,3 +38,6 @@
 
 (defn get-artifact [interactor opts]
   (pint/get-artifact interactor opts))
+
+(defn command-failed! [interactor model-id opts]
+  (pint/command-failed! interactor model-id opts))

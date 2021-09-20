@@ -71,9 +71,6 @@
   :models      #ig/ref :models/models
   :user-events #ig/ref :models/user-events}
 
- :audiophile.repositories.events/->emitter
- {:pubsub #ig/ref :services/pubsub}
-
  :audiophile.repositories.files/->file-executor
  {:artifacts     #ig/ref :models/artifacts
   :file-versions #ig/ref :models/file-versions
@@ -82,14 +79,9 @@
   :user-teams    #ig/ref :models/user-teams
   :store         #ig/ref :audiophile.repositories/store}
 
- :audiophile.repositories.files/->file-event-emitter
- {:->emitter #ig/ref :audiophile.repositories.events/->emitter
-  :pubsub    #ig/ref :services/pubsub}
-
  :audiophile.repositories.comments/->executor
- {:->event-executor        #ig/ref :audiophile.repositories.events/->executor
-  :->comment-event-emitter #ig/ref :audiophile.repositories.comments/->comment-event-emitter
-  :->comment-executor      #ig/ref :audiophile.repositories.comments/->comment-executor}
+ {:->comment-executor #ig/ref :audiophile.repositories.comments/->comment-executor
+  :pubsub             #ig/ref :services/pubsub}
 
  :audiophile.repositories.comments/->comment-executor
  {:comments      #ig/ref :models/comments
@@ -99,14 +91,9 @@
   :user-teams    #ig/ref :models/user-teams
   :users         #ig/ref :models/users}
 
- :audiophile.repositories.comments/->comment-event-emitter
- {:->emitter #ig/ref :audiophile.repositories.events/->emitter
-  :pubsub    #ig/ref :services/pubsub}
-
  :audiophile.repositories.files/->executor
- {:->event-executor     #ig/ref :audiophile.repositories.events/->executor
-  :->file-event-emitter #ig/ref :audiophile.repositories.files/->file-event-emitter
-  :->file-executor      #ig/ref :audiophile.repositories.files/->file-executor}
+ {:->file-executor #ig/ref :audiophile.repositories.files/->file-executor
+  :pubsub          #ig/ref :services/pubsub}
 
  :audiophile.repositories.projects/->project-executor
  {:projects   #ig/ref :models/projects
@@ -114,28 +101,18 @@
   :user-teams #ig/ref :models/user-teams
   :users      #ig/ref :models/users}
 
- :audiophile.repositories.projects/->project-event-emitter
- {:->emitter #ig/ref :audiophile.repositories.events/->emitter
-  :pubsub    #ig/ref :services/pubsub}
-
  :audiophile.repositories.projects/->executor
- {:->event-executor        #ig/ref :audiophile.repositories.events/->executor
-  :->project-event-emitter #ig/ref :audiophile.repositories.projects/->project-event-emitter
-  :->project-executor      #ig/ref :audiophile.repositories.projects/->project-executor}
+ {:->project-executor #ig/ref :audiophile.repositories.projects/->project-executor
+  :pubsub             #ig/ref :services/pubsub}
 
  :audiophile.repositories.teams/->team-executor
  {:teams      #ig/ref :models/teams
   :user-teams #ig/ref :models/user-teams
   :users      #ig/ref :models/users}
 
- :audiophile.repositories.teams/->team-event-emitter
- {:->emitter #ig/ref :audiophile.repositories.events/->emitter
-  :pubsub    #ig/ref :services/pubsub}
-
  :audiophile.repositories.teams/->executor
- {:->event-executor     #ig/ref :audiophile.repositories.events/->executor
-  :->team-event-emitter #ig/ref :audiophile.repositories.teams/->team-event-emitter
-  :->team-executor      #ig/ref :audiophile.repositories.teams/->team-executor}
+ {:->team-executor      #ig/ref :audiophile.repositories.teams/->team-executor
+  :pubsub    #ig/ref :services/pubsub}
 
  :audiophile.repositories.users/->executor
  {:users      #ig/ref :models/users

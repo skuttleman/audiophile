@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.common.infrastructure.pubsub.memory
   (:require
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]))
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
+    [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]))
 
 (defn ^:private publish* [state this topic event]
   (let [state @state
@@ -46,7 +47,7 @@
                          (not next-topics) (-> (update :topics dissoc key)
                                                (update :listeners dissoc key))))))))
 
-(deftype PubSub [state sync?]
+(deftype MemoryPubSub [state sync?]
   ppubsub/IPubSub
   (publish! [this topic event]
     (cond-> (publish* state this topic event)
@@ -56,9 +57,17 @@
   (unsubscribe! [_ key]
     (unsubscribe-all state key))
   (unsubscribe! [_ key topic]
-    (unsubscribe* state key topic)))
+    (unsubscribe* state key topic))
+
+  phttp/ICheckHealth
+  (display-name [_]
+    ::MemoryPubSub)
+  (healthy? [_]
+    true)
+  (details [_]
+    {:connections (count (:listeners @state))}))
 
 (defn pubsub
   "Constructor for [[PubSub]] which provides an in memory pub/sub protocol."
   [{:keys [sync?]}]
-  (->PubSub (atom nil) sync?))
+  (->MemoryPubSub (atom nil) sync?))
