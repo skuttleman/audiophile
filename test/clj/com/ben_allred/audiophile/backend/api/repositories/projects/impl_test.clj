@@ -3,10 +3,8 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.api.repositories.projects.impl :as rprojects]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -160,7 +158,7 @@
 
         (testing "emits an event"
           (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
-            (is (= [::ws/user user-id] topic))
+            (is (= [::ps/user user-id] topic))
             (is (uuid? event-id))
             (is (= {:event/id         event-id
                     :event/type       :project/created
@@ -183,7 +181,7 @@
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
                                                    colls/only!)]
-              (is (= [::ws/user user-id] topic))
+              (is (= [::ps/user user-id] topic))
               (is (uuid? event-id))
               (is (= {:event/id         event-id
                       :event/model-id   request-id
@@ -210,7 +208,7 @@
                                                    (stubs/calls :publish!)
                                                    rest
                                                    colls/only!)]
-              (is (= [::ws/user user-id] topic))
+              (is (= [::ps/user user-id] topic))
               (is (uuid? event-id))
               (is (= {:event/id         event-id
                       :event/model-id   request-id

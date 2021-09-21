@@ -1,11 +1,12 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws
   (:require
     [clojure.core.async :as async]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [immutant.web.async :as web.async]))
 
 (defmulti ^:private handle-msg (fn [_ _ event]
@@ -41,8 +42,8 @@
       (recur))))
 
 (defn ^:private handle-open [{:keys [user-id] :as ctx} channel]
-  (subscribe* ctx channel [::broadcast] :event/broadcast)
-  (subscribe* ctx channel [::user user-id] :event/user)
+  (subscribe* ctx channel [::ps/broadcast] :event/broadcast)
+  (subscribe* ctx channel [::ps/user user-id] :event/user)
   (ch-loop ctx channel))
 
 (defn ^:private handle-close [{:keys [ch-id pubsub user-id]} _]
@@ -143,11 +144,11 @@
   ([pubsub event-id event]
    (broadcast! pubsub event-id event nil))
   ([pubsub event-id event ctx]
-   (pubsub/publish! pubsub [::broadcast] [event-id event (->ctx ctx)])))
+   (pubsub/publish! pubsub [::ps/broadcast] [event-id event (->ctx ctx)])))
 
 (defn send-user!
   "Broadcast an event to all connections for a specific user"
   ([pubsub user-id event-id event]
    (send-user! pubsub user-id event-id event nil))
   ([pubsub user-id event-id event ctx]
-   (pubsub/publish! pubsub [::user user-id] [event-id event (assoc (->ctx ctx) :user/id user-id)])))
+   (pubsub/publish! pubsub [::ps/user user-id] [event-id event (assoc (->ctx ctx) :user/id user-id)])))
