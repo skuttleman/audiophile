@@ -115,9 +115,13 @@
 (defn healthy? [component]
   (try
     (phttp/healthy? component)
-    (catch Exception ex
+    (catch Throwable ex
       (log/debug ex "failed to do health check:" (display-name component))
       false)))
 
 (defn details [component]
-  (phttp/details component))
+  (try
+    (phttp/details component)
+    (catch Throwable ex
+      (log/debug ex "failed to obtain health details:" (display-name component))
+      nil)))
