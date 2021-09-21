@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws
   (:require
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -18,7 +18,7 @@
 
 (defmethod handle-msg :conn/ping
   [_ channel _]
-  (pws/send! channel [:conn/pong]))
+  (pps/send! channel [:conn/pong]))
 
 (defmethod handle-msg :conn/pong
   [_ _ _])
@@ -28,16 +28,16 @@
                      ch-id
                      topic
                      (fn [_ event]
-                       (pws/send! channel (into [event-type] event)))))
+                       (pps/send! channel (into [event-type] event)))))
 
 (defn ^:private ch-loop [{:keys [heartbeat-int-ms]} channel]
   (async/go-loop []
     (async/<! (async/timeout heartbeat-int-ms))
-    (when (pws/open? channel)
+    (when (pps/open? channel)
       (try
-        (pws/send! channel [:conn/ping])
+        (pps/send! channel [:conn/ping])
         (catch Throwable _
-          (pws/close! channel)))
+          (pps/close! channel)))
       (recur))))
 
 (defn ^:private handle-open [{:keys [user-id] :as ctx} channel]
@@ -51,7 +51,7 @@
 
 (defn ^:private send* [channel serde msg]
   (try
-    (pws/send! channel
+    (pps/send! channel
                (cond->> msg
                  serde (serdes/serialize serde)))
     (catch Throwable ex
@@ -60,21 +60,21 @@
 
 (defn ^:private close* [channel]
   (try
-    (pws/close! channel)
+    (pps/close! channel)
     (catch Throwable ex
       (log/warn ex "web socket did not close successfully"))))
 
 (deftype SerdeChannel [channel serializer]
-  pws/IChannel
+  pps/IChannel
   (open? [_]
-    (pws/open? channel))
+    (pps/open? channel))
   (send! [_ msg]
     (send* channel serializer msg))
   (close! [_]
     (close* channel)))
 
 (deftype Channel [ch]
-  pws/IChannel
+  pps/IChannel
   (open? [_]
     (web.async/open? ch))
   (send! [_ msg]
@@ -83,11 +83,11 @@
     (web.async/close ch)))
 
 (defn ^:private ch-map [->handler]
-  {:on-open    (comp pws/on-open ->handler)
+  {:on-open    (comp pps/on-open ->handler)
    :on-message (fn [ch msg]
-                 (pws/on-message (->handler ch) msg))
+                 (pps/on-message (->handler ch) msg))
    :on-close   (fn [ch _]
-                 (pws/on-close (->handler ch)))})
+                 (pps/on-close (->handler ch)))})
 
 (defn ^:private ->handler-fn [params {:keys [->channel ->handler]}]
   (let [handler (promise)]
@@ -117,7 +117,7 @@
                :pubsub           pubsub
                :state            (ref nil)}]
       (reify
-        pws/IHandler
+        pps/IHandler
         (on-open [_]
           (handle-open ctx channel))
         (on-message [_ msg]
@@ -151,21 +151,3 @@
    (send-user! pubsub user-id event-id event nil))
   ([pubsub user-id event-id event ctx]
    (pubsub/publish! pubsub [::user user-id] [event-id event (assoc (->ctx ctx) :user/id user-id)])))
-
-(defn open? [ch]
-  (pws/open? ch))
-
-(defn send! [ch msg]
-  (pws/send! ch msg))
-
-(defn close! [ch]
-  (pws/close! ch))
-
-(defn on-open [handler]
-  (pws/on-open handler))
-
-(defn on-close [handler]
-  (pws/on-close handler))
-
-(defn on-message [handler msg]
-  (pws/on-message handler msg))

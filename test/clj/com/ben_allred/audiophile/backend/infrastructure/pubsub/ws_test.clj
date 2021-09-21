@@ -2,6 +2,7 @@
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
@@ -31,7 +32,7 @@
     (testing "->handler"
       (let [handler (->handler request stub)]
         (testing "#on-open"
-          (ws/on-open handler)
+          (ps/on-open handler)
           (Thread/sleep 300)
           (testing "establishes a heartbeat"
             (let [msgs (frequencies (map first (stubs/calls stub :send!)))]
@@ -63,12 +64,12 @@
               (is (empty? msgs)))))
         (testing "#on-message"
           (testing "responds to keep-alive message"
-            (ws/on-message handler [:serialized [:conn/ping]])
+            (ps/on-message handler [:serialized [:conn/ping]])
             (let [msgs (into #{} (map first) (stubs/calls stub :send!))]
               (is (contains? msgs [:conn/pong])))))
 
         (testing "#on-close"
-          (ws/on-close handler)
+          (ps/on-close handler)
           (stubs/init! stub)
           (stubs/set-stub! stub :open? false)
           (testing "unsubscribes from topics"
@@ -99,19 +100,17 @@
     (testing "->channel"
       (let [channel (->channel request stub)]
         (testing "#open?"
-          (is (= ::open? (ws/open? channel))))
+          (is (= ::open? (ps/open? channel))))
 
         (testing "#send!"
-          (ws/send! channel ::msg)
+          (ps/send! channel ::msg)
           (let [[[msg] :as calls] (stubs/calls stub :send!)]
             (testing "send the serialized message"
               (is (= 1 (count calls)))
               (is (= [:serialized ::msg] msg)))))
 
         (testing "#close!"
-          (is (= ::close! (ws/close! channel)))
-
           (testing "when the underlying channel throws an exception"
             (stubs/set-stub! stub :close! (fn [] (throw (Exception.))))
             (testing "returns nil"
-              (is (nil? (ws/close! channel))))))))))
+              (is (nil? (ps/close! channel))))))))))

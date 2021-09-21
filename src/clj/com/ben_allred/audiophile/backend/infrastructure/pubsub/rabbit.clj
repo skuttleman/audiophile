@@ -1,6 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -12,7 +12,8 @@
     [langohr.consumers :as lc]
     [langohr.core :as rmq]
     [langohr.queue :as lq])
-  (:import (java.io Closeable)))
+  (:import
+    (java.io Closeable)))
 
 (defn ^:private ->handler [handlers]
   (fn [msg]
@@ -22,10 +23,10 @@
 (deftype RabbitMQPublisher [ch]
   ppubsub/IPub
   (publish! [_ topic event]
-    (pws/send! ch (maps/->m topic event))))
+    (pps/send! ch (maps/->m topic event))))
 
 (deftype RabbitMQChannel [ch queue-name serde]
-  pws/IChannel
+  pps/IChannel
   (open? [_]
     (rmq/open? ch))
   (send! [_ msg]
@@ -35,7 +36,7 @@
     (u/silent!
       (some-> ch rmq/close)))
 
-  pws/IMQChannel
+  pps/IMQChannel
   (subscribe! [_ handler opts]
     (letfn [(handler* [_ch _metadata ^bytes msg]
               (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
@@ -43,7 +44,7 @@
       (lc/subscribe ch queue-name handler* opts))))
 
 (deftype RabbitMQConnection [conn queue-name serde]
-  pws/IMQConnection
+  pps/IMQConnection
   (chan [_ opts]
     (let [ch (lch/open conn)]
       (lq/declare ch queue-name opts)
@@ -70,9 +71,9 @@
   (.close ^Closeable conn))
 
 (defn publisher [{:keys [conn]}]
-  (let [ch (pws/chan conn {:exclusive false :auto-delete false})]
+  (let [ch (pps/chan conn {:exclusive false :auto-delete false})]
     (->RabbitMQPublisher ch)))
 
 (defn subscriber [{:keys [conn handlers]}]
-  (let [ch (pws/chan conn {:exclusive false :auto-delete false})]
-    (pws/subscribe! ch (->handler handlers) {:auto-ack true})))
+  (let [ch (pps/chan conn {:exclusive false :auto-delete false})]
+    (pps/subscribe! ch (->handler handlers) {:auto-ack true})))

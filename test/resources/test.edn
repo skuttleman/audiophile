@@ -12,6 +12,9 @@
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
 
+                      [:duct/const :services/rabbitmq#conn]
+                      ^:promote #ig/ref :audiophile.test/rabbitmq#conn
+
                       :audiophile.services.ws/->handler
                       ^:promote {:heartbeat-int-ms 250}
 
@@ -31,4 +34,7 @@
 
                       :audiophile.migrations/migrator
                       {:datasource          #ig/ref :audiophile.test/datasource
-                       :migrations-res-path #ig/ref :resources/migration-path}}}]
+                       :migrations-res-path #ig/ref :resources/migration-path}
+
+                      :audiophile.test/rabbitmq#conn
+                      {}}}]
