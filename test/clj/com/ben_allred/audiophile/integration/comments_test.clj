@@ -81,7 +81,7 @@
                   (assert/has? {:comment/file-version-id file-version-id
                                 :comment/body            "comment body"
                                 :comment/id              uuid?}
-                               (log/spy (get-in response [:body :data]))))))))
+                               (get-in response [:body :data])))))))
 
         (testing "when authenticated as a user without file access"
           (let [user {:user/id (uuids/random)}

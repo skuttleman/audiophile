@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -10,57 +11,68 @@
     [langohr.channel :as lch]
     [langohr.consumers :as lc]
     [langohr.core :as rmq]
-    [langohr.queue :as lq]))
+    [langohr.queue :as lq])
+  (:import (java.io Closeable)))
 
-(defn ^:private close! [ch]
-  (u/silent!
-    (some-> ch rmq/close)))
+(defn ^:private ->handler [handlers]
+  (fn [msg]
+    (doseq [handler handlers]
+      (handler msg))))
 
-(defn ^:private ->handler [handlers serde]
-  (fn [_ metadata ^bytes msg]
-    (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
-      (when-not (get-in (log/spy :report "HANDLER" msg) [:event 1 :event/model-id])
-        (log/warn "MISSING MODEL_ID" (get-in msg [:event 1 :event/data])))
-      (doseq [handler handlers]
-        (handler metadata msg)))))
-
-(deftype RabbitMQPublisher [conn ch queue-name serde]
+(deftype RabbitMQPublisher [ch]
   ppubsub/IPub
   (publish! [_ topic event]
-    (let [msg (serdes/serialize serde (maps/->m topic event))]
+    (pws/send! ch (maps/->m topic event))))
+
+(deftype RabbitMQChannel [ch queue-name serde]
+  pws/IChannel
+  (open? [_]
+    (rmq/open? ch))
+  (send! [_ msg]
+    (let [msg (serdes/serialize serde msg)]
       (lb/publish ch "" queue-name msg {:content-type (serdes/mime-type serde)})))
+  (close! [_]
+    (u/silent!
+      (some-> ch rmq/close)))
+
+  pws/IMQChannel
+  (subscribe! [_ handler opts]
+    (letfn [(handler* [_ch _metadata ^bytes msg]
+              (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
+                (handler msg)))]
+      (lc/subscribe ch queue-name handler* opts))))
+
+(deftype RabbitMQConnection [conn queue-name serde]
+  pws/IMQConnection
+  (chan [_ opts]
+    (let [ch (lch/open conn)]
+      (lq/declare ch queue-name opts)
+      (->RabbitMQChannel ch queue-name serde)))
 
   phttp/ICheckHealth
   (display-name [_]
-    ::RabbitMQPublisher)
+    ::RabbitMQConnection)
   (healthy? [_]
-    (rmq/open? ch))
+    (rmq/open? conn))
   (details [_]
     {:queue queue-name
-     :serde (serdes/mime-type serde)}))
+     :serde (serdes/mime-type serde)})
 
-(defn conn [cfg]
-  (rmq/connect cfg))
+  Closeable
+  (close [_]
+    (u/silent!
+      (some-> conn rmq/close))))
+
+(defn conn [{:keys [cfg queue-name serde]}]
+  (->RabbitMQConnection (rmq/connect cfg) queue-name serde))
 
 (defn conn#stop [conn]
-  (close! conn))
+  (.close ^Closeable conn))
 
-(defn publisher [{:keys [conn queue-name serde]}]
-  (let [ch (lch/open conn)]
-    (->RabbitMQPublisher conn ch queue-name serde)))
+(defn publisher [{:keys [conn]}]
+  (let [ch (pws/chan conn {:exclusive false :auto-delete false})]
+    (->RabbitMQPublisher ch)))
 
-(deftype RabbitMQSubscriber [ch queue-name serde]
-  phttp/ICheckHealth
-  (display-name [_]
-    ::RabbitMQSubscriber)
-  (healthy? [_]
-    (rmq/open? ch))
-  (details [_]
-    {:queue queue-name
-     :serde (serdes/mime-type serde)}))
-
-(defn subscriber [{:keys [conn handlers queue-name serde]}]
-  (let [ch (lch/open conn)]
-    (lq/declare ch queue-name {:exclusive false :auto-delete false})
-    (lc/subscribe ch queue-name (->handler handlers serde) {:auto-ack true})
-    (->RabbitMQSubscriber ch queue-name serde)))
+(defn subscriber [{:keys [conn handlers]}]
+  (let [ch (pws/chan conn {:exclusive false :auto-delete false})]
+    (pws/subscribe! ch (->handler handlers) {:auto-ack true})))

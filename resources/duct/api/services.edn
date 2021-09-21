@@ -16,6 +16,9 @@
  [:duct/const :services/rabbitmq#sub]
  #ig/ref :audiophile.services.rabbitmq/subscriber
 
+ [:duct/const :services/rabbitmq#conn]
+ #ig/ref :audiophile.services.rabbitmq/conn
+
  [:duct/const :services/pubsub]
  #ig/ref :audiophile.services.pubsub/memory
 
@@ -59,20 +62,18 @@
   :region     #ig/ref :env.s3/region
   :secret-key #ig/ref :env.s3/secret-key}
 
- [:audiophile.services.rabbitmq/publisher :component/health]
- {:conn       #ig/ref :audiophile.services.rabbitmq/conn
+ :audiophile.services.rabbitmq/publisher
+ {:conn #ig/ref :services/rabbitmq#conn}
+
+ :audiophile.services.rabbitmq/subscriber
+ {:conn     #ig/ref :services/rabbitmq#conn
+  :handlers [#ig/ref :audiophile.services.rabbitmq/db-handler
+             #ig/ref :audiophile.services.rabbitmq/ws-handler]}
+
+ [:audiophile.services.rabbitmq/conn :component/health]
+ {:cfg        {:uri #ig/ref :env.rabbitmq/uri}
   :queue-name "core.events"
   :serde      #ig/ref :serdes/edn}
-
- [:audiophile.services.rabbitmq/subscriber :component/health]
- {:conn       #ig/ref :audiophile.services.rabbitmq/conn
-  :handlers   [#ig/ref :audiophile.services.rabbitmq/db-handler
-               #ig/ref :audiophile.services.rabbitmq/ws-handler]
-  :queue-name "core.events"
-  :serde      #ig/ref :serdes/edn}
-
- :audiophile.services.rabbitmq/conn
- {:uri #ig/ref :env.rabbitmq/uri}
 
  [:audiophile.services.pubsub/memory :component/health]
  {}

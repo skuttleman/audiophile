@@ -31,7 +31,7 @@
   (boolean (seq (repos/execute! executor query))))
 
 (defn db-handler [{:keys [repo]}]
-  (fn [_ {[_ event] :event}]
+  (fn [{[_ event] :event}]
     (try
       (repos/transact! repo
                        events/insert-event!
@@ -41,7 +41,7 @@
         (log/error ex "failed to save event to the db" event)))))
 
 (defn ws-handler [{:keys [pubsub]}]
-  (fn [_ {:keys [topic event]}]
+  (fn [{:keys [topic event]}]
     (try
       (pubsub/publish! pubsub topic event)
       (catch Throwable ex
