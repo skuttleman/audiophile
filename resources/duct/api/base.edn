@@ -2,6 +2,7 @@
 [#duct/include "duct/common/base.edn"
  #duct/include "duct/api/models.edn"
  #duct/include "duct/api/env.edn"
+ #duct/include "duct/api/queues.edn"
  #duct/include "duct/api/repositories.edn"
  #duct/include "duct/api/routes.edn"
  #duct/include "duct/api/serdes.edn"

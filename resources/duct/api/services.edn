@@ -10,12 +10,6 @@
  [:duct/const :services/s3-client]
  #ig/ref :audiophile.services.s3/client
 
- [:duct/const :services/rabbitmq#pub]
- #ig/ref :audiophile.services.rabbitmq/publisher
-
- [:duct/const :services/rabbitmq#sub]
- #ig/ref :audiophile.services.rabbitmq/subscriber
-
  [:duct/const :services/rabbitmq#conn]
  #ig/ref :audiophile.services.rabbitmq/conn
 
@@ -62,18 +56,30 @@
   :region     #ig/ref :env.s3/region
   :secret-key #ig/ref :env.s3/secret-key}
 
- :audiophile.services.rabbitmq/publisher
- {:conn #ig/ref :services/rabbitmq#conn}
+ [:audiophile.services.rabbitmq/publisher :rabbitmq.pub/commands]
+ {:conn      #ig/ref :services/rabbitmq#conn
+  :queue-cfg #ig/ref :mq.channel/commands}
 
- :audiophile.services.rabbitmq/subscriber
- {:conn     #ig/ref :services/rabbitmq#conn
-  :handlers [#ig/ref :audiophile.services.rabbitmq/db-handler
-             #ig/ref :audiophile.services.rabbitmq/ws-handler]}
+ [:audiophile.services.rabbitmq/publisher :rabbitmq.pub/events]
+ {:conn      #ig/ref :services/rabbitmq#conn
+  :queue-cfg #ig/ref :mq.channel/events}
+
+ [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/events#persist]
+ {:conn      #ig/ref :services/rabbitmq#conn
+  :handler   #ig/ref :audiophile.services.rabbitmq/db-handler
+  :queue-cfg #ig/ref :mq.channel/events
+  :opts      {:auto-ack true
+              :internal/handler "persist"}}
+
+ [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/events#ws]
+ {:conn      #ig/ref :services/rabbitmq#conn
+  :handler   #ig/ref :audiophile.services.rabbitmq/ws-handler
+  :queue-cfg #ig/ref :mq.channel/events
+  :opts      {:auto-ack true
+              :internal/handler "ws"}}
 
  [:audiophile.services.rabbitmq/conn :component/health]
- {:cfg        {:uri #ig/ref :env.rabbitmq/uri}
-  :queue-name "core.events"
-  :serde      #ig/ref :serdes/edn}
+ {:cfg {:uri #ig/ref :env.rabbitmq/uri}}
 
  [:audiophile.services.pubsub/memory :component/health]
  {}

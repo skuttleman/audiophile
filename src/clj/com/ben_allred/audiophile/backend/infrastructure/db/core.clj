@@ -24,8 +24,8 @@
   prepos/IExecute
   (execute! [_ query opts]
     (let [formatted (mapv #(cond-> % (inst? %) (-> .getTime Timestamp.)) (prepos/format query-formatter query))]
-      (log/debug "[TX] - formatting:" query)
-      (log/debug "[TX] - executing:" formatted)
+      (log/debug "[TX] - query:" query)
+      (log/info "[TX] - executing:" (first formatted))
       (jdbc/execute! conn formatted (assoc (:sql/opts opts)
                                            :builder-fn (->builder-fn opts))))))
 

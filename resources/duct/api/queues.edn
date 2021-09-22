@@ -1,0 +1,19 @@
+{[:duct/const :mq.channel/events]
+ {:name     "core.events"
+  :type     :fanout
+  :consumer #ig/ref :env.rabbitmq/consumer-group
+  :opts     {:durable     true
+             :exclusive   false
+             :auto-delete false
+             :arguments {"x-message-ttl" 604800000}}
+  :serde    #ig/ref :serdes/edn}
+
+ [:duct/const :mq.channel/commands]
+ {:name     "core.commands"
+  :type     :fanout
+  :consumer #ig/ref :env.rabbitmq/consumer-group
+  :opts     {:durable     true
+             :exclusive   false
+             :auto-delete false
+             :arguments {"x-message-ttl" 604800000}}
+  :serde    #ig/ref :serdes/edn}}

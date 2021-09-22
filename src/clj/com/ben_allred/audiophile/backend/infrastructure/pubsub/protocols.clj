@@ -14,7 +14,7 @@
 
 (defprotocol IMQConnection
   "Abstraction for an MQ Connection"
-  (chan [this opts] "Creates an [[IMQChannel]] from an open connection"))
+  (chan [this cfg] "Creates an [[IMQChannel]] from an open connection"))
 
 (defprotocol IMQChannel
   "Abstraction for an MQ Channel"

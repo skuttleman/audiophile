@@ -11,27 +11,24 @@
     [langohr.channel :as lch]
     [langohr.consumers :as lc]
     [langohr.core :as rmq]
+    [langohr.exchange :as le]
     [langohr.queue :as lq])
   (:import
     (java.io Closeable)))
-
-(defn ^:private ->handler [handlers]
-  (fn [msg]
-    (doseq [handler handlers]
-      (handler msg))))
 
 (deftype RabbitMQPublisher [ch]
   ppubsub/IPub
   (publish! [_ topic event]
     (pps/send! ch (maps/->m topic event))))
 
-(deftype RabbitMQChannel [ch queue-name serde]
+(deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
   (open? [_]
     (rmq/open? ch))
   (send! [_ msg]
     (let [msg (serdes/serialize serde msg)]
-      (lb/publish ch "" queue-name msg {:content-type (serdes/mime-type serde)})))
+      (log/info "publishing to" exchange)
+      (lb/publish ch exchange "" msg {:content-type (serdes/mime-type serde)})))
   (close! [_]
     (u/silent!
       (some-> ch rmq/close)))
@@ -41,14 +38,32 @@
     (letfn [(handler* [_ch _metadata ^bytes msg]
               (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
                 (handler msg)))]
-      (lc/subscribe ch queue-name handler* opts))))
+      (let [queue-name (if-let [handler (:internal/handler opts)]
+                         (let [queue-name (str queue-name ":" handler)]
+                           (lq/declare ch queue-name ch-opts)
+                           (lq/bind ch queue-name exchange)
+                           queue-name)
+                         queue-name)]
+        (log/info "subscribing" queue-name "to" exchange)
+        (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler))))))
 
-(deftype RabbitMQConnection [conn queue-name serde]
+(defmulti ->channel :type)
+
+(defmethod ->channel :fanout
+  [cfg]
+  (let [ch (lch/open (::conn cfg))
+        exchange (:name cfg)
+        queue-name (str exchange "." (:consumer cfg))
+        ch-opts (:opts cfg)]
+    (le/declare ch exchange "fanout" ch-opts)
+    (lq/declare ch queue-name ch-opts)
+    (lq/bind ch queue-name exchange)
+    (->RabbitMQFanoutChannel ch exchange queue-name (:serde cfg) ch-opts)))
+
+(deftype RabbitMQConnection [conn]
   pps/IMQConnection
-  (chan [_ opts]
-    (let [ch (lch/open conn)]
-      (lq/declare ch queue-name opts)
-      (->RabbitMQChannel ch queue-name serde)))
+  (chan [_ cfg]
+    (->channel (assoc cfg ::conn conn)))
 
   phttp/ICheckHealth
   (display-name [_]
@@ -56,24 +71,23 @@
   (healthy? [_]
     (rmq/open? conn))
   (details [_]
-    {:queue queue-name
-     :serde (serdes/mime-type serde)})
+    nil)
 
   Closeable
   (close [_]
     (u/silent!
       (some-> conn rmq/close))))
 
-(defn conn [{:keys [cfg queue-name serde]}]
-  (->RabbitMQConnection (rmq/connect cfg) queue-name serde))
+(defn conn [{:keys [cfg]}]
+  (->RabbitMQConnection (rmq/connect cfg)))
 
 (defn conn#stop [conn]
   (.close ^Closeable conn))
 
-(defn publisher [{:keys [conn]}]
-  (let [ch (pps/chan conn {:exclusive false :auto-delete false})]
+(defn publisher [{:keys [conn queue-cfg]}]
+  (let [ch (pps/chan conn queue-cfg)]
     (->RabbitMQPublisher ch)))
 
-(defn subscriber [{:keys [conn handlers]}]
-  (let [ch (pps/chan conn {:exclusive false :auto-delete false})]
-    (pps/subscribe! ch (->handler handlers) {:auto-ack true})))
+(defn subscriber [{:keys [conn handler queue-cfg opts]}]
+  (let [ch (pps/chan conn queue-cfg)]
+    (pps/subscribe! ch handler opts)))

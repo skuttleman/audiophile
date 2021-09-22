@@ -73,7 +73,8 @@
  {:->response    #ig/ref :audiophile.spec/id
   :handler       #ig/ref :audiophile.services.ws/handler
   :spec          :api.ws/connect
-  :internal/deps #{#ig/ref :services/rabbitmq#sub}}
+  :internal/deps #{#ig/ref :rabbitmq.sub/events#persist
+                   #ig/ref :rabbitmq.sub/events#ws}}
 
  [:audiophile.spec/with-spec :api.handler/artifacts#post]
  {:->response #ig/ref :audiophile.spec/no-content
