@@ -13,7 +13,7 @@
   (if (rcomments/insert-comment-access? executor comment opts)
     (let [comment-id (rcomments/insert-comment! executor comment opts)]
       (rcomments/find-event-comment executor comment-id))
-    (throw (ex-info "insufficient access" {}))))
+    (throw (ex-info "insufficient access" comment))))
 
 (deftype CommentAccessor [repo]
   pint/ICommentAccessor

@@ -4,17 +4,16 @@
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.projects.core :as rprojects]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create* [executor project opts]
   (if (rprojects/insert-project-access? executor project opts)
-    (rprojects/insert-project! executor project opts)
-    (throw (ex-info "insufficient access" {}))))
-
-(defn ^:private on-project-created! [executor project-id opts]
-  (let [project (rprojects/find-event-project executor project-id)]
-    (rprojects/project-created! executor (:user/id opts) project opts)))
+    (let [project-id (rprojects/insert-project! executor project opts)]
+      (rprojects/find-event-project executor project-id))
+    (throw (ex-info "insufficient access" project))))
 
 (deftype ProjectAccessor [repo]
   pint/IProjectAccessor
@@ -24,13 +23,17 @@
   (query-one [_ opts]
     (repos/transact! repo rprojects/find-by-project-id (:project/id opts) opts))
   (create! [_ data opts]
-    (let [opts (assoc opts
-                      :error/command :project/create!
-                      :error/reason "insufficient access to create project"
-                      :on-success on-project-created!)]
-      (crepos/command! repo opts create* data))))
+    (repos/transact! repo create* data opts)))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."
   [{:keys [repo]}]
   (->ProjectAccessor repo))
+
+(defn command-handler [{:keys [accessor pubsub]}]
+  (letfn [(predicate [{[_ {:command/keys [type]}] :msg}]
+            (= :project/create! type))
+          (handler [{[_ command ctx] :msg}]
+            (let [project (int/create! accessor (:command/data command) ctx)]
+              (ps/emit-event! pubsub (:user/id ctx) (:project/id project) :project/created project ctx)))]
+    (crepos/command-handler pubsub predicate "saving project to db" handler)))

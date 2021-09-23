@@ -109,6 +109,8 @@
                                  (unsubscribe! [_ _ _])))
           tx (trepos/stub-transactor (->project-executor {:pubsub pubsub}))
           repo (rprojects/->ProjectAccessor tx)
+          handler (rprojects/command-handler {:accessor repo
+                                              :pubsub   pubsub})
           [project-id team-id user-id] (repeatedly uuids/random)
           project {:project/id      project-id
                    :project/name    "some project"
@@ -119,11 +121,13 @@
                     [{:id project-id}]
                     [project]
                     [{:id "event-id"}])
-        @(int/create! repo
-                      {:created-at      :whenever
-                       :project/team-id team-id
-                       :other           :junk}
-                      {:user/id user-id})
+        (handler {:msg [::id
+                        {:command/type :project/create!
+                         :command/data {:created-at      :whenever
+                                        :project/team-id team-id
+                                        :other           :junk}}
+                        {:user/id user-id}]})
+
         (let [[[access] [insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "verifies team access"
             (is (= {:select [1]
@@ -173,7 +177,12 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          (handler {:msg [::id
+                          {:command/type :project/create!
+                           :command/data {}}
+                          {:user/id    user-id
+                           :request/id request-id}]})
+
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -187,7 +196,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :project/create!
-                                         :error/reason  "insufficient access to create project"}
+                                         :error/reason  "Executor"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -202,7 +211,12 @@
                       [{:id "project-id"}])
           (stubs/use! pubsub :publish!
                       (ex-info "Pubsub" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          (handler {:msg [::id
+                          {:command/type :project/create!
+                           :command/data {}}
+                          {:user/id    user-id
+                           :request/id request-id}]})
+
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
@@ -214,7 +228,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :project/create!
-                                         :error/reason  "insufficient access to create project"}
+                                         :error/reason  "Pubsub"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id

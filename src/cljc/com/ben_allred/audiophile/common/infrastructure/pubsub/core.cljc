@@ -3,16 +3,16 @@
     [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
-(defn publish! [pubsub topic event]
-  (log/debug "[PubSub] publishing event to topic" topic)
-  (ppubsub/publish! pubsub topic event)
+(defn publish! [pubsub topic msg]
+  (log/debug "[PubSub] publishing msg to topic" topic)
+  (ppubsub/publish! pubsub topic msg)
   pubsub)
 
 (defn subscribe! [pubsub key topic listener]
   (log/debug "[PubSub] subscribing" key "to topic" topic)
-  (ppubsub/subscribe! pubsub key topic (fn [topic event]
+  (ppubsub/subscribe! pubsub key topic (fn [topic msg]
                                          (log/debug "[PubSub] received msg for topic" topic)
-                                         (listener topic event)))
+                                         (listener topic msg)))
   pubsub)
 
 (defn unsubscribe!
