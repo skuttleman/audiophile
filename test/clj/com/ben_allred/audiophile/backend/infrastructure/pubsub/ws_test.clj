@@ -39,7 +39,7 @@
               (is (<= 2 (get msgs [:conn/ping])))))
 
           (testing "subscribes to broadcasts"
-            (ws/broadcast! pubsub "event-id" {:some :event})
+            (ps/broadcast! pubsub "event-id" {:some :event})
             (let [msgs (into #{}
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
@@ -47,7 +47,7 @@
               (is (contains? msgs [:event/broadcast "event-id" {:some :event} nil]))))
 
           (testing "subscribes to user-level messages"
-            (ws/send-user! pubsub ::user-id "event-id" {:some :event})
+            (ps/send-user! pubsub ::user-id "event-id" {:some :event})
             (let [msgs (into #{}
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
@@ -56,7 +56,7 @@
 
           (testing "is not subscribed to other topics"
             (stubs/init! stub)
-            (ws/send-user! pubsub ::unknown "event-id" {:some :event})
+            (ps/send-user! pubsub ::unknown "event-id" {:some :event})
             (let [msgs (into #{}
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
@@ -73,8 +73,8 @@
           (stubs/init! stub)
           (stubs/set-stub! stub :open? false)
           (testing "unsubscribes from topics"
-            (ws/broadcast! pubsub "event-id" {:another :event})
-            (ws/send-user! pubsub ::user-id "event-id" {:another :event})
+            (ps/broadcast! pubsub "event-id" {:another :event})
+            (ps/send-user! pubsub ::user-id "event-id" {:another :event})
             (is (empty? (stubs/calls stub :send!))))
 
           (testing "stops sending heartbeats"

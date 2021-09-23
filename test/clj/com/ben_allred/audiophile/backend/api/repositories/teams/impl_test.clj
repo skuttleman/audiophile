@@ -197,7 +197,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :team/create
+                      :event/data       {:error/command :team/create!
                                          :error/reason  "insufficient access to create team"}
                       :event/emitted-by user-id}
                      event))
@@ -224,7 +224,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :team/create
+                      :event/data       {:error/command :team/create!
                                          :error/reason  "insufficient access to create team"}
                       :event/emitted-by user-id}
                      event))

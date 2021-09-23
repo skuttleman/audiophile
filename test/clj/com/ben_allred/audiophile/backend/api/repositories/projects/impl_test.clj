@@ -186,7 +186,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :project/create
+                      :event/data       {:error/command :project/create!
                                          :error/reason  "insufficient access to create project"}
                       :event/emitted-by user-id}
                      event))
@@ -213,7 +213,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :project/create
+                      :event/data       {:error/command :project/create!
                                          :error/reason  "insufficient access to create project"}
                       :event/emitted-by user-id}
                      event))

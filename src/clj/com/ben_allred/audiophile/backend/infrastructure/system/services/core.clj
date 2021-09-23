@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.core
   (:require
+    [com.ben-allred.audiophile.backend.api.repositories.comments.impl :as comments]
     [com.ben-allred.audiophile.backend.infrastructure.auth.core :as auth]
     [com.ben-allred.audiophile.backend.infrastructure.auth.google :as goog]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
@@ -43,7 +44,10 @@
   (pubsub.rabbit/subscriber rabbitmq))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/db-handler [_ cfg]
-  (cdb/db-handler cfg))
+  (cdb/event->db-handler cfg))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/ws-handler [_ cfg]
-  (cdb/ws-handler cfg))
+  (ws/event->ws-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#comments [_ cfg]
+  (comments/command-handler cfg))

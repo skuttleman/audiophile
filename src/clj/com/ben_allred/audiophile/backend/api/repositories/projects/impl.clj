@@ -25,7 +25,7 @@
     (repos/transact! repo rprojects/find-by-project-id (:project/id opts) opts))
   (create! [_ data opts]
     (let [opts (assoc opts
-                      :error/command :project/create
+                      :error/command :project/create!
                       :error/reason "insufficient access to create project"
                       :on-success on-project-created!)]
       (crepos/command! repo opts create* data))))

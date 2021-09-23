@@ -24,7 +24,8 @@
         (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
                   #{(ig/ref :routes/table#api)
                     (ig/ref :routes/table#auth)
-                    (ig/ref :routes/table#event)})
+                    (ig/ref :routes/table#events)
+                    (ig/ref :routes/table#jobs)})
         (duct/prep-config [:duct.profile/base :duct.profile/dev :duct.profile/test]))))
 
 (defn ^:private mocked-cfg

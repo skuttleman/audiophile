@@ -48,19 +48,19 @@
   pint/IFileAccessor
   (create-artifact! [_ data opts]
     (let [opts (assoc opts
-                      :error/command :artifact/create
+                      :error/command :artifact/create!
                       :error/reason "insufficient access to create artifact"
                       :on-success on-artifact-created!)]
       (crepos/command! repo opts create-artifact* data)))
   (create-file! [_ data opts]
     (let [opts (assoc opts
-                      :error/command :file/create
+                      :error/command :file/create!
                       :error/reason "insufficient access to create file"
                       :on-success on-file-created!)]
       (crepos/command! repo opts create-file* data)))
   (create-file-version! [_ data opts]
     (let [opts (assoc opts
-                      :error/command :file-version/create
+                      :error/command :file-version/create!
                       :error/reason "insufficient access to create file-version"
                       :on-success on-file-version-created!)]
       (crepos/command! repo opts create-file-version* data)))

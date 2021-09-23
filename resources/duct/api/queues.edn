@@ -5,7 +5,7 @@
   :opts     {:durable     true
              :exclusive   false
              :auto-delete false
-             :arguments {"x-message-ttl" 604800000}}
+             :arguments   {"x-message-ttl" 604800000}}
   :serde    #ig/ref :serdes/edn}
 
  [:duct/const :mq.channel/commands]
@@ -15,5 +15,5 @@
   :opts     {:durable     true
              :exclusive   false
              :auto-delete false
-             :arguments {"x-message-ttl" 604800000}}
+             :arguments   {"x-message-ttl" 604800000}}
   :serde    #ig/ref :serdes/edn}}

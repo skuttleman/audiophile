@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
@@ -92,11 +93,11 @@
 
   pt/ITeamsEventEmitter
   (team-created! [_ user-id team ctx]
-    (cdb/emit! pubsub user-id (:team/id team) :team/created team ctx))
+    (ps/emit-event! pubsub user-id (:team/id team) :team/created team ctx))
 
   pint/IEmitter
   (command-failed! [_ model-id opts]
-    (cdb/command-failed! pubsub model-id opts)))
+    (ps/command-failed! pubsub model-id opts)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[TeamsEventEmitter]]

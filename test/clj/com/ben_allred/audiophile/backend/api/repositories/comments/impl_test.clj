@@ -38,7 +38,7 @@
                     [{:some :result}])
         (let [result (int/query-many repo {:user/id user-id
                                            :file/id file-id})
-              [{:keys [from select where] :as foo}] (colls/only! (stubs/calls tx :execute!))]
+              [{:keys [from select where]}] (colls/only! (stubs/calls tx :execute!))]
           (testing "sends a query to the repository"
             (is (= [:comments] from))
             (is (= #{[:comments.id "comment/id"]
@@ -82,6 +82,8 @@
                                  (unsubscribe! [_ _ _])))
           tx (trepos/stub-transactor (->comment-executor {:pubsub pubsub}))
           repo (rcomments/->CommentAccessor tx)
+          handler (rcomments/command-handler {:accessor repo
+                                              :pubsub   pubsub})
           [comment-id file-version-id user-id] (repeatedly uuids/random)
           comment {:comment/id              comment-id
                    :comment/name            "some comment"
@@ -91,11 +93,14 @@
                     [{:id "team-id"}]
                     [{:id comment-id}]
                     [comment])
-        @(int/create! repo
-                      {:created-at              :whenever
-                       :comment/file-version-id file-version-id
-                       :other                   :junk}
-                      {:user/id user-id})
+        (handler
+          {:msg [::topic
+                 {:command/type :comment/create!
+                  :command/data {:created-at              :whenever
+                                 :comment/file-version-id file-version-id
+                                 :other                   :junk}}
+                 {:user/id user-id}]})
+
         (let [[[access] [insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "verifies file access"
             (is (= {:select #{1}
@@ -152,7 +157,9 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          (handler {:msg [::topic
+                          {:command/type :comment/create!}
+                          {:user/id user-id :request/id request-id}]})
 
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
@@ -163,8 +170,8 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :comment/create
-                                         :error/reason  "insufficient access to create comment"}
+                      :event/data       {:error/command :comment/create!
+                                         :error/reason  "Executor"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -181,7 +188,10 @@
                       [comment])
           (stubs/use! pubsub :publish!
                       (ex-info "Pubsub" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          (handler {:msg [::topic
+                          {:command/type :comment/create!}
+                          {:user/id user-id :request/id request-id}]})
+
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
@@ -192,8 +202,8 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :comment/create
-                                         :error/reason  "insufficient access to create comment"}
+                      :event/data       {:error/command :comment/create!
+                                         :error/reason  "Pubsub"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id

@@ -31,7 +31,7 @@
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
     (let [opts (assoc opts
-                      :error/command :team/create
+                      :error/command :team/create!
                       :error/reason "insufficient access to create team"
                       :on-success on-team-created!)]
       (crepos/command! repo opts create* data))))

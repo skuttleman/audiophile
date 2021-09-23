@@ -96,31 +96,38 @@
   (.close datasource))
 
 (defmethod ig/init-key :audiophile.test/rabbitmq#conn [_ _]
-  (let [ch (async/chan 100)
-        tap (async/mult ch)]
+  (let [chs (atom nil)]
     (reify
       pws/IMQConnection
-      (chan [_ _]
+      (chan [_ {:keys [name]}]
+        (swap! chs (fn [m]
+                     (let [[ch tap] (or (get m name)
+                                        (let [ch (async/chan 100)]
+                                          [ch (async/mult ch)]))]
+                       (assoc m name [ch tap]))))
         (reify
           pws/IMQChannel
           (subscribe! [_ handler _]
-            (async/go-loop []
-              (let [mq-ch (async/tap tap (async/chan))]
+            (let [mq-ch (async/tap (second (get @chs name))
+                                   (async/chan))]
+              (async/go-loop []
                 (when-let [msg (async/<! mq-ch)]
                   (handler msg)
                   (recur)))))
 
           pws/IChannel
           (open? [_]
-            (not (clojure.core.async.impl.protocols/closed? ch)))
+            (let [ch (first (get @chs name))]
+              (not (async.protocols/closed? ch))))
           (send! [_ msg]
-            (async/go
-              (async/>! ch msg)))
+            (let [ch (first (get @chs name))]
+              (async/go
+                (async/>! ch msg))))
           (close! [_])))
 
       Closeable
       (close [_]
-        (async/close! ch)))))
+        (run! async/close! (map first (vals @chs)))))))
 
 (defmethod ig/halt-key! :audiophile.test/rabbitmq#conn [_ conn]
   (.close ^Closeable conn))

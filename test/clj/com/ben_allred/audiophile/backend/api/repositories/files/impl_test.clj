@@ -119,7 +119,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create
+                      :event/data       {:error/command :artifact/create!
                                          :error/reason  "insufficient access to create artifact"}
                       :event/emitted-by user-id}
                      event))
@@ -146,7 +146,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create
+                      :event/data       {:error/command :artifact/create!
                                          :error/reason  "insufficient access to create artifact"}
                       :event/emitted-by user-id}
                      event))
@@ -171,7 +171,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create
+                      :event/data       {:error/command :artifact/create!
                                          :error/reason  "insufficient access to create artifact"}
                       :event/emitted-by user-id}
                      event))
@@ -480,7 +480,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file/create
+                      :event/data       {:error/command :file/create!
                                          :error/reason  "insufficient access to create file"}
                       :event/emitted-by user-id}
                      event))
@@ -509,7 +509,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file/create
+                      :event/data       {:error/command :file/create!
                                          :error/reason  "insufficient access to create file"}
                       :event/emitted-by user-id}
                      event))
@@ -613,7 +613,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file-version/create
+                      :event/data       {:error/command :file-version/create!
                                          :error/reason  "insufficient access to create file-version"}
                       :event/emitted-by user-id}
                      event))
@@ -640,7 +640,7 @@
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
-                      :event/data       {:error/command :file-version/create
+                      :event/data       {:error/command :file-version/create!
                                          :error/reason  "insufficient access to create file-version"}
                       :event/emitted-by user-id}
                      event))

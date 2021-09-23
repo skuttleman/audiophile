@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws
   (:require
     [clojure.core.async :as async]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
@@ -136,19 +137,9 @@
          ch-map
          (web.async/as-channel request))))
 
-(defn ^:private ->ctx [ctx]
-  (some-> ctx (select-keys #{:request/id :user/id})))
-
-(defn broadcast!
-  "Broadcast an event to all connections"
-  ([pubsub event-id event]
-   (broadcast! pubsub event-id event nil))
-  ([pubsub event-id event ctx]
-   (pubsub/publish! pubsub [::ps/broadcast] [event-id event (->ctx ctx)])))
-
-(defn send-user!
-  "Broadcast an event to all connections for a specific user"
-  ([pubsub user-id event-id event]
-   (send-user! pubsub user-id event-id event nil))
-  ([pubsub user-id event-id event ctx]
-   (pubsub/publish! pubsub [::ps/user user-id] [event-id event (assoc (->ctx ctx) :user/id user-id)])))
+(defn event->ws-handler [{:keys [predicate pubsub]
+                          :or   {predicate (constantly true)}}]
+  (crepos/msg-handler predicate
+                      "publishing event to ws"
+                      (fn [{:keys [msg topic]}]
+                        (pubsub/publish! pubsub topic msg))))

@@ -18,8 +18,8 @@
 
 (deftype RabbitMQPublisher [ch]
   ppubsub/IPub
-  (publish! [_ topic event]
-    (pps/send! ch (maps/->m topic event))))
+  (publish! [_ topic msg]
+    (pps/send! ch (maps/->m topic msg))))
 
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel

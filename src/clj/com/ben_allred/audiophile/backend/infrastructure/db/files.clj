@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
@@ -261,19 +262,19 @@
 
   pf/IArtifactsEventEmitter
   (artifact-created! [_ user-id artifact ctx]
-    (cdb/emit! pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
+    (ps/emit-event! pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
 
   pf/IFilesEventEmitter
   (file-created! [_ user-id file ctx]
-    (cdb/emit! pubsub user-id (:file/id file) :file/created file ctx))
+    (ps/emit-event! pubsub user-id (:file/id file) :file/created file ctx))
 
   pf/IFileVersionsEventEmitter
   (version-created! [_ user-id version ctx]
-    (cdb/emit! pubsub user-id (:file-version/id version) :file-version/created version ctx))
+    (ps/emit-event! pubsub user-id (:file-version/id version) :file-version/created version ctx))
 
   pint/IEmitter
   (command-failed! [_ model-id opts]
-    (cdb/command-failed! pubsub model-id opts)))
+    (ps/command-failed! pubsub model-id opts)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[FilesEventEmitter]]

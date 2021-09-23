@@ -1,12 +1,10 @@
-(ns com.ben-allred.audiophile.backend.infrastructure.db.common-test
+(ns ^:unit com.ben-allred.audiophile.backend.infrastructure.db.common-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [test.utils.stubs :as stubs]
     [test.utils.repositories :as trepos]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
@@ -23,60 +21,15 @@
                                            :user-events user-events})]
      (->executor executor))))
 
-(deftest emit!-test
-  (testing "(emit!)"
-    (let [pubsub (stubs/create (reify
-                                 ppubsub/IPub
-                                 (publish! [_ _ _])))
-          [user-id model-id request-id] (repeatedly uuids/random)
-          event-id (cdb/emit! pubsub user-id model-id :event/type {:some :data} {:request/id request-id})]
-      (testing "publishes an event"
-        (let [[topic [k v ctx]] (colls/only! (stubs/calls pubsub :publish!))]
-          (is (= [::ps/user user-id] topic))
-          (is (= k event-id))
-          (is (= {:event/id         event-id
-                  :event/model-id   model-id
-                  :event/type       :event/type
-                  :event/data       {:some :data}
-                  :event/emitted-by user-id}
-                 v))
-          (is (= {:request/id request-id
-                  :user/id    user-id}
-                 ctx)))))))
-
-(deftest command-failed!-test
-  (testing "(command-failed!)"
-    (let [pubsub (stubs/create (reify
-                                 ppubsub/IPub
-                                 (publish! [_ _ _])))
-          [user-id model-id request-id] (repeatedly uuids/random)
-          event-id (cdb/command-failed! pubsub model-id {:request/id    request-id
-                                                         :user/id       user-id
-                                                         :error/command :some/command
-                                                         :error/reason  "reason"})]
-      (testing "publishes an event"
-        (let [[topic [k v ctx]] (colls/only! (stubs/calls pubsub :publish!))]
-          (is (= [::ps/user user-id] topic))
-          (is (= k event-id))
-          (is (= {:event/id         event-id
-                  :event/model-id   model-id
-                  :event/type       :command/failed
-                  :event/data       {:error/command :some/command
-                                     :error/reason  "reason"}
-                  :event/emitted-by user-id}
-                 v))
-          (is (= {:request/id request-id
-                  :user/id    user-id}
-                 ctx)))))))
-
-(deftest db-handler-test
-  (testing "(db-handler)"
+(deftest event->db-handler-test
+  (testing "(event->db-handler)"
     (let [repo (trepos/stub-transactor ->event-executor)
-          handler (cdb/db-handler {:repo repo})
+          handler (cdb/event->db-handler {:repo repo})
           user-id (uuids/random)]
-      (handler {:event [:_ {:user/id    user-id
-                            :event/type :some/event
-                            :some       :data}]})
+      (handler {:msg [::id
+                      {:user/id    user-id
+                       :event/type :some/event
+                       :some       :data}]})
       (let [[query] (colls/only! (stubs/calls repo :execute!))
             value (colls/only! (:values query))]
         (is (= {:insert-into :events
