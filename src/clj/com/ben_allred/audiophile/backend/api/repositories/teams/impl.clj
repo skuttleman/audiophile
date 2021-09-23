@@ -4,7 +4,9 @@
     [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.teams.core :as rteams]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
@@ -15,12 +17,9 @@
 
 (defn ^:private create* [executor team opts]
   (if (rteams/insert-team-access? executor team opts)
-    (rteams/insert-team! executor team opts)
+    (let [team-id (rteams/insert-team! executor team opts)]
+      (rteams/find-event-team executor team-id))
     (throw (ex-info "insufficient access" {}))))
-
-(defn ^:private on-team-created! [executor team-id opts]
-  (let [team (rteams/find-event-team executor team-id)]
-    (rteams/team-created! executor (:user/id opts) team opts)))
 
 (deftype TeamAccessor [repo]
   pint/ITeamAccessor
@@ -30,13 +29,17 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
-    (let [opts (assoc opts
-                      :error/command :team/create!
-                      :error/reason "insufficient access to create team"
-                      :on-success on-team-created!)]
-      (crepos/command! repo opts create* data))))
+    (repos/transact! repo create* data opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."
   [{:keys [repo]}]
   (->TeamAccessor repo))
+
+(defn command-handler [{:keys [accessor pubsub]}]
+  (letfn [(predicate [{[_ {:command/keys [type]}] :msg}]
+            (= :team/create! type))
+          (handler [{[_ command ctx] :msg}]
+            (let [team (int/create! accessor (:command/data command) ctx)]
+              (ps/emit-event! pubsub (:user/id ctx) (:team/id team) :team/created team ctx)))]
+    (crepos/command-handler pubsub predicate "saving team to db" handler)))

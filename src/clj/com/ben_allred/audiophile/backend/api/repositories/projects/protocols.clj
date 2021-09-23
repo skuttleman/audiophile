@@ -13,8 +13,3 @@
     "Inserts a project and user/project relation. Returns primary id for new project")
   (find-event-project [this project-id]
     "Finds event-ready project by id."))
-
-(defprotocol IProjectsEventEmitter
-  "Abstraction for emitting events related to projects"
-  (project-created! [this user-id project ctx]
-    "Emitted when an project is created in the system"))

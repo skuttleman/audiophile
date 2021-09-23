@@ -10,8 +10,3 @@
     "Inserts a comment. Returns primary id for new comment.")
   (find-event-comment [this comment-id]
     "Finds event-ready comment by id."))
-
-(defprotocol ICommentsEventEmitter
-  "Abstraction for emitting events related to comments"
-  (comment-created! [this user-id comment ctx]
-    "Emitted when a comment is created in the system"))

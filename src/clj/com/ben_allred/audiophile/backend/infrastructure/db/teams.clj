@@ -89,15 +89,7 @@
   (insert-team! [_ team opts]
     (pt/insert-team! executor team opts))
   (find-event-team [_ team-id]
-    (pt/find-event-team executor team-id))
-
-  pt/ITeamsEventEmitter
-  (team-created! [_ user-id team ctx]
-    (ps/emit-event! pubsub user-id (:team/id team) :team/created team ctx))
-
-  pint/IEmitter
-  (command-failed! [_ model-id opts]
-    (ps/command-failed! pubsub model-id opts)))
+    (pt/find-event-team executor team-id)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[TeamsEventEmitter]]

@@ -28,9 +28,3 @@
 
 (defn find-event-project [accessor project-id]
   (pp/find-event-project accessor project-id))
-
-(defn project-created!
-  ([accessor user-id project]
-   (project-created! accessor user-id project nil))
-  ([accessor user-id project ctx]
-   (pp/project-created! accessor user-id project ctx)))

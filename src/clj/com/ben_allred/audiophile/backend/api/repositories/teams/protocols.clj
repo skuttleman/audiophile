@@ -15,8 +15,3 @@
     "Inserts a team and user/team relation. Returns primary id for new team")
   (find-event-team [this team-id]
     "Finds event-ready team by id."))
-
-(defprotocol ITeamsEventEmitter
-  "Abstraction for emitting events related to projects"
-  (team-created! [this user-id team ctx]
-    "Emitted when an team is created in the system"))

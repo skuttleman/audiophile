@@ -130,6 +130,8 @@
                                  (unsubscribe! [_ _ _])))
           tx (trepos/stub-transactor (->team-executor {:pubsub pubsub}))
           repo (rteams/->TeamAccessor tx)
+          handler (rteams/command-handler {:accessor repo
+                                           :pubsub   pubsub})
           [team-id user-id] (repeatedly uuids/random)
           team {:team/id   team-id
                 :team/name "some team"}]
@@ -139,10 +141,12 @@
                     nil
                     [team]
                     [{:id "event-id"}])
-        @(int/create! repo
-                      {:created-at :whenever
-                       :other      :junk}
-                      {:user/id user-id})
+        (handler {:msg [::id
+                        {:command/type :team/create!
+                         :command/data {:created-at :whenever
+                                        :other      :junk}}
+                        {:user/id user-id}]})
+
         (let [[[insert-team] [insert-user-team] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
@@ -184,7 +188,11 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+          (handler {:msg [::id
+                          {:command/type :team/create!
+                           :command/data {}}
+                          {:user/id user-id :request/id request-id}]})
+
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -198,7 +206,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :team/create!
-                                         :error/reason  "insufficient access to create team"}
+                                         :error/reason  "Executor"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -212,8 +220,12 @@
           (stubs/use! tx :execute!
                       [{:id "team-id"}])
           (stubs/use! pubsub :publish!
-                      (ex-info "PubSub" {}))
-          @(int/create! repo {} {:user/id user-id :request/id request-id})
+                      (ex-info "Pubsub" {}))
+          (handler {:msg [::id
+                          {:command/type :team/create!
+                           :command/data {}}
+                          {:user/id user-id :request/id request-id}]})
+
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
@@ -225,7 +237,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :team/create!
-                                         :error/reason  "insufficient access to create team"}
+                                         :error/reason  "Pubsub"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id

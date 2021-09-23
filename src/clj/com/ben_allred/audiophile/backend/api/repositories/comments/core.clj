@@ -22,9 +22,3 @@
 
 (defn find-event-comment [accessor comment-id]
   (pc/find-event-comment accessor comment-id))
-
-(defn comment-created!
-  ([accessor user-id comment]
-   (comment-created! accessor user-id comment nil))
-  ([accessor user-id comment ctx]
-   (pc/comment-created! accessor user-id comment ctx)))

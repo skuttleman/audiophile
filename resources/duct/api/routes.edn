@@ -31,7 +31,8 @@
  [:duct/const :routes/table#jobs]
  {[:get :resources/health] #ig/ref :res.handler/health
   :internal/deps           #{#ig/ref :rabbitmq.sub/commands#comments
-                             #ig/ref :rabbitmq.sub/commands#projects}}
+                             #ig/ref :rabbitmq.sub/commands#projects
+                             #ig/ref :rabbitmq.sub/commands#teams}}
 
  [:duct/const :routes/table#ui]
  {[:get :resources/css]    #ig/ref :audiophile.routes/assets
@@ -191,7 +192,7 @@
  {:interactor #ig/ref :interactors/teams}
 
  :audiophile.handlers.teams/create
- {:interactor #ig/ref :interactors/teams}
+ {:pubsub #ig/ref :rabbitmq.pub/commands}
 
  :audiophile.handlers.comments/fetch-all
  {:interactor #ig/ref :interactors/comments}

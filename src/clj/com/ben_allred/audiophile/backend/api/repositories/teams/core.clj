@@ -34,9 +34,3 @@
 
 (defn find-event-team [accessor team-id]
   (pt/find-event-team accessor team-id))
-
-(defn team-created!
-  ([accessor user-id team]
-   (team-created! accessor user-id team nil))
-  ([accessor user-id team ctx]
-   (pt/team-created! accessor user-id team ctx)))

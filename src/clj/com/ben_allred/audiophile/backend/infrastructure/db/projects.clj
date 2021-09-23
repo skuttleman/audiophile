@@ -69,15 +69,7 @@
   (insert-project! [_ project opts]
     (pp/insert-project! executor project opts))
   (find-event-project [_ project-id]
-    (pp/find-event-project executor project-id))
-
-  pp/IProjectsEventEmitter
-  (project-created! [_ user-id project ctx]
-    (ps/emit-event! pubsub user-id (:project/id project) :project/created project ctx))
-
-  pint/IEmitter
-  (command-failed! [_ model-id opts]
-    (ps/command-failed! pubsub model-id opts)))
+    (pp/find-event-project executor project-id)))
 
 (defn ->executor
   "Factory function for creating [[Executor]] which aggregates [[ProjectsEventEmitter]]

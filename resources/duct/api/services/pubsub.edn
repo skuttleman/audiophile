@@ -40,6 +40,13 @@
   :opts      {:auto-ack         true
               :internal/handler "projects"}}
 
+ [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#teams]
+ {:conn      #ig/ref :services/rabbitmq#conn
+  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#teams
+  :queue-cfg #ig/ref :mq.channel/commands
+  :opts      {:auto-ack         true
+              :internal/handler "teams"}}
+
  [:audiophile.services.rabbitmq/conn :component/health]
  {:cfg {:uri #ig/ref :env.rabbitmq/uri}}
 
@@ -58,4 +65,8 @@
 
  :audiophile.services.rabbitmq/command-handler#projects
  {:accessor #ig/ref :audiophile.repositories.projects/accessor
+  :pubsub   #ig/ref :rabbitmq.pub/events}
+
+ :audiophile.services.rabbitmq/command-handler#teams
+ {:accessor #ig/ref :audiophile.repositories.teams/accessor
   :pubsub   #ig/ref :rabbitmq.pub/events}}
