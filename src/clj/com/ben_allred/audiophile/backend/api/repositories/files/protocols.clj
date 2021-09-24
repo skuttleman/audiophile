@@ -11,6 +11,10 @@
   (find-event-artifact [this artifact-id]
     "Finds event-ready artifact by id."))
 
+(defprotocol IArtifactStore
+  "An [[com.ben-allred.audiophile.backend.api.repositories.protocols/IKVStore]]
+   implementation for storing and retrieving artifacts")
+
 (defprotocol IFilesExecutor
   "Abstraction for querying files"
   (insert-file-access? [this file opts]
@@ -33,18 +37,3 @@
     "Inserts a new version for an existing file. Returns primary id for new version")
   (find-event-version [this version-id]
     "Finds event-ready version by id."))
-
-(defprotocol IArtifactsEventEmitter
-  "Abstraction for emitting events related to artifacts"
-  (artifact-created! [this user-id artifact ctx]
-    "Emitted when an artifact is created in the system"))
-
-(defprotocol IFilesEventEmitter
-  "Abstraction for emitting events related to files"
-  (file-created! [this user-id file ctx]
-    "Emitted when an file is created in the system"))
-
-(defprotocol IFileVersionsEventEmitter
-  "Abstraction for emitting events related to files"
-  (version-created! [this user-id version ctx]
-    "Emitted when an version is created in the system"))

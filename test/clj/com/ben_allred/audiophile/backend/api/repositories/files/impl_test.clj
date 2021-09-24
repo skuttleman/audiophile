@@ -20,16 +20,13 @@
   ([config]
    (fn [executor models]
      (->file-executor executor (merge models config))))
-  ([executor {:keys [artifacts file-versions files projects pubsub store user-teams]}]
-   (let [file-exec (db.files/->FilesRepoExecutor executor
-                                                 artifacts
-                                                 file-versions
-                                                 files
-                                                 projects
-                                                 user-teams
-                                                 store
-                                                 (constantly ::key))]
-     (db.files/->Executor file-exec pubsub))))
+  ([executor {:keys [artifacts file-versions files projects user-teams]}]
+   (db.files/->FilesRepoExecutor executor
+                                 artifacts
+                                 file-versions
+                                 files
+                                 projects
+                                 user-teams)))
 
 (deftest create-artifact-test
   (testing "create-artifact"
@@ -41,9 +38,8 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          tx (trepos/stub-transactor (->file-executor {:pubsub pubsub
-                                                       :store  store}))
-          repo (rfiles/->FileAccessor tx)]
+          tx (trepos/stub-transactor ->file-executor)
+          repo (rfiles/->FileAccessor tx store nil pubsub (constantly ::key))]
       (testing "when the content saves to the kv-store"
         (let [[artifact-id user-id request-id] (repeatedly uuids/random)
               artifact {:artifact/id       artifact-id
@@ -53,26 +49,22 @@
                       [{:id artifact-id}]
                       [artifact]
                       [{:id "event-id"}])
-          @(int/create-artifact! repo
-                                 {:filename     "file.name"
-                                  :size         12345
-                                  :content-type "content/type"
-                                  :tempfile     "…content…"}
-                                 {:user/id    user-id
-                                  :request/id request-id})
-          (let [[store-k & stored] (colls/only! (stubs/calls store :put!))
-                [[insert-artifact] [query-artifact]] (colls/only! 2 (stubs/calls tx :execute!))]
-            (testing "sends the data to the kv store"
-              (is (= ["…content…" {:content-type   "content/type"
-                                   :content-length 12345
-                                   :metadata       {:filename "file.name"}}]
-                     stored)))
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :artifact/create!
+                               :command/data {:filename     "file.name"
+                                              :size         12345
+                                              :content-type "content/type"
+                                              :uri          "some://uri"}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
 
+          (let [[[insert-artifact] [query-artifact]] (colls/only! 2 (stubs/calls tx :execute!))]
             (testing "inserts the artifact in the repository"
               (is (= {:insert-into :artifacts
                       :values      [{:filename     "file.name"
                                      :content-type "content/type"
-                                     :uri          (repos/uri store store-k)}]
+                                     :uri          "some://uri"}]
                       :returning   [:id]}
                      insert-artifact)))
 
@@ -100,40 +92,19 @@
                         :event/emitted-by user-id}
                        event)))))))
 
-      (testing "when the store throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/use! store :put!
-                      (ex-info "Store" {}))
-          @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls pubsub :publish!)))
-
-          (testing "emits a command-failed event"
-            (let [[topic [event-id event ctx]] (-> pubsub
-                                                   (stubs/calls :publish!)
-                                                   rest
-                                                   colls/only!)]
-              (is (= [::ps/user user-id] topic))
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create!
-                                         :error/reason  "insufficient access to create artifact"}
-                      :event/emitted-by user-id}
-                     event))
-              (is (= {:request/id request-id
-                      :user/id    user-id}
-                     ctx))))))
-
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :artifact/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
+
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -147,7 +118,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :artifact/create!
-                                         :error/reason  "insufficient access to create artifact"}
+                                         :error/reason  "Executor"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -159,8 +130,14 @@
               user-id (uuids/random)]
           (stubs/init! pubsub)
           (stubs/use! pubsub :publish!
-                      (ex-info "Executor" {}))
-          @(int/create-artifact! repo {} {:user/id user-id :request/id request-id})
+                      (ex-info "Pubsub" {}))
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :artifact/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
+
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
@@ -172,7 +149,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :artifact/create!
-                                         :error/reason  "insufficient access to create artifact"}
+                                         :error/reason  "Pubsub"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -183,7 +160,7 @@
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor ->file-executor)
-          repo (rfiles/->FileAccessor tx)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-many repo {:user/id    user-id
@@ -247,7 +224,7 @@
   (testing "query-one"
     (let [[file-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor ->file-executor)
-          repo (rfiles/->FileAccessor tx)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying one file"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-one repo {:user/id user-id
@@ -295,8 +272,8 @@
   (testing "query-artifact"
     (let [[artifact-id user-id] (repeatedly uuids/random)
           store (trepos/stub-kv-store)
-          tx (trepos/stub-transactor (->file-executor {:store store}))
-          repo (rfiles/->FileAccessor tx)]
+          tx (trepos/stub-transactor ->file-executor)
+          repo (rfiles/->FileAccessor tx store nil nil nil)]
       (testing "when querying an artifact"
         (stubs/set-stub! tx :execute! [{:some                  :result
                                         :artifact/key          "some-key"
@@ -366,8 +343,8 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          tx (trepos/stub-transactor (->file-executor {:pubsub pubsub}))
-          repo (rfiles/->FileAccessor tx)]
+          tx (trepos/stub-transactor ->file-executor)
+          repo (rfiles/->FileAccessor tx nil nil pubsub nil)]
       (testing "when creating a file"
         (stubs/use! tx :execute!
                     [{:id project-id}]
@@ -375,12 +352,15 @@
                     nil
                     [file]
                     [{:id "event-id"}])
-        @(int/create-file! repo
-                           {:file/name    "file name"
-                            :version/name "version"
-                            :artifact/id  artifact-id}
-                           {:user/id    user-id
-                            :project/id project-id})
+        (int/handle! repo
+                     {:msg [::id
+                            {:command/type :file/create!
+                             :command/data {:file/name    "file name"
+                                            :version/name "version"
+                                            :artifact/id  artifact-id}}
+                            {:user/id    user-id
+                             :project/id project-id}]})
+
         (let [[[access-query] [file-insert] [version-insert] [query-for-event]] (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
@@ -467,7 +447,13 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create-file! repo {} {:user/id user-id :request/id request-id})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :file/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
+
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -481,7 +467,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :file/create!
-                                         :error/reason  "insufficient access to create file"}
+                                         :error/reason  "Executor"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -497,8 +483,14 @@
                       [{:id file-id}]
                       [file])
           (stubs/use! pubsub :publish!
-                      (ex-info "Executor" {}))
-          @(int/create-file! repo {} {:user/id user-id :request/id request-id})
+                      (ex-info "Pubsub" {}))
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :file/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
+
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
@@ -510,7 +502,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :file/create!
-                                         :error/reason  "insufficient access to create file"}
+                                         :error/reason  "Pubsub"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -529,20 +521,22 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          tx (trepos/stub-transactor (->file-executor {:pubsub pubsub}))
-          repo (rfiles/->FileAccessor tx)]
+          tx (trepos/stub-transactor ->file-executor)
+          repo (rfiles/->FileAccessor tx nil nil pubsub nil)]
       (testing "when creating a version"
         (stubs/use! tx :execute!
                     [{:id project-id}]
                     [{:id version-id}]
                     [version]
                     [{:id "event-id"}])
-        @(int/create-file-version! repo
-                                   {:file/name    "file name"
-                                    :version/name "version"
-                                    :artifact/id  artifact-id}
-                                   {:file/id file-id
-                                    :user/id user-id})
+        (int/handle! repo
+                     {:msg [::id
+                            {:command/type :file-version/create!
+                             :command/data {:file/name    "file name"
+                                            :version/name "version"
+                                            :artifact/id  artifact-id}}
+                            {:user/id user-id
+                             :file/id file-id}]})
         (let [[[access-query] [version-insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
@@ -600,7 +594,13 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          @(int/create-file-version! repo {} {:user/id user-id :request/id request-id})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :file-version/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
+
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
 
@@ -614,7 +614,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :file-version/create!
-                                         :error/reason  "insufficient access to create file-version"}
+                                         :error/reason  "Executor"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id
@@ -628,8 +628,14 @@
           (stubs/use! tx :execute!
                       [{:id "file-version-id"}])
           (stubs/use! pubsub :publish!
-                      (ex-info "Executor" {}))
-          @(int/create-file-version! repo {} {:user/id user-id :request/id request-id})
+                      (ex-info "Pubsub" {}))
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :file-version/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
+
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
                                                    (stubs/calls :publish!)
@@ -641,7 +647,7 @@
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :file-version/create!
-                                         :error/reason  "insufficient access to create file-version"}
+                                         :error/reason  "Pubsub"}
                       :event/emitted-by user-id}
                      event))
               (is (= {:request/id request-id

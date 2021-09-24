@@ -42,22 +42,3 @@
   "Constructor for [[KVStore]] used to store and retrieve binary objects."
   [{:keys [client stream-serde]}]
   (->KVStore client stream-serde))
-
-(defmacro command!
-  "Utility for expressing async commands with error handling."
-  [repo opts f & args]
-  `(let [{on-success# :on-success request-id# :request/id :as opts#} ~opts]
-     (future
-       (try
-         (let [result# (repos/transact! ~repo ~f ~@args opts#)]
-           (when on-success#
-             (repos/transact! ~repo on-success# result# opts#))
-           result#)
-         (catch Throwable ex#
-           (if request-id#
-             (do (log/error ex# "command failed" request-id#)
-                 (repos/transact! ~repo
-                                  int/command-failed!
-                                  request-id#
-                                  (update opts# :error/reason (fns/=> (or (.getMessage ex#))))))
-             (log/error ex# "processing failed")))))))

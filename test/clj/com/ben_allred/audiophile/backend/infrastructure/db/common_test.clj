@@ -29,9 +29,9 @@
           user-id (uuids/random)]
       (int/handle! handler
                    {:msg [::id
-                      {:user/id    user-id
-                       :event/type :some/event
-                       :some       :data}]})
+                          {:event/type :some/event
+                           :some       :data}
+                          {:user/id    user-id}]})
       (let [[query] (colls/only! (stubs/calls repo :execute!))
             value (colls/only! (:values query))]
         (is (= {:insert-into :events

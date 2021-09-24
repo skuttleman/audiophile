@@ -33,6 +33,13 @@
   :opts      {:auto-ack         true
               :internal/handler "comments"}}
 
+ [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#files]
+ {:conn      #ig/ref :services/rabbitmq#conn
+  :handler   #ig/ref :interactors/files
+  :queue-cfg #ig/ref :mq.channel/commands
+  :opts      {:auto-ack         true
+              :internal/handler "files"}}
+
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#projects]
  {:conn      #ig/ref :services/rabbitmq#conn
   :handler   #ig/ref :interactors/projects

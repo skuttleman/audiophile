@@ -1,6 +1,5 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.db.common
   (:require
-    [clojure.set :as set]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.events.core :as events]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
@@ -11,13 +10,10 @@
 
 (deftype DBMessageHandler [repo]
   pint/IMessageHandler
-  (handle! [_ {[event-id event] :msg :as msg}]
+  (handle! [_ {[event-id event ctx] :msg :as msg}]
     (try
       (log/info "saving event to db" event-id)
-      (repos/transact! repo
-                       events/insert-event!
-                       (:event/data event)
-                       (set/rename-keys event {:event/emitted-by :user/id}))
+      (repos/transact! repo events/insert-event! event ctx)
       (catch Throwable ex
         (log/error ex "failed: saving event to db" msg)))))
 

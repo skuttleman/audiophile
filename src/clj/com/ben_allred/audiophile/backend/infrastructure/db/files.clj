@@ -2,14 +2,11 @@
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmacro ^:private with-async [fut & body]
   `(let [future# (future ~fut)]
@@ -111,11 +108,10 @@
                                       (models/select* [:= :files.project-id (:project-id file)])
                                       (assoc :select [(sql/count :idx)])))))
 
-(defn ^:private insert-artifact [artifacts uri artifact]
+(defn ^:private insert-artifact [artifacts artifact]
   (-> artifact
-      (select-keys #{:content-type :filename :key})
-      (assoc :uri uri
-             :content-length (:size artifact))
+      (select-keys #{:content-type :filename :key :uri})
+      (assoc :content-length (:size artifact))
       (->> (models/insert-into artifacts))))
 
 (defn ^:private insert-version [file-versions version file-id]
@@ -123,37 +119,28 @@
                                      :file-id     file-id
                                      :name        (:version/name version)}))
 
-(deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams store keygen]
+(deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams]
   pf/IArtifactsExecutor
   (insert-artifact-access? [_ _ _]
     true)
   (insert-artifact! [_ artifact _]
-    (let [key (keygen)]
-      (with-async
-        (repos/put! store
-                    key
-                    (:tempfile artifact)
-                    {:content-type   (:content-type artifact)
-                     :content-length (:size artifact)
-                     :metadata       {:filename (:filename artifact)}})
-        (->> (assoc artifact :key key)
-             (insert-artifact artifacts (repos/uri store key))
-             (repos/execute! executor)
-             colls/only!
-             :id))))
+    (->> artifact
+         (insert-artifact artifacts)
+         (repos/execute! executor)
+         colls/only!
+         :id))
   (find-by-artifact-id [_ artifact-id opts]
-    (when-let [artifact (-> artifacts
-                            models/select*
-                            (assoc :where [:and
-                                           [:= :artifacts.id artifact-id]
-                                           [:exists (artifact-access-clause projects
-                                                                            files
-                                                                            file-versions
-                                                                            user-teams
-                                                                            (:user/id opts))]])
-                            (->> (repos/execute! executor))
-                            colls/only!)]
-      (assoc artifact :artifact/data (repos/get store (:artifact/key artifact)))))
+    (-> artifacts
+        models/select*
+        (assoc :where [:and
+                       [:= :artifacts.id artifact-id]
+                       [:exists (artifact-access-clause projects
+                                                        files
+                                                        file-versions
+                                                        user-teams
+                                                        (:user/id opts))]])
+        (->> (repos/execute! executor))
+        colls/only!))
   (find-event-artifact [_ artifact-id]
     (-> executor
         (repos/execute! (models/select-by-id* artifacts artifact-id))
@@ -218,67 +205,11 @@
 
 (defn ->file-executor
   "Factory function for creating [[FilesRepoExecutor]] which provide access to the file repository."
-  [{:keys [artifacts file-versions files projects user-teams store]}]
+  [{:keys [artifacts file-versions files projects user-teams]}]
   (fn [executor]
     (->FilesRepoExecutor executor
                          artifacts
                          file-versions
                          files
                          projects
-                         user-teams
-                         store
-                         #(str "artifacts/" (uuids/random)))))
-
-(deftype Executor [executor pubsub]
-  pf/IArtifactsExecutor
-  (insert-artifact-access? [_ artifact opts]
-    (pf/insert-artifact-access? executor artifact opts))
-  (insert-artifact! [_ artifact opts]
-    (pf/insert-artifact! executor artifact opts))
-  (find-by-artifact-id [_ artifact-id opts]
-    (pf/find-by-artifact-id executor artifact-id opts))
-  (find-event-artifact [_ artifact-id]
-    (pf/find-event-artifact executor artifact-id))
-
-  pf/IFilesExecutor
-  (insert-file-access? [_ file opts]
-    (pf/insert-file-access? executor file opts))
-  (insert-file! [_ file opts]
-    (pf/insert-file! executor file opts))
-  (find-by-file-id [_ file-id opts]
-    (pf/find-by-file-id executor file-id opts))
-  (select-for-project [_ project-id opts]
-    (pf/select-for-project executor project-id opts))
-  (find-event-file [_ file-id]
-    (pf/find-event-file executor file-id))
-
-  pf/IFileVersionsExecutor
-  (insert-version-access? [_ version opts]
-    (pf/insert-version-access? executor version opts))
-  (insert-version! [_ version opts]
-    (pf/insert-version! executor version opts))
-  (find-event-version [_ version-id]
-    (pf/find-event-version executor version-id))
-
-  pf/IArtifactsEventEmitter
-  (artifact-created! [_ user-id artifact ctx]
-    (ps/emit-event! pubsub user-id (:artifact/id artifact) :artifact/created artifact ctx))
-
-  pf/IFilesEventEmitter
-  (file-created! [_ user-id file ctx]
-    (ps/emit-event! pubsub user-id (:file/id file) :file/created file ctx))
-
-  pf/IFileVersionsEventEmitter
-  (version-created! [_ user-id version ctx]
-    (ps/emit-event! pubsub user-id (:file-version/id version) :file-version/created version ctx))
-
-  pint/IEmitter
-  (command-failed! [_ model-id opts]
-    (ps/command-failed! pubsub model-id opts)))
-
-(defn ->executor
-  "Factory function for creating [[Executor]] which aggregates [[FilesEventEmitter]]
-   and [[FilesRepoExecutor]]."
-  [{:keys [->file-executor pubsub]}]
-  (fn [executor]
-    (->Executor (->file-executor executor) pubsub)))
+                         user-teams)))

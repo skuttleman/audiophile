@@ -44,7 +44,7 @@
                              (comp (map first)
                                    (remove (comp #{:conn/ping :conn/pong} first)))
                              (stubs/calls stub :send!))]
-              (is (contains? msgs [:event/broadcast "event-id" {:some :event} nil]))))
+              (is (contains? msgs [:event/broadcast "event-id" {:some :event} {}]))))
 
           (testing "subscribes to user-level messages"
             (ps/send-user! pubsub ::user-id "event-id" {:some :event})

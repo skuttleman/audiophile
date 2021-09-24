@@ -24,25 +24,28 @@
  {}
 
  :audiophile.repositories.comments/accessor
- {:repo     #ig/ref :repositories/comments
-  :commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events}
+ {:commands #ig/ref :rabbitmq.pub/commands
+  :events   #ig/ref :rabbitmq.pub/events
+  :repo     #ig/ref :repositories/comments}
 
  :audiophile.repositories.events/accessor
  {:repo #ig/ref :repositories/events}
 
  :audiophile.repositories.files/accessor
- {:repo #ig/ref :repositories/files}
+ {:commands #ig/ref :rabbitmq.pub/commands
+  :events   #ig/ref :rabbitmq.pub/events
+  :repo     #ig/ref :repositories/files
+  :store    #ig/ref :audiophile.repositories.files/artifact-store}
 
  :audiophile.repositories.projects/accessor
- {:repo     #ig/ref :repositories/projects
-  :commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events}
+ {:commands #ig/ref :rabbitmq.pub/commands
+  :events   #ig/ref :rabbitmq.pub/events
+  :repo     #ig/ref :repositories/projects}
 
  :audiophile.repositories.teams/accessor
- {:repo     #ig/ref :repositories/teams
-  :commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events}
+ {:commands #ig/ref :rabbitmq.pub/commands
+  :events   #ig/ref :rabbitmq.pub/events
+  :repo     #ig/ref :repositories/teams}
 
  :audiophile.repositories.users/accessor
  {:repo #ig/ref :repositories/users}
@@ -77,13 +80,12 @@
   :models      #ig/ref :models/models
   :user-events #ig/ref :models/user-events}
 
- :audiophile.repositories.files/->file-executor
+ :audiophile.repositories.files/->executor
  {:artifacts     #ig/ref :models/artifacts
   :file-versions #ig/ref :models/file-versions
   :files         #ig/ref :models/files
   :projects      #ig/ref :models/projects
-  :user-teams    #ig/ref :models/user-teams
-  :store         #ig/ref :audiophile.repositories/store}
+  :user-teams    #ig/ref :models/user-teams}
 
  :audiophile.repositories.comments/->executor
  {:comments      #ig/ref :models/comments
@@ -92,10 +94,6 @@
   :projects      #ig/ref :models/projects
   :user-teams    #ig/ref :models/user-teams
   :users         #ig/ref :models/users}
-
- :audiophile.repositories.files/->executor
- {:->file-executor #ig/ref :audiophile.repositories.files/->file-executor
-  :pubsub          #ig/ref :rabbitmq.pub/events}
 
  :audiophile.repositories.projects/->executor
  {:projects   #ig/ref :models/projects
@@ -110,4 +108,7 @@
 
  :audiophile.repositories.users/->executor
  {:users      #ig/ref :models/users
-  :user-teams #ig/ref :models/user-teams}}
+  :user-teams #ig/ref :models/user-teams}
+
+ :audiophile.repositories.files/artifact-store
+ {:store #ig/ref :audiophile.repositories/store}}

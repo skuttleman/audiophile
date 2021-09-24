@@ -1,6 +1,5 @@
 (ns ^:integration com.ben-allred.audiophile.integration.file-test
   (:require
-    [clojure.core.match :as match]
     [clojure.java.io :as io]
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
@@ -11,7 +10,6 @@
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.integration.common :as int]
     [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [test.utils :as tu]
     [test.utils.assertions :as assert]))
 
 (deftest upload-artifact-test

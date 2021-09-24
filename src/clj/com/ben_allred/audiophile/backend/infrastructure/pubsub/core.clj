@@ -32,7 +32,7 @@
   nil)
 
 (defn ^:private ->ctx [ctx]
-  (some-> ctx (select-keys #{:request/id :user/id})))
+  (into {} (filter (comp #{"id"} name key)) ctx))
 
 (defn broadcast!
   "Broadcast an event to all connections"

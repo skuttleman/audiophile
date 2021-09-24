@@ -56,24 +56,6 @@
   ([accessor version opts]
    (pf/insert-version! accessor version opts)))
 
-(defn artifact-created!
-  ([accessor user-id artifact]
-   (artifact-created! accessor user-id artifact nil))
-  ([accessor user-id artifact ctx]
-   (pf/artifact-created! accessor user-id artifact ctx)))
-
-(defn file-created!
-  ([accessor user-id file]
-   (file-created! accessor user-id file nil))
-  ([accessor user-id file ctx]
-   (pf/file-created! accessor user-id file ctx)))
-
-(defn version-created!
-  ([accessor user-id version]
-   (version-created! accessor user-id version nil))
-  ([accessor user-id version ctx]
-   (pf/version-created! accessor user-id version ctx)))
-
 (defn find-event-artifact [accessor artifact-id]
   (pf/find-event-artifact accessor artifact-id))
 

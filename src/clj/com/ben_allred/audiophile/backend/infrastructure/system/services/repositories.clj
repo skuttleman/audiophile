@@ -1,20 +1,21 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.system.services.repositories
   (:require
-    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.comments.impl :as comments]
+    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.events.impl :as events]
     [com.ben-allred.audiophile.backend.api.repositories.files.impl :as files]
     [com.ben-allred.audiophile.backend.api.repositories.projects.impl :as projects]
     [com.ben-allred.audiophile.backend.api.repositories.teams.impl :as teams]
     [com.ben-allred.audiophile.backend.api.repositories.users.impl :as rusers]
-    [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.db.comments :as db.comments]
+    [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
     [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
     [com.ben-allred.audiophile.backend.infrastructure.db.teams :as db.teams]
     [com.ben-allred.audiophile.backend.infrastructure.db.users :as db.users]
+    [com.ben-allred.audiophile.backend.infrastructure.stores :as stores]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.repositories/models [_ cfg]
@@ -68,11 +69,11 @@
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
   (files/accessor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.files/->file-executor [_ cfg]
-  (db.files/->file-executor cfg))
+(defmethod ig/init-key :audiophile.repositories.files/artifact-store [_ cfg]
+  (stores/artifact-store cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/->executor [_ cfg]
-  (db.files/->executor cfg))
+  (db.files/->file-executor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.projects/accessor [_ cfg]
   (projects/accessor cfg))

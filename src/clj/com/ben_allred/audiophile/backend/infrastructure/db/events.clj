@@ -26,7 +26,7 @@
 
 (deftype EventsExecutor [executor event-types events user-events conform-fn]
   pe/IEventsExecutor
-  (insert-event! [_ event {user-id :user/id event-type :event/type}]
+  (insert-event! [_ {event-type :event/type :as event} {user-id :user/id}]
     (let [event (assoc event
                        :emitted-by user-id
                        :event-type-id (select-event-type-id event-types event-type))]
