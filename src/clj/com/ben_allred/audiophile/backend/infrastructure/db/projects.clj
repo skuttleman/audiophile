@@ -57,23 +57,3 @@
   [{:keys [projects teams user-teams users]}]
   (fn [executor]
     (->ProjectsRepoExecutor executor projects teams user-teams users)))
-
-(deftype Executor [executor pubsub]
-  pp/IProjectsExecutor
-  (find-by-project-id [_ project-id opts]
-    (pp/find-by-project-id executor project-id opts))
-  (select-for-user [_ user-id opts]
-    (pp/select-for-user executor user-id opts))
-  (insert-project-access? [_ project opts]
-    (pp/insert-project-access? executor project opts))
-  (insert-project! [_ project opts]
-    (pp/insert-project! executor project opts))
-  (find-event-project [_ project-id]
-    (pp/find-event-project executor project-id)))
-
-(defn ->executor
-  "Factory function for creating [[Executor]] which aggregates [[ProjectsEventEmitter]]
-   and [[ProjectsRepoExecutor]]."
-  [{:keys [->project-executor pubsub]}]
-  (fn [executor]
-    (->Executor (->project-executor executor) pubsub)))

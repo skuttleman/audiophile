@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.backend.api.repositories.users.impl
   (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.users.core :as users]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (deftype UserAccessor [repo]

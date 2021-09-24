@@ -9,29 +9,28 @@
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [test.utils :as tu]
     [test.utils.repositories :as trepos]
+    [test.utils.services :as ts]
     [test.utils.stubs :as stubs]))
 
 (defn ^:private ->comment-executor
   ([config]
    (fn [executor models]
      (->comment-executor executor (merge models config))))
-  ([executor {:keys [comments file-versions files projects pubsub user-teams users]}]
-   (let [comment-exec (db.comments/->CommentsRepoExecutor executor
-                                                          comments
-                                                          projects
-                                                          files
-                                                          file-versions
-                                                          user-teams
-                                                          users)]
-     (db.comments/->Executor comment-exec pubsub))))
+  ([executor {:keys [comments file-versions files projects user-teams users]}]
+   (db.comments/->CommentsRepoExecutor executor
+                                       comments
+                                       projects
+                                       files
+                                       file-versions
+                                       user-teams
+                                       users)))
 
 (deftest query-all-test
   (testing "query-all"
     (let [tx (trepos/stub-transactor ->comment-executor)
-          repo (rcomments/->CommentAccessor tx)
+          repo (rcomments/->CommentAccessor tx nil nil)
           [file-id user-id] (repeatedly uuids/random)]
       (testing "when querying for projects"
         (stubs/use! tx :execute!
@@ -73,17 +72,9 @@
 
 (deftest create!-test
   (testing "create!"
-    (let [pubsub (stubs/create (reify
-                                 ppubsub/IPub
-                                 (publish! [_ _ _])
-                                 ppubsub/ISub
-                                 (subscribe! [_ _ _ _])
-                                 (unsubscribe! [_ _])
-                                 (unsubscribe! [_ _ _])))
-          tx (trepos/stub-transactor (->comment-executor {:pubsub pubsub}))
-          repo (rcomments/->CommentAccessor tx)
-          handler (rcomments/command-handler {:accessor repo
-                                              :pubsub   pubsub})
+    (let [pubsub (ts/->pubsub)
+          tx (trepos/stub-transactor ->comment-executor)
+          repo (rcomments/->CommentAccessor tx nil pubsub)
           [comment-id file-version-id user-id] (repeatedly uuids/random)
           comment {:comment/id              comment-id
                    :comment/name            "some comment"
@@ -93,13 +84,13 @@
                     [{:id "team-id"}]
                     [{:id comment-id}]
                     [comment])
-        (handler
-          {:msg [::topic
-                 {:command/type :comment/create!
-                  :command/data {:created-at              :whenever
-                                 :comment/file-version-id file-version-id
-                                 :other                   :junk}}
-                 {:user/id user-id}]})
+        (int/handle! repo
+                     {:msg [::topic
+                            {:command/type :comment/create!
+                             :command/data {:created-at              :whenever
+                                            :comment/file-version-id file-version-id
+                                            :other                   :junk}}
+                            {:user/id user-id}]})
 
         (let [[[access] [insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "verifies file access"
@@ -157,9 +148,10 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (handler {:msg [::topic
-                          {:command/type :comment/create!}
-                          {:user/id user-id :request/id request-id}]})
+          (int/handle! repo
+                       {:msg [::topic
+                              {:command/type :comment/create!}
+                              {:user/id user-id :request/id request-id}]})
 
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub
@@ -188,9 +180,10 @@
                       [comment])
           (stubs/use! pubsub :publish!
                       (ex-info "Pubsub" {}))
-          (handler {:msg [::topic
-                          {:command/type :comment/create!}
-                          {:user/id user-id :request/id request-id}]})
+          (int/handle! repo
+                       {:msg [::topic
+                              {:command/type :comment/create!}
+                              {:user/id user-id :request/id request-id}]})
 
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub

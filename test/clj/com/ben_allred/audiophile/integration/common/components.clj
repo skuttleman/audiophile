@@ -5,6 +5,7 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.dev.migrations :as mig]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
@@ -112,7 +113,7 @@
                                    (async/chan))]
               (async/go-loop []
                 (when-let [msg (async/<! mq-ch)]
-                  (handler msg)
+                  (int/handle! handler msg)
                   (recur)))))
 
           pws/IChannel

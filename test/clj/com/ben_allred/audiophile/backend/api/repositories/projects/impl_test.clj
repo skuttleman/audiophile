@@ -18,18 +18,17 @@
   ([config]
    (fn [executor models]
      (->project-executor executor (merge models config))))
-  ([executor {:keys [projects pubsub teams user-teams users]}]
-   (let [project-exec (db.projects/->ProjectsRepoExecutor executor
-                                                          projects
-                                                          teams
-                                                          user-teams
-                                                          users)]
-     (db.projects/->Executor project-exec pubsub))))
+  ([executor {:keys [projects teams user-teams users]}]
+   (db.projects/->ProjectsRepoExecutor executor
+                                       projects
+                                       teams
+                                       user-teams
+                                       users)))
 
 (deftest query-all-test
   (testing "query-all"
     (let [tx (trepos/stub-transactor ->project-executor)
-          repo (rprojects/->ProjectAccessor tx)
+          repo (rprojects/->ProjectAccessor tx nil nil)
           user-id (uuids/random)]
       (testing "when querying for projects"
         (stubs/use! tx :execute!
@@ -60,7 +59,7 @@
 (deftest query-by-id-test
   (testing "query-by-id"
     (let [tx (trepos/stub-transactor ->project-executor)
-          repo (rprojects/->ProjectAccessor tx)
+          repo (rprojects/->ProjectAccessor tx nil nil)
           [project-id user-id] (repeatedly uuids/random)]
       (testing "when querying for a single project"
         (stubs/use! tx :execute!
@@ -108,9 +107,7 @@
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
           tx (trepos/stub-transactor (->project-executor {:pubsub pubsub}))
-          repo (rprojects/->ProjectAccessor tx)
-          handler (rprojects/command-handler {:accessor repo
-                                              :pubsub   pubsub})
+          repo (rprojects/->ProjectAccessor tx nil pubsub)
           [project-id team-id user-id] (repeatedly uuids/random)
           project {:project/id      project-id
                    :project/name    "some project"
@@ -121,12 +118,13 @@
                     [{:id project-id}]
                     [project]
                     [{:id "event-id"}])
-        (handler {:msg [::id
-                        {:command/type :project/create!
-                         :command/data {:created-at      :whenever
-                                        :project/team-id team-id
-                                        :other           :junk}}
-                        {:user/id user-id}]})
+        (int/handle! repo
+                     {:msg [::id
+                            {:command/type :project/create!
+                             :command/data {:created-at      :whenever
+                                            :project/team-id team-id
+                                            :other           :junk}}
+                            {:user/id user-id}]})
 
         (let [[[access] [insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "verifies team access"
@@ -177,11 +175,12 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (handler {:msg [::id
-                          {:command/type :project/create!
-                           :command/data {}}
-                          {:user/id    user-id
-                           :request/id request-id}]})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :project/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
 
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
@@ -211,11 +210,12 @@
                       [{:id "project-id"}])
           (stubs/use! pubsub :publish!
                       (ex-info "Pubsub" {}))
-          (handler {:msg [::id
-                          {:command/type :project/create!
-                           :command/data {}}
-                          {:user/id    user-id
-                           :request/id request-id}]})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :project/create!
+                               :command/data {}}
+                              {:user/id    user-id
+                               :request/id request-id}]})
 
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub

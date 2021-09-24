@@ -1,10 +1,8 @@
 (ns com.ben-allred.audiophile.backend.api.repositories.projects.impl
   (:refer-clojure :exclude [accessor])
   (:require
-    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.projects.core :as rprojects]
-    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
@@ -15,7 +13,7 @@
       (rprojects/find-event-project executor project-id))
     (throw (ex-info "insufficient access" project))))
 
-(deftype ProjectAccessor [repo]
+(deftype ProjectAccessor [repo commands events]
   pint/IProjectAccessor
   pint/IAccessor
   (query-many [_ opts]
@@ -23,17 +21,27 @@
   (query-one [_ opts]
     (repos/transact! repo rprojects/find-by-project-id (:project/id opts) opts))
   (create! [_ data opts]
-    (repos/transact! repo create* data opts)))
+    (ps/emit-command! commands (:user/id opts) :project/create! data opts))
+
+  pint/IMessageHandler
+  (handle! [_ {[command-id {:command/keys [type] :as command} ctx] :msg :as msg}]
+    (when (= type :project/create!)
+      (try
+        (log/info "saving project to db" command-id)
+        (let [project (repos/transact! repo create* (:command/data command) ctx)]
+          (ps/emit-event! events (:user/id ctx) (:project/id project) :project/created project ctx))
+        (catch Throwable ex
+          (log/error ex "failed: saving project to db" msg)
+          (try
+            (ps/command-failed! events
+                                (:request/id ctx)
+                                (assoc ctx
+                                       :error/command (:command/type command)
+                                       :error/reason (.getMessage ex)))
+            (catch Throwable ex
+              (log/error ex "failed to emit command/failed"))))))))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."
-  [{:keys [repo]}]
-  (->ProjectAccessor repo))
-
-(defn command-handler [{:keys [accessor pubsub]}]
-  (letfn [(predicate [{[_ {:command/keys [type]}] :msg}]
-            (= :project/create! type))
-          (handler [{[_ command ctx] :msg}]
-            (let [project (int/create! accessor (:command/data command) ctx)]
-              (ps/emit-event! pubsub (:user/id ctx) (:project/id project) :project/created project ctx)))]
-    (crepos/command-handler pubsub predicate "saving project to db" handler)))
+  [{:keys [commands events repo]}]
+  (->ProjectAccessor repo commands events))

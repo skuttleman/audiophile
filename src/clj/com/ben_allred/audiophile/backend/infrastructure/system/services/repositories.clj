@@ -53,11 +53,8 @@
 (defmethod ig/init-key :audiophile.repositories.comments/accessor [_ cfg]
   (comments/accessor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.comments/->comment-executor [_ cfg]
-  (db.comments/->comment-executor cfg))
-
 (defmethod ig/init-key :audiophile.repositories.comments/->executor [_ cfg]
-  (db.comments/->executor cfg))
+  (db.comments/->comment-executor cfg))
 
 (defmethod ig/init-key :audiophile.repositories/datasource#close [_ cfg]
   (db/datasource#close cfg))
@@ -80,20 +77,14 @@
 (defmethod ig/init-key :audiophile.repositories.projects/accessor [_ cfg]
   (projects/accessor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.projects/->project-executor [_ cfg]
-  (db.projects/->project-executor cfg))
-
 (defmethod ig/init-key :audiophile.repositories.projects/->executor [_ cfg]
-  (db.projects/->executor cfg))
+  (db.projects/->project-executor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.teams/accessor [_ cfg]
   (teams/accessor cfg))
 
-(defmethod ig/init-key :audiophile.repositories.teams/->team-executor [_ cfg]
-  (db.teams/->team-executor cfg))
-
 (defmethod ig/init-key :audiophile.repositories.teams/->executor [_ cfg]
-  (db.teams/->executor cfg))
+  (db.teams/->team-executor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.users/accessor [_ cfg]
   (rusers/accessor cfg))

@@ -183,7 +183,7 @@
  {:interactor #ig/ref :interactors/projects}
 
  :audiophile.handlers.projects/create
- {:pubsub #ig/ref :rabbitmq.pub/commands}
+ {:interactor #ig/ref :interactors/projects}
 
  :audiophile.handlers.teams/fetch
  {:interactor #ig/ref :interactors/teams}
@@ -192,13 +192,13 @@
  {:interactor #ig/ref :interactors/teams}
 
  :audiophile.handlers.teams/create
- {:pubsub #ig/ref :rabbitmq.pub/commands}
+ {:interactor #ig/ref :interactors/teams}
 
  :audiophile.handlers.comments/fetch-all
  {:interactor #ig/ref :interactors/comments}
 
  :audiophile.handlers.comments/create
- {:pubsub #ig/ref :rabbitmq.pub/commands}
+ {:interactor #ig/ref :interactors/comments}
 
  :audiophile.handlers.events/fetch-all
  {:interactor #ig/ref :interactors/events}

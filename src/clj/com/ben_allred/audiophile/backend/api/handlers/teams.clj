@@ -2,7 +2,6 @@
   (:require
     [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
@@ -30,10 +29,10 @@
 
 (defn create
   "Handles a request to create a team."
-  [{:keys [pubsub]}]
+  [{:keys [interactor]}]
   (fn [data]
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
-      (ps/emit-command! pubsub (:user/id opts) :team/create! data opts))))
+      (int/create! interactor data opts))))
 
 (defmethod selectors/select [:post :api/teams]
   [_ request]

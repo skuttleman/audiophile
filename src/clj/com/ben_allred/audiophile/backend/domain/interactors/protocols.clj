@@ -48,3 +48,6 @@
     "Redirects to app without token")
   (callback [this params]
     "Handles callback from auth provider"))
+
+(defprotocol IMessageHandler
+  (handle! [this msg] "Handle a message from a subscription"))

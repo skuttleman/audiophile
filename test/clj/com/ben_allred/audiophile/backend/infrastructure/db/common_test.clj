@@ -1,14 +1,15 @@
 (ns ^:unit com.ben-allred.audiophile.backend.infrastructure.db.common-test
   (:require
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.events :as db.events]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [test.utils.stubs :as stubs]
-    [test.utils.repositories :as trepos]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
-    [test.utils :as tu]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [test.utils :as tu]
+    [test.utils.repositories :as trepos]
+    [test.utils.stubs :as stubs]))
 
 (defn ^:private ->event-executor
   ([config]
@@ -26,7 +27,8 @@
     (let [repo (trepos/stub-transactor ->event-executor)
           handler (cdb/event->db-handler {:repo repo})
           user-id (uuids/random)]
-      (handler {:msg [::id
+      (int/handle! handler
+                   {:msg [::id
                       {:user/id    user-id
                        :event/type :some/event
                        :some       :data}]})

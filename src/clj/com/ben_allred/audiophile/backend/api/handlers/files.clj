@@ -13,12 +13,11 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create-artifact! interactor data opts))))
 
-(defmethod selectors/select [:post :api/project.files]
+(defmethod selectors/select [:post :api/artifacts]
   [_ request]
   (-> request
-      (get-in [:body :data])
+      (get-in [:params "files[]"])
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :project/id (get-in request [:nav/route :route-params :project-id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defn fetch-all
@@ -50,11 +49,12 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id :project/id})]
       (int/create-file! interactor data opts))))
 
-(defmethod selectors/select [:post :api/artifacts]
+(defmethod selectors/select [:post :api/project.files]
   [_ request]
   (-> request
-      (get-in [:params "files[]"])
+      (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))
+      (assoc :project/id (get-in request [:nav/route :route-params :project-id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defn create-version

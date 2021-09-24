@@ -66,21 +66,3 @@
   [{:keys [comments files file-versions projects user-teams users]}]
   (fn [executor]
     (->CommentsRepoExecutor executor comments projects files file-versions user-teams users)))
-
-(deftype Executor [executor pubsub]
-  pc/ICommentsExecutor
-  (select-for-file [_ file-id opts]
-    (pc/select-for-file executor file-id opts))
-  (insert-comment-access? [_ comment opts]
-    (pc/insert-comment-access? executor comment opts))
-  (insert-comment! [_ comment opts]
-    (pc/insert-comment! executor comment opts))
-  (find-event-comment [_ comment-id]
-    (pc/find-event-comment executor comment-id)))
-
-(defn ->executor
-  "Factory function for creating [[Executor]] which aggregates [[CommentsEventEmitter]]
-   and [[CommentsRepoExecutor]]."
-  [{:keys [->comment-executor pubsub]}]
-  (fn [executor]
-    (->Executor (->comment-executor executor) pubsub)))

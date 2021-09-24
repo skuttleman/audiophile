@@ -28,21 +28,21 @@
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#comments]
  {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#comments
+  :handler   #ig/ref :interactors/comments
   :queue-cfg #ig/ref :mq.channel/commands
   :opts      {:auto-ack         true
               :internal/handler "comments"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#projects]
  {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#projects
+  :handler   #ig/ref :interactors/projects
   :queue-cfg #ig/ref :mq.channel/commands
   :opts      {:auto-ack         true
               :internal/handler "projects"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#teams]
  {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#teams
+  :handler   #ig/ref :interactors/teams
   :queue-cfg #ig/ref :mq.channel/commands
   :opts      {:auto-ack         true
               :internal/handler "teams"}}
@@ -57,16 +57,4 @@
  {:repo #ig/ref :repositories/events}
 
  :audiophile.services.rabbitmq/ws-handler
- {:pubsub #ig/ref :services/pubsub}
-
- :audiophile.services.rabbitmq/command-handler#comments
- {:accessor #ig/ref :audiophile.repositories.comments/accessor
-  :pubsub   #ig/ref :rabbitmq.pub/events}
-
- :audiophile.services.rabbitmq/command-handler#projects
- {:accessor #ig/ref :audiophile.repositories.projects/accessor
-  :pubsub   #ig/ref :rabbitmq.pub/events}
-
- :audiophile.services.rabbitmq/command-handler#teams
- {:accessor #ig/ref :audiophile.repositories.teams/accessor
-  :pubsub   #ig/ref :rabbitmq.pub/events}}
+ {:pubsub #ig/ref :services/pubsub}}

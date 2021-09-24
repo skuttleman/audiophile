@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
@@ -38,7 +39,7 @@
     (letfn [(handler* [_ch _metadata ^bytes msg]
               (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
                 (log/info "consuming from" exchange)
-                (handler msg)))]
+                (int/handle! handler msg)))]
       (let [queue-name (if-let [handler (:internal/handler opts)]
                          (let [queue-name (str queue-name ":" handler)]
                            (lq/declare ch queue-name ch-opts)

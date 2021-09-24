@@ -17,17 +17,16 @@
   ([config]
    (fn [executor models]
      (->team-executor executor (merge models config))))
-  ([executor {:keys [teams pubsub user-teams users]}]
-   (let [team-exec (db.teams/->TeamsRepoExecutor executor
-                                                 teams
-                                                 user-teams
-                                                 users)]
-     (db.teams/->Executor team-exec pubsub))))
+  ([executor {:keys [teams user-teams users]}]
+   (db.teams/->TeamsRepoExecutor executor
+                                 teams
+                                 user-teams
+                                 users)))
 
 (deftest query-all-test
   (testing "query-all"
     (let [tx (trepos/stub-transactor ->team-executor)
-          repo (rteams/->TeamAccessor tx)
+          repo (rteams/->TeamAccessor tx nil nil)
           user-id (uuids/random)]
       (testing "when querying teams"
         (stubs/use! tx :execute!
@@ -64,7 +63,7 @@
 (deftest query-by-id-test
   (testing "query-by-id"
     (let [tx (trepos/stub-transactor ->team-executor)
-          repo (rteams/->TeamAccessor tx)
+          repo (rteams/->TeamAccessor tx nil nil)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when querying teams"
         (stubs/use! tx :execute!
@@ -128,10 +127,8 @@
                                  (subscribe! [_ _ _ _])
                                  (unsubscribe! [_ _])
                                  (unsubscribe! [_ _ _])))
-          tx (trepos/stub-transactor (->team-executor {:pubsub pubsub}))
-          repo (rteams/->TeamAccessor tx)
-          handler (rteams/command-handler {:accessor repo
-                                           :pubsub   pubsub})
+          tx (trepos/stub-transactor ->team-executor)
+          repo (rteams/->TeamAccessor tx nil pubsub)
           [team-id user-id] (repeatedly uuids/random)
           team {:team/id   team-id
                 :team/name "some team"}]
@@ -141,11 +138,12 @@
                     nil
                     [team]
                     [{:id "event-id"}])
-        (handler {:msg [::id
-                        {:command/type :team/create!
-                         :command/data {:created-at :whenever
-                                        :other      :junk}}
-                        {:user/id user-id}]})
+        (int/handle! repo
+                     {:msg [::id
+                            {:command/type :team/create!
+                             :command/data {:created-at :whenever
+                                            :other      :junk}}
+                            {:user/id user-id}]})
 
         (let [[[insert-team] [insert-user-team] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
@@ -188,10 +186,11 @@
           (stubs/init! pubsub)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (handler {:msg [::id
-                          {:command/type :team/create!
-                           :command/data {}}
-                          {:user/id user-id :request/id request-id}]})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :team/create!
+                               :command/data {}}
+                              {:user/id user-id :request/id request-id}]})
 
           (testing "does not emit a successful event"
             (empty? (stubs/calls pubsub :publish!)))
@@ -221,10 +220,11 @@
                       [{:id "team-id"}])
           (stubs/use! pubsub :publish!
                       (ex-info "Pubsub" {}))
-          (handler {:msg [::id
-                          {:command/type :team/create!
-                           :command/data {}}
-                          {:user/id user-id :request/id request-id}]})
+          (int/handle! repo
+                       {:msg [::id
+                              {:command/type :team/create!
+                               :command/data {}}
+                              {:user/id user-id :request/id request-id}]})
 
           (testing "emits a command-failed event"
             (let [[topic [event-id event ctx]] (-> pubsub

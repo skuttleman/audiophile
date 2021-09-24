@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws
   (:require
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.backend.api.repositories.common :as crepos]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
@@ -137,9 +137,14 @@
          ch-map
          (web.async/as-channel request))))
 
-(defn event->ws-handler [{:keys [predicate pubsub]
-                          :or   {predicate (constantly true)}}]
-  (crepos/msg-handler predicate
-                      "publishing event to ws"
-                      (fn [{:keys [msg topic]}]
-                        (pubsub/publish! pubsub topic msg))))
+(deftype WebSocketMessageHandler [pubsub]
+  pint/IMessageHandler
+  (handle! [_ {:keys [msg topic]}]
+    (try
+      (log/info "publishing event to ws" (first msg))
+      (pubsub/publish! pubsub topic msg)
+      (catch Throwable ex
+        (log/error ex "failed: publishing event to ws" msg)))))
+
+(defn event->ws-handler [{:keys [pubsub]}]
+  (->WebSocketMessageHandler pubsub))

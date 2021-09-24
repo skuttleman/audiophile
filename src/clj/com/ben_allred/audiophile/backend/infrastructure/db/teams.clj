@@ -75,25 +75,3 @@
   [{:keys [teams user-teams users]}]
   (fn [executor]
     (->TeamsRepoExecutor executor teams user-teams users)))
-
-(deftype Executor [executor pubsub]
-  pt/ITeamsExecutor
-  (find-by-team-id [_ team-id opts]
-    (pt/find-by-team-id executor team-id opts))
-  (select-for-user [_ user-id opts]
-    (pt/select-for-user executor user-id opts))
-  (select-team-members [_ team-id opts]
-    (pt/select-team-members executor team-id opts))
-  (insert-team-access? [_ team opts]
-    (pt/insert-team-access? executor team opts))
-  (insert-team! [_ team opts]
-    (pt/insert-team! executor team opts))
-  (find-event-team [_ team-id]
-    (pt/find-event-team executor team-id)))
-
-(defn ->executor
-  "Factory function for creating [[Executor]] which aggregates [[TeamsEventEmitter]]
-   and [[TeamsRepoExecutor]]."
-  [{:keys [->team-executor pubsub]}]
-  (fn [executor]
-    (->Executor (->team-executor executor) pubsub)))

@@ -61,32 +61,3 @@
                                   request-id#
                                   (update opts# :error/reason (fns/=> (or (.getMessage ex#))))))
              (log/error ex# "processing failed")))))))
-
-(defn msg-handler
-  ([predicate log handler]
-   (msg-handler predicate log handler nil))
-  ([predicate log handler on-error]
-   (fn [{[msg-id] :msg :as msg}]
-     (if-not (predicate msg)
-       (log/debug "skipping msg due to predicate" msg)
-       (try
-         (log/info log msg-id)
-         (handler msg)
-         (catch Throwable ex
-           (log/error ex "failed: " log msg)
-           (when on-error
-             (on-error ex msg))))))))
-
-(defn command-handler [pubsub predicate log handler]
-  (msg-handler predicate
-               log
-               handler
-               (fn [ex {[_ command ctx] :msg}]
-                 (try
-                   (ps/command-failed! pubsub
-                                       (:request/id ctx)
-                                       (assoc ctx
-                                              :error/command (:command/type command)
-                                              :error/reason (.getMessage ex)))
-                   (catch Throwable ex
-                     (log/error ex "failed to emit command/failed"))))))
