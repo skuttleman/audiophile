@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 echo "Running tests before committing…"
-bin/test.sh
+bin/exec.sh test
 STATUS="${?}"
 
 echo ''

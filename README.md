@@ -25,7 +25,7 @@ $ npm install
 ### Run application in dev mode
 
 ```bash
-$ bin/run.sh dev
+$ bin/exec.sh run dev
 ```
 
 You can override which ports the servers listen on.
@@ -40,7 +40,7 @@ $ API_PORT=3000 \
   EVENT_NREPL_PORT=7200 \
   UI_NREPL_PORT=8180 \
   CLJS_NREPL_PORT=8280 \
-  bin/run.sh dev
+  bin/exec.sh run dev
 ```
 
 Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
@@ -60,7 +60,7 @@ cljs compiler nREPL listens at `localhost {CLJS_NREPL_PORT:-8280}` (can be overr
 ### Run tests
 
 ```bash
-$ bin/test.sh
+$ bin/exec.sh test
 ```
 
 ## ERD
