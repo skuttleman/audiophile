@@ -6,14 +6,16 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defn ^:private get-artifact* [executor store artifact-id opts]
-  (let [{:artifact/keys [content-type key]} (rfiles/find-by-artifact-id executor artifact-id opts)
-        data (repos/get store key)]
-    [data {:content-type content-type}]))
+  (when-let [{:artifact/keys [content-type key]} (rfiles/find-by-artifact-id executor artifact-id opts)]
+    (if-let [data (some->> key (repos/get store))]
+      [data {:content-type content-type}]
+      (throw (ex-info "artifact located with missing data" {:artifact-id artifact-id})))))
 
-(deftype FileAccessor [repo store pubsub keygen]
+(deftype FileAccessor [repo store ch keygen]
   pint/IAccessor
   (query-many [_ opts]
     (repos/transact! repo rfiles/select-for-project (:project/id opts) opts))
@@ -24,17 +26,20 @@
   (create-artifact! [_ data opts]
     (let [key (keygen)
           uri (repos/uri store key opts)
-          data (assoc data :uri uri :key key)]
+          data (assoc data :uri uri :key key)
+          payload (-> data
+                      (dissoc :tempfile)
+                      (maps/qualify :artifact))]
       (repos/put! store key data)
-      (ps/emit-command! pubsub (:user/id opts) :artifact/create! (dissoc data :tempfile) opts)))
+      (ps/emit-command! ch :artifact/create! payload opts)))
   (create-file! [_ data opts]
-    (ps/emit-command! pubsub (:user/id opts) :file/create! data opts))
+    (ps/emit-command! ch :file/create! data opts))
   (create-file-version! [_ data opts]
-    (ps/emit-command! pubsub (:user/id opts) :file-version/create! data opts))
+    (ps/emit-command! ch :file-version/create! data opts))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* store (:artifact/id opts) opts)))
 
 (defn accessor
   "Constructor for [[FileAccessor]] which provides semantic access for storing and retrieving files."
-  [{:keys [pubsub repo store]}]
-  (->FileAccessor repo store pubsub #(str "artifacts/" (uuids/random))))
+  [{:keys [ch repo store]}]
+  (->FileAccessor repo store ch #(str "artifacts/" (uuids/random))))

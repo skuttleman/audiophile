@@ -4,55 +4,49 @@
  [:duct/const :services/pubsub]
  #ig/ref :audiophile.services.pubsub/memory
 
- [:audiophile.services.rabbitmq/publisher :rabbitmq.pub/commands]
+ [:audiophile.services.rabbitmq/channel :rabbitmq.chan/commands]
  {:conn      #ig/ref :services/rabbitmq#conn
   :queue-cfg #ig/ref :mq.channel/commands}
 
- [:audiophile.services.rabbitmq/publisher :rabbitmq.pub/events]
+ [:audiophile.services.rabbitmq/channel :rabbitmq.chan/events]
  {:conn      #ig/ref :services/rabbitmq#conn
   :queue-cfg #ig/ref :mq.channel/events}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/events#persist]
- {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/db-handler
-  :queue-cfg #ig/ref :mq.channel/events
-  :opts      {:auto-ack         true
-              :internal/handler "persist"}}
+ {:ch      #ig/ref :rabbitmq.chan/events
+  :handler #ig/ref :audiophile.services.rabbitmq/db-handler
+  :opts    {:auto-ack         true
+            :internal/handler "persist"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/events#ws]
- {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/ws-handler
-  :queue-cfg #ig/ref :mq.channel/events
-  :opts      {:auto-ack         true
-              :internal/handler "ws"}}
+ {:ch      #ig/ref :rabbitmq.chan/events
+  :handler #ig/ref :audiophile.services.rabbitmq/ws-handler
+  :opts    {:auto-ack         true
+            :internal/handler "ws"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#comments]
- {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#comments
-  :queue-cfg #ig/ref :mq.channel/commands
-  :opts      {:auto-ack         true
-              :internal/handler "comments"}}
+ {:ch      #ig/ref :rabbitmq.chan/commands
+  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#comments
+  :opts    {:auto-ack         true
+            :internal/handler "comments"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#files]
- {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#files
-  :queue-cfg #ig/ref :mq.channel/commands
-  :opts      {:auto-ack         true
-              :internal/handler "files"}}
+ {:ch      #ig/ref :rabbitmq.chan/commands
+  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#files
+  :opts    {:auto-ack         true
+            :internal/handler "files"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#projects]
- {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#projects
-  :queue-cfg #ig/ref :mq.channel/commands
-  :opts      {:auto-ack         true
-              :internal/handler "projects"}}
+ {:ch      #ig/ref :rabbitmq.chan/commands
+  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#projects
+  :opts    {:auto-ack         true
+            :internal/handler "projects"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#teams]
- {:conn      #ig/ref :services/rabbitmq#conn
-  :handler   #ig/ref :audiophile.services.rabbitmq/command-handler#teams
-  :queue-cfg #ig/ref :mq.channel/commands
-  :opts      {:auto-ack         true
-              :internal/handler "teams"}}
+ {:ch      #ig/ref :rabbitmq.chan/commands
+  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#teams
+  :opts    {:auto-ack         true
+            :internal/handler "teams"}}
 
  [:audiophile.services.rabbitmq/conn :component/health]
  {:cfg {:uri #ig/ref :env.rabbitmq/uri}}
@@ -67,17 +61,17 @@
  {:pubsub #ig/ref :services/pubsub}
 
  :audiophile.services.rabbitmq/command-handler#comments
- {:repo   #ig/ref :repositories/comments
-  :pubsub #ig/ref :rabbitmq.pub/events}
+ {:ch   #ig/ref :rabbitmq.chan/events
+  :repo #ig/ref :repositories/comments}
 
  :audiophile.services.rabbitmq/command-handler#files
- {:repo   #ig/ref :repositories/files
-  :pubsub #ig/ref :rabbitmq.pub/events}
+ {:ch   #ig/ref :rabbitmq.chan/events
+  :repo #ig/ref :repositories/files}
 
  :audiophile.services.rabbitmq/command-handler#projects
- {:repo   #ig/ref :repositories/projects
-  :pubsub #ig/ref :rabbitmq.pub/events}
+ {:ch   #ig/ref :rabbitmq.chan/events
+  :repo #ig/ref :repositories/projects}
 
  :audiophile.services.rabbitmq/command-handler#teams
- {:repo   #ig/ref :repositories/teams
-  :pubsub #ig/ref :rabbitmq.pub/events}}
+ {:ch   #ig/ref :rabbitmq.chan/events
+  :repo #ig/ref :repositories/teams}}

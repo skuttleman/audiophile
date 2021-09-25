@@ -17,11 +17,6 @@
   (:import
     (java.io Closeable)))
 
-(deftype RabbitMQPublisher [ch]
-  ppubsub/IPub
-  (publish! [_ topic msg]
-    (pps/send! ch (maps/->m topic msg))))
-
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
   (open? [_]
@@ -86,10 +81,8 @@
 (defn conn#stop [conn]
   (.close ^Closeable conn))
 
-(defn publisher [{:keys [conn queue-cfg]}]
-  (let [ch (pps/chan conn queue-cfg)]
-    (->RabbitMQPublisher ch)))
+(defn channel [{:keys [conn queue-cfg]}]
+  (pps/chan conn queue-cfg))
 
-(defn subscriber [{:keys [conn handler queue-cfg opts]}]
-  (let [ch (pps/chan conn queue-cfg)]
-    (pps/subscribe! ch handler opts)))
+(defn subscriber [{:keys [ch handler opts]}]
+  (pps/subscribe! ch handler opts))

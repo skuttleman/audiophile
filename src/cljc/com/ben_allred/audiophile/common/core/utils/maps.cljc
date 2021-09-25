@@ -101,3 +101,15 @@
    with only the specified keys and another map with all but those keys"
   [m keys]
   [(select-keys m keys) (apply dissoc m keys)])
+
+(defn qualify
+  "Qualifies all keys of a map with a ns, disregarding the key's current namespace.
+   If there are keys with duplicate names, one entry will win non-deterministically."
+  [m ns]
+  (when m
+    (let [ns (name ns)]
+      (into (with-meta {} (meta m))
+            (map (fn [[k v]]
+                   [(keyword ns (name k))
+                    v]))
+            m))))

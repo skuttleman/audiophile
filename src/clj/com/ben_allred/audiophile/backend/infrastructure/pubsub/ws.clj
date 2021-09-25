@@ -139,12 +139,12 @@
 
 (deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler
-  (handle! [_ {:keys [msg topic]}]
+  (handle! [_ {event-id :event/id :event/keys [ctx] :as event}]
     (try
-      (log/info "publishing event to ws" (first msg))
-      (pubsub/publish! pubsub topic msg)
+      (log/info "publishing event to ws" event-id)
+      (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx)
       (catch Throwable ex
-        (log/error ex "failed: publishing event to ws" msg)))))
+        (log/error ex "failed: publishing event to ws" event)))))
 
 (defn event->ws-handler [{:keys [pubsub]}]
   (->WebSocketMessageHandler pubsub))

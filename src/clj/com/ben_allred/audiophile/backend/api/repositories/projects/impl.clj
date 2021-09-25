@@ -7,7 +7,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
-(deftype ProjectAccessor [repo pubsub]
+(deftype ProjectAccessor [repo ch]
   pint/IProjectAccessor
   pint/IAccessor
   (query-many [_ opts]
@@ -15,9 +15,9 @@
   (query-one [_ opts]
     (repos/transact! repo rprojects/find-by-project-id (:project/id opts) opts))
   (create! [_ data opts]
-    (ps/emit-command! pubsub (:user/id opts) :project/create! data opts)))
+    (ps/emit-command! ch :project/create! data opts)))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."
-  [{:keys [pubsub repo]}]
-  (->ProjectAccessor repo pubsub))
+  [{:keys [ch repo]}]
+  (->ProjectAccessor repo ch))

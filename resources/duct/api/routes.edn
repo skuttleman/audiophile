@@ -9,12 +9,14 @@
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :resources/health]   #ig/ref :res.handler/health
+  [:get :ws/connection]      #ig/ref :api.handler/ws#connect
   [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
   [:post :api/comments]      #ig/ref :api.handler/comments#post
   [:post :api/file]          #ig/ref :api.handler/file#post
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
   [:post :api/projects]      #ig/ref :api.handler/projects#post
-  [:post :api/teams]         #ig/ref :api.handler/teams#post}
+  [:post :api/teams]         #ig/ref :api.handler/teams#post
+  :internal/deps             #{#ig/ref :rabbitmq.sub/events#ws}}
 
  [:duct/const :routes/table#auth]
  {[:get :auth/callback]    #ig/ref :audiophile.handlers.auth/callback
@@ -22,18 +24,13 @@
   [:get :auth/logout]      #ig/ref :audiophile.handlers.auth/logout
   [:get :resources/health] #ig/ref :res.handler/health}
 
- [:duct/const :routes/table#events]
- {[:get :resources/health] #ig/ref :res.handler/health
-  [:get :ws/connection]    #ig/ref :api.handler/ws#connect
-  :internal/deps           #{#ig/ref :rabbitmq.sub/events#persist
-                             #ig/ref :rabbitmq.sub/events#ws}}
-
  [:duct/const :routes/table#jobs]
  {[:get :resources/health] #ig/ref :res.handler/health
   :internal/deps           #{#ig/ref :rabbitmq.sub/commands#comments
                              #ig/ref :rabbitmq.sub/commands#files
                              #ig/ref :rabbitmq.sub/commands#projects
-                             #ig/ref :rabbitmq.sub/commands#teams}}
+                             #ig/ref :rabbitmq.sub/commands#teams
+                             #ig/ref :rabbitmq.sub/events#persist}}
 
  [:duct/const :routes/table#ui]
  {[:get :resources/css]    #ig/ref :audiophile.routes/assets
@@ -129,10 +126,9 @@
  {}
 
  :audiophile.routes/ui
- {:api-base   #ig/ref :env/base-url#api
-  :auth-base  #ig/ref :env/base-url#auth
-  :event-base #ig/ref :env/base-url#events
-  :template   #duct/include "html.edn"}
+ {:api-base  #ig/ref :env/base-url#api
+  :auth-base #ig/ref :env/base-url#auth
+  :template  #duct/include "html.edn"}
 
  :audiophile.middleware/with-auth
  {:jwt-serde #ig/ref :serdes/jwt}

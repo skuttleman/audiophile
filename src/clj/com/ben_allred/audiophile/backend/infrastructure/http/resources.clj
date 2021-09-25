@@ -38,12 +38,11 @@
 
 (defn ui
   "Ring handler for dynamically generating html for authorized user."
-  [{:keys [api-base auth-base event-base template]}]
+  [{:keys [api-base auth-base template]}]
   (fn [{:auth/keys [user]}]
     [::http/ok
      (html/render template
                   {:auth/user  user
                    :api-base   api-base
-                   :auth-base  auth-base
-                   :event-base event-base})
+                   :auth-base  auth-base})
      {:content-type "text/html"}]))

@@ -1,15 +1,12 @@
 (ns ^:unit com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.files-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.api.repositories.files.impl :as rfiles]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.files :as pub.files]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.test.utils :as tu]
     [com.ben-allred.audiophile.test.utils.repositories :as trepos]
     [com.ben-allred.audiophile.test.utils.services :as ts]
@@ -17,9 +14,9 @@
 
 (deftest handle!-test
   (testing "(FileCommandHandler#handle!)"
-    (let [pubsub (ts/->pubsub)
+    (let [ch (ts/->chan)
           tx (trepos/stub-transactor trepos/->file-executor)
-          handler (pub.files/->FileCommandHandler tx pubsub)]
+          handler (pub.files/->FileCommandHandler tx ch)]
       (testing "when saving artifacts"
         (testing "and when the content saves to the kv-store"
           (let [[artifact-id user-id request-id] (repeatedly uuids/random)
@@ -31,14 +28,13 @@
                         [artifact]
                         [{:id "event-id"}])
             (int/handle! handler
-                         {:msg [::id
-                                {:command/type :artifact/create!
-                                 :command/data {:filename     "file.name"
-                                                :size         12345
-                                                :content-type "content/type"
-                                                :uri          "some://uri"}}
-                                {:user/id    user-id
-                                 :request/id request-id}]})
+                         {:command/type :artifact/create!
+                          :command/data {:artifact/filename     "file.name"
+                                         :artifact/size         12345
+                                         :artifact/content-type "content/type"
+                                         :artifact/uri          "some://uri"}
+                          :command/ctx  {:user/id    user-id
+                                         :request/id request-id}})
 
             (let [[[insert-artifact] [query-artifact]] (colls/only! 2 (stubs/calls tx :execute!))]
               (testing "inserts the artifact in the repository"
@@ -63,88 +59,88 @@
                          (tu/op-set where)))))
 
               (testing "emits an event"
-                (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
-                  (is (= [::ps/user user-id] topic))
+                (let [{event-id :event/id :as event} (-> ch
+                                                         (stubs/calls :send!)
+                                                         colls/only!
+                                                         first)]
                   (is (uuid? event-id))
                   (is (= {:event/id         event-id
                           :event/type       :artifact/created
                           :event/model-id   artifact-id
                           :event/data       artifact
-                          :event/emitted-by user-id}
+                          :event/emitted-by user-id
+                          :event/ctx        {:user/id    user-id
+                                             :request/id request-id}}
                          event)))))))
 
         (testing "and when the executor throws an exception"
           (let [request-id (uuids/random)
                 user-id (uuids/random)]
-            (stubs/init! pubsub)
+            (stubs/init! ch)
             (stubs/use! tx :execute!
                         (ex-info "Executor" {}))
             (int/handle! handler
-                         {:msg [::id
-                                {:command/type :artifact/create!
-                                 :command/data {}}
-                                {:user/id    user-id
-                                 :request/id request-id}]})
+                         {:command/type :artifact/create!
+                          :command/data {}
+                          :command/ctx  {:user/id    user-id
+                                         :request/id request-id}})
 
             (testing "does not emit a successful event"
-              (empty? (stubs/calls pubsub :publish!)))
+              (empty? (stubs/calls ch :publish!)))
 
             (testing "emits a command-failed event"
-              (let [[topic [event-id event ctx]] (-> pubsub
-                                                     (stubs/calls :publish!)
-                                                     colls/only!)]
-                (is (= [::ps/user user-id] topic))
+              (let [{event-id :event/id :as event} (-> ch
+                                                       (stubs/calls :send!)
+                                                       colls/only!
+                                                       first)]
                 (is (uuid? event-id))
                 (is (= {:event/id         event-id
                         :event/model-id   request-id
                         :event/type       :command/failed
                         :event/data       {:error/command :artifact/create!
                                            :error/reason  "Executor"}
-                        :event/emitted-by user-id}
-                       event))
-                (is (= {:request/id request-id
-                        :user/id    user-id}
-                       ctx))))))
+                        :event/emitted-by user-id
+                        :event/ctx        {:request/id request-id
+                                           :user/id    user-id}}
+                       event))))))
 
         (testing "and when the pubsub throws an exception"
           (let [request-id (uuids/random)
                 user-id (uuids/random)]
-            (stubs/init! pubsub)
-            (stubs/use! pubsub :publish!
-                        (ex-info "Pubsub" {}))
+            (stubs/init! ch)
+            (stubs/use! ch :send!
+                        (ex-info "Channel" {}))
             (int/handle! handler
-                         {:msg [::id
-                                {:command/type :artifact/create!
-                                 :command/data {}}
-                                {:user/id    user-id
-                                 :request/id request-id}]})
+                         {:command/type :artifact/create!
+                          :command/data {}
+                          :command/ctx  {:user/id    user-id
+                                         :request/id request-id}})
 
             (testing "emits a command-failed event"
-              (let [[topic [event-id event ctx]] (-> pubsub
-                                                     (stubs/calls :publish!)
-                                                     rest
-                                                     colls/only!)]
-                (is (= [::ps/user user-id] topic))
+              (let [{event-id :event/id :as event} (-> ch
+                                                       (stubs/calls :send!)
+                                                       rest
+                                                       colls/only!
+                                                       first)]
                 (is (uuid? event-id))
                 (is (= {:event/id         event-id
                         :event/model-id   request-id
                         :event/type       :command/failed
                         :event/data       {:error/command :artifact/create!
-                                           :error/reason  "Pubsub"}
-                        :event/emitted-by user-id}
-                       event))
-                (is (= {:request/id request-id
-                        :user/id    user-id}
-                       ctx)))))))
+                                           :error/reason  "Channel"}
+                        :event/emitted-by user-id
+                        :event/ctx        {:request/id request-id
+                                           :user/id    user-id}}
+                       event)))))))
 
       (testing "when saving files"
         (let [[artifact-id file-id project-id user-id] (repeatedly uuids/random)
               file {:file/id         file-id
                     :file/name       "file name"
                     :file/project-id project-id}
-              pubsub (ts/->pubsub)
+              ch (ts/->chan)
               tx (trepos/stub-transactor trepos/->file-executor)
-              handler (pub.files/->FileCommandHandler tx pubsub)]
+              handler (pub.files/->FileCommandHandler tx ch)]
           (testing "and when creating a file"
             (stubs/use! tx :execute!
                         [{:id project-id}]
@@ -153,13 +149,12 @@
                         [file]
                         [{:id "event-id"}])
             (int/handle! handler
-                         {:msg [::id
-                                {:command/type :file/create!
-                                 :command/data {:file/name    "file name"
-                                                :version/name "version"
-                                                :artifact/id  artifact-id}}
-                                {:user/id    user-id
-                                 :project/id project-id}]})
+                         {:command/type :file/create!
+                          :command/data {:file/name    "file name"
+                                         :version/name "version"
+                                         :artifact/id  artifact-id}
+                          :command/ctx  {:user/id    user-id
+                                         :project/id project-id}})
 
             (let [[[access-query] [file-insert] [version-insert] [query-for-event]]
                   (colls/only! 4 (stubs/calls tx :execute!))]
@@ -231,91 +226,90 @@
                              (update 3 tu/op-set))))))
 
               (testing "emits an event"
-                (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
-                  (is (= [::ps/user user-id] topic))
+                (let [{event-id :event/id :as event} (-> ch
+                                                         (stubs/calls :send!)
+                                                         colls/only!
+                                                         first)]
                   (is (uuid? event-id))
                   (is (= {:event/id         event-id
                           :event/type       :file/created
                           :event/model-id   file-id
                           :event/data       file
-                          :event/emitted-by user-id}
+                          :event/emitted-by user-id
+                          :event/ctx        {:user/id    user-id
+                                             :project/id project-id}}
                          event))))))
 
           (testing "and when the executor throws an exception"
             (let [request-id (uuids/random)
                   user-id (uuids/random)]
-              (stubs/init! pubsub)
+              (stubs/init! ch)
               (stubs/use! tx :execute!
                           (ex-info "Executor" {}))
               (int/handle! handler
-                           {:msg [::id
-                                  {:command/type :file/create!
-                                   :command/data {}}
-                                  {:user/id    user-id
-                                   :request/id request-id}]})
+                           {:command/type :file/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "does not emit a successful event"
-                (empty? (stubs/calls pubsub :publish!)))
+                (empty? (stubs/calls ch :send!)))
 
               (testing "emits a command-failed event"
-                (let [[topic [event-id event ctx]] (-> pubsub
-                                                       (stubs/calls :publish!)
-                                                       colls/only!)]
-                  (is (= [::ps/user user-id] topic))
+                (let [{event-id :event/id :as event} (-> ch
+                                                         (stubs/calls :send!)
+                                                         colls/only!
+                                                         first)]
                   (is (uuid? event-id))
                   (is (= {:event/id         event-id
                           :event/model-id   request-id
                           :event/type       :command/failed
                           :event/data       {:error/command :file/create!
                                              :error/reason  "Executor"}
-                          :event/emitted-by user-id}
-                         event))
-                  (is (= {:request/id request-id
-                          :user/id    user-id}
-                         ctx))))))
+                          :event/emitted-by user-id
+                          :event/ctx        {:request/id request-id `:user/id user-id}}
+                         event))))))
 
           (testing "and when the pubsub throws an exception"
             (let [request-id (uuids/random)
                   user-id (uuids/random)]
-              (stubs/init! pubsub)
+              (stubs/init! ch)
               (stubs/use! tx :execute!
                           [{:id "file-id"}]
                           [{:id file-id}]
                           [file])
-              (stubs/use! pubsub :publish!
-                          (ex-info "Pubsub" {}))
+              (stubs/use! ch :send!
+                          (ex-info "Channel" {}))
               (int/handle! handler
-                           {:msg [::id
-                                  {:command/type :file/create!
-                                   :command/data {}}
-                                  {:user/id    user-id
-                                   :request/id request-id}]})
+                           {:command/type :file/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "emits a command-failed event"
-                (let [[topic [event-id event ctx]] (-> pubsub
-                                                       (stubs/calls :publish!)
-                                                       rest
-                                                       colls/only!)]
-                  (is (= [::ps/user user-id] topic))
+                (let [{event-id :event/id :as event} (-> ch
+                                                         (stubs/calls :send!)
+                                                         rest
+                                                         colls/only!
+                                                         first)]
                   (is (uuid? event-id))
                   (is (= {:event/id         event-id
                           :event/model-id   request-id
                           :event/type       :command/failed
                           :event/data       {:error/command :file/create!
-                                             :error/reason  "Pubsub"}
-                          :event/emitted-by user-id}
-                         event))
-                  (is (= {:request/id request-id
-                          :user/id    user-id}
-                         ctx))))))))
+                                             :error/reason  "Channel"}
+                          :event/emitted-by user-id
+                          :event/ctx        {:request/id request-id
+                                             :user/id    user-id}}
+                         event))))))))
 
       (testing "when saving file-versions"
         (let [[artifact-id file-id project-id user-id version-id] (repeatedly uuids/random)
               version {:file-version/name "version name here"
                        :file-version/id   version-id}
-              pubsub (ts/->pubsub)
+              ch (ts/->chan)
               tx (trepos/stub-transactor trepos/->file-executor)
-              handler (pub.files/->FileCommandHandler tx pubsub)]
+              handler (pub.files/->FileCommandHandler tx ch)]
           (testing "and when creating a version"
             (stubs/use! tx :execute!
                         [{:id project-id}]
@@ -323,13 +317,12 @@
                         [version]
                         [{:id "event-id"}])
             (int/handle! handler
-                         {:msg [::id
-                                {:command/type :file-version/create!
-                                 :command/data {:file/name    "file name"
-                                                :version/name "version"
-                                                :artifact/id  artifact-id}}
-                                {:user/id user-id
-                                 :file/id file-id}]})
+                         {:command/type :file-version/create!
+                          :command/data {:file/name    "file name"
+                                         :version/name "version"
+                                         :artifact/id  artifact-id}
+                          :command/ctx  {:user/id user-id
+                                         :file/id file-id}})
             (let [[[access-query] [version-insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
               (testing "checks for access permission"
                 (is (= [:projects] (:from access-query)))
@@ -371,78 +364,78 @@
                          (tu/op-set where))))))
 
             (testing "emits an event"
-              (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
-                (is (= [::ps/user user-id] topic))
+              (let [{event-id :event/id :as event} (-> ch
+                                                       (stubs/calls :send!)
+                                                       colls/only!
+                                                       first)]
                 (is (uuid? event-id))
                 (is (= {:event/id         event-id
                         :event/type       :file-version/created
                         :event/model-id   version-id
                         :event/data       version
-                        :event/emitted-by user-id}
+                        :event/emitted-by user-id
+                        :event/ctx        {:user/id user-id
+                                           :file/id file-id}}
                        event)))))
 
           (testing "and when the executor throws an exception"
             (let [request-id (uuids/random)
                   user-id (uuids/random)]
-              (stubs/init! pubsub)
+              (stubs/init! ch)
               (stubs/use! tx :execute!
                           (ex-info "Executor" {}))
               (int/handle! handler
-                           {:msg [::id
-                                  {:command/type :file-version/create!
-                                   :command/data {}}
-                                  {:user/id    user-id
-                                   :request/id request-id}]})
+                           {:command/type :file-version/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "does not emit a successful event"
-                (empty? (stubs/calls pubsub :publish!)))
+                (empty? (stubs/calls ch :send!)))
 
               (testing "emits a command-failed event"
-                (let [[topic [event-id event ctx]] (-> pubsub
-                                                       (stubs/calls :publish!)
-                                                       colls/only!)]
-                  (is (= [::ps/user user-id] topic))
+                (let [{event-id :event/id :as event} (-> ch
+                                                         (stubs/calls :send!)
+                                                         colls/only!
+                                                         first)]
                   (is (uuid? event-id))
                   (is (= {:event/id         event-id
                           :event/model-id   request-id
                           :event/type       :command/failed
                           :event/data       {:error/command :file-version/create!
                                              :error/reason  "Executor"}
-                          :event/emitted-by user-id}
-                         event))
-                  (is (= {:request/id request-id
-                          :user/id    user-id}
-                         ctx))))))
+                          :event/emitted-by user-id
+                          :event/ctx        {:request/id request-id
+                                             :user/id    user-id}}
+                         event))))))
 
           (testing "and when the pubsub throws an exception"
             (let [request-id (uuids/random)
                   user-id (uuids/random)]
-              (stubs/init! pubsub)
+              (stubs/init! ch)
               (stubs/use! tx :execute!
                           [{:id "file-version-id"}])
-              (stubs/use! pubsub :publish!
-                          (ex-info "Pubsub" {}))
+              (stubs/use! ch :send!
+                          (ex-info "Channel" {}))
               (int/handle! handler
-                           {:msg [::id
-                                  {:command/type :file-version/create!
-                                   :command/data {}}
-                                  {:user/id    user-id
-                                   :request/id request-id}]})
+                           {:command/type :file-version/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "emits a command-failed event"
-                (let [[topic [event-id event ctx]] (-> pubsub
-                                                       (stubs/calls :publish!)
-                                                       rest
-                                                       colls/only!)]
-                  (is (= [::ps/user user-id] topic))
+                (let [{event-id :event/id :as event} (-> ch
+                                                         (stubs/calls :send!)
+                                                         rest
+                                                         colls/only!
+                                                         first)]
                   (is (uuid? event-id))
                   (is (= {:event/id         event-id
                           :event/model-id   request-id
                           :event/type       :command/failed
                           :event/data       {:error/command :file-version/create!
-                                             :error/reason  "Pubsub"}
-                          :event/emitted-by user-id}
-                         event))
-                  (is (= {:request/id request-id
-                          :user/id    user-id}
-                         ctx)))))))))))
+                                             :error/reason  "Channel"}
+                          :event/emitted-by user-id
+                          :event/ctx        {:request/id request-id
+                                             :user/id    user-id}}
+                         event)))))))))))

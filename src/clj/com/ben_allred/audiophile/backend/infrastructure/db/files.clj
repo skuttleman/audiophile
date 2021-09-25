@@ -110,8 +110,8 @@
 
 (defn ^:private insert-artifact [artifacts artifact]
   (-> artifact
-      (select-keys #{:content-type :filename :key :uri})
-      (assoc :content-length (:size artifact))
+      (select-keys #{:artifact/content-type :artifact/filename :artifact/key :artifact/uri})
+      (assoc :artifact/content-length (:artifact/size artifact))
       (->> (models/insert-into artifacts))))
 
 (defn ^:private insert-version [file-versions version file-id]

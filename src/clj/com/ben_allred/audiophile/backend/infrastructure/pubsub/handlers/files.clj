@@ -4,7 +4,8 @@
     [com.ben-allred.audiophile.backend.api.repositories.files.core :as rfiles]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defn ^:private create-artifact* [executor artifact opts]
   (if (rfiles/insert-artifact-access? executor artifact opts)
@@ -24,9 +25,9 @@
       (rfiles/find-event-version executor version-id))
     (throw (ex-info "insufficient access" {}))))
 
-(deftype FileCommandHandler [repo pubsub]
+(deftype FileCommandHandler [repo ch]
   pint/IMessageHandler
-  (handle! [_ {[command-id {:command/keys [type] :as command} ctx] :msg :as msg}]
+  (handle! [_ {command-id :command/id :command/keys [ctx data type] :as command}]
     (when-let [[data-type id create*]
                (case type
                  :artifact/create! ["artifact" :artifact/id create-artifact*]
@@ -35,18 +36,19 @@
                  nil)]
       (try
         (log/info "saving" data-type "to db" command-id)
-        (let [data (repos/transact! repo create* (:command/data command) ctx)]
-          (ps/emit-event! pubsub (:user/id ctx) (get data id) (keyword data-type "created") data ctx))
+        (let [payload (repos/transact! repo create* data ctx)]
+          (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx))
         (catch Throwable ex
-          (log/error ex "failed: saving" data-type "to db" msg)
+          (log/error ex "failed: saving" data-type "to db" command)
           (try
-            (ps/command-failed! pubsub
-                                (:request/id ctx)
+            (ps/command-failed! ch
+                                (or (:request/id ctx)
+                                    (uuids/random))
                                 (assoc ctx
                                        :error/command type
                                        :error/reason (.getMessage ex)))
             (catch Throwable ex
               (log/error ex "failed to emit command/failed"))))))))
 
-(defn msg-handler [{:keys [repo pubsub]}]
-  (->FileCommandHandler repo pubsub))
+(defn msg-handler [{:keys [ch repo]}]
+  (->FileCommandHandler repo ch))

@@ -13,7 +13,7 @@
            :team/members
            (rteams/select-team-members executor team-id opts))))
 
-(deftype TeamAccessor [repo pubsub]
+(deftype TeamAccessor [repo ch]
   pint/ITeamAccessor
   pint/IAccessor
   (query-many [_ opts]
@@ -21,9 +21,9 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
-    (ps/emit-command! pubsub (:user/id opts) :team/create! data opts)))
+    (ps/emit-command! ch :team/create! data opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."
-  [{:keys [pubsub repo]}]
-  (->TeamAccessor repo pubsub))
+  [{:keys [ch repo]}]
+  (->TeamAccessor repo ch))

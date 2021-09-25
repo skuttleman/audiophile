@@ -14,9 +14,9 @@
 
 (deftest handle!-test
   (testing "(ProjectCommandHandler#handle!)"
-    (let [pubsub (ts/->pubsub)
-          tx (trepos/stub-transactor (trepos/->project-executor {:pubsub pubsub}))
-          handler (pub.projects/->ProjectCommandHandler tx pubsub)
+    (let [ch (ts/->chan)
+          tx (trepos/stub-transactor trepos/->project-executor)
+          handler (pub.projects/->ProjectCommandHandler tx ch)
           [project-id team-id user-id] (repeatedly uuids/random)
           project {:project/id      project-id
                    :project/name    "some project"
@@ -28,12 +28,11 @@
                     [project]
                     [{:id "event-id"}])
         (int/handle! handler
-                     {:msg [::id
-                            {:command/type :project/create!
-                             :command/data {:created-at      :whenever
-                                            :project/team-id team-id
-                                            :other           :junk}}
-                            {:user/id user-id}]})
+                     {:command/type :project/create!
+                      :command/data {:created-at      :whenever
+                                     :project/team-id team-id
+                                     :other           :junk}
+                      :command/ctx  {:user/id user-id}})
 
         (let [[[access] [insert] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "verifies team access"
@@ -68,78 +67,77 @@
                        (update :where tu/op-set))))))
 
         (testing "emits an event"
-          (let [[topic [event-id event]] (colls/only! (stubs/calls pubsub :publish!))]
-            (is (= [::ps/user user-id] topic))
+          (let [{event-id :event/id :as event} (-> ch
+                                                   (stubs/calls :send!)
+                                                   colls/only!
+                                                   first)]
             (is (uuid? event-id))
             (is (= {:event/id         event-id
                     :event/type       :project/created
                     :event/model-id   project-id
                     :event/data       project
-                    :event/emitted-by user-id}
+                    :event/emitted-by user-id
+                    :event/ctx        {:user/id user-id}}
                    event)))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
-          (stubs/init! pubsub)
+          (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
           (int/handle! handler
-                       {:msg [::id
-                              {:command/type :project/create!
-                               :command/data {}}
-                              {:user/id    user-id
-                               :request/id request-id}]})
+                       {:command/type :project/create!
+                        :command/data {}
+                        :command/ctx  {:user/id    user-id
+                                       :request/id request-id}})
 
           (testing "does not emit a successful event"
-            (empty? (stubs/calls pubsub :publish!)))
+            (empty? (stubs/calls ch :send!)))
 
           (testing "emits a command-failed event"
-            (let [[topic [event-id event ctx]] (-> pubsub
-                                                   (stubs/calls :publish!)
-                                                   colls/only!)]
-              (is (= [::ps/user user-id] topic))
+            (let [{event-id :event/id :as event} (-> ch
+                                                     (stubs/calls :send!)
+                                                     colls/only!
+                                                     first)]
               (is (uuid? event-id))
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :project/create!
                                          :error/reason  "Executor"}
-                      :event/emitted-by user-id}
-                     event))
-              (is (= {:request/id request-id
-                      :user/id    user-id}
-                     ctx))))))
+                      :event/emitted-by user-id
+                      :event/ctx {:request/id request-id
+                                  :user/id    user-id}}
+                     event))))))
 
       (testing "when the pubsub throws an exception"
         (let [request-id (uuids/random)
               user-id (uuids/random)]
-          (stubs/init! pubsub)
+          (stubs/init! ch)
           (stubs/use! tx :execute!
                       [{:id "project-id"}])
-          (stubs/use! pubsub :publish!
-                      (ex-info "Pubsub" {}))
+          (stubs/use! ch :send!
+                      (ex-info "Channel" {}))
           (int/handle! handler
-                       {:msg [::id
-                              {:command/type :project/create!
-                               :command/data {}}
-                              {:user/id    user-id
-                               :request/id request-id}]})
+                       {:command/type :project/create!
+                        :command/data {}
+                        :command/ctx  {:user/id    user-id
+                                       :request/id request-id}})
 
           (testing "emits a command-failed event"
-            (let [[topic [event-id event ctx]] (-> pubsub
-                                                   (stubs/calls :publish!)
-                                                   rest
-                                                   colls/only!)]
-              (is (= [::ps/user user-id] topic))
+            (let [{event-id :event/id :as event} (-> ch
+                                                     (stubs/calls :send!)
+                                                     rest
+                                                     colls/only!
+                                                     first)]
               (is (uuid? event-id))
               (is (= {:event/id         event-id
                       :event/model-id   request-id
                       :event/type       :command/failed
                       :event/data       {:error/command :project/create!
-                                         :error/reason  "Pubsub"}
-                      :event/emitted-by user-id}
-                     event))
-              (is (= {:request/id request-id
-                      :user/id    user-id}
-                     ctx)))))))))
+                                         :error/reason  "Channel"}
+                      :event/emitted-by user-id
+                      :event/ctx {:request/id request-id
+                                  :user/id    user-id}}
+                     event)))))))))
