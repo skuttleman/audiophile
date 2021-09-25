@@ -31,7 +31,9 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/teams
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request
+  :success-msg   "Success - team created"
+  :error-msg     "Error - team creation failed"}
 
  [:audiophile.resources/cached :resources/teams#all]
  {:resource #ig/ref [:audiophile.resources/base :teams/all]}

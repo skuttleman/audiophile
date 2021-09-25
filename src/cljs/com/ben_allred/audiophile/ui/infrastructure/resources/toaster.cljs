@@ -1,6 +1,5 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.resources.toaster
   (:require
-    [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
@@ -35,4 +34,5 @@
   (->ToastResource resource *toasts success-fn error-fn))
 
 (defn toast-fn [{:keys [msg]}]
-  (constantly msg))
+  (fn [result]
+    (or (:toast/msg (meta result)) msg)))

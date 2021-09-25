@@ -30,7 +30,9 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/project.files
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request
+  :success-msg   "Success - track created"
+  :error-msg     "Error - track creation failed"}
 
  [:audiophile.resources/toaster :projects/file#create]
  {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
@@ -43,7 +45,9 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/file
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request
+  :success-msg   "Success - track version created"
+  :error-msg     "Error - track version creation failed"}
 
  [:audiophile.resources/http-handler :projects/files]
  {:http-client #ig/ref :services/http
@@ -54,7 +58,9 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/projects
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request
+  :success-msg   "Success - project created"
+  :error-msg     "Error - project creation failed"}
 
  [:audiophile.resources/base :projects/all]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/all]}

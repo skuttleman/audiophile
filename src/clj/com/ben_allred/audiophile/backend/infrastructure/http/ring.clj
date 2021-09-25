@@ -32,4 +32,4 @@
 (defn error
   "Formats an error msg as an error response map"
   [status msg]
-  [status {:errors [{:message msg}]}])
+  [status {:error {:errors [{:message msg}]}}])

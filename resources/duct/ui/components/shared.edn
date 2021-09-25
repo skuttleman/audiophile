@@ -48,7 +48,9 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :opts->request #ig/ref :audiophile.resources/file-uploader
-  :route         :api/artifacts}
+  :route         :api/artifacts
+  :success-msg   "Success - file uploaded"
+  :error-msg     "Error - file upload failed"}
 
  :audiophile.resources/file-uploader
  {}

@@ -119,7 +119,7 @@
             (cond-> route (assoc :url (nav/path-for nav route params)))
             (->> (pres/request! http-client)))))))
 
-(defn with-pubsub* [http-client pubsub ms request]
+(defn ^:private with-pubsub* [http-client pubsub ms request]
   (let [pubsub-id (uuids/random)]
     (-> (v/create (fn [resolve reject]
                     (let [request-id (uuids/random)]
@@ -131,7 +131,8 @@
                           (pres/request! (assoc-in request [:headers :x-request-id] request-id))
                           (v/catch reject))
                       (v/and (v/sleep ms)
-                             (reject {:error [{:message "upload timed out"}]})))))
+                             (reject {:error ^{:toast/msg "Timeout - The request took longer than expected to complete"}
+                                             [{:message "upload timed out"}]})))))
         (v/peek (fn [_]
                   (pubsub/unsubscribe! pubsub pubsub-id))))))
 

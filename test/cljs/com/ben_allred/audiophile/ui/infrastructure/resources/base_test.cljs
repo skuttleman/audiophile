@@ -21,7 +21,7 @@
 
           (testing "when the request fails"
             (let [resource (bres/->Resource (atom {:status :init})
-                                            #(v/reject {:errors %}))
+                                            #(v/reject {:error %}))
                   result (tu/<p! (res/request! resource ::opts))]
               (is (= [:error ::opts] result)))))
 
@@ -49,7 +49,7 @@
                   (is (= :success (res/status resource))))))
 
             (testing "when the resource request fails"
-              (let [opts->vow (spies/create (v/reject {:errors :errors}))
+              (let [opts->vow (spies/create (v/reject {:error ::errors}))
                     resource (bres/->Resource (atom {:status :init}) opts->vow)]
                 (tu/<p! (res/request! resource ::opts))
 
@@ -66,7 +66,7 @@
 
           (testing "when the request fails"
             (let [resource (bres/->Resource (atom {:status :init})
-                                            #(v/reject {:errors %}))
+                                            #(v/reject {:error %}))
                   _ (res/request! resource ::opts)
                   result (tu/<p! (v/catch resource (comp v/reject (partial hash-map :value))))]
               (is (= [:error {:value ::opts}] result))))
@@ -98,7 +98,7 @@
                 (is (= ::data @*resource))))
 
             (testing "when the resource succeeds"
-              (spies/set-spy! opts->vow (v/reject {:errors ::errors}))
+              (spies/set-spy! opts->vow (v/reject {:error ::errors}))
               (tu/<p! (res/request! *resource ::opts))
 
               (testing "returns errors"

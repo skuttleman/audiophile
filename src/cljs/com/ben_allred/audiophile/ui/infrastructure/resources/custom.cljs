@@ -20,13 +20,18 @@
 
 (defn comment-poster [{:keys [*comments http-client]}]
   (fn [{data :form/value}]
-    (v/and (res/request! http-client
-                         {:body        {:data data}
-                          :method      :post
-                          :http/async? true
-                          :nav/route   :api/comments})
-           (res/request! *comments
-                         {:nav/params {:route-params {:file-id (:file/id data)}}})
-           {:data (select-keys data #{:comment/selection
-                                      :comment/with-selection?
-                                      :comment/file-version-id})})))
+    (-> http-client
+        (res/request! {:body        {:data data}
+                       :method      :post
+                       :http/async? true
+                       :nav/route   :api/comments})
+        (v/then (fn [result]
+                  (res/request! *comments
+                                {:nav/params {:route-params {:file-id (:file/id data)}}})
+                  {:data ^{:toast/msg (or (some-> result :data meta :toast/msg)
+                                          "Success - comment created")}
+                         {}})
+                (fn [result]
+                  (v/reject {:error ^{:toast/msg (or (some-> result :error meta :toast/msg)
+                                                     "Error - comment creation failed")}
+                                    {}}))))))

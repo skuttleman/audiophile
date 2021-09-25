@@ -22,7 +22,7 @@
     (swap! state assoc :status :requesting)
     (-> opts
         opts->vow
-        (v/then :data (comp v/reject :errors))
+        (v/then :data (comp v/reject :error))
         (v/peek (partial swap! state assoc :status :success :value)
                 (partial swap! state assoc :status :error :error))))
   (status [_]
@@ -48,15 +48,24 @@
 (defn base [{:keys [opts->vow]}]
   (->Resource (r/atom {:status :init}) opts->vow))
 
-(defn http-handler [{:keys [http-client method opts->params opts->request route]}]
+(defn http-handler [{:keys [error-msg http-client method opts->params opts->request route success-msg]}]
   (let [opts->params (or opts->params :nav/params)
         opts->request (or opts->request identity)]
     (fn [opts]
-      (res/request! http-client
-                    (maps/assoc-defaults (opts->request opts)
-                                         :method method
-                                         :nav/route route
-                                         :nav/params (opts->params opts))))))
+      (-> http-client
+          (res/request! (maps/assoc-defaults (opts->request opts)
+                                             :method method
+                                             :nav/route route
+                                             :nav/params (opts->params opts)))
+          (cond->
+            success-msg (v/then (fn [result]
+                                  (if (:data result)
+                                    (update result :data vary-meta update :toast/msg #(or % success-msg))
+                                    (update-in result [:data :toast/msg] #(or % success-msg)))))
+            error-msg (v/catch (fn [result]
+                                 (if (:error result)
+                                   (update result :error vary-meta update :toast/msg #(or % success-msg))
+                                   (update-in result [:error :toast/msg] #(or % success-msg))))))))))
 
 (defn file-uploader [_]
   (fn [{:keys [files] :as opts}]
