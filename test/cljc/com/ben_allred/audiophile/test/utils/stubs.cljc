@@ -1,10 +1,10 @@
-(ns test.utils.stubs
+(ns com.ben-allred.audiophile.test.utils.stubs
   #?(:cljs
      (:require-macros
-       test.utils.stubs))
+       com.ben-allred.audiophile.test.utils.stubs))
   (:require
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [test.utils.protocols :as pu])
+    [com.ben-allred.audiophile.test.utils.protocols :as pu])
   #?(:clj
      (:import
        (clojure.lang IDeref))))

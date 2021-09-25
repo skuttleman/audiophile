@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.integration.common
+(ns com.ben-allred.audiophile.test.integration.common
   (:require
     [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
@@ -10,10 +10,10 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    [test.utils.stubs :as stubs]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]
     com.ben-allred.audiophile.backend.dev.handler
     com.ben-allred.audiophile.backend.infrastructure.system.core
-    com.ben-allred.audiophile.integration.common.components))
+    com.ben-allred.audiophile.test.integration.common.components))
 
 (def ^:private config-base
   (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev" ".env-test"]))]

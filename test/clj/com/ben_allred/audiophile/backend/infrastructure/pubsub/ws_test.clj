@@ -7,7 +7,7 @@
     [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest ->handler-test
   (let [pubsub (pubsub.mem/pubsub {:sync? true})

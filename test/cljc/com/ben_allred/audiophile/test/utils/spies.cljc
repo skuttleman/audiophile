@@ -1,6 +1,6 @@
-(ns test.utils.spies
+(ns com.ben-allred.audiophile.test.utils.spies
   (:require
-    [test.utils.protocols :as pu])
+    [com.ben-allred.audiophile.test.utils.protocols :as pu])
   #?(:clj
      (:import
        (clojure.lang IFn))))

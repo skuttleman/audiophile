@@ -1,4 +1,4 @@
-(ns ^:integration com.ben-allred.audiophile.integration.ws-test
+(ns ^:integration com.ben-allred.audiophile.test.integration.ws-test
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
@@ -6,9 +6,9 @@
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.integration.common :as int]
-    [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [test.utils :as tu]))
+    [com.ben-allred.audiophile.test.integration.common :as int]
+    [com.ben-allred.audiophile.test.integration.common.http :as ihttp]
+    [com.ben-allred.audiophile.test.utils :as tu]))
 
 (deftest ws-connection-test
   (testing "GET /api/ws"

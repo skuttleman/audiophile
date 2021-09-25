@@ -1,10 +1,10 @@
-(ns ^:integration com.ben-allred.audiophile.integration.events-test
+(ns ^:integration com.ben-allred.audiophile.test.integration.events-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.integration.common :as int]
-    [com.ben-allred.audiophile.integration.common.http :as ihttp]))
+    [com.ben-allred.audiophile.test.integration.common :as int]
+    [com.ben-allred.audiophile.test.integration.common.http :as ihttp]))
 
 (deftest fetch-all-events-test
   (testing "GET /api/events"

@@ -1,4 +1,4 @@
-(ns test.utils.protocols)
+(ns com.ben-allred.audiophile.test.utils.protocols)
 
 (defprotocol IReport
   "Tracks invocations of a stub or spy"

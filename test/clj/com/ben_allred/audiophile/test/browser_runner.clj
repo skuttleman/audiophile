@@ -1,4 +1,4 @@
-(ns test.browser-runner
+(ns com.ben-allred.audiophile.test.browser-runner
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]

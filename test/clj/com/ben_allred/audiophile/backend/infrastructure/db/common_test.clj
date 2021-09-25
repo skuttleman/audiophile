@@ -7,9 +7,9 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [test.utils :as tu]
-    [test.utils.repositories :as trepos]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils :as tu]
+    [com.ben-allred.audiophile.test.utils.repositories :as trepos]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (defn ^:private ->event-executor
   ([config]

@@ -1,4 +1,4 @@
-(ns ^:integration com.ben-allred.audiophile.integration.file-test
+(ns ^:integration com.ben-allred.audiophile.test.integration.file-test
   (:require
     [clojure.java.io :as io]
     [clojure.test :refer [are deftest is testing]]
@@ -8,9 +8,9 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.integration.common :as int]
-    [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [test.utils.assertions :as assert]))
+    [com.ben-allred.audiophile.test.integration.common :as int]
+    [com.ben-allred.audiophile.test.integration.common.http :as ihttp]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]))
 
 (deftest upload-artifact-test
   (testing "POST /api/artifacts"

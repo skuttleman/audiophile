@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.integration.common.http
+(ns com.ben-allred.audiophile.test.integration.common.http
   (:refer-clojure :exclude [get])
   (:require
     [clojure.core.async :as async]
@@ -12,8 +12,8 @@
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.integration.common :as int]
-    [test.utils :as tu])
+    [com.ben-allred.audiophile.test.integration.common :as int]
+    [com.ben-allred.audiophile.test.utils :as tu])
   (:import
     (org.apache.commons.io FileUtils)))
 

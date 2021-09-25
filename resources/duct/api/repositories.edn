@@ -24,28 +24,24 @@
  {}
 
  :audiophile.repositories.comments/accessor
- {:commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events
-  :repo     #ig/ref :repositories/comments}
+ {:pubsub #ig/ref :rabbitmq.pub/commands
+  :repo   #ig/ref :repositories/comments}
 
  :audiophile.repositories.events/accessor
  {:repo #ig/ref :repositories/events}
 
  :audiophile.repositories.files/accessor
- {:commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events
-  :repo     #ig/ref :repositories/files
-  :store    #ig/ref :audiophile.repositories.files/artifact-store}
+ {:pubsub #ig/ref :rabbitmq.pub/commands
+  :repo   #ig/ref :repositories/files
+  :store  #ig/ref :audiophile.repositories.files/artifact-store}
 
  :audiophile.repositories.projects/accessor
- {:commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events
-  :repo     #ig/ref :repositories/projects}
+ {:pubsub #ig/ref :rabbitmq.pub/commands
+  :repo   #ig/ref :repositories/projects}
 
  :audiophile.repositories.teams/accessor
- {:commands #ig/ref :rabbitmq.pub/commands
-  :events   #ig/ref :rabbitmq.pub/events
-  :repo     #ig/ref :repositories/teams}
+ {:pubsub #ig/ref :rabbitmq.pub/commands
+  :repo   #ig/ref :repositories/teams}
 
  :audiophile.repositories.users/accessor
  {:repo #ig/ref :repositories/users}

@@ -7,7 +7,7 @@
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.vow.core :as v]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest auth-provider-test
   (testing "GoogleOAuthProvider"

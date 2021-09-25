@@ -1,8 +1,13 @@
-(ns test.utils.repositories
+(ns com.ben-allred.audiophile.test.utils.repositories
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
+    [com.ben-allred.audiophile.backend.infrastructure.db.comments :as db.comments]
+    [com.ben-allred.audiophile.backend.infrastructure.db.files :as db.files]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.backend.infrastructure.db.projects :as db.projects]
+    [com.ben-allred.audiophile.backend.infrastructure.db.teams :as db.teams]
+    [com.ben-allred.audiophile.backend.infrastructure.db.users :as db.users]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (defn ^:private ->model [[table-name {:keys [spec namespace]}]]
   [table-name (models/model {:models     {table-name {:fields (set (keys spec))
@@ -88,3 +93,52 @@
 
                   prepos/IExecute
                   (execute! [_ _ _]))))
+
+(defn ->comment-executor
+  ([config]
+   (fn [executor models]
+     (->comment-executor executor (merge models config))))
+  ([executor {:keys [comments file-versions files projects user-teams users]}]
+   (db.comments/->CommentsRepoExecutor executor
+                                       comments
+                                       projects
+                                       files
+                                       file-versions
+                                       user-teams
+                                       users)))
+
+(defn ->file-executor
+  ([config]
+   (fn [executor models]
+     (->file-executor executor (merge models config))))
+  ([executor {:keys [artifacts file-versions files projects user-teams]}]
+   (db.files/->FilesRepoExecutor executor
+                                 artifacts
+                                 file-versions
+                                 files
+                                 projects
+                                 user-teams)))
+
+(defn ->project-executor
+  ([config]
+   (fn [executor models]
+     (->project-executor executor (merge models config))))
+  ([executor {:keys [projects teams user-teams users]}]
+   (db.projects/->ProjectsRepoExecutor executor
+                                       projects
+                                       teams
+                                       user-teams
+                                       users)))
+
+(defn ->team-executor
+  ([config]
+   (fn [executor models]
+     (->team-executor executor (merge models config))))
+  ([executor {:keys [teams user-teams users]}]
+   (db.teams/->TeamsRepoExecutor executor
+                                 teams
+                                 user-teams
+                                 users)))
+
+(defn ->user-executor [executor {:keys [user-teams users]}]
+  (db.users/->UserExecutor executor users user-teams))

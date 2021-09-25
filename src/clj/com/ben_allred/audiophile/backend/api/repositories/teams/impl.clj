@@ -13,13 +13,7 @@
            :team/members
            (rteams/select-team-members executor team-id opts))))
 
-(defn ^:private create* [executor team opts]
-  (if (rteams/insert-team-access? executor team opts)
-    (let [team-id (rteams/insert-team! executor team opts)]
-      (rteams/find-event-team executor team-id))
-    (throw (ex-info "insufficient access" {}))))
-
-(deftype TeamAccessor [repo commands events]
+(deftype TeamAccessor [repo pubsub]
   pint/ITeamAccessor
   pint/IAccessor
   (query-many [_ opts]
@@ -27,27 +21,9 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
-    (ps/emit-command! commands (:user/id opts) :team/create! data opts))
-
-  pint/IMessageHandler
-  (handle! [_ {[command-id {:command/keys [type] :as command} ctx] :msg :as msg}]
-    (when (= type :team/create!)
-      (try
-        (log/info "saving team to db" command-id)
-        (let [team (repos/transact! repo create* (:command/data command) ctx)]
-          (ps/emit-event! events (:user/id ctx) (:team/id team) :team/created team ctx))
-        (catch Throwable ex
-          (log/error ex "failed: saving team to db" msg)
-          (try
-            (ps/command-failed! events
-                                (:request/id ctx)
-                                (assoc ctx
-                                       :error/command (:command/type command)
-                                       :error/reason (.getMessage ex)))
-            (catch Throwable ex
-              (log/error ex "failed to emit command/failed"))))))))
+    (ps/emit-command! pubsub (:user/id opts) :team/create! data opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."
-  [{:keys [commands events repo]}]
-  (->TeamAccessor repo commands events))
+  [{:keys [pubsub repo]}]
+  (->TeamAccessor repo pubsub))

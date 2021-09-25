@@ -1,7 +1,7 @@
-(ns test.utils.services
+(ns com.ben-allred.audiophile.test.utils.services
   (:require
     [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (defn ->pubsub []
   (stubs/create (reify

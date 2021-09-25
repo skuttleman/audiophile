@@ -5,7 +5,7 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 
 (deftest emit-event!-test

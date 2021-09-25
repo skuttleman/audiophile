@@ -1,7 +1,7 @@
-(ns test.utils
+(ns com.ben-allred.audiophile.test.utils
   #?(:cljs
      (:require-macros
-       test.utils))
+       com.ben-allred.audiophile.test.utils))
   (:require
     #?(:clj [ring.middleware.cookies :as ring.cook])
     [clojure.core.async :as async]

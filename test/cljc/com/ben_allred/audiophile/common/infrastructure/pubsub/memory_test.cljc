@@ -5,8 +5,8 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
-    [test.utils :refer [async] :as tu]
-    [test.utils.spies :as spies]))
+    [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
+    [com.ben-allred.audiophile.test.utils.spies :as spies]))
 
 (deftest PubSub-test
   (testing "PubSub"

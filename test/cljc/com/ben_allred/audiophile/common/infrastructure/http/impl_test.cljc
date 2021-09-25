@@ -9,8 +9,8 @@
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.vow.core :as v]
-    [test.utils :refer [async] :as tu]
-    [test.utils.stubs :as stubs])
+    [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs])
   #?(:clj
      (:import
        (java.util Date)

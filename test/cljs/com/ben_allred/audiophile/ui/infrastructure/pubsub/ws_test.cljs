@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.ui.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.ui.infrastructure.store.protocols :as pstore]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest handle-msg-test
   (testing "handle-msg"

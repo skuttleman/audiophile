@@ -1,4 +1,4 @@
-(ns test.utils.assertions)
+(ns com.ben-allred.audiophile.test.utils.assertions)
 
 (defn ^:private assert* [m val f]
   (for [[k v] m]

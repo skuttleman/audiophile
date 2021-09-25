@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.integration.common.components
+(ns com.ben-allred.audiophile.test.integration.common.components
   (:require
     [clojure.core.async :as async]
     [clojure.core.async.impl.protocols :as async.protocols]

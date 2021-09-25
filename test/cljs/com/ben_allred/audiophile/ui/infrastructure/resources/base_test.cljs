@@ -5,8 +5,8 @@
     [com.ben-allred.audiophile.ui.infrastructure.resources.base :as bres]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.vow.core :as v]
-    [test.utils :refer [async] :as tu]
-    [test.utils.spies :as spies]))
+    [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
+    [com.ben-allred.audiophile.test.utils.spies :as spies]))
 
 (deftest resource-test
   (testing "Resource"

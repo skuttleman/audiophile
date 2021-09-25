@@ -3,8 +3,12 @@
     [com.ben-allred.audiophile.backend.infrastructure.auth.core :as auth]
     [com.ben-allred.audiophile.backend.infrastructure.auth.google :as goog]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit :as pubsub.rabbit]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit :as pub.rabbit]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.comments :as pub.comments]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.files :as pub.files]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.projects :as pub.projects]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.teams :as pub.teams]
     [com.ben-allred.audiophile.backend.infrastructure.resources.s3 :as s3]
     [integrant.core :as ig]
     com.ben-allred.audiophile.backend.infrastructure.system.services.repositories))
@@ -31,19 +35,31 @@
   (s3/stream-serde cfg))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/conn [_ cfg]
-  (pubsub.rabbit/conn cfg))
+  (pub.rabbit/conn cfg))
 
 (defmethod ig/halt-key! :audiophile.services.rabbitmq/conn [_ cfg]
-  (pubsub.rabbit/conn#stop cfg))
+  (pub.rabbit/conn#stop cfg))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/publisher [_ rabbitmq]
-  (pubsub.rabbit/publisher rabbitmq))
+  (pub.rabbit/publisher rabbitmq))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/subscriber [_ rabbitmq]
-  (pubsub.rabbit/subscriber rabbitmq))
+  (pub.rabbit/subscriber rabbitmq))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/db-handler [_ cfg]
   (cdb/event->db-handler cfg))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/ws-handler [_ cfg]
   (ws/event->ws-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#comments [_ cfg]
+  (pub.comments/msg-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#files [_ cfg]
+  (pub.files/msg-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#projects [_ cfg]
+  (pub.projects/msg-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#teams [_ cfg]
+  (pub.teams/msg-handler cfg))

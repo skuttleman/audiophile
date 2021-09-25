@@ -1,4 +1,4 @@
-(ns test.utils.resources
+(ns com.ben-allred.audiophile.test.utils.resources
   (:require
     [clojure.java.io :as io]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]

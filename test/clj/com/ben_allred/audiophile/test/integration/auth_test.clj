@@ -1,4 +1,4 @@
-(ns ^:integration com.ben-allred.audiophile.integration.auth-test
+(ns ^:integration com.ben-allred.audiophile.test.integration.auth-test
   (:require
     [clojure.string :as string]
     [clojure.test :refer [are deftest is testing use-fixtures]]
@@ -6,11 +6,11 @@
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
-    [com.ben-allred.audiophile.integration.common :as int]
-    [com.ben-allred.audiophile.integration.common.http :as ihttp]
-    [test.utils :as tu]
-    [test.utils.assertions :as assert]
-    [test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.integration.common :as int]
+    [com.ben-allred.audiophile.test.integration.common.http :as ihttp]
+    [com.ben-allred.audiophile.test.utils :as tu]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest auth-callback-test
   (testing "GET /auth/callback"

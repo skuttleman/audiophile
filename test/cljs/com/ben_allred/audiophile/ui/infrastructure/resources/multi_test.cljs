@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.ui.infrastructure.resources.multi :as multi]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.vow.core :as v]
-    [test.utils :refer [async] :as tu]))
+    [com.ben-allred.audiophile.test.utils :refer [async] :as tu]))
 
 (defn ->resource [status value result]
   (reify pres/IResource
