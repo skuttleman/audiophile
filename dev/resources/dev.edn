@@ -11,6 +11,18 @@
   [:duct/const :services/oauth]
   #ig/ref :audiophile.dev/oauth
 
+  [:duct/const :interactors/comments]
+  #ig/ref :audiophile.repositories.dev/mock-interactor#comment
+
+  [:duct/const :interactors/files]
+  #ig/ref :audiophile.repositories.dev/mock-interactor#file
+
+  [:duct/const :interactors/projects]
+  #ig/ref :audiophile.repositories.dev/mock-interactor#project
+
+  [:duct/const :interactors/teams]
+  #ig/ref :audiophile.repositories.dev/mock-interactor#team
+
   [:audiophile.dev/app :api.dev/handler]
   {:app #ig/ref :api/handler}
 
@@ -22,4 +34,20 @@
 
   :audiophile.dev/oauth
   {:nav      #ig/ref :services/nav
-   :base-url #ig/ref :env/base-url#auth}}}
+   :base-url #ig/ref :env/base-url#auth}
+
+  :audiophile.repositories.dev/mock-interactor#comment
+  {:accessor #ig/ref :audiophile.repositories.comments/accessor
+   :handler  #ig/ref :audiophile.services.rabbitmq/ws-handler}
+
+  :audiophile.repositories.dev/mock-interactor#file
+  {:accessor #ig/ref :audiophile.repositories.files/accessor
+   :handler  #ig/ref :audiophile.services.rabbitmq/ws-handler}
+
+  :audiophile.repositories.dev/mock-interactor#project
+  {:accessor #ig/ref :audiophile.repositories.projects/accessor
+   :handler  #ig/ref :audiophile.services.rabbitmq/ws-handler}
+
+  :audiophile.repositories.dev/mock-interactor#team
+  {:accessor #ig/ref :audiophile.repositories.teams/accessor
+   :handler  #ig/ref :audiophile.services.rabbitmq/ws-handler}}}

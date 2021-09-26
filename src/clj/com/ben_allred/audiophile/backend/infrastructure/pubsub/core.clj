@@ -60,14 +60,6 @@
     (send! ch event)
     event-id))
 
-(defn command-failed! [pubsub model-id opts]
-  (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason})]
-    (emit-event! pubsub
-                 model-id
-                 :command/failed
-                 data
-                 ctx)))
-
 (defn emit-command! [ch command-type data {user-id :user/id :as ctx}]
   (let [command-id (uuids/random)
         command {:command/id         command-id
@@ -77,3 +69,7 @@
                  :command/ctx        ctx}]
     (send! ch command)
     command-id))
+
+(defn command-failed! [ch model-id opts]
+  (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason})]
+    (emit-event! ch model-id :command/failed data ctx)))

@@ -9,6 +9,7 @@
     [integrant.core :as ig]
     [nrepl.server :as nrepl]
     [ring.middleware.reload :as rel]
+    com.ben-allred.audiophile.backend.dev.accessors
     com.ben-allred.audiophile.backend.dev.handler
     com.ben-allred.audiophile.backend.infrastructure.system.core))
 
@@ -22,6 +23,7 @@
                                                   "dev/src/clj"]})]
     (fn []
       (reload* nil)
+      (require 'com.ben-allred.audiophile.backend.dev.accessors :reload)
       (require 'com.ben-allred.audiophile.backend.dev.handler :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.common :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.core :reload)

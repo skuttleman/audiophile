@@ -53,6 +53,7 @@
 
 (defn ^:private send* [channel serde msg]
   (try
+    (log/debug "sending msg to websocket" msg)
     (pps/send! channel
                (cond->> msg
                  serde (serdes/serialize serde)))
