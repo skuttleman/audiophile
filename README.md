@@ -51,4 +51,4 @@ $ bin/exec.sh test
 
 ## Sequence Diagram
 
-![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/doc/diagrams/erd.puml)
+![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/docs/diagrams/files.puml)
