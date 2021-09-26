@@ -30,6 +30,7 @@ activate jobs
         jobs -> db: [SQL] SELECT FROM artifacts
         db -> jobs: [SQL] ResultSet<event-data>
     end
+
     jobs -> events: [AMQ] :artifact/created
 deactivate jobs
 
@@ -67,7 +68,17 @@ activate jobs
         jobs -> db: [SQL] SELECT FROM files
         db -> jobs: [SQL] ResultSet<event-data>
     end
+
     jobs -> events: [AMQ] :file/created
+deactivate jobs
+
+events -> jobs: [AMQ] :file/created
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] INSERT INTO events
+        db -> jobs: [SQL] ResultSet<event-id>
+    end
 deactivate jobs
 
 events -> api: [AMQ] :file/created

@@ -40,11 +40,14 @@
 (defmethod ig/halt-key! :audiophile.services.rabbitmq/conn [_ cfg]
   (pub.rabbit/conn#stop cfg))
 
-(defmethod ig/init-key :audiophile.services.rabbitmq/channel [_ rabbitmq]
-  (pub.rabbit/channel rabbitmq))
+(defmethod ig/init-key :audiophile.services.rabbitmq/channel [_ cfg]
+  (pub.rabbit/channel cfg))
 
-(defmethod ig/init-key :audiophile.services.rabbitmq/subscriber [_ rabbitmq]
-  (pub.rabbit/subscriber rabbitmq))
+(defmethod ig/init-key :audiophile.services.rabbitmq/subscriber [_ cfg]
+  (pub.rabbit/subscriber cfg))
+
+(defmethod ig/init-key :audiophile.rabbitmq.exchange/name [_ cfg]
+  (pub.rabbit/exchange cfg))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/db-handler [_ cfg]
   (cdb/event->db-handler cfg))
