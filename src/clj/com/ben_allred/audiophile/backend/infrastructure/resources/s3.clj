@@ -13,10 +13,12 @@
   (uri [_ key _]
     (format "s3://%s/%s" bucket key))
   (get [_ key _]
+    (log/info "retrieving s3 artifact" key)
     (invoke client {:op      :GetObject
                     :request {:Bucket bucket
                               :Key    key}}))
   (put! [_ key content opts]
+    (log/info "saving s3 artifact" key)
     (invoke client {:op      :PutObject
                     :request {:Bucket        bucket
                               :Key           key

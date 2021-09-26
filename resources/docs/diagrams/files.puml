@@ -1,0 +1,70 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+actor user
+participant api
+participant jobs
+database db
+database artifacts as s3 <<S3>>
+queue commands <<AMQ>>
+queue events <<AMQ>>
+
+== Upload Artifact (mp3) ==
+
+user -> api: [HTTP] upload song.mp3
+
+activate api
+    api -> s3: [S3] store blob
+    s3 -> api: [S3] blob stored
+    api -> commands: [AMQ] :artifact/create!
+    api -> user: [HTTP] 204
+deactivate api
+
+commands -> jobs: [AMQ] :artifact/create!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] INSERT INTO artifacts
+        db -> jobs: [SQL] ResultSet<artifact-id>
+        jobs -> db: [SQL] SELECT FROM artifacts
+        db -> jobs: [SQL] ResultSet<event-data>
+    end
+    jobs -> events: [AMQ] :artifact/created
+deactivate jobs
+
+events -> jobs: [AMQ] :artifact/created
+
+activate jobs
+    jobs -> db: [SQL] INSERT INTO events
+    db -> jobs: [SQL] ResultSet<event-id>
+deactivate jobs
+
+events -> api: [AMQ] :artifact/created
+api -> user: [WS] artifact created
+
+== Create File (project track) ==
+
+user -> api: [HTTP] create file
+
+activate api
+    api -> commands: [AMQ] :file/create!
+    api -> user: [HTTP] 204
+deactivate api
+
+commands -> jobs: [AMQ] :file/create!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] INSERT INTO files
+        db -> jobs: [SQL] ResultSet<file-id>
+        jobs -> db: [SQL] SELECT FROM files
+        db -> jobs: [SQL] ResultSet<event-data>
+    end
+    jobs -> events: [AMQ] :file/created
+deactivate jobs
+
+events -> api: [AMQ] :file/created
+api -> user: [WS] file created
+
+@enduml

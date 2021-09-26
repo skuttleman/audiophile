@@ -25,31 +25,13 @@ $ npm install
 ### Run application in dev mode
 
 ```bash
-$ bin/exec.sh run dev
-```
-
-You can override which ports the servers listen on.
-
-```bash
-$ API_PORT=3000 \
-  AUTH_PORT=3100 \
-  EVENT_PORT=3200 \
-  UI_PORT=8080 \
-  API_NREPL_PORT=7000 \
-  AUTH_NREPL_PORT=7100 \
-  EVENT_NREPL_PORT=7200 \
-  UI_NREPL_PORT=8180 \
-  CLJS_NREPL_PORT=8280 \
-  bin/exec.sh run dev
+$ bin/exec.sh run single # runs the entire server side api in a single process
+$ bin/exec.sh run split # runs the server side api as separate microservices
+$ bin/exec.sh run multi # runs multiple instances of each microservice
+$ bin/exec.sh run jar # builds static assets and run a pre-compiled jar without any dev-only implementations
 ```
 
 Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
-
-api nREPL listens at `localhost {NREPL_PORT:-7000}` (can be overridden with API_NREPL_PORT env var)
-auth nREPL listens at `localhost {NREPL_PORT:-7100}` (can be overridden with AUTH_NREPL_PORT env var)
-event nREPL listens at `localhost {NREPL_PORT:-7100}` (can be overridden with EVENT_NREPL_PORT env var)
-ui nREPL listens at `localhost {UI_NREPL_PORT:-8180}` (can be overridden with UI_NREPL_PORT env var)
-cljs compiler nREPL listens at `localhost {CLJS_NREPL_PORT:-8280}` (can be overridden with CLJS_NREPL_PORT env var)
 
 ## Tests
 
@@ -66,3 +48,7 @@ $ bin/exec.sh test
 ## ERD
 
 ![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/db/erd.puml)
+
+## Sequence Diagram
+
+![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/doc/diagrams/erd.puml)
