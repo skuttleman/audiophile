@@ -25,12 +25,12 @@
 (defmethod handle-msg :conn/pong
   [_ _ _])
 
+(defn ^:private ->sub-handler [channel event-type]
+  (fn [_ event]
+    (pps/send! channel (into [event-type] event))))
+
 (defn ^:private subscribe* [{:keys [ch-id pubsub]} channel topic event-type]
-  (pubsub/subscribe! pubsub
-                     ch-id
-                     topic
-                     (fn [_ event]
-                       (pps/send! channel (into [event-type] event)))))
+  (pubsub/subscribe! pubsub ch-id topic (->sub-handler channel event-type)))
 
 (defn ^:private ch-loop [{:keys [heartbeat-int-ms]} channel]
   (async/go-loop []
@@ -53,12 +53,13 @@
 
 (defn ^:private send* [channel serde msg]
   (try
-    (log/debug "sending msg to websocket" msg)
+    (let [level (if (#{[:conn/ping] [:conn/pong]} msg) :trace :debug)]
+      (log/log level "sending msg to websocket" msg))
     (pps/send! channel
                (cond->> msg
                  serde (serdes/serialize serde)))
     (catch Throwable ex
-      (log/warn ex "failed to send msg to websocket" msg)
+      (log/error ex "failed to send msg to websocket" msg)
       (throw ex))))
 
 (defn ^:private close* [channel]
