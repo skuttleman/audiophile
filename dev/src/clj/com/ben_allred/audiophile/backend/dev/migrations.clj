@@ -99,14 +99,14 @@
   ([_]
    (main* :seed "db/seed.sql"))
   ([_ seed-file]
-   (with-migrator {:audiophile.repositories/keys [transactor]}
+   (with-migrator {transactor [:audiophile.repositories/transactor :component/health]}
      (seed! transactor seed-file))))
 
 (defmethod main* :generate-erd
   ([_]
    (main* :generate-erd "resources/db/erd.puml"))
   ([_ output]
-   (with-migrator {:audiophile.repositories/keys [transactor]}
+   (with-migrator {transactor [:audiophile.repositories/transactor :component/health]}
      (uml/generate! transactor output))))
 
 (defn -main [command & args]
