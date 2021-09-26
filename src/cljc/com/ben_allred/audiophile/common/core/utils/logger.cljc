@@ -4,6 +4,7 @@
        com.ben-allred.audiophile.common.core.utils.logger))
   (:require
     [clojure.pprint :as pp]
+    [clojure.string :as string]
     [taoensso.timbre :as log*]))
 
 (def ^:const ANSI_RESET "\u001B[0m")
@@ -70,14 +71,31 @@
   ([level f expr]
    (spy* &form level expr f (str "(\uD83C\uDF7A " f ") =>"))))
 
-(defn pprint
-  "Reagent component for displaying clojure data in the browser - debug only"
-  [value]
-  [:pre (with-out-str (pp/pprint value))])
+#?(:cljs
+   (defn pprint
+     "Reagent component for displaying clojure data in the browser - debug only"
+     [value]
+     [:pre (with-out-str (pp/pprint value))]))
 
-(defn ^:private clean [data]
-  (assoc data :hostname_ (delay nil)))
+(defn ^:private filter-external-packages [{:keys [level ?ns-str] :as data}]
+  (when (or (#{:warn :error :fatal :report} level)
+            (some-> ?ns-str (string/starts-with? "com.ben-allred")))
+    data))
+
+(defn ^:private output-fn [{:keys [level ?err msg_ ?ns-str ?file timestamp_ ?line]}]
+  (str
+    (when-let [ts (some-> timestamp_ deref)]
+      (str ts " "))
+    (string/upper-case (name level)) " "
+    "[" (or ?ns-str ?file "?") ":" (or ?line "?") "]"
+    (when-let [ctx (:request/id *ctx*)]
+      (str " |\u001b[34;1m" ctx "\u001b[0m|"))
+    ": "
+    @msg_
+    (when ?err
+      (str "\n" ?err))))
 
 (log*/merge-config! {:level      (keyword (or #?(:clj (System/getenv "LOG_LEVEL"))
                                               :info))
-                     :middleware [clean]})
+                     :middleware [filter-external-packages]
+                     :output-fn  output-fn})

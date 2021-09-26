@@ -32,8 +32,9 @@
   (subscribe! [_ handler opts]
     (letfn [(handler* [_ch _metadata ^bytes msg]
               (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
-                (log/info "consuming from" exchange)
-                (int/handle! handler msg)))]
+                (log/with-ctx (or (:command/ctx msg) (:event/ctx msg))
+                  (log/info "consuming from" exchange)
+                  (int/handle! handler msg))))]
       (let [queue-name (if-let [handler (:internal/handler opts)]
                          (let [queue-name (str queue-name ":" handler)]
                            (lq/declare ch queue-name ch-opts)
