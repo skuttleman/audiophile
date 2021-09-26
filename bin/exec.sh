@@ -13,6 +13,25 @@ function build_ui() {
   echo "[ui built ...]"
 }
 
+function clean_ui() {
+  rm -rf .shadow-cljs resources/public/css resources/public/js
+}
+
+function clean() {
+  clean_ui
+  rm -rf .cpcache classes target/audiophile.jar
+}
+
+function purge_ui() {
+  rm -rf node_modules
+}
+
+function purge() {
+    purge_ui
+    rm -rf .m2
+    clean
+}
+
 function build() {
     build_ui
 
@@ -38,38 +57,55 @@ function migrate() {
 }
 
 function run() {
-    PROFILE="${1:-dev}"
+    PROFILE="${1:-single}"
 
+    set -x
     case "${PROFILE}" in
-      prod)
-        build_ui
+      jar)
+        clean
+        build
 
         echo "running with profile: ${PROFILE}"
-        clj -Sthreads 1 -m com.ben-allred.audiophile.backend.core api auth jobs ui
+        LOG_LEVEL=info ENV=production SERVICES="api auth jobs ui" foreman start
         ;;
-      dev)
+      single)
         echo "running with profile: ${PROFILE}"
-        WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-dev
+        WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-single
         ;;
+      split)
+        echo "running with profile: ${PROFILE}"
+        WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-split
+        ;;
+      multi)
+        echo "running with profile: ${PROFILE}"
+        WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-multi
+        ;;
+
       *)
-        echo "unknown profile: ${PROFILE}"
+        echo "unknown profile: ${PROFILE}: must be jar|single|split|multi"
         exit 1
         ;;
     esac
 }
 
+function test_ui() {
+  clj -A:cljs-dev:test:shadow-cljs -Sthreads 1 compile test && \
+    clj -A:dev -Sthreads 1 -m com.ben-allred.audiophile.test.browser-runner
+}
+
 function test() {
     clj -A:dev:test -Sthreads 1 -M:test && \
-      clj -A:cljs-dev:test:shadow-cljs -Sthreads 1 compile test && \
-      clj -A:dev -Sthreads 1 -m com.ben-allred.audiophile.test.browser-runner
+      test_ui
 }
 
 function help() {
     echo "Help"
     echo ""
     echo "  build   - build an uberjar"
+    echo "  clean   - removes cached artifacts"
     echo "  deploy  - deploy the uberjar (use build first)"
     echo "  migrate - run db migration scripts"
+    echo "  purge   - remove all locally cached files"
     echo "  run     - run the application"
     echo "  test    - run tests"
     echo "  help    - display this information"
@@ -85,11 +121,17 @@ case "${FUNCTION}" in
   build)
     build $@
     ;;
+  clean)
+    clean $@
+    ;;
   deploy)
     deploy $@
     ;;
   migrate)
     migrate $@
+    ;;
+  purge)
+    purge $@
     ;;
   run)
     run $@
