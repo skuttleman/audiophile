@@ -219,13 +219,6 @@
  {:interactor #ig/ref :interactors/files}
 
  :audiophile.services.ws/handler
- {:->channel #ig/ref :audiophile.services.ws/->channel
-  :->handler #ig/ref :audiophile.services.ws/->handler}
-
- :audiophile.services.ws/->channel
- {:serdes #ig/ref :config/serdes}
-
- :audiophile.services.ws/->handler
  {:heartbeat-int-ms #ig/ref :env.ws/heartbeat-int-ms
   :pubsub           #ig/ref :services/pubsub
   :serdes           #ig/ref :config/serdes}}

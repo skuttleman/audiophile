@@ -1,116 +1,101 @@
-(ns ^:unit com.ben-allred.audiophile.backend.infrastructure.pubsub.ws-test
+(ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
-    [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.test.utils.services :as ts]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]))
 
-(deftest ->handler-test
-  (let [pubsub (pubsub.mem/pubsub {:sync? true})
-        ->handler (ws/->handler {:heartbeat-int-ms 100
-                                 :pubsub           pubsub
-                                 :serdes           {:foo/bar (reify
-                                                               pserdes/ISerde
-                                                               (serialize [_ value _]
-                                                                 [:serialized value])
-                                                               (deserialize [_ value _]
-                                                                 (second value))
+(deftest on-message!-test
+  (testing "(on-message!)"
+    (let [ch (ts/->chan)]
+      (testing "when receiving a ping"
+        (ws/on-message! {} ch [:conn/ping])
 
-                                                               pserdes/IMime
-                                                               (mime-type [_]
-                                                                 "foo/bar"))}})
-        request {:user/id      ::user-id
-                 :content-type "foo/bar"}
-        stub (stubs/create (reify pws/IChannel
-                             (open? [_] ::open?)
+        (testing "responds with a pong"
+          (is (= [:conn/pong] (-> ch
+                                  (stubs/calls :send!)
+                                  colls/only!
+                                  first))))))))
+
+(deftest on-open!-test
+  (testing "(on-open)"
+    (let [ch (stubs/create (reify
+                             pps/IChannel
                              (send! [_ _])
-                             (close! [_] ::close!)))]
-    (testing "->handler"
-      (let [handler (->handler request stub)]
-        (testing "#on-open"
-          (ps/on-open handler)
-          (Thread/sleep 300)
-          (testing "establishes a heartbeat"
-            (let [msgs (frequencies (map first (stubs/calls stub :send!)))]
-              (is (<= 2 (get msgs [:conn/ping])))))
+                             (open? [_] true)))]
+      (try
+        (let [pubsub (ts/->pubsub)
+              [ch-id user-id] (repeatedly uuids/random)
+              ctx {::ws/heartbeat-int-ms 50
+                   ::ws/ch-id            ch-id
+                   ::ws/user-id          user-id
+                   ::ws/pubsub           pubsub}]
+          (testing "when a web socket is opened"
+            (stubs/set-stub! ch :open? true)
+            (ws/on-open! ctx ch)
 
-          (testing "subscribes to broadcasts"
-            (ps/broadcast! pubsub "event-id" {:some :event})
-            (let [msgs (into #{}
-                             (comp (map first)
-                                   (remove (comp #{:conn/ping :conn/pong} first)))
-                             (stubs/calls stub :send!))]
-              (is (contains? msgs [:event/broadcast "event-id" {:some :event} {}]))))
+            (let [subs (into {}
+                             (map (juxt second identity))
+                             (stubs/calls pubsub :subscribe!))]
+              (is (= 2 (count subs)))
 
-          (testing "subscribes to user-level messages"
-            (ps/send-user! pubsub ::user-id "event-id" {:some :event})
-            (let [msgs (into #{}
-                             (comp (map first)
-                                   (remove (comp #{:conn/ping :conn/pong} first)))
-                             (stubs/calls stub :send!))]
-              (is (contains? msgs [:event/user "event-id" {:some :event} {:user/id ::user-id}]))))
+              (let [[ch-id* topic* f*] (get subs [::ps/user user-id])]
+                (testing "subscribes to the user's topic"
+                  (is (= ch-id ch-id*))
+                  (is (= topic* [::ps/user user-id])))
 
-          (testing "is not subscribed to other topics"
-            (stubs/init! stub)
-            (ps/send-user! pubsub ::unknown "event-id" {:some :event})
-            (let [msgs (into #{}
-                             (comp (map first)
-                                   (remove (comp #{:conn/ping :conn/pong} first)))
-                             (stubs/calls stub :send!))]
-              (is (empty? msgs)))))
-        (testing "#on-message"
-          (testing "responds to keep-alive message"
-            (ps/on-message handler [:serialized [:conn/ping]])
-            (let [msgs (into #{} (map first) (stubs/calls stub :send!))]
-              (is (contains? msgs [:conn/pong])))))
+                (testing "and when a message is published to the user's topic"
+                  (stubs/init! ch)
+                  (f* ch-id [:some :event])
 
-        (testing "#on-close"
-          (ps/on-close handler)
-          (stubs/init! stub)
-          (stubs/set-stub! stub :open? false)
-          (testing "unsubscribes from topics"
-            (ps/broadcast! pubsub "event-id" {:another :event})
-            (ps/send-user! pubsub ::user-id "event-id" {:another :event})
-            (is (empty? (stubs/calls stub :send!))))
+                  (testing "sends the message via websocket"
+                    (let [msg (->> (stubs/calls ch :send!)
+                                   (map colls/only!)
+                                   (remove #{[:conn/ping]})
+                                   colls/only!)]
+                      (is (= [:event/user :some :event]
+                             msg))))))
 
-          (testing "stops sending heartbeats"
-            (Thread/sleep 300)
-            (is (empty? (stubs/calls stub :send!)))))))))
+              (let [[ch-id* topic* f*] (get subs [::ps/broadcast])]
+                (testing "subscribes to the broadcast topic"
+                  (is (= ch-id ch-id*))
+                  (is (= topic* [::ps/broadcast])))
 
-(deftest ->channel-test
-  (let [->channel (ws/->channel {:serdes {:foo/bar (reify
-                                                     pserdes/ISerde
-                                                     (serialize [_ value _]
-                                                       [:serialized value])
-                                                     (deserialize [_ value _]
-                                                       [:deserialized value])
+                (testing "and when a message is published to the broadcast topic"
+                  (stubs/init! ch)
+                  (f* ch-id [:some :event])
 
-                                                     pserdes/IMime
-                                                     (mime-type [_]
-                                                       "foo/bar"))}})
-        request {:accept "foo/bar"}
-        stub (stubs/create (reify pws/IChannel
-                             (open? [_] ::open?)
-                             (send! [_ _])
-                             (close! [_] ::close!)))]
-    (testing "->channel"
-      (let [channel (->channel request stub)]
-        (testing "#open?"
-          (is (= ::open? (ps/open? channel))))
+                  (testing "sends the message via websocket"
+                    (let [msg (->> (stubs/calls ch :send!)
+                                   (map colls/only!)
+                                   (remove #{[:conn/ping]})
+                                   colls/only!)]
+                      (is (= [:event/broadcast :some :event]
+                             msg))))))
 
-        (testing "#send!"
-          (ps/send! channel ::msg)
-          (let [[[msg] :as calls] (stubs/calls stub :send!)]
-            (testing "send the serialized message"
-              (is (= 1 (count calls)))
-              (is (= [:serialized ::msg] msg)))))
+              (testing "pings the connection"
+                (Thread/sleep 100)
+                (is (seq (->> (stubs/calls ch :send!)
+                              (filter #{[[:conn/ping]]}))))))))
+        (finally
+          (stubs/set-stub! ch :open? false))))))
 
-        (testing "#close!"
-          (testing "when the underlying channel throws an exception"
-            (stubs/set-stub! stub :close! (fn [] (throw (Exception.))))
-            (testing "returns nil"
-              (is (nil? (ps/close! channel))))))))))
+(deftest on-close!-test
+  (testing "(on-close!)"
+    (let [ch (ts/->chan)
+          pubsub (ts/->pubsub)
+          ch-id (uuids/random)
+          ctx {::ws/ch-id ch-id
+               ::ws/pubsub pubsub}]
+      (testing "when the channel is closed"
+        (ws/on-close! ctx ch)
+
+        (testing "unsubscribes from all topics"
+          (is (= ch-id (-> pubsub
+                           (stubs/calls :unsubscribe!)
+                           colls/only!
+                           colls/only!))))))))

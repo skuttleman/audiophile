@@ -8,8 +8,8 @@
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pws]
-    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
@@ -22,28 +22,20 @@
     (javax.sql DataSource)
     (org.projectodd.wunderboss.web.async Channel)))
 
-(defmethod ig/init-key :audiophile.test/ws-handler [_ {:keys [->channel ->handler serdes]}]
+(defmethod ig/init-key :audiophile.test/ws-handler [_ {:keys [pubsub]}]
   (fn [request]
-    (let [params (get-in request [:nav/route :query-params])
-          serializer (serdes/find-serde! serdes
-                                         (or (:content-type params)
-                                             (:accept params)
-                                             ""))
-          deserializer (serdes/find-serde! serdes
-                                           (or (:accept params)
-                                               (:content-type params)
-                                               ""))
-          msgs (async/chan 100)
-          channel (->channel request
-                             (reify pws/IChannel
-                               (open? [_]
-                                 (not (async.protocols/closed? msgs)))
-                               (send! [_ msg]
-                                 (async/>!! msgs (serdes/deserialize deserializer msg)))
-                               (close! [_]
-                                 (async/close! msgs))))
-          handler (->handler request channel)]
-      (ps/on-open handler)
+    (let [msgs (async/chan 100)
+          ctx (ws/build-ctx request pubsub 100)
+          ch (reify
+               pps/IChannel
+               (open? [_]
+                 (not (async.protocols/closed? msgs)))
+               (send! [_ msg]
+                 (async/>!! msgs msg))
+               (close! [this]
+                 (async/close! msgs)
+                 (ws/on-close! ctx this)))]
+      (ws/on-open! ctx ch)
       [::http/ok (reify
                    Channel
 
@@ -53,18 +45,16 @@
 
                    async.protocols/WritePort
                    (put! [_ val _]
-                     (if (ps/open? channel)
-                       (do (ps/on-message handler (serdes/serialize serializer val))
+                     (if (ps/open? ch)
+                       (do (ws/on-message! ctx ch val)
                            (delay true))
                        (delay false)))
 
                    async.protocols/Channel
                    (closed? [_]
-                     (not (ps/open? channel)))
+                     (not (ps/open? ch)))
                    (close! [_]
-                     (when (ps/open? channel)
-                       (ps/on-close handler))
-                     (ps/close! channel)))])))
+                     (ps/close! ch)))])))
 
 (defmethod ig/init-key :audiophile.test/transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
   (mig/migrate! migrator)
@@ -99,7 +89,7 @@
 (defmethod ig/init-key :audiophile.test/rabbitmq#conn [_ _]
   (let [chs (atom nil)]
     (reify
-      pws/IMQConnection
+      pps/IMQConnection
       (chan [_ {:keys [name]}]
         (swap! chs (fn [m]
                      (let [[ch tap] (or (get m name)
@@ -107,7 +97,7 @@
                                           [ch (async/mult ch)]))]
                        (assoc m name [ch tap]))))
         (reify
-          pws/IMQChannel
+          pps/IMQChannel
           (subscribe! [_ handler _]
             (let [mq-ch (async/tap (second (get @chs name))
                                    (async/chan))]
@@ -116,7 +106,7 @@
                   (int/handle! handler msg)
                   (recur)))))
 
-          pws/IChannel
+          pps/IChannel
           (open? [_]
             (let [ch (first (get @chs name))]
               (not (async.protocols/closed? ch))))

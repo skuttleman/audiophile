@@ -8,31 +8,11 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
-    [immutant.web.async :as web.async]))
+    [immutant.web.async :as web.async])
+  (:import
+    (org.projectodd.wunderboss.web.async Channel)))
 
-(defmulti ^:private handle-msg (fn [_ _ event]
-                                 (log/debug "received event" event)
-                                 (when (seqable? event)
-                                   (first event))))
-(defmethod handle-msg :default
-  [_ _ event]
-  (log/warn "event not handled" event))
-
-(defmethod handle-msg :conn/ping
-  [_ channel _]
-  (pps/send! channel [:conn/pong]))
-
-(defmethod handle-msg :conn/pong
-  [_ _ _])
-
-(defn ^:private ->sub-handler [channel event-type]
-  (fn [_ event]
-    (pps/send! channel (into [event-type] event))))
-
-(defn ^:private subscribe* [{:keys [ch-id pubsub]} channel topic event-type]
-  (pubsub/subscribe! pubsub ch-id topic (->sub-handler channel event-type)))
-
-(defn ^:private ch-loop [{:keys [heartbeat-int-ms]} channel]
+(defn ^:private ch-loop [{::keys [heartbeat-int-ms]} channel]
   (async/go-loop []
     (async/<! (async/timeout heartbeat-int-ms))
     (when (pps/open? channel)
@@ -42,102 +22,79 @@
           (pps/close! channel)))
       (recur))))
 
-(defn ^:private handle-open [{:keys [user-id] :as ctx} channel]
-  (subscribe* ctx channel [::ps/broadcast] :event/broadcast)
-  (subscribe* ctx channel [::ps/user user-id] :event/user)
-  (ch-loop ctx channel))
+(defn ^:private ->sub-handler [ch event-type]
+  (fn [_ event]
+    (pps/send! ch (into [event-type] event))))
 
-(defn ^:private handle-close [{:keys [ch-id pubsub user-id]} _]
+(defn ^:private subscribe* [{::keys [ch-id pubsub]} ch topic event-type]
+  (pubsub/subscribe! pubsub ch-id topic (->sub-handler ch event-type)))
+
+(defmulti on-message! (fn [_ _ msg]
+                       (log/debug "received event" msg)
+                       (when (seqable? msg)
+                         (first msg))))
+
+(defmethod on-message! :default
+  [_ _ msg]
+  (log/warn "event not handled" msg))
+
+(defmethod on-message! :conn/ping
+  [_ ch _]
+  (pps/send! ch [:conn/pong]))
+
+(defmethod on-message! :conn/pong
+  [_ _ _])
+
+(defn on-open! [{::keys [user-id] :as ctx} ch]
+  (subscribe* ctx ch [::ps/broadcast] :event/broadcast)
+  (subscribe* ctx ch [::ps/user user-id] :event/user)
+  (ch-loop ctx ch))
+
+(defn on-close! [{::keys [ch-id pubsub user-id]} _]
   (log/info "websocket closed:" ch-id user-id)
   (pubsub/unsubscribe! pubsub ch-id))
 
-(defn ^:private send* [channel serde msg]
-  (try
-    (let [level (if (#{[:conn/ping] [:conn/pong]} msg) :trace :debug)]
-      (log/log level "sending msg to websocket" msg))
-    (pps/send! channel
-               (cond->> msg
-                 serde (serdes/serialize serde)))
-    (catch Throwable ex
-      (log/error ex "failed to send msg to websocket" msg)
-      (throw ex))))
+(defn build-ctx [request pubsub heartbeat-int-ms]
+  (assoc request
+         ::ch-id (uuids/random)
+         ::user-id (:user/id request)
+         ::heartbeat-int-ms heartbeat-int-ms
+         ::pubsub pubsub))
 
-(defn ^:private close* [channel]
-  (try
-    (pps/close! channel)
-    (catch Throwable ex
-      (log/warn ex "web socket did not close successfully"))))
-
-(deftype SerdeChannel [channel serializer]
-  pps/IChannel
-  (open? [_]
-    (pps/open? channel))
-  (send! [_ msg]
-    (send* channel serializer msg))
-  (close! [_]
-    (close* channel)))
-
-(deftype Channel [ch]
+(deftype WebSocketChannel [^Channel ch serde]
   pps/IChannel
   (open? [_]
     (web.async/open? ch))
   (send! [_ msg]
-    (web.async/send! ch msg))
+    (try
+      (let [level (if (#{[:conn/ping] [:conn/pong]} msg) :trace :debug)]
+        (log/log level "sending msg to websocket" msg)
+        (web.async/send! ch (cond->> msg
+                                     serde (serdes/serialize serde))))
+      (catch Throwable ex
+        (log/error ex "failed to send msg to websocket" msg)
+        (throw ex))))
   (close! [_]
-    (web.async/close ch)))
+    (try
+      (web.async/close ch)
+      (catch Throwable ex
+        (log/warn ex "web socket did not close successfully")))))
 
-(defn ^:private ch-map [->handler]
-  {:on-open    (comp pps/on-open ->handler)
-   :on-message (fn [ch msg]
-                 (pps/on-message (->handler ch) msg))
-   :on-close   (fn [ch _]
-                 (pps/on-close (->handler ch)))})
-
-(defn ^:private ->handler-fn [params {:keys [->channel ->handler]}]
-  (let [handler (promise)]
-    (fn [ch]
-      (when-not (realized? handler)
-        (->> (->Channel ch)
-             (->channel params)
-             (->handler params)
-             (deliver handler)))
-      @handler)))
-
-(defn ->channel
-  "Constructor for [[SerdeChannel]] used to serialize/deserialize websocket messages."
-  [{:keys [serdes]}]
-  (fn [params channel]
-    (let [serializer (serdes/find-serde! serdes (:accept params))]
-      (->SerdeChannel channel serializer))))
-
-(defn ->handler
-  "Constructor for an anonymous [[pws/IHandler]] that links websocket connections with [[ppubsub/IPubsub]]."
-  [{:keys [heartbeat-int-ms pubsub serdes]}]
-  (fn [params channel]
-    (let [deserializer (serdes/find-serde serdes (:content-type params))
-          ctx {:ch-id            (uuids/random)
-               :heartbeat-int-ms heartbeat-int-ms
-               :user-id          (:user/id params)
-               :pubsub           pubsub
-               :state            (ref nil)}]
-      (reify
-        pps/IHandler
-        (on-open [_]
-          (handle-open ctx channel))
-        (on-message [_ msg]
-          (handle-msg ctx channel (cond->> msg
-                                    deserializer (serdes/deserialize deserializer))))
-        (on-close [_]
-          (handle-close ctx channel))))))
-
-(defn handler
-  "Wraps ws handler to integrate with immutant HTTP server for websockets."
-  [cfg]
+(defn handler [{:keys [heartbeat-int-ms pubsub serdes]}]
   (fn [request]
-    (->> cfg
-         (->handler-fn request)
-         ch-map
-         (web.async/as-channel request))))
+    (let [serde (serdes/find-serde! serdes (log/spy :info (:accept request)))
+          ctx (build-ctx request pubsub heartbeat-int-ms)]
+      (web.async/as-channel request
+                            {:on-open    (fn [ch]
+                                           (let [ch (->WebSocketChannel ch serde)]
+                                             (on-open! ctx ch)))
+                             :on-message (fn [ch msg]
+                                           (let [ch (->WebSocketChannel ch serde)]
+                                             (->> msg
+                                                  (serdes/deserialize serde)
+                                                  (on-message! ctx ch))))
+                             :on-close   (fn [ch _]
+                                           (on-close! ctx ch))}))))
 
 (deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler

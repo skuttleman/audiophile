@@ -19,12 +19,6 @@
 (defmethod ig/init-key :audiophile.services.auth.google/provider [_ cfg]
   (goog/provider cfg))
 
-(defmethod ig/init-key :audiophile.services.ws/->channel [_ cfg]
-  (ws/->channel cfg))
-
-(defmethod ig/init-key :audiophile.services.ws/->handler [_ cfg]
-  (ws/->handler cfg))
-
 (defmethod ig/init-key :audiophile.services.ws/handler [_ cfg]
   (ws/handler cfg))
 

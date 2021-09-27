@@ -6,7 +6,7 @@
 (defn ^:private publish* [state this topic event]
   (let [state @state
         subs (get-in state [:subs topic])]
-    (#?(:cljs identity :default future)
+    (#?(:cljs do :default future)
       (doseq [key subs
               :let [handler (get-in state [:listeners key topic])]
               :when handler]
@@ -51,7 +51,7 @@
   ppubsub/IPub
   (publish! [this topic event]
     (cond-> (publish* state this topic event)
-      sync? #?(:cljs identity :default deref)))
+      #?@(:clj [sync? deref])))
 
   ppubsub/ISub
   (subscribe! [_ key topic listener]

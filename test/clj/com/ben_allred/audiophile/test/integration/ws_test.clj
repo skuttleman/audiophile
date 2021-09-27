@@ -18,8 +18,10 @@
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}
                                  (ihttp/login system {:user/id (uuids/random)})
-                                 (ihttp/get system :ws/connection {:query-params {:content-type mime-type
-                                                                                  :accept       mime-type}})
+                                 (ihttp/get system
+                                            :ws/connection
+                                            {:query-params {:content-type mime-type
+                                                            :accept       mime-type}})
                                  ihttp/as-ws
                                  handler)]
             (testing "returns a heart-beating web socket"
@@ -29,8 +31,10 @@
 
         (testing "when the request is not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :ws/connection {:query-params {:content-type mime-type
-                                                                              :accept       mime-type}})
+                             (ihttp/get system
+                                        :ws/connection
+                                        {:query-params {:content-type mime-type
+                                                        :accept       mime-type}})
                              ihttp/as-ws
                              handler)]
             (testing "rejects the request"
