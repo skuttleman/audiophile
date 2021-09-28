@@ -82,7 +82,7 @@
 
 (defn handler [{:keys [heartbeat-int-ms pubsub serdes]}]
   (fn [request]
-    (let [serde (serdes/find-serde! serdes (log/spy :info (:accept request)))
+    (let [serde (serdes/find-serde! serdes (:accept request))
           ctx (build-ctx request pubsub heartbeat-int-ms)]
       (web.async/as-channel request
                             {:on-open    (fn [ch]

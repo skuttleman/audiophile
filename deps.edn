@@ -58,8 +58,6 @@
                                               com.cognitect/transit-cljs {:mvn/version "0.8.256"}
                                               kibu/pushy                 {:mvn/version "0.3.8"}
                                               reagent/reagent            {:mvn/version "1.0.0"}
-                                              thheller/shadow-cljs       {:mvn/version "2.12.5"}}
-                                :main-opts   ["-m" "shadow.cljs.devtools.cli"]}
+                                              thheller/shadow-cljs       {:mvn/version "2.12.5"}}}
                   :uberjar     {:extra-deps {uberdeps/uberdeps {:mvn/version "1.0.4"}}}
-                  :test        {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.861"}}
-                                :main-opts  ["-m" "kaocha.runner"]}}}
+                  :test        {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.861"}}}}}
