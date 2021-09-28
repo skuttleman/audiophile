@@ -8,7 +8,9 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils :as tu]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]
     [com.ben-allred.audiophile.test.utils.repositories :as trepos]
+    [com.ben-allred.audiophile.test.utils.services :as ts]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest query-all-test
@@ -54,7 +56,20 @@
           (testing "returns the results"
             (is (= [{:some :result}] result))))))))
 
-#_(deftest create!-test
+(deftest create!-test
   (testing "create!"
-    ;; TODO - write test
-    ))
+    (let [ch (ts/->chan)
+          repo (rcomments/->CommentAccessor nil ch)
+          [user-id request-id] (repeatedly uuids/random)]
+      (testing "emits a command"
+        (int/create! repo {:some :data} {:some       :opts
+                                         :some/other :opts
+                                         :user/id    user-id
+                                         :request/id request-id})
+        (assert/is? {:command/id         uuid?
+                     :command/type       :comment/create!
+                     :command/data       {:some :data}
+                     :command/emitted-by user-id
+                     :command/ctx        {:user/id    user-id
+                                          :request/id request-id}}
+                    (first (colls/only! (stubs/calls ch :send!))))))))

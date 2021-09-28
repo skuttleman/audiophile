@@ -7,7 +7,9 @@
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils :as tu]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]
     [com.ben-allred.audiophile.test.utils.repositories :as trepos]
+    [com.ben-allred.audiophile.test.utils.services :as ts]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest query-all-test
@@ -105,7 +107,20 @@
                     (ex-info "Bad" {}))
         (testing "fails")))))
 
-#_(deftest create!-test
+(deftest create!-test
   (testing "create!"
-    ;; TODO - write test
-    ))
+    (let [ch (ts/->chan)
+          repo (rteams/->TeamAccessor nil ch)
+          [user-id request-id] (repeatedly uuids/random)]
+      (testing "emits a command"
+        (int/create! repo {:some :data} {:some       :opts
+                                         :some/other :opts
+                                         :user/id    user-id
+                                         :request/id request-id})
+        (assert/is? {:command/id         uuid?
+                     :command/type       :team/create!
+                     :command/data       {:some :data}
+                     :command/emitted-by user-id
+                     :command/ctx        {:user/id    user-id
+                                          :request/id request-id}}
+                    (first (colls/only! (stubs/calls ch :send!))))))))

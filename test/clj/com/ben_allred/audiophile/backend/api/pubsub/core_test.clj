@@ -4,9 +4,9 @@
     [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]
     [com.ben-allred.audiophile.test.utils.services :as ts]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
-
 
 (deftest emit-event!-test
   (testing "(emit-event!)"
@@ -19,14 +19,14 @@
                         (stubs/calls :send!)
                         colls/only!
                         first)]
-          (is (= {:event/id         event-id
-                  :event/model-id   model-id
-                  :event/type       :event/type
-                  :event/data       {:some :data}
-                  :event/emitted-by user-id
-                  :event/ctx        {:request/id request-id
-                                     :user/id    user-id}}
-                 event)))))))
+          (assert/is? {:event/id         event-id
+                       :event/model-id   model-id
+                       :event/type       :event/type
+                       :event/data       {:some :data}
+                       :event/emitted-by user-id
+                       :event/ctx        {:request/id request-id
+                                          :user/id    user-id}}
+                      event))))))
 
 (deftest emit-command!-test
   (testing "(emit-command!)"
@@ -39,13 +39,13 @@
                           (stubs/calls :send!)
                           colls/only!
                           first)]
-          (is (= {:command/id         command-id
-                  :command/type       :command/type
-                  :command/data       {:some :data}
-                  :command/emitted-by user-id
-                  :command/ctx {:request/id request-id
-                                :user/id    user-id}}
-                 command)))))))
+          (assert/is? {:command/id         command-id
+                       :command/type       :command/type
+                       :command/data       {:some :data}
+                       :command/emitted-by user-id
+                       :command/ctx        {:request/id request-id
+                                            :user/id    user-id}}
+                      command))))))
 
 (deftest command-failed!-test
   (testing "(command-failed!)"
@@ -60,12 +60,12 @@
                         (stubs/calls :send!)
                         colls/only!
                         first)]
-          (is (= {:event/id         event-id
-                  :event/model-id   model-id
-                  :event/type       :command/failed
-                  :event/data       {:error/command :some/command!
-                                     :error/reason  "reason"}
-                  :event/emitted-by user-id
-                  :event/ctx {:request/id request-id
-                              :user/id    user-id}}
-                 event)))))))
+          (assert/is? {:event/id         event-id
+                       :event/model-id   model-id
+                       :event/type       :command/failed
+                       :event/data       {:error/command :some/command!
+                                          :error/reason  "reason"}
+                       :event/emitted-by user-id
+                       :event/ctx        {:request/id request-id
+                                          :user/id    user-id}}
+                      event))))))

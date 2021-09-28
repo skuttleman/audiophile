@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.test.utils.services
   (:require
     [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
@@ -19,3 +20,10 @@
                   (open? [_])
                   (send! [_ _])
                   (close! [_]))))
+
+(defn ->store []
+  (stubs/create (reify
+                  prepos/IKVStore
+                  (uri [_ _ _])
+                  (get [_ _ _])
+                  (put! [_ _ _ _]))))

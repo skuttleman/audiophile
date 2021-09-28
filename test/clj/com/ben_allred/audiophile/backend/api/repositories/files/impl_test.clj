@@ -8,14 +8,40 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils :as tu]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]
     [com.ben-allred.audiophile.test.utils.repositories :as trepos]
+    [com.ben-allred.audiophile.test.utils.services :as ts]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]
     [honeysql.core :as sql*]))
 
-#_(deftest create-artifact-test
+(deftest create-artifact-test
   (testing "create-artifact"
-    ;; TODO - write test
-    ))
+    (let [ch (ts/->chan)
+          store (ts/->store)
+          repo (rfiles/->FileAccessor nil store ch (constantly "key"))
+          [user-id request-id] (repeatedly uuids/random)]
+      (stubs/set-stub! store :uri "some://uri")
+
+      (int/create-artifact! repo
+                            {:some :data}
+                            {:some       :opts
+                             :some/other :opts
+                             :user/id    user-id
+                             :request/id request-id})
+      (testing "saves to the store"
+        (is (= ["key" {:some :data, :uri "some://uri", :key "key"}]
+               (take 2 (colls/only! (stubs/calls store :put!))))))
+
+      (testing "emits a command"
+        (assert/is? {:command/id         uuid?
+                     :command/type       :artifact/create!
+                     :command/data       {:artifact/some :data
+                                          :artifact/key "key"
+                                          :artifact/uri "some://uri"}
+                     :command/emitted-by user-id
+                     :command/ctx        {:user/id    user-id
+                                          :request/id request-id}}
+                    (first (colls/only! (stubs/calls ch :send!))))))))
 
 (deftest query-many-test
   (testing "query-many"
@@ -191,12 +217,40 @@
           (is (empty? (stubs/calls store :get)))
           (is (nil? result)))))))
 
-#_(deftest create-file-test
+(deftest create-file-test
   (testing "create-file"
-    ;; TODO - write test
-    ))
+    (let [ch (ts/->chan)
+          repo (rfiles/->FileAccessor nil nil ch nil)
+          [user-id request-id] (repeatedly uuids/random)]
+      (testing "emits a command"
+        (int/create-file! repo {:some :data} {:some       :opts
+                                              :some/other :opts
+                                              :user/id    user-id
+                                              :request/id request-id})
+        (assert/is? {:command/id         uuid?
+                     :command/type       :file/create!
+                     :command/data       {:some :data}
+                     :command/emitted-by user-id
+                     :command/ctx        {:user/id    user-id
+                                          :request/id request-id}}
+                    (first (colls/only! (stubs/calls ch :send!))))))))
 
-#_(deftest create-file-version-test
+(deftest create-file-version-test
   (testing "create-file-version"
-    ;; TODO - write test
-    ))
+    (let [ch (ts/->chan)
+          repo (rfiles/->FileAccessor nil nil ch nil)
+          [user-id request-id] (repeatedly uuids/random)]
+      (testing "emits a command"
+        (int/create-file-version! repo
+                                  {:some :data}
+                                  {:some       :opts
+                                   :some/other :opts
+                                   :user/id    user-id
+                                   :request/id request-id})
+        (assert/is? {:command/id         uuid?
+                     :command/type       :file-version/create!
+                     :command/data       {:some :data}
+                     :command/emitted-by user-id
+                     :command/ctx        {:user/id    user-id
+                                          :request/id request-id}}
+                    (first (colls/only! (stubs/calls ch :send!))))))))

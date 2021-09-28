@@ -47,7 +47,7 @@
                :event/type       event-type
                :event/data       data
                :event/emitted-by user-id
-               :event/ctx        ctx}]
+               :event/ctx        (->ctx ctx)}]
     (send! ch event)
     event-id))
 
@@ -57,7 +57,7 @@
                  :command/type       command-type
                  :command/data       data
                  :command/emitted-by user-id
-                 :command/ctx        ctx}]
+                 :command/ctx        (->ctx ctx)}]
     (send! ch command)
     command-id))
 
