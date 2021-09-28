@@ -107,9 +107,4 @@
    If there are keys with duplicate names, one entry will win non-deterministically."
   [m ns]
   (when m
-    (let [ns (name ns)]
-      (into (with-meta {} (meta m))
-            (map (fn [[k v]]
-                   [(keyword ns (name k))
-                    v]))
-            m))))
+    (medley/map-keys (comp (partial keyword (name ns)) name) m)))

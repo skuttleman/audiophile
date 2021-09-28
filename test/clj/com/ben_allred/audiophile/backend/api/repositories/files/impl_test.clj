@@ -29,13 +29,13 @@
                              :user/id    user-id
                              :request/id request-id})
       (testing "saves to the store"
-        (is (= ["key" {:some :data, :uri "some://uri", :key "key"}]
+        (is (= ["key" {:some :data :artifact/uri "some://uri" :artifact/key "key"}]
                (take 2 (colls/only! (stubs/calls store :put!))))))
 
       (testing "emits a command"
         (assert/is? {:command/id         uuid?
                      :command/type       :artifact/create!
-                     :command/data       {:artifact/some :data
+                     :command/data       {:some :data
                                           :artifact/key "key"
                                           :artifact/uri "some://uri"}
                      :command/emitted-by user-id

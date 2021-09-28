@@ -7,9 +7,3 @@
 (defmethod select :default
   [_ request]
   request)
-
-(defmethod select [:get :ws/connection]
-  [_ request]
-  (-> request
-      (assoc :user/id (get-in request [:auth/user :user/id]))
-      (merge (:headers request) (get-in request [:nav/route :query-params]))))

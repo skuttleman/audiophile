@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.api.handlers.files
   (:require
+    [clojure.set :as set]
     [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -17,6 +18,10 @@
   [_ request]
   (-> request
       (get-in [:params "files[]"])
+      (set/rename-keys {:filename :artifact/filename
+                        :content-type :artifact/content-type
+                        :tempfile :artifact/tempfile
+                        :size :artifact/size})
       (assoc :user/id (get-in request [:auth/user :user/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 

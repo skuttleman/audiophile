@@ -32,10 +32,10 @@
 
 (def artifact:create
   [:map
-   [:filename trimmed-string?]
-   [:content-type trimmed-string?]
-   [:tempfile file?]
-   [:size nat-int?]])
+   [:artifact/filename trimmed-string?]
+   [:artifact/content-type trimmed-string?]
+   [:artifact/tempfile file?]
+   [:artifact/size nat-int?]])
 
 (def comment:create
   [:map

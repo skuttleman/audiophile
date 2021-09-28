@@ -1,13 +1,14 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws
   (:require
     [clojure.core.async :as async]
-    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
+    [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
+    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [immutant.web.async :as web.async])
   (:import
     (org.projectodd.wunderboss.web.async Channel)))
@@ -95,6 +96,12 @@
                                                   (on-message! ctx ch))))
                              :on-close   (fn [ch _]
                                            (on-close! ctx ch))}))))
+
+(defmethod selectors/select [:get :ws/connection]
+  [_ request]
+  (-> request
+      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (merge (:headers request) (get-in request [:nav/route :query-params]))))
 
 (deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler

@@ -26,12 +26,9 @@
   (create-artifact! [_ data opts]
     (let [key (keygen)
           uri (repos/uri store key opts)
-          data (assoc data :uri uri :key key)
-          payload (-> data
-                      (dissoc :tempfile)
-                      (maps/qualify :artifact))]
+          data (assoc data :artifact/uri uri :artifact/key key)]
       (repos/put! store key data)
-      (ps/emit-command! ch :artifact/create! payload opts)))
+      (ps/emit-command! ch :artifact/create! (dissoc data :artifact/tempfile) opts)))
   (create-file! [_ data opts]
     (ps/emit-command! ch :file/create! data opts))
   (create-file-version! [_ data opts]
