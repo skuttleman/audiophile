@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.infrastructure.pubsub.protocols)
+(ns com.ben-allred.audiophile.common.api.pubsub.protocols)
 
 (defprotocol IPub
   "Handler for publishing events"

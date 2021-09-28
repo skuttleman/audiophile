@@ -1,13 +1,13 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils.services :as ts]
-    [com.ben-allred.audiophile.test.utils.stubs :as stubs]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest on-message!-test
   (testing "(on-message!)"

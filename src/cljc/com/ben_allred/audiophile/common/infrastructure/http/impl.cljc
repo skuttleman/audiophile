@@ -10,7 +10,7 @@
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 (defn ^:private find-serde

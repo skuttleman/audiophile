@@ -3,7 +3,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.teams.core :as rteams]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 

@@ -1,10 +1,13 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.resources.custom
   (:require
+    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
 (defn comments-fetcher [{:keys [http-client]}]
@@ -35,3 +38,13 @@
                   (v/reject {:error ^{:toast/msg (or (some-> result :error meta :toast/msg)
                                                      "Error - comment creation failed")}
                                     {}}))))))
+
+(deftype ArtifactResource [http-client nav]
+  pres/IResource
+  (request! [_ opts]
+    (http/get http-client
+              (nav/path-for nav :api/artifact {:route-params opts})
+              {:response-type :blob})))
+
+(defn res-artifact [{:keys [http-client nav]}]
+  (->ArtifactResource http-client nav))

@@ -1,8 +1,7 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
-    [clojure.string :as string]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]

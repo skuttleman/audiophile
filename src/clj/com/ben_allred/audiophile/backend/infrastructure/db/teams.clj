@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.infrastructure.db.common :as cdb]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.core :as models]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 

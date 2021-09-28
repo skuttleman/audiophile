@@ -6,7 +6,7 @@
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.ui.infrastructure.store.core :as store]
     [com.ben-allred.ws-client-cljc.core :as ws*]))
 

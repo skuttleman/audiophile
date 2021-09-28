@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.test.utils.services
   (:require
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
+    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (defn ->pubsub []

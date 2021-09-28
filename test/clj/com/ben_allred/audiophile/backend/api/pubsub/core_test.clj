@@ -1,8 +1,7 @@
-(ns ^:unit com.ben-allred.audiophile.backend.infrastructure.pubsub.core-test
+(ns ^:unit com.ben-allred.audiophile.backend.api.pubsub.core-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils.services :as ts]

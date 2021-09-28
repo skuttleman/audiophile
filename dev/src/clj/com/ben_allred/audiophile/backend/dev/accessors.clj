@@ -2,8 +2,8 @@
   (:require
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [integrant.core :as ig]))
 

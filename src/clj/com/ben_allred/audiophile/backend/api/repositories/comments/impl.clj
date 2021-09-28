@@ -4,7 +4,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.comments.core :as rcomments]
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (deftype CommentAccessor [repo ch]

@@ -1,10 +1,7 @@
 (ns com.ben-allred.audiophile.ui.api.components.player
   (:require
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
@@ -86,13 +83,3 @@
 
 (defn artifact-player [{:keys [*artifact]}]
   (->ArtifactPlayer (name (gensym)) (r/atom nil) *artifact))
-
-(deftype ArtifactResource [http-client nav]
-  pres/IResource
-  (request! [_ opts]
-    (http/get http-client
-              (nav/path-for nav :api/artifact {:route-params opts})
-              {:response-type :blob})))
-
-(defn res-artifact [{:keys [http-client nav]}]
-  (->ArtifactResource http-client nav))

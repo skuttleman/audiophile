@@ -3,14 +3,14 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.api.repositories.files.impl :as rfiles]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils :as tu]
     [com.ben-allred.audiophile.test.utils.repositories :as trepos]
-    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]
+    [honeysql.core :as sql*]))
 
 #_(deftest create-artifact-test
   (testing "create-artifact"
@@ -58,7 +58,7 @@
                            (update-in [1 :where 2] tu/op-set)
                            (update-in [1 :where] tu/op-set)))))
               (is (= [[{:select   #{:file-versions.file-id
-                                    [(sql/max :file-versions.created-at) :created-at]}
+                                    [(sql*/call :max :file-versions.created-at) :created-at]}
                         :from     [:file-versions]
                         :group-by [:file-versions.file-id]}
                        :version]

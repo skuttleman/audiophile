@@ -1,9 +1,9 @@
-(ns com.ben-allred.audiophile.backend.infrastructure.pubsub.core
+(ns com.ben-allred.audiophile.backend.api.pubsub.core
   (:require
-    [com.ben-allred.audiophile.backend.infrastructure.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.core :as pubsub]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defn open? [ch]
   (pps/open? ch))
@@ -15,15 +15,6 @@
 (defn close! [ch]
   (pps/close! ch)
   nil)
-
-(defn on-open [handler]
-  (pps/on-open handler))
-
-(defn on-message [handler msg]
-  (pps/on-message handler msg))
-
-(defn on-close [handler]
-  (pps/on-close handler))
 
 (defn chan [conn opts]
   (pps/chan conn opts))

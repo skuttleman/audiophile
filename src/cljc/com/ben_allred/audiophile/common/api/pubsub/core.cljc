@@ -1,6 +1,6 @@
-(ns com.ben-allred.audiophile.common.infrastructure.pubsub.core
+(ns com.ben-allred.audiophile.common.api.pubsub.core
   (:require
-    [com.ben-allred.audiophile.common.infrastructure.pubsub.protocols :as ppubsub]
+    [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn publish! [pubsub topic msg]

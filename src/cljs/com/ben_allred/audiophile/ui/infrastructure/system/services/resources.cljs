@@ -48,7 +48,7 @@
   (form.sub/opts->request cfg))
 
 (defmethod ig/init-key :audiophile.resource.audio/artifact [_ cfg]
-  (player/res-artifact cfg))
+  (cres/res-artifact cfg))
 
 (defmethod ig/init-key :audiophile.views.components/artifact-player [_ cfg]
   (player/artifact-player cfg))
