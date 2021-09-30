@@ -2,9 +2,9 @@
   (:require
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
-    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.vow.core :as v :include-macros true]
     [com.ben-allred.vow.impl.protocol :as pv]))
 
@@ -48,24 +48,15 @@
 (defn base [{:keys [opts->vow]}]
   (->Resource (r/atom {:status :init}) opts->vow))
 
-(defn http-handler [{:keys [error-msg http-client method opts->params opts->request route success-msg]}]
+(defn http-handler [{:keys [http-client method opts->params opts->request route]}]
   (let [opts->params (or opts->params :nav/params)
         opts->request (or opts->request identity)]
     (fn [opts]
-      (-> http-client
-          (res/request! (maps/assoc-defaults (opts->request opts)
-                                             :method method
-                                             :nav/route route
-                                             :nav/params (opts->params opts)))
-          (cond->
-            success-msg (v/then (fn [result]
-                                  (if (:data result)
-                                    (update result :data vary-meta update :toast/msg #(or % success-msg))
-                                    (update-in result [:data :toast/msg] #(or % success-msg)))))
-            error-msg (v/catch (fn [result]
-                                 (if (:error result)
-                                   (update result :error vary-meta update :toast/msg #(or % success-msg))
-                                   (update-in result [:error :toast/msg] #(or % success-msg))))))))))
+      (res/request! http-client
+                    (maps/assoc-defaults (opts->request opts)
+                                         :method method
+                                         :nav/route route
+                                         :nav/params (opts->params opts))))))
 
 (defn file-uploader [_]
   (fn [{:keys [files] :as opts}]

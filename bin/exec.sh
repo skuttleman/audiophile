@@ -9,8 +9,8 @@ function build_ui() {
   rm -rf resources/public/css
   sass --style=compressed src/scss/main.scss resources/public/css/main.css
   rm -rf resources/public/js
-  clj -M:shadow-cljs -Sthreads 1 compile ui
-  echo "[ui built ...]"
+  clj -A:shadow-cljs -Sthreads 1 -m shadow.cljs.devtools.cli compile ui
+  echo "[... ui built]"
 }
 
 function clean_ui() {
@@ -18,8 +18,10 @@ function clean_ui() {
 }
 
 function clean() {
+  echo "[cleaning caches ...]"
   clean_ui
   rm -rf .cpcache classes target/audiophile.jar
+  echo "[caches clean ..."
 }
 
 function purge_ui() {
@@ -42,7 +44,7 @@ function build() {
   rm -rf classes
   mkdir classes
   rm -f target/audiophile.jar
-  clj -M -Sthreads 1 -e "(compile 'com.ben-allred.audiophile.backend.core)"
+  clj -Sthreads 1 -e "(compile 'com.ben-allred.audiophile.backend.core)"
   LOG_LEVEL=warn clj -Sthreads 1 -A:uberjar -m uberdeps.uberjar --level warn --target target/audiophile.jar --main-class com.ben_allred.audiophile.backend.core
   echo "[... uberjar built]"
 }

@@ -276,7 +276,7 @@
                                (ihttp/login system user)
                                (ihttp/post system :api/artifacts)
                                (ihttp/as-async system handler))]
-              (testing "successfully uploads"
+              (testing "succeeds"
                 (is (http/success? response))
                 (let [{artifact-id :artifact/id filename :artifact/filename} (get-in response [:body :data])]
                   (is (uuid? artifact-id))

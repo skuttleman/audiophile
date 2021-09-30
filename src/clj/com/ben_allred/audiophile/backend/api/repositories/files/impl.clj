@@ -27,7 +27,7 @@
     (let [key (keygen)
           uri (repos/uri store key opts)
           data (assoc data :artifact/uri uri :artifact/key key)]
-      (repos/put! store key data)
+      (repos/put! store key data opts)
       (ps/emit-command! ch :artifact/create! (dissoc data :artifact/tempfile) opts)))
   (create-file! [_ data opts]
     (ps/emit-command! ch :file/create! data opts))

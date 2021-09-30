@@ -23,6 +23,9 @@
 (defmethod ig/init-key :audiophile.resources/file-uploader [_ cfg]
   (bres/file-uploader cfg))
 
+(defmethod ig/init-key :audiophile.resources/file-uploader#request [_ cfg]
+  (cres/request cfg))
+
 (defmethod ig/init-key :audiophile.resources/multi [_ cfg]
   (multi/resource cfg))
 

@@ -71,7 +71,9 @@
 
 (def api-artifact:create
   (-> auth
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge [:map
+                 [:request/id {:optional true} uuid?]
+                 [:progress/id {:optional true} uuid?]])
       (mu/merge artifact:create)))
 
 (def api-comment:create

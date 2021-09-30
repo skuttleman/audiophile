@@ -114,7 +114,7 @@
 
 (defn healthy? [component]
   (try
-    (phttp/healthy? component)
+    (boolean (phttp/healthy? component))
     (catch Throwable ex
       (log/debug ex "failed to do health check:" (display-name component))
       false)))

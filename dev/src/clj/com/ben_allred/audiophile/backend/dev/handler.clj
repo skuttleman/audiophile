@@ -15,7 +15,7 @@
   (get [_ key _]
     (let [file (io/file (str "target/" key ".dat"))]
       (when (.exists file)
-        {:Body (io/input-stream file)})))
+        {:content (io/input-stream file)})))
   (put! [_ key value opts]
     (sh/sh "mkdir" "-p" "target/artifacts")
     (io/copy value (io/file (str "target/" key ".dat")))

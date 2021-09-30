@@ -81,3 +81,14 @@
         resize: none;
     }
 }
+
+.progress-bar {
+    border-radius: 2px;
+    border: lightgrey solid 1px;
+    margin: 10px 0;
+    width: 100%;
+
+    .progress-amount:not(.unstarted):not(.complete) {
+        transition: width 0.2s ease-out;
+    }
+}

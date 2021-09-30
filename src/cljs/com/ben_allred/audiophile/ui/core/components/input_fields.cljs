@@ -6,7 +6,8 @@
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
-    [com.ben-allred.vow.core :as v :include-macros true]))
+    [com.ben-allred.vow.core :as v :include-macros true]
+    [clojure.core.async :as async]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
   (let [errors (seq (remove nil? errors))
@@ -33,6 +34,26 @@
    (spinner nil))
   ([{:keys [size]}]
    [(keyword (str "div.loader." (name (or size :small))))]))
+
+(defn progress-bar [{:keys [current height status total]}]
+  (let [height (str (or height 6) "px")]
+    [:div {:style {:height height}}
+     (when-let [percent (cond
+                          status 1
+                          total (/ current total)
+                          current 0)]
+       [:div.progress-bar
+        {:style {:height        height}}
+        [:div.progress-amount
+         {:class [(cond
+                    (zero? percent) "unstarted"
+                    status "complete")]
+          :style {:background-color (case status
+                                      :error "red"
+                                      :success "green"
+                                      "blue")
+                  :height           height
+                  :width            (str (* 100 percent) "%")}}]])]))
 
 (defn ^:private with-auto-focus [component]
   (fn [{:keys [auto-focus?]} & _]
@@ -159,7 +180,7 @@
     (with-id
       (fn [_]
         (let [file-input (volatile! nil)]
-          (fn [{:keys [multi? on-change] :as attrs}]
+          (fn [{:keys [multi? on-change progress] :as attrs}]
             [form-field
              (cond-> attrs
                (not (:attempted? attrs)) (dissoc :errors))
@@ -183,15 +204,27 @@
                                                        dom/prevent-default)))
                (:display attrs "Select file…")
                (when (:disabled attrs)
-                 [spinner])]]]))))))
+                 [spinner])]
+              (when progress
+                [progress-bar progress])]]))))))
 
-(defn uploader [{:keys [multi? on-change *resource] :as attrs}]
-  [file (-> attrs
-            (assoc :on-change (fn [file-set]
-                                (-> *resource
-                                    (res/request! {:files file-set :multi? multi?})
-                                    (v/then on-change))))
-            (update :disabled #(or % (res/requesting? *resource))))])
+(defn uploader [_attrs]
+  (let [progress (r/atom nil)
+        on-progress (fn [_ {:progress/keys [current total status]}]
+                      (let [result (maps/->m current status total)]
+                        (swap! progress (fn [{:keys [status] :as data}]
+                                          (if status data result)))))]
+    (fn [{:keys [multi? on-change *resource] :as attrs}]
+      [file (-> attrs
+                (assoc :progress @progress
+                       :on-change (fn [file-set]
+                                    (reset! progress {:current 0 :total nil})
+                                    (-> *resource
+                                        (res/request! {:files       file-set
+                                                       :multi?      multi?
+                                                       :on-progress on-progress})
+                                        (v/then on-change))))
+                (update :disabled #(or % (res/requesting? *resource))))])))
 
 (defn openable [& _]
   (let [open? (r/atom false)

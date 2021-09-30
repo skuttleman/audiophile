@@ -37,7 +37,7 @@
   (log* &form :trace args))
 
 (defmacro debug [& args]
-  (log* &form :debug args))
+  (log* &form (if (:ns &env) :info :debug) args))
 
 (defmacro info [& args]
   (log* &form :info args))

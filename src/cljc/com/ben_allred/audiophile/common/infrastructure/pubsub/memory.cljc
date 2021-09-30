@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.common.infrastructure.pubsub.memory
   (:require
     [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]))
 
 (defn ^:private publish* [state this topic event]

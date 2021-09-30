@@ -1,12 +1,14 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.resources.custom
   (:require
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.vow.core :as v :include-macros true]))
 
@@ -48,3 +50,14 @@
 
 (defn res-artifact [{:keys [http-client nav]}]
   (->ArtifactResource http-client nav))
+
+(defn request [{:keys [opts->vow pubsub]}]
+  (fn [{:keys [on-progress] :as opts}]
+    (let [[progress-id request-id] (repeatedly uuids/random)]
+      (pubsub/subscribe! pubsub request-id progress-id on-progress)
+      (-> opts
+          (assoc :progress/id progress-id)
+          opts->vow
+          (v/peek (fn [[status]]
+                    (on-progress progress-id {:progress/status status})
+                    (pubsub/unsubscribe! pubsub request-id)))))))

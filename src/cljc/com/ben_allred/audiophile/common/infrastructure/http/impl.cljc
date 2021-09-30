@@ -141,7 +141,9 @@
       (reify
         pres/IResource
         (request! [_ request]
-          (let [request (assoc-in request [:headers :x-request-id] (uuids/random))]
+          (let [request (update request :headers maps/assoc-maybe
+                                :x-request-id (uuids/random)
+                                :x-progress-id (:progress/id request))]
             (if (:http/async? request)
               (with-pubsub* http-client pubsub timeout request)
               (pres/request! http-client request))))))))

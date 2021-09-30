@@ -17,14 +17,14 @@
                                                                           :data data
                                                                           :ctx  ctx}]
                                   _ nil))]
-    (when-let [request-id (get-in event [:ctx :request/id])]
-      (let [event (case (get-in event [:data :event/type])
-                    :command/failed {:error [(-> event
-                                                 (get-in [:data :event/data])
-                                                 (assoc :message "the request failed"))]}
-                    {:data (get-in event [:data :event/data])})]
-        (log/info "[WS msg]" event)
-        (pubsub/publish! pubsub request-id event)))
+    (let [{request-id :request/id progress-id :progress/id} (:ctx event)
+          [topic event] (case (get-in event [:data :event/type])
+                          :command/failed [request-id {:error [(get-in event [:data :event/data])]}]
+                          :artifact/progress [progress-id (get-in event [:data :event/data])]
+                          [request-id {:data (get-in event [:data :event/data])}])]
+      (when topic
+        (log/trace "[WS msg]" topic event (:ctx event))
+        (pubsub/publish! pubsub topic event)))
     (store/dispatch! store [:ws/message [msg-type event]])))
 
 (defn ws-uri [nav serde base-url]

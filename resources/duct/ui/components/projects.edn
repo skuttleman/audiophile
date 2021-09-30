@@ -30,24 +30,22 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/project.files
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request
-  :success-msg   "Success - track created"
-  :error-msg     "Error - track creation failed"}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
  [:audiophile.resources/toaster :projects/file#create]
  {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :error-msg     "Error - track creation failed"
   :resource   #ig/ref [:audiophile.resources/base :projects/file#create]
   :store      #ig/ref :services/store
   :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :success-msg   "Success - track created"
   :*toasts    #ig/ref :audiophile.core/toasts}
 
  [:audiophile.resources/http-handler :projects/file#version]
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/file
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request
-  :success-msg   "Success - track version created"
-  :error-msg     "Error - track version creation failed"}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
  [:audiophile.resources/http-handler :projects/files]
  {:http-client #ig/ref :services/http
@@ -58,9 +56,7 @@
  {:http-client   #ig/ref :services/http
   :method        :post
   :route         :api/projects
-  :opts->request #ig/ref :audiophile.resource.validated/opts->request
-  :success-msg   "Success - project created"
-  :error-msg     "Error - project creation failed"}
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
  [:audiophile.resources/base :projects/all]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :projects/all]}
@@ -76,9 +72,11 @@
 
  [:audiophile.resources/toaster :projects/file#version]
  {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :error-msg     "Error - track version creation failed"
   :resource   #ig/ref [:audiophile.resources/base :projects/file#version]
   :store      #ig/ref :services/store
   :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :success-msg   "Success - track version created"
   :*toasts    #ig/ref :audiophile.core/toasts}
 
  [:audiophile.resources/base :projects/files]
@@ -89,9 +87,11 @@
 
  [:audiophile.resources/toaster :projects/create]
  {:error-fn   #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :error-msg     "Error - project creation failed"
   :resource   #ig/ref [:audiophile.resources/base :projects/create]
   :store      #ig/ref :services/store
   :success-fn #ig/ref [:audiophile.resources.toaster/result-fn :toaster/success]
+  :success-msg   "Success - project created"
   :*toasts    #ig/ref :audiophile.core/toasts}
 
  [:audiophile.resources/redirect :projects/create]

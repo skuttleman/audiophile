@@ -68,10 +68,9 @@
     (web.async/open? ch))
   (send! [_ msg]
     (try
-      (let [level (if (#{[:conn/ping] [:conn/pong]} msg) :trace :debug)]
-        (log/log level "sending msg to websocket" msg)
-        (web.async/send! ch (cond->> msg
-                                     serde (serdes/serialize serde))))
+      (log/trace "sending msg to websocket" msg)
+      (web.async/send! ch (cond->> msg
+                            serde (serdes/serialize serde)))
       (catch Throwable ex
         (log/error ex "failed to send msg to websocket" msg)
         (throw ex))))
