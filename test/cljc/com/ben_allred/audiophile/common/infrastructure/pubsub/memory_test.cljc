@@ -2,8 +2,8 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
     [com.ben-allred.audiophile.test.utils.spies :as spies]))

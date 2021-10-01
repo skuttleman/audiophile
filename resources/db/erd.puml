@@ -35,8 +35,9 @@ entity "all_events *VIEW*" as all_events {
   --
   model_id : uuid <<FK>>
   data : jsonb
-  emitted_by : uuid
   emitted_at : timestamp without time zone
+  emitted_by : uuid
+  ctx : jsonb
   event_type : text
 }
 
@@ -75,6 +76,7 @@ entity "events" as events {
   data : jsonb
   * emitted_by : uuid
   * emitted_at : timestamp without time zone <<generated>>
+  ctx : jsonb
 }
 
 entity "comments" as comments {
@@ -108,6 +110,7 @@ entity "user_events *VIEW*" as user_events {
   data : jsonb
   emitted_at : timestamp without time zone
   emitted_by : uuid
+  ctx : jsonb
   user_id : uuid <<FK>>
 }
 
