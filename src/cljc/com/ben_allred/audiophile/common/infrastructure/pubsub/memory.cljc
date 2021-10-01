@@ -1,26 +1,30 @@
 (ns com.ben-allred.audiophile.common.infrastructure.pubsub.memory
   (:require
+    [clojure.core.async :as async]
     [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]))
 
-(defn ^:private publish* [state this topic event]
+(defn ^:private publish* [state topic event]
   (let [state @state
         subs (get-in state [:subs topic])]
-    (#?(:cljs do :default future)
-      (doseq [key subs
-              :let [handler (get-in state [:listeners key topic])]
-              :when handler]
-        (try (handler topic event)
-             (catch #?(:clj Throwable :default :default) _
-               (ppubsub/unsubscribe! this key topic)))))))
+    (async/go-loop [[key :as subs] (seq subs)]
+      (when (seq subs)
+        (when-let [handler (get-in state [:listeners key topic])]
+          (async/>! handler [topic event]))
+        (recur (rest subs))))))
 
 (defn ^:private subscribe* [state key topic listener]
-  (swap! state (fn [state]
-                 (-> state
-                     (assoc-in [:listeners key topic] listener)
-                     (update-in [:topics key] (fnil conj #{}) topic)
-                     (update-in [:subs topic] (fnil conj #{}) key)))))
+  (let [ch (async/chan 100)]
+    (async/go-loop []
+      (when-let [[topic event] (async/<! ch)]
+        (listener topic event)
+        (recur)))
+    (swap! state (fn [state]
+                   (-> state
+                       (assoc-in [:listeners key topic] ch)
+                       (update-in [:topics key] (fnil conj #{}) topic)
+                       (update-in [:subs topic] (fnil conj #{}) key))))))
 
 (defn ^:private unsubscribe-all [state key]
   (swap! state (fn [state]
@@ -29,6 +33,9 @@
                      (update :topics dissoc key)
                      (update :subs (fn [subs]
                                      (persistent! (reduce (fn [subs' topic]
+                                                            (some-> state
+                                                                    (get-in [:listeners key topic])
+                                                                    async/close!)
                                                             (let [set (get subs topic)]
                                                               (if-let [next-set (not-empty (disj set key))]
                                                                 (assoc! subs' topic next-set)
@@ -38,6 +45,9 @@
 
 (defn ^:private unsubscribe* [state key topic]
   (swap! state (fn [state]
+                 (some-> state
+                         (get-in [:listeners key topic])
+                         async/close!)
                  (let [next-subs (not-empty (disj (get-in state [:subs topic]) key))
                        next-topics (not-empty (disj (get-in state [:topics key])))]
                    (-> state
@@ -48,11 +58,10 @@
                          (not next-topics) (-> (update :topics dissoc key)
                                                (update :listeners dissoc key))))))))
 
-(deftype MemoryPubSub [state sync?]
+(deftype MemoryPubSub [state]
   ppubsub/IPub
-  (publish! [this topic event]
-    (cond-> (publish* state this topic event)
-      #?@(:clj [sync? deref])))
+  (publish! [_ topic event]
+    (publish* state topic event))
 
   ppubsub/ISub
   (subscribe! [_ key topic listener]
@@ -72,5 +81,5 @@
 
 (defn pubsub
   "Constructor for [[PubSub]] which provides an in memory pub/sub protocol."
-  [{:keys [sync?]}]
-  (->MemoryPubSub (atom nil) sync?))
+  [_]
+  (->MemoryPubSub (atom nil)))

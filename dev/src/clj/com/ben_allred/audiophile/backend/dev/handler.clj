@@ -19,7 +19,6 @@
   (put! [_ key value opts]
     (sh/sh "mkdir" "-p" "target/artifacts")
     (io/copy value (io/file (str "target/" key ".dat")))
-    (.close value)
     (spit (str "target/" key ".edn")
           (pr-str {:ContentType   (:content-type opts)
                    :Metadata      (:metadata opts)
