@@ -30,7 +30,7 @@
 (deftype DevOauthProvider [base-url nav]
   papp/IOAuthProvider
   (redirect-uri [_ {:keys [email]}]
-    (str base-url (nav/path-for nav :auth/callback {:query-params {:mock-email email}})))
+    (str base-url (nav/path-for nav :auth/callback {:params {:mock-email email}})))
   (profile [_ opts]
     {:email (:mock-email opts)}))
 

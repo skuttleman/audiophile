@@ -15,5 +15,5 @@
   [_ request]
   (-> {:user/id (get-in request [:auth/user :user/id])}
       (maps/assoc-maybe :filter/since (some-> request
-                                              (get-in [:nav/route :query-params :since])
+                                              (get-in [:nav/route :params :since])
                                               uuids/->uuid))))

@@ -35,7 +35,7 @@
 (defmethod selectors/select [:get :api/project.files]
   [_ request]
   {:user/id    (get-in request [:auth/user :user/id])
-   :project/id (get-in request [:nav/route :route-params :project-id])})
+   :project/id (get-in request [:nav/route :params :project/id])})
 
 (defn fetch
   "Handles a request for a single project file."
@@ -46,7 +46,7 @@
 (defmethod selectors/select [:get :api/file]
   [_ request]
   {:user/id (get-in request [:auth/user :user/id])
-   :file/id (get-in request [:nav/route :route-params :file-id])})
+   :file/id (get-in request [:nav/route :params :file/id])})
 
 (defn create
   "Handles a request to create a new file in the system."
@@ -60,7 +60,7 @@
   (-> request
       (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :project/id (get-in request [:nav/route :route-params :project-id]))
+      (assoc :project/id (get-in request [:nav/route :params :project/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defn create-version
@@ -75,7 +75,7 @@
   (-> request
       (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :file/id (get-in request [:nav/route :route-params :file-id]))
+      (assoc :file/id (get-in request [:nav/route :params :file/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defn download
@@ -87,4 +87,4 @@
 (defmethod selectors/select [:get :api/artifact]
   [_ request]
   {:user/id     (get-in request [:auth/user :user/id])
-   :artifact/id (get-in request [:nav/route :route-params :artifact-id])})
+   :artifact/id (get-in request [:nav/route :params :artifact/id])})

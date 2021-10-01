@@ -29,7 +29,7 @@
                       (papp/redirect-uri oauth params)))
       (nav/path-for nav
                     :ui/home
-                    {:query-params {:error-msg :login-failed}})))
+                    {:params {:error-msg :login-failed}})))
 
 (defn ^:private fetch-profile [params oauth]
   (first (safely! "fetching user profile from the OAuth provider"
@@ -41,7 +41,7 @@
                     (int/query-one interactor {:user/email email})))))
 
 (defn ^:private request->params [request]
-  (or (get-in request [:nav/route :query-params])
+  (or (get-in request [:nav/route :params])
       {}))
 
 (defn ^:private params->user [interactor oauth params]
@@ -54,7 +54,7 @@
   (nav/path-for nav
                 :ui/home
                 (when error-msg
-                  {:query-params {:error-msg error-msg}})))
+                  {:params {:error-msg error-msg}})))
 
 (defn ^:private ->redirect-url
   "Generates redirect url"

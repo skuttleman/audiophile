@@ -29,6 +29,8 @@
     "Loads the resource")
   (ready? [this]
     "Is the resource ready for use.")
+  (error? [this]
+    "Is the resource in an error state.")
   (destroy! [this]
     "Destroy the resource."))
 

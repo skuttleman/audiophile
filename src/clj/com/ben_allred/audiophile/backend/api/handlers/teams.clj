@@ -25,7 +25,7 @@
 (defmethod selectors/select [:get :api/team]
   [_ request]
   {:user/id (get-in request [:auth/user :user/id])
-   :team/id (get-in request [:nav/route :route-params :team-id])})
+   :team/id (get-in request [:nav/route :params :team/id])})
 
 (defn create
   "Handles a request to create a team."

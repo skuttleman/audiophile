@@ -25,7 +25,7 @@
 (defmethod selectors/select [:get :api/project]
   [_ request]
   {:user/id    (get-in request [:auth/user :user/id])
-   :project/id (get-in request [:nav/route :route-params :project-id])})
+   :project/id (get-in request [:nav/route :params :project/id])})
 
 (defn create
   "Handles a request to create a project."

@@ -27,7 +27,7 @@
                              (throw (ex-info "fail" {})))))
         (testing "when the auth provider interactions succeed"
           (let [response (-> {}
-                             (ihttp/get system :auth/callback {:query-params {:code "secret-pin-12345"}})
+                             (ihttp/get system :auth/callback {:params {:code "secret-pin-12345"}})
                              handler)
                 base-url (int/component system :env/base-url#ui)
                 jwt-serde (int/component system :serdes/jwt)
@@ -46,7 +46,7 @@
               (stubs/set-stub! :-token nil))
           (testing "redirects and removes token cookie"
             (let [response (-> {}
-                               (ihttp/get system :auth/callback {:query-params {:code "bad-pin"}})
+                               (ihttp/get system :auth/callback {:params {:code "bad-pin"}})
                                handler)
                   base-url (int/component system :env/base-url#ui)
                   cookies (tu/decode-cookies response)

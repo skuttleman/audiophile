@@ -19,7 +19,7 @@
                 file-id (:file/id (int/lookup-file system "File Seed"))
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/file.comments {:route-params {:file-id file-id}})
+                             (ihttp/get system :api/file.comments {:params {:file/id file-id}})
                              handler)
                 comments (get-in response [:body :data])]
             (testing "returns comments"
@@ -35,7 +35,7 @@
                 file-id (:file/id (int/lookup-file system "File Seed"))
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/file.comments {:route-params {:file-id file-id}})
+                             (ihttp/get system :api/file.comments {:params {:file/id file-id}})
                              handler)]
             (testing "returns no comments"
               (is (http/success? response))
@@ -43,7 +43,7 @@
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/file.comments {:route-params {:file-id (uuids/random)}})
+                             (ihttp/get system :api/file.comments {:params {:file/id (uuids/random)}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -75,7 +75,7 @@
             (testing "and when querying for comments"
               (let [response (-> {}
                                  (ihttp/login system user)
-                                 (ihttp/get system :api/file.comments {:route-params {:file-id file-id}})
+                                 (ihttp/get system :api/file.comments {:params {:file/id file-id}})
                                  handler)]
                 (testing "includes the new comment"
                   (assert/has? {:comment/file-version-id file-version-id

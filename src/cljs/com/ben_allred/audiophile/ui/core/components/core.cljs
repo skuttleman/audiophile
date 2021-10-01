@@ -107,5 +107,8 @@
 (defn ready? [player]
   (pcomp/ready? player))
 
+(defn error? [player]
+  (pcomp/error? player))
+
 (defn playing? [player]
   (pcomp/playing? player))

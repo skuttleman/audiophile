@@ -59,7 +59,7 @@
                    (:body token-req))))
 
           (testing "sends a properly formatted profile request"
-            (is (= token (get-in profile-req [:query-params :access_token])))
+            (is (= token (get-in profile-req [:params :access_token])))
             (is (= :get (:method profile-req)))
             (is (= (:profile-uri cfg) (:url profile-req))))
 

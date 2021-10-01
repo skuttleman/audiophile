@@ -38,7 +38,7 @@
       (v/then-> (->> (log/spy :info (str provider " token response"))))))
 
 (defn ^:private profile-request [tokens]
-  {:query-params (select-keys tokens #{:access_token})
+  {:params (select-keys tokens #{:access_token})
    :headers      {:content-type "application/json"
                   :accept       "application/json"}})
 

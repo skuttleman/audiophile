@@ -26,7 +26,7 @@
                 (let [since (-> result :body :data second :event/id)
                       result (-> {}
                                  (ihttp/login system user)
-                                 (ihttp/get system :api/events {:query-params {:since since}})
+                                 (ihttp/get system :api/events {:params {:since since}})
                                  handler)]
                   (is (http/success? result))
                   (is (= 1 (count (get-in result [:body :data])))))))))

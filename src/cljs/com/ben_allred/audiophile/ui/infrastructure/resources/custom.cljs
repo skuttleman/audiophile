@@ -32,7 +32,7 @@
                        :nav/route   :api/comments})
         (v/then (fn [result]
                   (res/request! *comments
-                                {:nav/params {:route-params {:file-id (:file/id data)}}})
+                                {:nav/params {:params {:file/id (:file/id data)}}})
                   {:data ^{:toast/msg (or (some-> result :data meta :toast/msg)
                                           "Success - comment created")}
                          {}})
@@ -45,7 +45,7 @@
   pres/IResource
   (request! [_ opts]
     (http/get http-client
-              (nav/path-for nav :api/artifact {:route-params opts})
+              (nav/path-for nav :api/artifact {:params opts})
               {:response-type :blob})))
 
 (defn res-artifact [{:keys [http-client nav]}]

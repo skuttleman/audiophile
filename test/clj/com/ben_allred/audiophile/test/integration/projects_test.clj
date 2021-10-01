@@ -58,7 +58,7 @@
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/project {:route-params {:project-id project-id}})
+                             (ihttp/get system :api/project {:params {:project/id project-id}})
                              handler)]
             (testing "returns projects"
               (is (http/success? response))
@@ -70,14 +70,14 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/project {:route-params {:project-id project-id}})
+                             (ihttp/get system :api/project {:params {:project/id project-id}})
                              handler)]
             (testing "returns no projects"
               (is (http/client-error? response)))))
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/project {:route-params {:project-id project-id}})
+                             (ihttp/get system :api/project {:params {:project/id project-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))

@@ -29,8 +29,8 @@
 
 (defn ws-uri [nav serde base-url]
   (let [mime-type (serdes/mime-type serde)
-        params {:query-params {:content-type mime-type
-                               :accept       mime-type}}]
+        params {:params {:content-type mime-type
+                         :accept       mime-type}}]
     (-> base-url
         str
         uri/parse

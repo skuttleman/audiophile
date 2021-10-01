@@ -11,10 +11,12 @@
     (r/create-class
       {:reagent-render
        (fn [_attrs _artifact-id]
-         (let [ready? (comp/ready? player)]
+         (let [ready? (comp/ready? player)
+               error? (comp/error? player)]
            [:div {:style {:width "100%"}}
-            (when-not ready?
-              [in/spinner {:size :large}])
+            (cond
+              error? [comp/alert :error "The audio file could not be loaded."]
+              (not ready?) [in/spinner {:size :large}])
             [:div.audio-player {:id (comp/id player)}]
             (when ready?
               [:div.buttons

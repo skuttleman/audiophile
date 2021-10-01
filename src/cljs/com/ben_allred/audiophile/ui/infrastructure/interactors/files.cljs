@@ -26,7 +26,7 @@
     (form.qp/create (form/create val)
                     *qp))
   (update-qp! [_ val]
-    (forms/update-qp! *qp (constantly val))))
+    (forms/update-qp! *qp merge val)))
 
 (defn interactor [{:keys [*comment *qp]}]
   (->FilesViewInteractor *comment *qp))

@@ -13,37 +13,37 @@
     [["/ws" :ws/connection]
      ["/artifacts"
       [["" :api/artifacts]
-       [["/" #audiophile/uuid-param :artifact-id] :api/artifact]]]
+       [["/" #audiophile/uuid-param :artifact/id] :api/artifact]]]
      ["/comments"
       [["" :api/comments]]]
      ["/events"
       [["" :api/events]]]
      ["/files"
-      [[["/" #audiophile/uuid-param :file-id]
+      [[["/" #audiophile/uuid-param :file/id]
         [["" :api/file]
          ["/comments" :api/file.comments]]]]]
      ["/projects"
       [["" :api/projects]
-       [["/" #audiophile/uuid-param :project-id]
+       [["/" #audiophile/uuid-param :project/id]
         [["" :api/project]
          ["/files"
           [["" :api/project.files]]]]]]]
      ["/teams"
       [["" :api/teams]
-       [["/" #audiophile/uuid-param :team-id] :api/team]]]
+       [["/" #audiophile/uuid-param :team/id] :api/team]]]
      [true :api/not-found]]]
 
    ;; UI
    ["/" :ui/home]
    ["/files"
-    [[["/" #audiophile/uuid-param :file-id] :ui/file]]]
+    [[["/" #audiophile/uuid-param :file/id] :ui/file]]]
    ["/login" :ui/login]
    ["/projects"
     [["" :ui/projects]
-     [["/" #audiophile/uuid-param :project-id] :ui/project]]]
+     [["/" #audiophile/uuid-param :project/id] :ui/project]]]
    ["/teams"
     [["" :ui/teams]
-     [["/" #audiophile/uuid-param :team-id] :ui/team]]]
+     [["/" #audiophile/uuid-param :team/id] :ui/team]]]
 
    ;; RESOURCES
    ["/health" :resources/health]

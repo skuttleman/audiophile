@@ -44,7 +44,7 @@
           serde (reify
                   pserdes/ISerde
                   (serialize [_ value opts]
-                    (str "/" value "?content-type=" (get-in opts [:query-params :content-type])))
+                    (str "/" value "?content-type=" (get-in opts [:params :content-type])))
 
                   pserdes/IMime
                   (mime-type [_]

@@ -100,7 +100,7 @@
   [_ request]
   (-> request
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (merge (:headers request) (get-in request [:nav/route :query-params]))))
+      (merge (:headers request) (get-in request [:nav/route :params]))))
 
 (deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler

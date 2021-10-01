@@ -48,12 +48,12 @@
     (form.sub/create ::file
                      *file
                      (form/create nil file-validator)
-                     {:nav/params {:route-params {:project-id project-id}}}))
+                     {:nav/params {:params {:project/id project-id}}}))
   (on-file-created [_ project-id cb]
     (fn [vow]
       (v/peek vow
               (fn [e]
-                (res/request! *files {:nav/params {:route-params {:project-id project-id}}})
+                (res/request! *files {:nav/params {:params {:project/id project-id}}})
                 (when cb (cb e)))
               nil)))
 
@@ -62,13 +62,13 @@
     (form.sub/create ::file
                      *file-version
                      (form/create nil version-validator)
-                     {:nav/params {:route-params {:file-id    file-id
-                                                  :project-id project-id}}}))
+                     {:nav/params {:params {:file/id    file-id
+                                            :project/id project-id}}}))
   (on-version-created [_ project-id cb]
     (fn [vow]
       (v/peek vow
               (fn [_]
-                (res/request! *files {:nav/params {:route-params {:project-id project-id}}})
+                (res/request! *files {:nav/params {:params {:project/id project-id}}})
                 (when cb (cb nil)))
               nil))))
 

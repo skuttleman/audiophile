@@ -49,7 +49,7 @@
                              (ihttp/login system user)
                              (ihttp/get system
                                         :api/project.files
-                                        {:route-params {:project-id project-id}})
+                                        {:params {:project/id project-id}})
                              handler)]
             (testing "returns files for the project"
               (is (http/success? response))
@@ -66,7 +66,7 @@
                                (ihttp/login system user)
                                (ihttp/get system
                                           :api/project.files
-                                          {:route-params {:project-id (uuids/random)}})
+                                          {:params {:project/id (uuids/random)}})
                                handler)]
               (testing "returns no files"
                 (is (http/success? response))
@@ -79,7 +79,7 @@
                              (ihttp/login system user)
                              (ihttp/get system
                                         :api/project.files
-                                        {:route-params {:project-id project-id}})
+                                        {:params {:project/id project-id}})
                              handler)]
             (testing "returns no files"
               (is (http/success? response))
@@ -90,7 +90,7 @@
                 response (-> {}
                              (ihttp/get system
                                         :api/project.files
-                                        {:route-params {:project-id project-id}})
+                                        {:params {:project/id project-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -112,7 +112,7 @@
                              (ihttp/login system user)
                              (ihttp/post system
                                          :api/project.files
-                                         {:route-params {:project-id project-id}})
+                                         {:params {:project/id project-id}})
                              (ihttp/as-async system handler))]
             (testing "creates the file"
               (is (http/success? response))
@@ -126,7 +126,7 @@
                                  (ihttp/login system user)
                                  (ihttp/get system
                                             :api/project.files
-                                            {:route-params {:project-id project-id}})
+                                            {:params {:project/id project-id}})
                                  handler)]
                 (testing "includes the new file"
                   (assert/has? {:file/name       "file name"
@@ -145,7 +145,7 @@
                              (ihttp/login system user)
                              (ihttp/post system
                                          :api/project.files
-                                         {:route-params {:project-id project-id}})
+                                         {:params {:project/id project-id}})
                              (ihttp/as-async system handler))]
             (testing "returns an error"
               (is (http/client-error? response)))))
@@ -159,7 +159,7 @@
                              ihttp/body-data
                              (ihttp/post system
                                          :api/project.files
-                                         {:route-params {:project-id project-id}})
+                                         {:params {:project/id project-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -181,7 +181,7 @@
                              (ihttp/login system user)
                              (ihttp/post system
                                          :api/file
-                                         {:route-params {:file-id file-id}})
+                                         {:params {:file/id file-id}})
                              (ihttp/as-async system handler))]
             (testing "creates the file version"
               (is (http/success? response))
@@ -194,7 +194,7 @@
                                  (ihttp/login system user)
                                  (ihttp/get system
                                             :api/file
-                                            {:route-params {:file-id file-id}})
+                                            {:params {:file/id file-id}})
                                  handler)
                     {versions :file/versions :as data} (get-in response [:body :data])]
                 (testing "includes the new file"
@@ -213,7 +213,7 @@
                                  (ihttp/login system user)
                                  (ihttp/get system
                                             :api/project.files
-                                            {:route-params {:project-id project-id}})
+                                            {:params {:project/id project-id}})
                                  handler)]
                 (testing "includes the new file"
                   (assert/has? {:file/name       "File Seed"
@@ -231,7 +231,7 @@
                              (ihttp/login system user)
                              (ihttp/post system
                                          :api/file
-                                         {:route-params {:file-id file-id}})
+                                         {:params {:file/id file-id}})
                              (ihttp/as-async system handler))]
             (testing "returns an error"
               (is (http/client-error? response)))))
@@ -244,7 +244,7 @@
                              ihttp/body-data
                              (ihttp/post system
                                          :api/file
-                                         {:route-params {:file-id file-id}})
+                                         {:params {:file/id file-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -287,7 +287,7 @@
                                        (ihttp/login system user)
                                        (ihttp/get system
                                                   :api/artifact
-                                                  {:route-params {:artifact-id artifact-id}})
+                                                  {:params {:artifact/id artifact-id}})
                                        handler)]
                       (is (http/client-error? response))))
 
@@ -300,7 +300,7 @@
                                        (ihttp/login system user)
                                        (ihttp/post system
                                                    :api/project.files
-                                                   {:route-params {:project-id project-id}})
+                                                   {:params {:project/id project-id}})
                                        (ihttp/as-async system handler))]
                       (is (http/success? response))
 
@@ -309,7 +309,7 @@
                                            (ihttp/login system user)
                                            (ihttp/get system
                                                       :api/artifact
-                                                      {:route-params {:artifact-id artifact-id}})
+                                                      {:params {:artifact/id artifact-id}})
                                            artifact-handler)]
                           (is (http/success? response))
                           (is (= (slurp (io/resource "empty.mp3"))
@@ -321,7 +321,7 @@
                                          (ihttp/login system user)
                                          (ihttp/get system
                                                     :api/artifact
-                                                    {:route-params {:artifact-id artifact-id}})
+                                                    {:params {:artifact/id artifact-id}})
                                          artifact-handler)]
                         (testing "returns an error"
                           (is (http/client-error? response)))))
@@ -330,7 +330,7 @@
                       (let [response (-> {}
                                          (ihttp/get system
                                                     :api/artifact
-                                                    {:route-params {:artifact-id artifact-id}})
+                                                    {:params {:artifact/id artifact-id}})
                                          artifact-handler)]
                         (testing "returns an error"
                           (is (http/client-error? response)))))))))))))))

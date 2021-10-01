@@ -31,7 +31,7 @@
 
 (defn root [{:keys [nav login-form]}]
   (fn [state]
-    (let [redirect-uri (get-in state [:nav/route :query-params :redirect-uri])]
+    (let [redirect-uri (get-in state [:nav/route :params :redirect-uri])]
       (if (:auth/user state)
         (nav/navigate! nav (or redirect-uri :ui/home))
         [root* login-form state]))))

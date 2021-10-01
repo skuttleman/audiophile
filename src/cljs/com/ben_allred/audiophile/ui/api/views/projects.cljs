@@ -25,16 +25,16 @@
     "Select a team…"))
 
 (defn ^:private project-href [nav project-id]
-  (nav/path-for nav :ui/project {:route-params {:project-id project-id}}))
+  (nav/path-for nav :ui/project {:params {:project/id project-id}}))
 
 (defn ^:private file-href [nav file-id]
-  (nav/path-for nav :ui/file {:route-params {:file-id file-id}}))
+  (nav/path-for nav :ui/file {:params {:file/id file-id}}))
 
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
 
 (defn ^:private project-details [project *team]
-  (let [opts {:nav/params {:route-params {:team-id (:project/team-id project)}}}]
+  (let [opts {:nav/params {:params {:team/id (:project/team-id project)}}}]
     [:div {:style {:display :flex}}
      [:h2.subtitle (:project/name project)]
      [:div {:style {:width "16px"}}]
@@ -137,7 +137,7 @@
 
 (defn one [{:keys [*files *project *team track-list]}]
   (fn [state]
-    (let [project-id (get-in state [:nav/route :route-params :project-id])
+    (let [project-id (get-in state [:nav/route :params :project/id])
           opts {:nav/params (:nav/route state)}]
       [:div
        [comp/with-resource [*project opts] project-details *team]

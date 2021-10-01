@@ -20,8 +20,8 @@
                                  (ihttp/login system {:user/id (uuids/random)})
                                  (ihttp/get system
                                             :ws/connection
-                                            {:query-params {:content-type mime-type
-                                                            :accept       mime-type}})
+                                            {:params {:content-type mime-type
+                                                      :accept       mime-type}})
                                  ihttp/as-ws
                                  handler)]
             (testing "returns a heart-beating web socket"
@@ -33,8 +33,8 @@
           (let [response (-> {}
                              (ihttp/get system
                                         :ws/connection
-                                        {:query-params {:content-type mime-type
-                                                        :accept       mime-type}})
+                                        {:params {:content-type mime-type
+                                                  :accept       mime-type}})
                              ihttp/as-ws
                              handler)]
             (testing "rejects the request"

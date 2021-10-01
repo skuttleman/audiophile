@@ -2,7 +2,6 @@
   (:require
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
     [com.ben-allred.vow.core :as v :include-macros true]))
@@ -18,9 +17,9 @@
                                        :plugins           #js [regions]})
         (.loadBlob blob)
         (.on "region-created" (fn [_]
-                                (comp/set-region! player)))
+                                (pcomp/set-region! player nil)))
         (.on "region-update-end" (fn [^js/Object e]
-                                   (comp/set-region! player {:start (.-start e)
+                                   (pcomp/set-region! player {:start (.-start e)
                                                              :end   (.-end e)})))))))
 
 (defn ^:private init-surfer [state]
@@ -42,7 +41,7 @@
 
   pcomp/ISelectRegion
   (set-region! [this opts]
-    (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
+    (when-let [^js/WaveSurfer surfer (when (pcomp/ready? this)
                                        (:surfer @state))]
       (.clearRegions surfer)
       (if-let [{:keys [start end]} opts]
@@ -56,16 +55,21 @@
   pcomp/ILoad
   (load! [this {:keys [artifact-id on-change]}]
     (remove-watch state ::events)
+    (swap! state dissoc :ready? :error?)
     (when on-change
       (add-watch state ::events (fn [_ _ old new]
                                   (let [data (select-keys new #{:region :position})]
                                     (when (not= data (select-keys old #{:region :position}))
                                       (on-change data))))))
     (-> *artifact
-        (res/request! {:artifact-id artifact-id})
-        (v/then (comp (init-surfer state) (on-load this id)))))
+        (res/request! {:artifact/id artifact-id})
+        (v/then (comp (init-surfer state) (on-load this id))
+                (fn [_]
+                  (swap! state assoc :error? true)))))
   (ready? [_]
     (:ready? @state))
+  (error? [_]
+    (:error? @state))
   (destroy! [_]
     (when-let [^js/WaveSurfer surfer (:surfer @state)]
       (.destroy surfer)
@@ -73,11 +77,11 @@
 
   pcomp/IPlayer
   (play-pause! [this]
-    (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
+    (when-let [^js/WaveSurfer surfer (when (pcomp/ready? this)
                                        (:surfer @state))]
       (.playPause surfer)))
   (playing? [this]
-    (when-let [^js/WaveSurfer surfer (when (comp/ready? this)
+    (when-let [^js/WaveSurfer surfer (when (pcomp/ready? this)
                                        (:surfer @state))]
       (.isPlaying surfer))))
 

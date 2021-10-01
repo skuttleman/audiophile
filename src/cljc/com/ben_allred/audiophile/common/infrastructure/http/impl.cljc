@@ -13,6 +13,12 @@
     [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
+#?(:cljs
+   (extend-protocol ICounted
+     js/Blob
+     (-count [this]
+       (.-length this))))
+
 (defn ^:private find-serde
   ([headers serdes]
    (find-serde headers serdes nil))

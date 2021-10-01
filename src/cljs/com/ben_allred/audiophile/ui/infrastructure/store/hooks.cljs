@@ -12,7 +12,7 @@
 (deftype NavigationTracker [*banners nav store]
   pnav/ITrackNavigation
   (on-change [_ route]
-    (if-let [err (keyword (get-in route [:query-params :error-msg]))]
+    (if-let [err (keyword (get-in route [:params :error-msg]))]
       (comp/create! *banners {:level :error :body err})
       (store/dispatch! store [:router/updated route]))))
 
@@ -57,7 +57,7 @@
   pforms/ILinkRoute
   (update-qp! [_ f]
     (let [{:keys [handle] :as params} (:nav/route (store/get-state store))]
-      (nav/replace! nav handle (update params :query-params f)))))
+      (nav/replace! nav handle (update params :params f)))))
 
 (defn route-link [{:keys [nav store]}]
   (->RouteLink store nav))

@@ -59,7 +59,7 @@
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/team {:route-params {:team-id team-id}})
+                             (ihttp/get system :api/team {:params {:team/id team-id}})
                              handler)]
             (testing "returns teams"
               (is (http/success? response))
@@ -71,14 +71,14 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/team {:route-params {:team-id team-id}})
+                             (ihttp/get system :api/team {:params {:team/id team-id}})
                              handler)]
             (testing "returns no teams"
               (is (http/client-error? response)))))
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/team {:route-params {:team-id team-id}})
+                             (ihttp/get system :api/team {:params {:team/id team-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))

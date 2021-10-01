@@ -63,7 +63,8 @@
 
 (defn ^:private one* [*int *comments file file-version-id _player]
   (let [versions (map (juxt :file-version/id identity) (:file/versions file))
-        *form (views/qp-form *int {:file-version-id file-version-id})
+        *form (views/qp-form *int {:file-version-id file-version-id
+                                   :file/id         (:file/id file)})
         versions-by-id (into {} versions)]
     (fn [_*int _*comments file _file-version-id player]
       (let [{:keys [file-version-id]} @*form
@@ -86,9 +87,9 @@
                              dd/singleable)]]]]
          ^{:key artifact-id} [player* attrs *int *comments player]]))))
 
-(defn ^:private init* [file *int *comments route player]
-  (let [file-id (get-in route [:route-params :file-id])]
-    (if-let [file-version-id (get-in route [:query-params :file-version-id])]
+(defn ^:private init* [file *int *comments {:keys [params]} player]
+  (let [file-id (:file/id params)]
+    (if-let [file-version-id (:file-version-id params)]
       ^{:key file-id} [one* *int *comments file file-version-id player]
       (views/update-qp! *int {:file-version-id (:file-version/id (first (:file/versions file)))}))))
 

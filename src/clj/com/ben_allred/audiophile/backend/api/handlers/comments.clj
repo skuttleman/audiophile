@@ -14,7 +14,7 @@
 (defmethod selectors/select [:get :api/file.comments]
   [_ request]
   {:user/id (get-in request [:auth/user :user/id])
-   :file/id (get-in request [:nav/route :route-params :file-id])})
+   :file/id (get-in request [:nav/route :params :file/id])})
 
 (defn create
   "Handles a request to create a comment."
