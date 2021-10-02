@@ -37,7 +37,8 @@
 
 (defmethod on-message! :default
   [_ _ msg]
-  (log/warn "event not handled" msg))
+  (log/with-ctx :WS
+    (log/warn "event not handled" msg)))
 
 (defmethod on-message! :conn/ping
   [_ ch _]
@@ -52,7 +53,8 @@
   (ch-loop ctx ch))
 
 (defn on-close! [{::keys [ch-id pubsub user-id]} _]
-  (log/info "websocket closed:" ch-id user-id)
+  (log/with-ctx :WS
+    (log/info ch-id "closed for" user-id))
   (pubsub/unsubscribe! pubsub ch-id))
 
 (defn build-ctx [request pubsub heartbeat-int-ms]
@@ -66,19 +68,21 @@
   pps/IChannel
   (open? [_]
     (web.async/open? ch))
-  (send! [_ msg]
-    (try
-      (log/trace "sending msg to websocket" msg)
-      (web.async/send! ch (cond->> msg
-                            serde (serdes/serialize serde)))
-      (catch Throwable ex
-        (log/error ex "failed to send msg to websocket" msg)
-        (throw ex))))
-  (close! [_]
-    (try
-      (web.async/close ch)
-      (catch Throwable ex
-        (log/warn ex "web socket did not close successfully")))))
+  (send! [this msg]
+    (log/with-ctx [this :WS]
+      (try
+        (log/trace "sending msg to websocket" msg)
+        (web.async/send! ch (cond->> msg
+                                     serde (serdes/serialize serde)))
+        (catch Throwable ex
+          (log/error ex "failed to send msg to websocket" msg)
+          (throw ex)))))
+  (close! [this]
+    (log/with-ctx [this :WS]
+      (try
+        (web.async/close ch)
+        (catch Throwable ex
+          (log/warn ex "web socket did not close successfully"))))))
 
 (defn handler [{:keys [heartbeat-int-ms pubsub serdes]}]
   (fn [request]
@@ -104,12 +108,13 @@
 
 (deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler
-  (handle! [_ {event-id :event/id :event/keys [ctx] :as event}]
-    (try
-      (log/info "publishing event to ws" event-id)
-      (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx)
-      (catch Throwable ex
-        (log/error ex "failed: publishing event to ws" event)))))
+  (handle! [this {event-id :event/id :event/keys [ctx] :as event}]
+    (log/with-ctx [this :CP]
+      (try
+        (log/info "publishing event to ws" event-id)
+        (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx)
+        (catch Throwable ex
+          (log/error ex "failed: publishing event to ws" event))))))
 
 (defn event->ws-handler [{:keys [pubsub]}]
   (->WebSocketMessageHandler pubsub))

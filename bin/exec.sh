@@ -71,19 +71,19 @@ function run() {
       build
 
       echo "running with profile: ${PROFILE}"
-      LOG_LEVEL=info ENV=production SERVICES="api auth jobs ui" foreman start
+      LOG_LEVEL="${LOG_LEVEL:-info}" ENV=production SERVICES="api auth jobs ui" foreman start
       ;;
     single)
       echo "running with profile: ${PROFILE}"
-      WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-single
+      WS_RECONNECT_MS=1000 LOG_LEVEL="${LOG_LEVEL:-debug}" ENV=development foreman start --procfile Procfile-single
       ;;
     split)
       echo "running with profile: ${PROFILE}"
-      WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-split
+      WS_RECONNECT_MS=1000 LOG_LEVEL="${LOG_LEVEL:-debug}" ENV=development foreman start --procfile Procfile-split
       ;;
     multi)
       echo "running with profile: ${PROFILE}"
-      WS_RECONNECT_MS=1000 LOG_LEVEL=debug ENV=development foreman start --procfile Procfile-multi
+      WS_RECONNECT_MS=1000 LOG_LEVEL="${LOG_LEVEL:-debug}" ENV=development foreman start --procfile Procfile-multi
       ;;
 
     *)

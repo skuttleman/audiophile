@@ -3,6 +3,7 @@
     [clojure.core.async :as async]
     [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]))
 
 (defn ^:private publish* [state topic event]
@@ -15,6 +16,8 @@
         (recur (rest subs))))))
 
 (defn ^:private subscribe* [state key topic listener]
+  (when (get-in @state [:listeners key topic])
+    (throw (ex-info "key is already associated with topic" (maps/->m key topic))))
   (let [ch (async/chan 100)]
     (async/go-loop []
       (when-let [[topic event] (async/<! ch)]

@@ -27,8 +27,18 @@
 (defmacro with-ctx [ctx & body]
   (if (:ns &env)
     `(do ~@body)
-    `(binding [*ctx* (merge *ctx* ~ctx)]
-       ~@body)))
+    `(let [ctx# ~ctx]
+       (binding [*ctx* (merge *ctx*
+                              {:logger/class nil
+                               :logger/id    nil
+                               :logger/name  nil}
+                              (cond
+                                (map? ctx#) ctx#
+                                (vector? ctx#) {:logger/class (first ctx#)
+                                                :logger/id    (second ctx#)}
+                                (keyword? ctx#) {:logger/id ctx#}
+                                :else {:logger/class ctx#}))]
+         ~@body))))
 
 (defmacro log [level & args]
   (log* &form level args))
@@ -83,17 +93,26 @@
     data))
 
 (defn ^:private output-fn [{:keys [level ?err msg_ ?ns-str ?file timestamp_ ?line]}]
-  (str
-    (when-let [ts (some-> timestamp_ deref)]
-      (str ts " "))
-    (string/upper-case (name level)) " "
-    "[" (or ?ns-str ?file "?") ":" (or ?line "?") "]"
-    (when-let [ctx (:request/id *ctx*)]
-      (str " |\u001b[34;1m" ctx "\u001b[0m|"))
-    ": "
-    @msg_
-    (when ?err
-      (str "\n" ?err))))
+  (let [logger (or (:logger/name *ctx*)
+                   #?(:clj (some-> *ctx* :logger/class class .getSimpleName)))
+        loc (str (when logger "\u001B[38;5;230m")
+                 (or ?ns-str ?file "?")
+                 (when logger (str "/" logger "\u001B[0m"))
+                 ":"
+                 (or ?line "?"))]
+    (str
+      (when-let [ts (some-> timestamp_ deref)]
+        (str ts " "))
+      (string/upper-case (name level))
+      " [" loc "\u001B[0m]"
+      (when-let [ctx (:logger/id *ctx*)]
+        (str " \u001b[35;1m" (name ctx) "\u001b[0m"))
+      (when-let [ctx (:request/id *ctx*)]
+        (str " |\u001b[34;1m" ctx "\u001b[0m|"))
+      ": "
+      @msg_
+      (when ?err
+        (str "\n" ?err)))))
 
 (log*/merge-config! {:level      (keyword (or #?(:clj (System/getenv "LOG_LEVEL"))
                                               :info))

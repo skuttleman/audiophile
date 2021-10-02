@@ -27,28 +27,29 @@
 
 (deftype FileCommandHandler [repo ch]
   pint/IMessageHandler
-  (handle! [_ {command-id :command/id :command/keys [ctx data type] :as command}]
+  (handle! [this {command-id :command/id :command/keys [ctx data type] :as command}]
     (when-let [[data-type id create*]
                (case type
                  :artifact/create! ["artifact" :artifact/id create-artifact*]
                  :file/create! ["file" :file/id create-file*]
                  :file-version/create! ["file-version" :file-version/id create-file-version*]
                  nil)]
-      (try
-        (log/info "saving" data-type "to db" command-id)
-        (let [payload (repos/transact! repo create* data ctx)]
-          (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx))
-        (catch Throwable ex
-          (log/error ex "failed: saving" data-type "to db" command)
-          (try
-            (ps/command-failed! ch
-                                (or (:request/id ctx)
-                                    (uuids/random))
-                                (assoc ctx
-                                       :error/command type
-                                       :error/reason (.getMessage ex)))
-            (catch Throwable ex
-              (log/error ex "failed to emit command/failed"))))))))
+      (log/with-ctx [this :CP]
+        (try
+          (log/info "saving" data-type "to db" command-id)
+          (let [payload (repos/transact! repo create* data ctx)]
+            (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx))
+          (catch Throwable ex
+            (log/error ex "failed: saving" data-type "to db" command)
+            (try
+              (ps/command-failed! ch
+                                  (or (:request/id ctx)
+                                      (uuids/random))
+                                  (assoc ctx
+                                         :error/command type
+                                         :error/reason (.getMessage ex)))
+              (catch Throwable ex
+                (log/error ex "failed to emit command/failed")))))))))
 
 (defn msg-handler [{:keys [ch repo]}]
   (->FileCommandHandler repo ch))

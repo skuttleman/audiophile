@@ -24,17 +24,19 @@
   [{:keys [components]}]
   (log/debug "Health Check components" (into #{} (map handlers/display-name) components))
   (fn [_]
-    (let [result (into {}
-                       (map (juxt handlers/display-name
-                                  (fn [component]
-                                    (-> component
-                                        handlers/details
-                                        (assoc :heath/healthy? (handlers/healthy? component))))))
-                       components)
-          status (if (every? :heath/healthy? (vals result))
-                   ::http/ok
-                   ::http/service-unavailable)]
-      [status result])))
+    (log/with-ctx :HEALTH
+      (let [result (into {}
+                         (map (juxt handlers/display-name
+                                    (fn [component]
+                                      (-> component
+                                          handlers/details
+                                          (assoc :heath/healthy? (handlers/healthy? component))))))
+                         components)
+            [status log-level] (if (every? :heath/healthy? (vals result))
+                                 [::http/ok :info]
+                                 [::http/service-unavailable :warn])]
+        (log/log log-level "health status" result)
+        [status result]))))
 
 (defn ui
   "Ring handler for dynamically generating html for authorized user."

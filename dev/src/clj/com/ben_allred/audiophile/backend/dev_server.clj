@@ -60,7 +60,8 @@
                                             routes))
   (let [nrepl-port (Long/parseLong (or (System/getenv "NREPL_PORT") "7000"))
         server (nrepl/start-server :port nrepl-port)]
-    (log/info "[nREPL] is listening on port" nrepl-port)
+    (log/with-ctx :nREPL
+      (log/info "listening on port" nrepl-port))
     (.addShutdownHook (Runtime/getRuntime)
                       (Thread. ^Runnable
                                (fn []

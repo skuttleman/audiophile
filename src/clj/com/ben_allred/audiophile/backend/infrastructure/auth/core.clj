@@ -9,10 +9,11 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmacro ^:private safely! [ctx & body]
-  `(try [~@body]
-        (catch Throwable ex#
-          (log/error ex# "an error occurred" ~ctx)
-          [nil ex#])))
+  `(log/with-ctx :OAUTH
+     (try [~@body]
+          (catch Throwable ex#
+            (log/error ex# "an error occurred:" ~ctx)
+            [nil ex#]))))
 
 (defn ^:private with-token
   "Adds a cookie to a response"

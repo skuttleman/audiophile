@@ -11,7 +11,8 @@
   ```"
   [{:keys [handler server-port]}]
   (let [server (web*/run handler {:port server-port :host "0.0.0.0"})]
-    (log/info (str "[SERVER] is listening on port " server-port))
+    (log/with-ctx :SERVER
+      (log/info "listening on port" server-port))
     server))
 
 (defn server#stop
@@ -23,5 +24,6 @@
     (server#stop server))
   ```"
   [server]
-  (log/info "[SERVER] is shutting down")
+  (log/with-ctx :SERVER
+    (log/info "shutting down"))
   (web*/stop server))

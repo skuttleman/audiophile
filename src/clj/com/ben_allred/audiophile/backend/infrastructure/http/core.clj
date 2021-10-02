@@ -14,7 +14,8 @@
 
 (defmethod ex->response :default
   [ex]
-  (log/error ex "An unknown error occurred")
+  (log/with-ctx :SERVER
+    (log/error ex "An unknown error occurred"))
   (ring/error ::http/internal-server-error "an unknown error occurred"))
 
 (defmethod ex->response int/INVALID_INPUT
@@ -85,10 +86,11 @@
              (let [{:keys [details paths]} (ex-data ex)]
                (if (contains? paths [:user/id])
                  (int/not-authenticated!)
-                 (do (if details
-                       (log/warn "Invalid data" spec details)
-                       (log/error ex spec))
-                     (int/invalid-input!)))))))))
+                 (log/with-ctx :SERVER
+                   (if details
+                     (log/warn "Invalid data" spec details)
+                     (log/error ex "error occurred applying spec:" spec))
+                   (int/invalid-input!)))))))))
 
 (defn ok
   "Wraps result in an http success response"

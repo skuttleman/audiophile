@@ -15,23 +15,24 @@
 
 (deftype CommentCommandHandler [repo ch]
   pint/IMessageHandler
-  (handle! [_ {command-id :command/id :command/keys [ctx data type] :as command}]
+  (handle! [this {command-id :command/id :command/keys [ctx data type] :as command}]
     (when (= type :comment/create!)
-      (try
-        (log/info "saving comment to db" command-id)
-        (let [comment (repos/transact! repo create* data ctx)]
-          (ps/emit-event! ch (:comment/id comment) :comment/created comment ctx))
-        (catch Throwable ex
-          (log/error ex "failed: saving comment to db" command)
-          (try
-            (ps/command-failed! ch
-                                (or (:request/id ctx)
-                                    (uuids/random))
-                                (assoc ctx
-                                       :error/command type
-                                       :error/reason (.getMessage ex)))
-            (catch Throwable ex
-              (log/error ex "failed to emit command/failed"))))))))
+      (log/with-ctx [this :CP]
+        (try
+          (log/info "saving comment to db" command-id)
+          (let [comment (repos/transact! repo create* data ctx)]
+            (ps/emit-event! ch (:comment/id comment) :comment/created comment ctx))
+          (catch Throwable ex
+            (log/error ex "failed: saving comment to db" command)
+            (try
+              (ps/command-failed! ch
+                                  (or (:request/id ctx)
+                                      (uuids/random))
+                                  (assoc ctx
+                                         :error/command type
+                                         :error/reason (.getMessage ex)))
+              (catch Throwable ex
+                (log/error ex "failed to emit command/failed")))))))))
 
 (defn msg-handler [{:keys [ch repo]}]
   (->CommentCommandHandler repo ch))

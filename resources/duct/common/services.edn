@@ -28,4 +28,4 @@
  {}
 
  :audiophile.services.http/with-logging
- {:log-ctx {:id :HTTP}}}
+ {}}

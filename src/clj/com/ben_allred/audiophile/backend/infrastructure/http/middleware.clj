@@ -102,7 +102,8 @@
   [_]
   (fn [handler]
     (fn [{:keys [uri] :as request}]
-      (log/with-ctx {:request/id (some-> request :headers :x-request-id uuids/->uuid)}
+      (log/with-ctx {:request/id (some-> request :headers :x-request-id uuids/->uuid)
+                     :logger/id  :SERVER}
         (if (or (string/starts-with? uri "/js")
                 (string/starts-with? uri "/css"))
           (handler request)

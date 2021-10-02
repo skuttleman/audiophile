@@ -10,12 +10,13 @@
 
 (deftype DBMessageHandler [repo]
   pint/IMessageHandler
-  (handle! [_ {event-id :event/id :event/keys [ctx] :as event}]
-    (try
-      (log/info "saving event to db" event-id)
-      (repos/transact! repo events/insert-event! event ctx)
-      (catch Throwable ex
-        (log/error ex "failed: saving event to db" event)))))
+  (handle! [this {event-id :event/id :event/keys [ctx] :as event}]
+    (log/with-ctx [this :CP]
+      (try
+        (log/info "saving event to db" event-id)
+        (repos/transact! repo events/insert-event! event ctx)
+        (catch Throwable ex
+          (log/error ex "failed: saving event to db" event))))))
 
 (defn event->db-handler [{:keys [repo]}]
   (->DBMessageHandler repo))

@@ -22,10 +22,11 @@
 
 (deftype Executor [conn ->builder-fn query-formatter]
   prepos/IExecute
-  (execute! [_ query opts]
+  (execute! [this query opts]
     (let [formatted (mapv #(cond-> % (inst? %) (-> .getTime Timestamp.)) (prepos/format query-formatter query))]
-      (log/debug "[TX] - query:" query)
-      (log/info "[TX] - executing:" (first formatted))
+      (log/with-ctx [this :DB]
+        (log/debug query)
+        (log/info (first formatted)))
       (jdbc/execute! conn formatted (assoc (:sql/opts opts)
                                            :builder-fn (->builder-fn opts))))))
 

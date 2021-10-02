@@ -204,7 +204,7 @@
                                                        dom/prevent-default)))
                (:display attrs "Select file…")
                (when (:disabled attrs)
-                 [spinner])]
+                 [:div {:style {:margin-left "8px"}} [spinner]])]
               (when progress
                 [progress-bar progress])]]))))))
 

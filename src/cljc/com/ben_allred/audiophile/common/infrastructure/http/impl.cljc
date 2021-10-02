@@ -3,14 +3,15 @@
     #?(:clj [clj-http.cookies :as cook])
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
+    [clojure.set :as set]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 #?(:cljs
@@ -61,26 +62,23 @@
                         (catch #?(:cljs :default :default Throwable) ex
                           (reject (ex-data ex)))))))))))
 
-(defn ^:private response-logger [request level ks]
+(defn ^:private response-logger [this request level ks]
   (fn [result]
-    (log/with-ctx {:sub :response}
-      (log/log level
-               "[Response]"
-               (-> result
-                   (select-keys ks)
-                   (merge request))))))
+    (log/with-ctx [this :HTTP#response]
+      (log/log level (-> result (select-keys ks) (merge request))))))
 
-(defn with-logging [{:keys [log-ctx]}]
-  (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ request]
-        (log/with-ctx (assoc log-ctx :sub :request)
-          (let [req (select-keys request #{:method :url})]
-            (log/info "[Request]" req)
-            (v/peek (pres/request! http-client request)
-                    (response-logger req :info #{:status})
-                    (response-logger req :error #{:body :status}))))))))
+(deftype HttpLogger [http-client]
+  pres/IResource
+  (request! [this request]
+    (let [req (select-keys request #{:method :url})]
+      (log/with-ctx [this :HTTP#request]
+        (log/info req))
+      (v/peek (pres/request! http-client request)
+              (response-logger this req :info #{:status})
+              (response-logger this req :error #{:body :status})))))
+
+(defn with-logging [_]
+  ->HttpLogger)
 
 (defn with-headers [_]
   (fn [http-client]
@@ -164,4 +162,6 @@
           middlewares))
 
 (defn client [{:keys [middlewares]}]
-  (create client/request middlewares))
+  (create (comp client/request
+                #(set/rename-keys % {:params :query-params}))
+          middlewares))

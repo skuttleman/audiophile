@@ -8,15 +8,6 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
-(defmacro ^:private with-async [fut & body]
-  `(let [future# (future ~fut)]
-     (try (let [result# (do ~@body)]
-            @future#
-            result#)
-          (catch Throwable ex#
-            (future-cancel future#)
-            (throw ex#)))))
-
 (defn ^:private has-team-clause [projects user-teams project-id user-id]
   [:and
    [:= :files.project-id project-id]

@@ -19,10 +19,11 @@
   pps/IChannel
   (open? [_]
     (rmq/open? ch))
-  (send! [_ msg]
-    (let [msg (serdes/serialize serde msg)]
-      (log/info "publishing to" exchange)
-      (lb/publish ch exchange "" msg {:content-type (serdes/mime-type serde)})))
+  (send! [this msg]
+    (let [msg' (serdes/serialize serde msg)]
+      (log/with-ctx [this :MQ]
+        (log/info "publishing to" exchange (select-keys msg #{:event/type :command/type}))
+        (lb/publish ch exchange "" msg' {:content-type (serdes/mime-type serde)}))))
   (close! [_]
     (u/silent!
       (some-> ch rmq/close)))
@@ -31,8 +32,8 @@
   (subscribe! [_ handler opts]
     (letfn [(handler* [_ch _metadata ^bytes msg]
               (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
-                (log/with-ctx (or (:command/ctx msg) (:event/ctx msg))
-                  (log/info "consuming from" exchange)
+                (log/with-ctx (assoc (or (:command/ctx msg) (:event/ctx msg)) :logger/id :MQ)
+                  (log/info "consuming from" exchange (select-keys msg #{:event/type :command/type}))
                   (int/handle! handler msg))))]
       (let [queue-name (if-let [handler (:internal/handler opts)]
                          (let [queue-name (str queue-name ":" handler)]
@@ -40,8 +41,9 @@
                            (lq/bind ch queue-name exchange)
                            queue-name)
                          queue-name)]
-        (log/info "subscribing" queue-name "to" exchange)
-        (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler))))))
+        (log/with-ctx :MQ
+          (log/info "subscribing" queue-name "to" exchange)
+          (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler)))))))
 
 (defmulti ->channel :type)
 
