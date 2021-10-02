@@ -47,8 +47,8 @@ $ bin/exec.sh test
 
 ## ERD
 
-![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/db/erd.puml)
+![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/docs/diagrams/erd.puml)
 
 ## Sequence Diagram
 
-![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/resources/docs/diagrams/files.puml)
+![ERD](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/skuttleman/audiophile/master/docs/diagrams/files.puml)

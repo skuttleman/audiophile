@@ -1,0 +1,38 @@
+@startuml System Containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+
+Person(user, "Customers / Teams", $sprite="users", "Individual Users Organized into Teams")
+System_Boundary(plat, "Audiophile Platform") {
+    Container_Ext(web, "Web UI", "User Interface for Core Application")
+    Container(ui, "Public Server", "HTML, CSS, JS")
+    Container(api, "Web API", "REST / Clojure")
+    Container(auth, "Auth Service", "Clojure")
+    Container(events, "Message Processing", "Clojure")
+    ContainerDb(db, "Data Storage", "PostgreSQL")
+    ContainerQueue(mq, "Message Broker", "RabbitMQ")
+}
+ContainerDb(s3, "Document Storage", "S3")
+Container(oauth, "Auth Provider", "OAuth", "External Authorization - Google")
+
+Rel(api, db, "Queries Data", "SQL")
+Rel(api, mq, "Submit Commands", "AMQPS")
+Rel(api, s3, "User Uploaded Content", "S3")
+Rel(api, web, "Notifications", "WSS")
+Rel(auth, oauth, "Ext Login Flow", "HTTPS")
+Rel(auth, db, "Queries Users", "SQL")
+Rel(events, db, "Saves Data", "SQL")
+Rel(events, mq, "Sends Events", "AMQPS")
+Rel(mq, api, "Receives Events", "AMQPS")
+Rel(mq, events, "Receives Commands", "AMQPS")
+Rel(mq, events, "Receives Events", "AMQPS")
+Rel(user, web, "Uses", "Web UI")
+Rel(web, api, "Uses", "HTTPS")
+Rel(web, auth, "Uses", "HTTPS")
+Rel(web, ui, "Uses", "HTTPS")
+
+SHOW_LEGEND()
+
+@enduml

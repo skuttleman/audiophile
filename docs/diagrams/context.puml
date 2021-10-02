@@ -1,0 +1,19 @@
+@startuml System Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include FONTAWESOME/users.puml
+
+Person(user, "Customers / Teams", $sprite="users", "Individual Users Organized into Teams")
+System_Boundary(plat, "Audiophile") {
+    Container(app, "Audiophile Platform", "Web-Based", "Application Platform for collaborating on versioned content")
+}
+ContainerDb(s3, "Document Storage", "S3")
+Container(oauth, "Auth Provider", "OAuth", "External Authorization - Google")
+
+Rel(user, app, "Uses", "Web UI")
+Rel(app, s3, "User Uploaded Content", "HTTPS")
+Rel(app, oauth, "User Authentication", "HTTPS")
+
+SHOW_LEGEND()
+@enduml
