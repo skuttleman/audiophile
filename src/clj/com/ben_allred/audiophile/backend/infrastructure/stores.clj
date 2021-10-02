@@ -3,8 +3,11 @@
     [com.ben-allred.audiophile.backend.api.repositories.files.protocols :as pf]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]))
 
-(deftype ArtifactStore [store]
+(deftype ArtifactStore [store max-file-size]
   pf/IArtifactStore
+  (supported? [_ {:artifact/keys [tempfile]} _]
+    (<= (.length tempfile) max-file-size))
+
   prepos/IKVStore
   (uri [_ key opts]
     (prepos/uri store key opts))
@@ -16,5 +19,5 @@
                                            :content-length size
                                            :metadata {:filename filename}))))
 
-(defn artifact-store [{:keys [store]}]
-  (->ArtifactStore store))
+(defn artifact-store [{:keys [max-file-size store]}]
+  (->ArtifactStore store max-file-size))

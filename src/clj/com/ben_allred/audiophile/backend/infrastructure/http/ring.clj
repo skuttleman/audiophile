@@ -12,7 +12,7 @@
   ring.resp/redirect)
 
 (def ^{:arglists '([request root-path])} resource-request
-  "Handler function that will respond with static assets when they exist in the resources folder"
+  "A handler function that will respond with static assets when they exist in the resources folder"
   ring.res/resource-request)
 
 (def ^{:arglists '([handler] [handler options])} wrap-cookies

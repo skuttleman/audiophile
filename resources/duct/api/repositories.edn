@@ -107,4 +107,5 @@
   :user-teams #ig/ref :models/user-teams}
 
  :audiophile.repositories.files/artifact-store
- {:store #ig/ref :audiophile.repositories/store}}
+ {:store #ig/ref :audiophile.repositories/store
+  :max-file-size #ig/ref :env/max-file-upload-size}}

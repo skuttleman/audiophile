@@ -21,6 +21,7 @@
           repo (rfiles/->FileAccessor nil store ch (constantly "key"))
           [user-id request-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
+      (stubs/set-stub! store :supported? true)
 
       (int/create-artifact! repo
                             {:some :data}
@@ -41,7 +42,18 @@
                      :command/emitted-by user-id
                      :command/ctx        {:user/id    user-id
                                           :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+                    (first (colls/only! (stubs/calls ch :send!)))))
+
+      (testing "when the file cannot be saved"
+        (stubs/set-stub! store :supported? false)
+
+        (testing "throws an exception"
+          (is (thrown? Throwable (int/create-artifact! repo
+                                                       {:some :data}
+                                                       {:some       :opts
+                                                        :some/other :opts
+                                                        :user/id    user-id
+                                                        :request/id request-id}))))))))
 
 (deftest query-many-test
   (testing "query-many"

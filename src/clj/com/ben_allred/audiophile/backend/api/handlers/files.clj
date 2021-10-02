@@ -18,10 +18,8 @@
   [_ {:keys [headers] :as request}]
   (-> request
       (get-in [:params "files[]"])
-      (set/rename-keys {:filename :artifact/filename
-                        :content-type :artifact/content-type
-                        :tempfile :artifact/tempfile
-                        :size :artifact/size})
+      (select-keys #{:filename :content-type :tempfile :size})
+      (maps/qualify :artifact)
       (assoc :user/id (get-in request [:auth/user :user/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (:x-request-id headers))
                         :progress/id (uuids/->uuid (:x-progress-id headers)))))

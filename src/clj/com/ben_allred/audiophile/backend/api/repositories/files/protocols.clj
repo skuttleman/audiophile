@@ -13,7 +13,9 @@
 
 (defprotocol IArtifactStore
   "An [[com.ben-allred.audiophile.backend.api.repositories.protocols/IKVStore]]
-   implementation for storing and retrieving artifacts")
+   implementation for storing and retrieving artifacts"
+  (supported? [this artifact opts]
+    "Checks that the file being uploaded is supported."))
 
 (defprotocol IFilesExecutor
   "Abstraction for querying files"
@@ -23,7 +25,7 @@
     "Inserts a file and version. Returns primary id for new file")
   (find-by-file-id [this file-id opts]
     "Lookup file by file-id. If `(:includes/versions? opts)` is true, returns all versions.
-     Otherwise includes only most recent version.")
+     Otherwise, it includes only most recent version.")
   (select-for-project [this project-id opts]
     "Finds all files for a project.")
   (find-event-file [this file-id]

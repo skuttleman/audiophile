@@ -6,8 +6,7 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (defn ^:private get-artifact* [executor store artifact-id opts]
   (when-let [{:artifact/keys [content-type key]} (rfiles/find-by-artifact-id executor artifact-id opts)]
@@ -26,9 +25,12 @@
   (create-artifact! [_ data opts]
     (let [key (keygen)
           uri (repos/uri store key opts)
-          data (assoc data :artifact/uri uri :artifact/key key)]
-      (repos/put! store key data opts)
-      (ps/emit-command! ch :artifact/create! (dissoc data :artifact/tempfile) opts)))
+          data (assoc data :artifact/uri uri :artifact/key key)
+          payload (dissoc data :artifact/tempfile)]
+      (if (rfiles/supported? store data opts)
+        (do (repos/put! store key data opts)
+            (ps/emit-command! ch :artifact/create! payload opts))
+        (throw (ex-info "artifact cannot be stored" payload)))))
   (create-file! [_ data opts]
     (ps/emit-command! ch :file/create! data opts))
   (create-file-version! [_ data opts]
