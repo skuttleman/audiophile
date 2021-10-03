@@ -18,7 +18,7 @@
   (testing "create-artifact"
     (let [ch (ts/->chan)
           store (ts/->store)
-          repo (rfiles/->FileAccessor nil store ch (constantly "key"))
+          repo (rfiles/->FileAccessor nil store ch nil (constantly "key") 1)
           [user-id request-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
       (stubs/set-stub! store :supported? true)
@@ -59,7 +59,7 @@
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor trepos/->file-executor)
-          repo (rfiles/->FileAccessor tx nil nil nil)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-many repo {:user/id    user-id
@@ -123,7 +123,7 @@
   (testing "query-one"
     (let [[file-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor trepos/->file-executor)
-          repo (rfiles/->FileAccessor tx nil nil nil)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
       (testing "when querying one file"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-one repo {:user/id user-id
@@ -172,7 +172,7 @@
     (let [[artifact-id user-id] (repeatedly uuids/random)
           store (trepos/stub-kv-store)
           tx (trepos/stub-transactor trepos/->file-executor)
-          repo (rfiles/->FileAccessor tx store nil nil)]
+          repo (rfiles/->FileAccessor tx store nil nil nil nil)]
       (testing "when querying an artifact"
         (stubs/set-stub! tx :execute! [{:some                  :result
                                         :artifact/key          "some-key"
@@ -232,7 +232,7 @@
 (deftest create-file-test
   (testing "create-file"
     (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil)
+          repo (rfiles/->FileAccessor nil nil ch nil nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file! repo {:some :data} {:some       :opts
@@ -250,7 +250,7 @@
 (deftest create-file-version-test
   (testing "create-file-version"
     (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil)
+          repo (rfiles/->FileAccessor nil nil ch nil nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file-version! repo

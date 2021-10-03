@@ -31,9 +31,10 @@
  {:repo #ig/ref :repositories/events}
 
  :audiophile.repositories.files/accessor
- {:ch    #ig/ref :rabbitmq.chan/commands
-  :repo  #ig/ref :repositories/files
-  :store #ig/ref :audiophile.repositories.files/artifact-store}
+ {:ch     #ig/ref :rabbitmq.chan/commands
+  :pubsub #ig/ref :services/pubsub
+  :repo   #ig/ref :repositories/files
+  :store  #ig/ref :audiophile.repositories.files/artifact-store}
 
  :audiophile.repositories.projects/accessor
  {:ch   #ig/ref :rabbitmq.chan/commands
@@ -107,5 +108,5 @@
   :user-teams #ig/ref :models/user-teams}
 
  :audiophile.repositories.files/artifact-store
- {:store #ig/ref :audiophile.repositories/store
+ {:store         #ig/ref :audiophile.repositories/store
   :max-file-size #ig/ref :env/max-file-upload-size}}

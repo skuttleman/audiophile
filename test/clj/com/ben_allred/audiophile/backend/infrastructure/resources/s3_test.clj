@@ -27,9 +27,8 @@
 
 (deftest s3-client-test
   (testing "S3Client"
-    (let [pubsub (ts/->pubsub)
-          s3-client (->s3-client)
-          client (s3/->S3Client s3-client pubsub "a-bucket" 100)]
+    (let [s3-client (->s3-client)
+          client (s3/->S3Client s3-client "a-bucket")]
       (testing "#uri"
         (testing "generates a resource uri"
           (is (= "s3://a-bucket/some-key" (repos/uri client "some-key")))))

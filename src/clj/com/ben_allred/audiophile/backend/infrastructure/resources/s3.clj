@@ -14,23 +14,10 @@
     (com.amazonaws.services.s3.model GetObjectRequest HeadBucketRequest ObjectMetadata PutObjectRequest S3Object)
     (java.io File)))
 
-(defn ^:private ->watcher [pubsub total threshold {user-id :user/id :as opts}]
-  (let [reported (atom 0)]
-    (fn [_ _ _ current]
-      (when (> (- current @reported) threshold)
-        (let [event-id (uuids/random)
-              event {:event/id       event-id
-                     :event/model-id (:progress/id opts)
-                     :event/type     :artifact/progress
-                     :event/data     {:progress/current current
-                                      :progress/total   total}
-                     :event/ctx      opts}]
-          (reset! reported current)
-          (ps/send-user! pubsub user-id event-id event opts))))))
-
-(defn ^:private ->upload-listener [watcher]
+(defn ^:private ->upload-listener [total on-progress]
   (let [transferred (atom 0)]
-    (add-watch transferred ::watcher watcher)
+    (add-watch transferred ::watcher (fn [_ _ _ current]
+                                       (on-progress current total)))
     (reify
       ProgressListener
       (progressChanged [_ val]
@@ -41,7 +28,7 @@
             ProgressEventType/TRANSFER_COMPLETED_EVENT (remove-watch transferred ::watcher)
             nil))))))
 
-(deftype S3Client [^AmazonS3 client pubsub ^String bucket threshold]
+(deftype S3Client [^AmazonS3 client ^String bucket]
   prepos/IKVStore
   (uri [_ key _]
     (format "s3://%s/%s" bucket key))
@@ -57,18 +44,15 @@
                              (map (juxt (comp keyword key)
                                         val))
                              (.getUserMetadata md))}))
-  (put! [_ object-key file opts]
+  (put! [_ object-key file {:keys [content-length content-type metadata on-progress]}]
     (log/info "saving s3 artifact" object-key)
     (let [meta (doto (ObjectMetadata.)
-                 (.setContentType (:content-type opts))
-                 (.setContentLength (:content-length opts))
-                 (.setUserMetadata (maps/map-keys name (:metadata opts))))
+                 (.setContentType content-type)
+                 (.setContentLength content-length)
+                 (.setUserMetadata (maps/map-keys name metadata)))
           req (-> (PutObjectRequest. ^String bucket ^String object-key ^File file)
                   (.withMetadata meta)
-                  (.withGeneralProgressListener (->upload-listener (->watcher pubsub
-                                                                              (.length file)
-                                                                              threshold
-                                                                              opts))))
+                  (cond-> on-progress (.withGeneralProgressListener (->upload-listener (.length file) on-progress))))
           result (.putObject client req)]
       {:version-id (.getVersionId result)
        :e-tag      (.getETag result)}))
@@ -95,12 +79,12 @@
 
 (defn client
   "Constructor for [[S3Client]] used for storing and retrieving s3 objects."
-  [{:keys [_access-key bucket region pubsub publish-threshold _secret-key] :as cfg}]
+  [{:keys [_access-key bucket region _secret-key] :as cfg}]
   (let [client (-> (AmazonS3ClientBuilder/standard)
                    (.withCredentials (map->CredentialProvider cfg))
                    (.withRegion ^String region)
                    .build)]
-    (->S3Client client pubsub bucket (or publish-threshold 150000))))
+    (->S3Client client bucket)))
 
 (defn stream-serde
   "Constructs an anonymous [[pserdes/ISerde]] that converts s3 input/output to be used within the system."

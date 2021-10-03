@@ -71,39 +71,37 @@
           *form (views/version-form *int project-id (:file/id file))
           on-submitted (views/on-version-created *int project-id cb)]
       (fn [_file _cb]
-        [comp/form {:*form        *form
-                    :disabled     (res/requesting? *artifacts)
-                    :on-submitted on-submitted}
-         [in/input (forms/with-attrs {:label "Version name"}
-                                     *form
-                                     [:version/name])]
-         [in/uploader (-> {:label     "File"
-                           :*resource *artifacts
-                           :display   (if-let [filename (get-in @*form [:artifact/details :artifact/filename])]
-                                        filename
-                                        "Select file…")}
-                          (forms/with-attrs *form [:artifact/details]))]]))))
+        (let [filename (get-in @*form [:artifact/details :artifact/filename])]
+          [comp/form {:*form        *form
+                      :disabled     (res/requesting? *artifacts)
+                      :on-submitted on-submitted}
+           [in/uploader (-> {:label     "File"
+                             :*resource *artifacts
+                             :display   (or filename "Select file…")}
+                            (forms/with-attrs *form [:artifact/details]))]
+           [in/input (forms/with-attrs {:label "Version name"}
+                                       *form
+                                       [:version/name])]])))))
 
 (defn file-form [{:keys [*artifacts *int]}]
   (fn [project-id cb]
     (let [*form (views/file-form *int project-id)
           on-submitted (views/on-file-created *int project-id cb)]
       (fn [_project-id _cb]
-        [comp/form {:*form        *form
-                    :disabled     (res/requesting? *artifacts)
-                    :on-submitted on-submitted}
-         [in/input (forms/with-attrs {:label "Track name"}
-                                     *form
-                                     [:file/name])]
-         [in/input (forms/with-attrs {:label "Version name"}
-                                     *form
-                                     [:version/name])]
-         [in/uploader (-> {:label     "File"
-                           :*resource *artifacts
-                           :display   (if-let [filename (get-in @*form [:artifact/details :artifact/filename])]
-                                        filename
-                                        "Select file…")}
-                          (forms/with-attrs *form [:artifact/details]))]]))))
+        (let [filename (get-in @*form [:artifact/details :artifact/filename])]
+          [comp/form {:*form        *form
+                      :disabled     (res/requesting? *artifacts)
+                      :on-submitted on-submitted}
+           [in/uploader (-> {:label     "File"
+                             :*resource *artifacts
+                             :display   (or filename "Select file…")}
+                            (forms/with-attrs *form [:artifact/details]))]
+           [in/input (forms/with-attrs {:label "Track name"}
+                                       *form
+                                       [:file/name])]
+           [in/input (forms/with-attrs {:label "Version name"}
+                                       *form
+                                       [:version/name])]])))))
 
 (defn track-list [{:keys [file-form nav *modals version-form]}]
   (fn [files project-id]

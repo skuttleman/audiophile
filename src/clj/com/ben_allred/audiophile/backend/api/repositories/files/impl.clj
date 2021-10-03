@@ -14,7 +14,21 @@
       [data {:content-type content-type}]
       (throw (ex-info "artifact located with missing data" {:artifact-id artifact-id})))))
 
-(deftype FileAccessor [repo store ch keygen]
+(defn ^:private ->progress-handler [pubsub threshold {user-id :user/id :as opts}]
+  (let [reported (atom 0)]
+    (fn [current total]
+      (when (> (- current @reported) threshold)
+        (let [event-id (uuids/random)
+              event {:event/id       event-id
+                     :event/model-id (:progress/id opts)
+                     :event/type     :artifact/progress
+                     :event/data     {:progress/current current
+                                      :progress/total   total}
+                     :event/ctx      opts}]
+          (reset! reported current)
+          (ps/send-user! pubsub user-id event-id event opts))))))
+
+(deftype FileAccessor [repo store ch pubsub keygen publish-threshold]
   pint/IAccessor
   (query-many [_ opts]
     (repos/transact! repo rfiles/select-for-project (:project/id opts) opts))
@@ -26,9 +40,10 @@
     (let [key (keygen)
           uri (repos/uri store key opts)
           data (assoc data :artifact/uri uri :artifact/key key)
-          payload (dissoc data :artifact/tempfile)]
+          payload (dissoc data :artifact/tempfile)
+          on-progress (->progress-handler pubsub publish-threshold opts)]
       (if (rfiles/supported? store data opts)
-        (do (repos/put! store key data opts)
+        (do (repos/put! store key data (assoc opts :on-progress on-progress))
             (ps/emit-command! ch :artifact/create! payload opts))
         (throw (ex-info "artifact cannot be stored" payload)))))
   (create-file! [_ data opts]
@@ -40,5 +55,10 @@
 
 (defn accessor
   "Constructor for [[FileAccessor]] which provides semantic access for storing and retrieving files."
-  [{:keys [ch repo store]}]
-  (->FileAccessor repo store ch #(str "artifacts/" (uuids/random))))
+  [{:keys [ch pubsub publish-threshold repo store]}]
+  (->FileAccessor repo
+                  store
+                  ch
+                  pubsub
+                  #(str "artifacts/" (uuids/random))
+                  (or publish-threshold 150000)))

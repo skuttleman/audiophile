@@ -28,7 +28,7 @@ reference_group core domain
 echo "[32mdependencies check passed[0m"
 
 echo "Running tests before committing…"
-bin/exec.sh test
+make test
 STATUS="${?}"
 
 echo ''

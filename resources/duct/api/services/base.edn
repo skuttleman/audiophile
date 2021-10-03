@@ -50,6 +50,5 @@
   [:audiophile.services.s3/client :component/health]
   {:access-key #ig/ref :env.s3/access-key
    :bucket     #ig/ref :env.s3/bucket
-   :pubsub     #ig/ref :services/pubsub
    :region     #ig/ref :env.s3/region
    :secret-key #ig/ref :env.s3/secret-key}}]
