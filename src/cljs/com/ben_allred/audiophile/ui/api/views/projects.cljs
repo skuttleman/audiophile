@@ -104,34 +104,37 @@
                                        [:version/name])]])))))
 
 (defn track-list [{:keys [file-form nav *modals version-form]}]
-  (fn [files project-id]
-    [:div
-     [:div.buttons
-      [in/plain-button
-       {:class    ["is-primary"]
-        :on-click (comp/modal-opener *modals
-                                     "Upload new track"
-                                     [file-form project-id])}
-       "New track"]]
-     (if (seq files)
-       [:table.table.is-striped.is-fullwidth
-        [:tbody
-         (for [[idx file] (map-indexed vector files)]
-           ^{:key (:file/id file)}
-           [:tr
-            [:td {:style {:white-space :nowrap}}
-             [:em (strings/format "%02d" (inc idx))]]
-            [:td {:style {:width "99%"}}
-             [:a.link {:href (file-href nav (:file/id file))}
-              [:span [:strong (:file/name file)] " - " (:version/name file)]]]
-            [:td
-             [in/plain-button
-              {:class    ["is-outlined"]
-               :on-click (comp/modal-opener *modals
-                                            "Upload new version"
-                                            [version-form file])}
-              "Upload new version"]]])]]
-       [:div "This projects doesn't have any tracks. You should upload one."])]))
+  (fn [files *project project-id]
+    (let [status (res/status *project)]
+      (if-not (= :success status)
+        [in/spinner]
+        [:div
+         [:div.buttons
+          [in/plain-button
+           {:class    ["is-primary"]
+            :on-click (comp/modal-opener *modals
+                                         "Upload new track"
+                                         [file-form project-id])}
+           "New track"]]
+         (if (seq files)
+           [:table.table.is-striped.is-fullwidth
+            [:tbody
+             (for [[idx file] (map-indexed vector files)]
+               ^{:key (:file/id file)}
+               [:tr
+                [:td {:style {:white-space :nowrap}}
+                 [:em (strings/format "%02d" (inc idx))]]
+                [:td {:style {:width "99%"}}
+                 [:a.link {:href (file-href nav (:file/id file))}
+                  [:span [:strong (:file/name file)] " - " (:version/name file)]]]
+                [:td
+                 [in/plain-button
+                  {:class    ["is-outlined"]
+                   :on-click (comp/modal-opener *modals
+                                                "Upload new version"
+                                                [version-form file])}
+                  "Upload new version"]]])]]
+           [:div "This projects doesn't have any tracks. You should upload one."])]))))
 
 (defn one [{:keys [*files *project *team track-list]}]
   (fn [state]
@@ -139,7 +142,7 @@
           opts {:nav/params (:nav/route state)}]
       [:div
        [comp/with-resource [*project opts] project-details *team]
-       [comp/with-resource [*files opts] track-list project-id]])))
+       [comp/with-resource [*files opts] track-list *project project-id]])))
 
 (defn list [{:keys [nav]}]
   (fn [projects _state]

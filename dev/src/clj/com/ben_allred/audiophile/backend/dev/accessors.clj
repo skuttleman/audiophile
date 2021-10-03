@@ -12,24 +12,44 @@
 (comment
   (reset! repl-mock-state nil))
 
+(defmulti ^:private return-mock (fn [async? _ val _ _]
+                                  [(if async? ::async ::sync)
+                                   (if (instance? Throwable val) ::ex ::val)]))
+
+(defmethod return-mock [::async ::ex]
+  [_ k v ch opts]
+  (log/info "MOCKING :command/failed" k v)
+  (ps/command-failed! ch (:request/id opts) opts)
+  nil)
+
+(defmethod return-mock [::async ::val]
+  [_ k v ch opts]
+  (let [event-type (:event-type v)]
+    (log/info "MOCKING" event-type k v)
+    (ps/emit-event! ch (:request/id opts) event-type (dissoc v :event-type) opts)
+    nil))
+
+(defmethod return-mock [::sync ::ex]
+  [_ k v _ _]
+  (log/info "THROWING MOCK EXCEPTION" k)
+  (throw v))
+
+(defmethod return-mock [::sync ::val]
+  [_ k v _ _]
+  (log/info "RETURNING MOCK DATA" k)
+  v)
+
 (defmacro ^:private mock! [[_ action :as key] ch opts impl]
   `(if-let [[key# mock#] (find @repl-mock-state ~key)]
-     (cond
-       (= \! (let [s# (name ~action)]
-               (get s# (dec (count s#)))))
-       (do (log/info "MOCKING :command/failed" key# mock#)
-           (ps/command-failed! ~ch (:request/id ~opts) ~opts))
-
-       (instance? Throwable mock#)
-       (do (log/info "THROWING MOCK EXCEPTION" key#)
-           (throw mock#))
-
-       :else
-       (do (log/info "RETURNING MOCK DATA" key#)
-           mock#))
+     (let [val# (if (fn? mock#)
+                  (try (mock#)
+                       (catch Throwable ex#
+                         ex#))
+                  mock#)
+           async?# (= \! (let [s# (name ~action)]
+                           (get s# (dec (count s#)))))]
+       (return-mock async?# key# val# ~ch ~opts))
      ~impl))
-
-(comment)
 
 (defn ^:private set-mock!
   ([key]
@@ -77,11 +97,11 @@
     (mock! [::file :create-file-version!] ch opts
       (pint/create-file-version! accessor data opts)))
   (get-artifact [_ opts]
-    (mock! [::file :create-file-version!] ch opts
+    (mock! [::file :get-artifact] ch opts
       (pint/get-artifact accessor opts))))
 
 (comment
-  (set-mock! [::file :create-artifact!])
+  (set-mock! [::file :create-artifact!] (fn [] (Thread/sleep 5000)))
   (unset-mock! [::file :create-artifact!]))
 
 (deftype MockProjectAccessor [accessor ch]
@@ -97,7 +117,9 @@
     (mock! [::project :create!] ch opts
       (pint/create! accessor data opts))))
 
-(comment)
+(comment
+  (set-mock! [::project :query-many])
+  (unset-mock! [::project :query-many]))
 
 (deftype MockTeamAccessor [accessor ch]
   pint/ITeamAccessor
@@ -112,7 +134,9 @@
     (mock! [::team :create!] ch opts
       (pint/create! accessor data opts))))
 
-(comment)
+(comment
+  (set-mock! [::team :query-many] (fn [] (Thread/sleep 5000) []))
+  (unset-mock! [::team :query-many]))
 
 (defmethod ig/init-key :audiophile.repositories.dev/mock-interactor#comment [_ {:keys [accessor handler]}]
   (->MockCommentAccessor accessor (->MockChannel handler)))

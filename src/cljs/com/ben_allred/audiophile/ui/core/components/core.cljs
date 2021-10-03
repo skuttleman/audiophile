@@ -24,7 +24,9 @@
     (fn [_*res component & args]
       (case (res/status *resource)
         :success (into [component @*resource] args)
-        :error [:div.error "an error occurred"]
+        :error [:div.error (if (some-> @*resource meta :http/timeout?)
+                             "The request timed out. Check your internet connection."
+                             "An error occurred. Please try again.")]
         [in/spinner {:size (:spinner/size opts)}]))))
 
 (defn not-found [_]

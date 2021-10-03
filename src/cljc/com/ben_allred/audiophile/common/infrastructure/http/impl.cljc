@@ -20,6 +20,13 @@
      (-count [this]
        (.-length this))))
 
+(def ^:private ^:const timeout-msg
+  {:error ^{:toast/msg     "Timeout - The request took longer than expected to complete."
+            :http/timeout? true}
+          [{:message "upload timed out"}]})
+
+(def ^:private ^:const default-timeout 60000)
+
 (defn ^:private find-serde
   ([headers serdes]
    (find-serde headers serdes nil))
@@ -45,22 +52,26 @@
          #?(:clj (assoc :cookies (cook/get-cookies cs)))
          (update :headers (partial maps/map-keys keyword))))))
 
-(defn base [_]
-  (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ request]
-        (v/create (fn [resolve reject]
-                    (async/go
-                      (try
-                        (let [val (-> request
-                                      (->> (pres/request! http-client))
-                                      #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
-                          (if (http/success? val)
-                            (resolve val)
-                            (reject val)))
-                        (catch #?(:cljs :default :default Throwable) ex
-                          (reject (ex-data ex)))))))))))
+(defn base [{:keys [timeout]}]
+  (let [timeout (or timeout default-timeout)]
+    (fn [http-client]
+      (reify
+        pres/IResource
+        (request! [_ request]
+          (v/create (fn [resolve reject]
+                      (async/go
+                        (try
+                          (let [val (-> request
+                                        (->> (pres/request! http-client))
+                                        #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
+                            (if (http/success? val)
+                              (resolve val)
+                              (reject val)))
+                          (catch #?(:cljs :default :default Throwable) ex
+                            (reject (ex-data ex)))))
+                      (async/go
+                        (async/<! (async/timeout timeout))
+                        (reject {:body timeout-msg})))))))))
 
 (defn ^:private response-logger [this request level ks]
   (fn [result]
@@ -134,13 +145,12 @@
                         (pres/request! request)
                         (v/catch reject))
                     (v/and (v/sleep ms)
-                           (reject {:error ^{:toast/msg "Timeout - The request took longer than expected to complete"}
-                                           [{:message "upload timed out"}]}))))
+                           (reject timeout-msg))))
         (v/peek (fn [_]
                   (pubsub/unsubscribe! pubsub pubsub-id))))))
 
 (defn with-pubsub [{:keys [pubsub timeout]}]
-  (let [timeout (or timeout 60000)]
+  (let [timeout (or timeout default-timeout)]
     (fn [http-client]
       (reify
         pres/IResource

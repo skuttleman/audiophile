@@ -22,7 +22,7 @@
     :else m))
 
 (defn assoc-defaults [m & kvs]
-  "Assoc values onto a map when the value of k is nil"
+  "Assoc values onto a map when the current value of k is nil"
   {:pre [(assert (even? (count kvs)) "must provide an even number of forms to assoc-defaults")]}
   (into (or m {})
         (comp (partition-all 2)

@@ -73,19 +73,21 @@
             attrs {:artifact-id     artifact-id
                    :file-id         (:file/id file)
                    :file-version-id file-version-id}]
-        [:div.panel
-         [:div.panel-heading
-          [:div.layout--align-center
-           [:span (:file/name file)]
-           [:div.layout--inset
-            [dd/dropdown (-> {:attrs->content attrs->content
-                              :force-value?   true
-                              :item-control   version-name
-                              :options        versions
-                              :options-by-id  versions-by-id}
-                             (forms/with-attrs *form [:file-version-id])
-                             dd/singleable)]]]]
-         ^{:key artifact-id} [player* attrs *int *comments player]]))))
+        (if artifact-id
+          [:div.panel
+           [:div.panel-heading
+            [:div.layout--align-center
+             [:span (:file/name file)]
+             [:div.layout--inset
+              [dd/dropdown (-> {:attrs->content attrs->content
+                                :force-value?   true
+                                :item-control   version-name
+                                :options        versions
+                                :options-by-id  versions-by-id}
+                               (forms/with-attrs *form [:file-version-id])
+                               dd/singleable)]]]]
+           ^{:key artifact-id} [player* attrs *int *comments player]]
+          [comp/alert :error "File version could not be found"])))))
 
 (defn ^:private init* [file *int *comments {:keys [params]} player]
   (let [file-id (:file/id params)]
