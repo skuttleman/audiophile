@@ -50,14 +50,3 @@
 
 (defn res-artifact [{:keys [http-client nav]}]
   (->ArtifactResource http-client nav))
-
-(defn request [{:keys [opts->vow pubsub]}]
-  (fn [{:keys [on-progress] :as opts}]
-    (let [[progress-id request-id] (repeatedly uuids/random)]
-      (pubsub/subscribe! pubsub request-id progress-id on-progress)
-      (-> opts
-          (assoc :progress/id progress-id)
-          opts->vow
-          (v/peek (fn [[status]]
-                    (on-progress progress-id {:progress/status status})
-                    (pubsub/unsubscribe! pubsub request-id)))))))

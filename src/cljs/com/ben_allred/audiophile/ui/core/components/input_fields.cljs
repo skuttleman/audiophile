@@ -36,10 +36,11 @@
    [(keyword (str "div.loader." (name (or size :small))))]))
 
 (defn progress-bar [{:keys [current height status total]}]
-  (let [height (str (or height 6) "px")]
+  (let [height (str (or height 6) "px")
+        complete? (contains? #{:success :error} status)]
     [:div {:style {:height height}}
      (when-let [percent (cond
-                          status 1
+                          complete? 1
                           total (/ current total)
                           current 0)]
        [:div.progress-bar
@@ -47,7 +48,7 @@
         [:div.progress-amount
          {:class [(cond
                     (zero? percent) "unstarted"
-                    status "complete")]
+                    complete? "complete")]
           :style {:background-color (case status
                                       :error "red"
                                       :success "green"

@@ -34,7 +34,7 @@
     (-> response
         (update :status #(http/code->status % %))
         (update :body #(cond->> %
-                                (and serde (string? %)) (serdes/deserialize serde))))))
+                         (and serde (string? %)) (serdes/deserialize serde))))))
 
 (defn ^:private with-headers*
   ([]
@@ -140,7 +140,7 @@
                   (pubsub/unsubscribe! pubsub pubsub-id))))))
 
 (defn with-pubsub [{:keys [pubsub timeout]}]
-  (let [timeout (or timeout 30000)]
+  (let [timeout (or timeout 60000)]
     (fn [http-client]
       (reify
         pres/IResource

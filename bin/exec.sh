@@ -130,19 +130,6 @@ function wipe() {
   echo "all exchanges deleted from rabbitmq"
 }
 
-function help() {
-  echo "Help"
-  echo ""
-  echo "  build   - build an uberjar"
-  echo "  clean   - removes cached artifacts"
-  echo "  deploy  - deploy the uberjar (use build first)"
-  echo "  migrate - run db migration scripts"
-  echo "  purge   - remove all locally cached files"
-  echo "  run     - run the application"
-  echo "  test    - run tests"
-  echo "  help    - display this information"
-}
-
 FUNCTION=${1}
 
 if [ ${1+x} ]; then
@@ -174,11 +161,8 @@ case "${FUNCTION}" in
   wipe)
     wipe $@
     ;;
-  help)
-    help
-    ;;
   *)
     echo "unknown function ${FUNCTION}"
-    help
+    exit 1
     ;;
 esac

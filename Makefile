@@ -1,6 +1,16 @@
 
 help:
-	bin/exec.sh
+	@echo "Help"
+	@echo ""
+	@echo "  build     - build an uberjar"
+	@echo "  clean     - removes cached artifacts"
+	@echo "  deploy    - deploy the uberjar (use build first)"
+	@echo "  help      - display this information"
+	@echo "  run       - run the application in dev mode"
+	@echo "  run-jar   - compile artifact and run the jar"
+	@echo "  run-multi - run the application split into multiple instances of microservices"
+	@echo "  run-split - run the application split into microservices"
+	@echo "  test      - run tests"
 
 run:
 	bin/exec.sh run
