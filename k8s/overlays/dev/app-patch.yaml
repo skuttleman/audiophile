@@ -1,0 +1,11 @@
+- op: add
+  path: /spec/template/spec/initContainers/-
+  value:
+    name: db-seed
+    image: skuttleman/audiophile:dev
+    command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "com.ben-allred.audiophile.backend.dev.migrations", "seed" ]
+    envFrom:
+    - configMapRef:
+        name: env-vars
+    - secretRef:
+        name: env-secrets

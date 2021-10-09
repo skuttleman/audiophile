@@ -104,7 +104,7 @@
 
 (defmethod main* :generate-erd
   ([_]
-   (main* :generate-erd "resources/db/erd.puml"))
+   (main* :generate-erd "docs/diagrams/erd.puml"))
   ([_ output]
    (with-migrator {transactor [:audiophile.repositories/transactor :component/health]}
      (uml/generate! transactor output))))

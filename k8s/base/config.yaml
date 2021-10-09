@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-vars
+data:
+  AWS_S3_BUCKET: skuttleman.audiophile
+  AWS_S3_REGION: us-east-2
+  CLOUDAMQP_URL: amqp://guest:guest@rabbitmq:5672
+  DB_HOST: postgres
+  DB_NAME: audiophile
+  DB_PORT: "5432"
+  GOAUTH_AUTH_URI: https://accounts.google.com/o/oauth2/auth
+  GOAUTH_PROFILE_URI: https://www.googleapis.com/oauth2/v1/tokeninfo
+  GOAUTH_SCOPES: '["https://www.googleapis.com/auth/userinfo.email" "https://www.googleapis.com/auth/userinfo.profile"]'
+  GOAUTH_TOKEN_URI: https://oauth2.googleapis.com/token

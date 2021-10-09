@@ -1,0 +1,9 @@
+# syntax=docker/dockerfile:1
+FROM clojure:openjdk-18-tools-deps-buster
+COPY .m2 /app/.m2
+COPY bin /app/bin
+COPY deps.edn /app/deps.edn
+COPY dev /app/dev
+COPY resources /app/resources
+COPY src /app/src
+WORKDIR /app

@@ -33,7 +33,7 @@
                                           (assoc :heath/healthy? (handlers/healthy? component))))))
                          components)
             [status log-level] (if (every? :heath/healthy? (vals result))
-                                 [::http/ok :info]
+                                 [::http/ok :debug]
                                  [::http/service-unavailable :warn])]
         (log/log log-level "health status" result)
         [status result]))))
