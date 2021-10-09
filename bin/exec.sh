@@ -29,7 +29,7 @@ function purge_ui() {
 }
 
 function purge() {
-  echo "you don't actually want to wipe everything"
+  echo "you don't actually want to purge everything"
   exit 1
 
   purge_ui
@@ -47,6 +47,20 @@ function build() {
   clj -Sthreads 1 -e "(compile 'com.ben-allred.audiophile.backend.core)"
   LOG_LEVEL=warn clj -Sthreads 1 -A:uberjar -m uberdeps.uberjar --level warn --target target/audiophile.jar --main-class com.ben_allred.audiophile.backend.core
   echo "[... uberjar built]"
+}
+
+function dockerize() {
+  build
+
+  echo "[building docker containers ...]"
+  docker build -t audiophile -f Dockerfile .
+  docker tag audiophile skuttleman/audiophile:latest
+  docker push skuttleman/audiophile:latest
+
+  docker build -t audiophile-dev -f Dockerfile-dev .
+  docker tag audiophile-dev skuttleman/audiophile:dev
+  docker push skuttleman/audiophile:dev
+  echo "[... docker containers built]"
 }
 
 function deploy() {
@@ -145,6 +159,9 @@ case "${FUNCTION}" in
     ;;
   deploy)
     deploy $@
+    ;;
+  docker)
+    dockerize $@
     ;;
   migrate)
     migrate $@

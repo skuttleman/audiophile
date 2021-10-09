@@ -5,6 +5,7 @@ help:
 	@echo "  build     - build an uberjar"
 	@echo "  clean     - removes cached artifacts"
 	@echo "  deploy    - deploy the uberjar (use build first)"
+	@echo "  docker    - builds docker containers and pushes them to docker hub."
 	@echo "  help      - display this information"
 	@echo "  run       - run the application in dev mode"
 	@echo "  run-jar   - compile artifact and run the jar"
@@ -35,6 +36,9 @@ clean:
 
 deploy:
 	bin/exec.sh deploy
+
+docker:
+	bin/exec.sh docker
 
 wipe:
 	bin/exec.sh wipe
