@@ -1,10 +1,11 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
-    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]
     [langohr.basic :as lb]
     [langohr.channel :as lch]
@@ -51,9 +52,13 @@
   [cfg]
   (let [ch (lch/open (::conn cfg))
         exchange (:name cfg)
-        queue-name (str exchange "." (:consumer cfg))
-        ch-opts (:opts cfg)]
-    (le/declare ch exchange "fanout" ch-opts)
+        queue-name (str exchange
+                        "."
+                        (:consumer cfg)
+                        (when (:global? cfg)
+                          (str "." (uuids/random))))
+        ch-opts (assoc (:opts cfg) :auto-delete (:global? cfg))]
+    (le/declare ch exchange "fanout" (:opts cfg))
     (lq/declare ch queue-name ch-opts)
     (lq/bind ch queue-name exchange)
     (->RabbitMQFanoutChannel ch exchange queue-name (:serde cfg) ch-opts)))

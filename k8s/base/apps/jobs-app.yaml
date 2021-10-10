@@ -3,21 +3,22 @@ kind: Deployment
 metadata:
   labels:
     group: application
-    app: app
-  name: app
+    app: jobs
+  name: jobs
 spec:
   replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: app
+      app: jobs
   template:
     metadata:
       labels:
-        app: app
+        app: jobs
+        group: application
     spec:
       containers:
-      - command: [ "java", "-jar", "target/audiophile.jar", "api", "auth", "jobs", "ui" ]
+      - command: [ "java", "-jar", "target/audiophile.jar", "jobs" ]
         envFrom:
         - configMapRef:
             name: env-vars
@@ -27,32 +28,25 @@ spec:
         - name: MQ_NAMESPACE
           value: k8s
         - name: MQ_CONSUMER_GROUP
-          value: app
-        - name: PORT
-          value: "8080"
-        - name: API_BASE_URL
-          value: http://localhost:8080
-        - name: AUTH_BASE_URL
-          value: http://localhost:8080
-        - name: UI_BASE_URL
-          value: http://localhost:8080
+          value: jobs
         image: skuttleman/audiophile:latest
         imagePullPolicy: Always
         name: audiophile
         ports:
         - containerPort: 8080
+          name: jobs-port
           protocol: TCP
         readinessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: jobs-port
           initialDelaySeconds: 30
           periodSeconds: 5
           failureThreshold: 4
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: jobs-port
           initialDelaySeconds: 60
           periodSeconds: 5
           failureThreshold: 2
@@ -60,17 +54,8 @@ spec:
       - name: sleep
         image: busybox:1.28
         command: [ "sleep", "10" ]
-      - name: wait-for-postgres
-        image: postgres:11.13
-        imagePullPolicy: IfNotPresent
-        command: [ "pg_isready", "-h", "postgres" ]
-      - name: db-migration
-        image: skuttleman/audiophile:dev
-        command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "com.ben-allred.audiophile.backend.dev.migrations", "migrate" ]
-        envFrom:
-        - configMapRef:
-            name: env-vars
-        - secretRef:
-            name: env-secrets
+      - name: wait-for-api
+        image: curlimages/curl:7.79.1
+        command: [ "curl", "http://api:3000/health" ]
       imagePullSecrets:
       - name: regcred

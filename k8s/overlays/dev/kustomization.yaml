@@ -3,7 +3,11 @@ kind: Kustomization
 bases:
 - ../../base
 patches:
-- path: app-patch.yaml
+- path: replica-patch.yaml
   target:
     kind: Deployment
-    name: app
+    labelSelector: group=application
+- path: seed-patch.yaml
+  target:
+    kind: Deployment
+    name: api

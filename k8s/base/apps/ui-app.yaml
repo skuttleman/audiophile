@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    group: application
+    app: ui
+  name: ui
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: ui
+  template:
+    metadata:
+      labels:
+        app: ui
+        group: application
+    spec:
+      containers:
+      - command: [ "java", "-jar", "target/audiophile.jar", "ui" ]
+        envFrom:
+        - configMapRef:
+            name: env-vars
+        image: skuttleman/audiophile:latest
+        imagePullPolicy: Always
+        name: audiophile
+        ports:
+        - containerPort: 8080
+          name: ui-port
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: ui-port
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          failureThreshold: 4
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ui-port
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          failureThreshold: 2
+      imagePullSecrets:
+      - name: regcred

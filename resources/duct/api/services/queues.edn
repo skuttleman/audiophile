@@ -2,6 +2,7 @@
  {:name     #ig/ref :rabbitmq.exchange/events
   :type     :fanout
   :consumer #ig/ref :env.rabbitmq/consumer-group
+  :global?  #ig/ref :env.rabbitmq/global
   :opts     {:durable     true
              :exclusive   false
              :auto-delete false
@@ -12,6 +13,7 @@
  {:name     #ig/ref :rabbitmq.exchange/commands
   :type     :fanout
   :consumer #ig/ref :env.rabbitmq/consumer-group
+  :global?  #ig/ref :env.rabbitmq/global
   :opts     {:durable     true
              :exclusive   false
              :auto-delete false
