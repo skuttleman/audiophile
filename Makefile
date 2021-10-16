@@ -42,3 +42,6 @@ docker:
 
 wipe:
 	bin/exec.sh wipe
+
+k8s-logs:
+	kubectl -n core logs --prefix -f -lgroup=application --all-containers=true --max-log-requests=22 | grep --color=never -v '/health'

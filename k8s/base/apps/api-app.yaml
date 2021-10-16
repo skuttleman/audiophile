@@ -6,8 +6,6 @@ metadata:
     app: api
   name: api
 spec:
-  replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: api
@@ -18,12 +16,7 @@ spec:
         group: application
     spec:
       containers:
-      - command: [ "java", "-jar", "target/audiophile.jar", "api" ]
-        envFrom:
-        - configMapRef:
-            name: env-vars
-        - secretRef:
-            name: env-secrets
+      - name: api
         env:
         - name: MQ_NAMESPACE
           value: k8s
@@ -31,42 +24,4 @@ spec:
           value: api
         - name: MQ_CONSUMER_GLOBAL
           value: "true"
-        image: skuttleman/audiophile:latest
-        imagePullPolicy: Always
-        name: audiophile
-        ports:
-        - containerPort: 8080
-          name: api-port
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: api-port
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 4
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: api-port
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          failureThreshold: 4
-      initContainers:
-      - name: sleep
-        image: busybox:1.28
-        command: [ "sleep", "10" ]
-      - name: wait-for-postgres
-        image: postgres:11.13
-        imagePullPolicy: IfNotPresent
-        command: [ "pg_isready", "-h", "postgres" ]
-      - name: db-migration
-        image: skuttleman/audiophile:dev
-        command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "com.ben-allred.audiophile.backend.dev.migrations", "migrate" ]
-        envFrom:
-        - configMapRef:
-            name: env-vars
-        - secretRef:
-            name: env-secrets
-      imagePullSecrets:
-      - name: regcred
+        command: [ "java", "-jar", "target/audiophile.jar", "api" ]

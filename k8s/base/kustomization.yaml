@@ -3,6 +3,8 @@ kind: Kustomization
 resources:
 - apps
 - config.yaml
+- jobs.yaml
 - postgres
 - rabbitmq
+- roles.yaml
 - secrets.yaml

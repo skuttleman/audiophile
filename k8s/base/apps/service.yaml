@@ -13,7 +13,7 @@ spec:
   ports:
   - port: 3000
     protocol: TCP
-    targetPort: api-port
+    targetPort: app-port
   selector:
     app: api
   sessionAffinity: None
@@ -33,7 +33,7 @@ spec:
   ports:
   - port: 3100
     protocol: TCP
-    targetPort: auth-port
+    targetPort: app-port
   selector:
     app: auth
   sessionAffinity: None
@@ -53,7 +53,7 @@ spec:
   ports:
   - port: 3200
     protocol: TCP
-    targetPort: jobs-port
+    targetPort: app-port
   selector:
     app: jobs
   sessionAffinity: None
@@ -73,7 +73,7 @@ spec:
   ports:
   - port: 8080
     protocol: TCP
-    targetPort: ui-port
+    targetPort: app-port
   selector:
     app: ui
   sessionAffinity: None

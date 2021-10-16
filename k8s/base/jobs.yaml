@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-migrate-db
+spec:
+  template:
+    metadata:
+      name: job-migrate-db
+    spec:
+      containers:
+      - name: db-migration
+        image: skuttleman/audiophile:dev
+        envFrom:
+        - configMapRef:
+            name: env-vars
+        - secretRef:
+            name: env-secrets
+        command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "com.ben-allred.audiophile.backend.dev.migrations", "migrate" ]
+      imagePullSecrets:
+      - name: regcred
+      initContainers:
+      - name: sleep
+        image: busybox:1.28
+        command: [ "sleep", "10" ]
+      - name: wait-for-postgres
+        image: postgres:11.13
+        imagePullPolicy: IfNotPresent
+        command: [ "pg_isready", "-h", "postgres" ]
+      restartPolicy: OnFailure

@@ -6,3 +6,8 @@ resources:
 - jobs-app.yaml
 - service.yaml
 - ui-app.yaml
+patches:
+- path: app-patch.yaml
+  target:
+    kind: Deployment
+    labelSelector: group=application

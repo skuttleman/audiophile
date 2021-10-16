@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-seed-db
+spec:
+  template:
+    metadata:
+      name: job-seed-db
+    spec:
+      containers:
+      - name: db-migration
+        image: skuttleman/audiophile:dev
+        envFrom:
+        - configMapRef:
+            name: env-vars
+        - secretRef:
+            name: env-secrets
+        command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "com.ben-allred.audiophile.backend.dev.migrations", "seed" ]
+      imagePullSecrets:
+      - name: regcred
+      initContainers:
+      - name: wait-for-migration
+        image: groundnuty/k8s-wait-for:v1.3
+        imagePullPolicy: IfNotPresent
+        args: [ "job", "job-migrate-db" ]
+      restartPolicy: OnFailure

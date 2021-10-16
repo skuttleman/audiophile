@@ -6,8 +6,6 @@ metadata:
     app: jobs
   name: jobs
 spec:
-  replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: jobs
@@ -18,44 +16,10 @@ spec:
         group: application
     spec:
       containers:
-      - command: [ "java", "-jar", "target/audiophile.jar", "jobs" ]
-        envFrom:
-        - configMapRef:
-            name: env-vars
-        - secretRef:
-            name: env-secrets
+      - name: jobs
+        command: [ "java", "-jar", "target/audiophile.jar", "jobs" ]
         env:
         - name: MQ_NAMESPACE
           value: k8s
         - name: MQ_CONSUMER_GROUP
           value: jobs
-        image: skuttleman/audiophile:latest
-        imagePullPolicy: Always
-        name: audiophile
-        ports:
-        - containerPort: 8080
-          name: jobs-port
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: jobs-port
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          failureThreshold: 4
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: jobs-port
-          initialDelaySeconds: 60
-          periodSeconds: 5
-          failureThreshold: 2
-      initContainers:
-      - name: sleep
-        image: busybox:1.28
-        command: [ "sleep", "10" ]
-      - name: wait-for-api
-        image: curlimages/curl:7.79.1
-        command: [ "curl", "http://api:3000/health" ]
-      imagePullSecrets:
-      - name: regcred

@@ -6,8 +6,6 @@ metadata:
     app: ui
   name: ui
 spec:
-  replicas: 1
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: ui
@@ -18,30 +16,5 @@ spec:
         group: application
     spec:
       containers:
-      - command: [ "java", "-jar", "target/audiophile.jar", "ui" ]
-        envFrom:
-        - configMapRef:
-            name: env-vars
-        image: skuttleman/audiophile:latest
-        imagePullPolicy: Always
-        name: audiophile
-        ports:
-        - containerPort: 8080
-          name: ui-port
-          protocol: TCP
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: ui-port
-          initialDelaySeconds: 30
-          periodSeconds: 5
-          failureThreshold: 4
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: ui-port
-          initialDelaySeconds: 60
-          periodSeconds: 5
-          failureThreshold: 2
-      imagePullSecrets:
-      - name: regcred
+      - name: ui
+        command: [ "java", "-jar", "target/audiophile.jar", "ui" ]
