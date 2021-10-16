@@ -30,6 +30,13 @@ spec:
           value: /var/lib/postgresql/data/pgdata
         image: postgres:11.13
         imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: 200Mi
+            cpu: 50m
+          limits:
+            memory: 500Mi
+            cpu: 200m
         name: postgres
         ports:
         - containerPort: 5432

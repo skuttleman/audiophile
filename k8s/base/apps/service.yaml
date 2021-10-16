@@ -6,7 +6,6 @@ metadata:
     app: api
   name: api
 spec:
-  internalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
@@ -26,7 +25,6 @@ metadata:
     app: auth
   name: auth
 spec:
-  internalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
@@ -46,7 +44,6 @@ metadata:
     app: jobs
   name: jobs
 spec:
-  internalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
@@ -66,7 +63,6 @@ metadata:
     app: ui
   name: ui
 spec:
-  internalTrafficPolicy: Cluster
   ipFamilies:
   - IPv4
   ipFamilyPolicy: SingleStack
