@@ -134,7 +134,27 @@
             (cond-> route (assoc :url (nav/path-for nav route params)))
             (->> (pres/request! http-client)))))))
 
-(defn ^:private with-pubsub* [http-client pubsub ms {{request-id :x-request-id} :headers :as request}]
+(defn with-progress [_]
+  (fn [http-client]
+    (reify
+      pres/IResource
+      (request! [_ request]
+        (if-let [on-progress (:on-progress request)]
+          (let [progress-ch (async/chan 100 (filter (comp #{:upload} :direction)))
+                request (assoc request :progress progress-ch)]
+            (async/go-loop []
+              (when-let [{:keys [loaded total]} (async/<! progress-ch)]
+                (on-progress {:progress/current loaded
+                              :progress/total   total})
+                (recur)))
+            (-> http-client
+                (pres/request! request)
+                (v/peek (fn [[status]]
+                          (on-progress {:progress/status status})
+                          (async/close! progress-ch)))))
+          (pres/request! http-client request))))))
+
+(defn ^:private with-async* [http-client pubsub ms {{request-id :x-request-id} :headers :as request}]
   (let [pubsub-id (uuids/random)]
     (-> (v/create (fn [resolve reject]
                     (pubsub/subscribe! pubsub pubsub-id request-id (fn [_ event]
@@ -149,17 +169,15 @@
         (v/peek (fn [_]
                   (pubsub/unsubscribe! pubsub pubsub-id))))))
 
-(defn with-pubsub [{:keys [pubsub timeout]}]
+(defn with-async [{:keys [pubsub timeout]}]
   (let [timeout (or timeout default-timeout)]
     (fn [http-client]
       (reify
         pres/IResource
         (request! [_ request]
-          (let [request (update request :headers maps/assoc-maybe
-                                :x-request-id (uuids/random)
-                                :x-progress-id (:progress/id request))]
+          (let [request (assoc-in request [:headers :x-request-id] (uuids/random))]
             (if (:http/async? request)
-              (with-pubsub* http-client pubsub timeout request)
+              (with-async* http-client pubsub timeout request)
               (pres/request! http-client request))))))))
 
 (defn create [respond-fn middlewares]

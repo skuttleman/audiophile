@@ -46,7 +46,7 @@
                                 (get [_ k _]
                                   (get @store k))
                                 (put! [_ k v _]
-                                  (swap! store assoc-in [k :content] v)))))
+                                  (swap! store assoc-in [k :Body] v)))))
          (cond->
            (not (:db/enabled? opts))
            (assoc [:duct/const :services/transactor]

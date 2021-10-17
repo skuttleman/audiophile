@@ -17,10 +17,9 @@
                                                                           :data data
                                                                           :ctx  ctx}]
                                   _ nil))]
-    (let [{request-id :request/id progress-id :progress/id} (:ctx event)
+    (let [{request-id :request/id} (:ctx event)
           [topic event] (case (get-in event [:data :event/type])
                           :command/failed [request-id {:error [(get-in event [:data :event/data])]}]
-                          :artifact/progress [progress-id (get-in event [:data :event/data])]
                           [request-id {:data (get-in event [:data :event/data])}])]
       (when topic
         (log/trace "[WS msg]" topic event (:ctx event))

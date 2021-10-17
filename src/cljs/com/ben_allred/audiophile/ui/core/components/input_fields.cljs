@@ -211,7 +211,7 @@
 
 (defn uploader [_attrs]
   (let [progress (r/atom nil)
-        on-progress (fn [_ {:progress/keys [current total status]}]
+        on-progress (fn [{:progress/keys [current total status]}]
                       (let [result (maps/->m current status total)]
                         (swap! progress (fn [{:keys [status] :as data}]
                                           (if status data result)))))]

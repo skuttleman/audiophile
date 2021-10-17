@@ -6,7 +6,6 @@
     [com.ben-allred.audiophile.ui.infrastructure.resources.cached :as cached]
     [com.ben-allred.audiophile.ui.infrastructure.resources.custom :as cres]
     [com.ben-allred.audiophile.ui.infrastructure.resources.multi :as multi]
-    [com.ben-allred.audiophile.ui.infrastructure.resources.progress :as prog]
     [com.ben-allred.audiophile.ui.infrastructure.resources.redirect :as redirect]
     [com.ben-allred.audiophile.ui.infrastructure.resources.toaster :as toaster]
     [com.ben-allred.audiophile.ui.infrastructure.resources.users :as rusers]
@@ -26,9 +25,6 @@
 
 (defmethod ig/init-key :audiophile.resources/multi [_ cfg]
   (multi/resource cfg))
-
-(defmethod ig/init-key :audiophile.resources/progress [_ cfg]
-  (prog/resource cfg))
 
 (defmethod ig/init-key :audiophile.resources/redirect [_ cfg]
   (redirect/resource cfg))

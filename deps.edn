@@ -5,7 +5,6 @@
                   buddy/buddy-sign                    {:mvn/version "3.4.1"}
                   camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}
                   clj-http/clj-http                   {:mvn/version "3.9.1"}
-                  com.amazonaws/aws-java-sdk-s3       {:mvn/version "1.12.76"}
                   com.ben-allred/collaj               {:mvn/version "0.8.0"}
                   com.ben-allred/vow                  {:mvn/version "0.6.1"}
                   com.ben-allred/ws-client-cljc       {:mvn/version "0.2.2"

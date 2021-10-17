@@ -45,7 +45,7 @@
            (ex->response ex)))))
 
 (defn router
-  "Builds an http router out of a map of handle->handler. Handle should match method+route
+  "Builds an HTTP router out of a map of handle->handler. Handle should match method+route
    definitions used with [[middleware/with-route]].
 
    ```clojure

@@ -11,7 +11,7 @@
   "Handles a request to upload an artifact"
   [{:keys [interactor]}]
   (fn [data]
-    (let [[opts data] (maps/extract-keys data #{:user/id :request/id :progress/id})]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create-artifact! interactor data opts))))
 
 (defmethod selectors/select [:post :api/artifacts]
@@ -21,8 +21,7 @@
       (select-keys #{:filename :content-type :tempfile :size})
       (maps/qualify :artifact)
       (assoc :user/id (get-in request [:auth/user :user/id]))
-      (maps/assoc-maybe :request/id (uuids/->uuid (:x-request-id headers))
-                        :progress/id (uuids/->uuid (:x-progress-id headers)))))
+      (maps/assoc-maybe :request/id (uuids/->uuid (:x-request-id headers)))))
 
 (defn fetch-all
   "Handles a request for all project files."

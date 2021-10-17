@@ -18,8 +18,11 @@
 (defmethod ig/init-key :audiophile.services.http/with-nav [_ cfg]
   (client/with-nav cfg))
 
-(defmethod ig/init-key :audiophile.services.http/with-pubsub [_ cfg]
-  (client/with-pubsub cfg))
+(defmethod ig/init-key :audiophile.services.http/with-progress [_ cfg]
+  (client/with-progress cfg))
+
+(defmethod ig/init-key :audiophile.services.http/with-async [_ cfg]
+  (client/with-async cfg))
 
 (defmethod ig/init-key :audiophile.services.http/client [_ cfg]
   (client/client cfg))

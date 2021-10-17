@@ -40,12 +40,8 @@
   :error-fn    #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
   :error-msg   "Error - file upload failed"
   :success-msg "Success - file uploaded"
-  :resource    #ig/ref [:audiophile.resources/progress :artifacts/all]
+  :resource    #ig/ref [:audiophile.resources/base :artifacts/all]
   :store       #ig/ref :services/store}
-
- [:audiophile.resources/progress :artifacts/all]
- {:*resource #ig/ref [:audiophile.resources/base :artifacts/all]
-  :pubsub    #ig/ref :services/pubsub}
 
  [:audiophile.resources/base :artifacts/all]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :artifacts/all]}
