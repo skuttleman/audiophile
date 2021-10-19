@@ -3,8 +3,7 @@
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]))
+    [com.ben-allred.vow.core :as v]))
 
 (deftype MultiResource [resources]
   pres/IResource
@@ -18,12 +17,6 @@
         (contains? statuses :error) :error
         (contains? statuses :requesting) :requesting
         :else :success)))
-
-  pv/IPromise
-  (then [_ on-success on-error]
-    (-> resources
-        v/all
-        (v/then on-success on-error)))
 
   IDeref
   (-deref [_]

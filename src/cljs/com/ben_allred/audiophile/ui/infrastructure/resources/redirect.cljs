@@ -3,8 +3,7 @@
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]))
+    [com.ben-allred.vow.core :as v]))
 
 (defn ^:private ->redirect [nav handle params]
   (fn [_]
@@ -23,10 +22,6 @@
                             (:error/params routes)))))
   (status [_]
     (pres/status *resource))
-
-  pv/IPromise
-  (then [_ on-success on-error]
-    (v/then *resource on-success on-error))
 
   IDeref
   (-deref [_]

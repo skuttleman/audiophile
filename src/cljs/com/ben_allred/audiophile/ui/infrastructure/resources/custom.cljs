@@ -49,3 +49,10 @@
 
 (defn res-artifact [{:keys [http-client nav]}]
   (->ArtifactResource http-client nav))
+
+(defn login-fn [{:keys [nav]}]
+  (fn [{value :form/value :keys [route]}]
+    (let [params {:email        (:email value)
+                  :redirect-uri (get-in route [:params :redirect-uri] "/")}]
+      (nav/goto! nav :auth/login {:params params})
+      (v/resolve))))

@@ -56,31 +56,6 @@
                 (testing "has the correct status"
                   (is (= :error (res/status resource))))))))
 
-        (testing "#then"
-          (testing "when the request succeeds"
-            (let [resource (bres/->Resource (atom {:status :init})
-                                            #(v/resolve {:data %}))
-                  _ (res/request! resource ::opts)
-                  result (tu/<p! (v/then resource (partial hash-map :value)))]
-              (is (= [:success {:value ::opts}] result))))
-
-          (testing "when the request fails"
-            (let [resource (bres/->Resource (atom {:status :init})
-                                            #(v/reject {:error %}))
-                  _ (res/request! resource ::opts)
-                  result (tu/<p! (v/catch resource (comp v/reject (partial hash-map :value))))]
-              (is (= [:error {:value ::opts}] result))))
-
-          (testing "when setting up a promise before the resource has been requested"
-            (let [resource (bres/->Resource (atom {:status :init})
-                                            #(v/resolve {:data %}))
-                  prom (v/then resource (partial hash-map :value))]
-              (testing "and when requesting the resource"
-                (res/request! resource ::opts)
-                (testing "resolves"
-                  (is (= [:success {:value ::opts}]
-                         (tu/<p! prom))))))))
-
         (testing "#deref"
           (let [opts->vow (spies/create (v/create (fn [_ _])))
                 *resource (bres/->Resource (atom {:status :init}) opts->vow)]

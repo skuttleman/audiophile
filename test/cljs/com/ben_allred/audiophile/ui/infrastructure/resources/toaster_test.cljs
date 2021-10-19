@@ -9,7 +9,6 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.vow.impl.protocol :as pv]
     [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
@@ -20,10 +19,6 @@
                                     (request! [_ _]
                                       (v/create (fn [_ _])))
                                     (status [_] ::status)
-
-                                    pv/IPromise
-                                    (then [_ on-success on-error]
-                                      (v/then (v/resolve 13) on-success on-error))
 
                                     IDeref
                                     (-deref [_]
@@ -66,11 +61,6 @@
             (let [*redirect (toaster/->ToastResource *resource nil nil nil)]
               (testing "returns the status of the underlying resource"
                 (is (= ::status (res/status *redirect))))))
-
-          (testing "#then"
-            (let [*redirect (toaster/->ToastResource *resource nil nil nil)]
-              (testing "resolves the underlying resource"
-                (is (= [:success 13] (tu/<p! *redirect))))))
 
           (testing "#deref"
             (let [*redirect (toaster/->ToastResource *resource nil nil nil)]

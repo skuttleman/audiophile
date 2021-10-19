@@ -5,8 +5,7 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]
-    [com.ben-allred.vow.core :as v :include-macros true]
-    [com.ben-allred.vow.impl.protocol :as pv]))
+    [com.ben-allred.vow.core :as v :include-macros true]))
 
 (defn ^:private ->watch-fn [resolve reject]
   (fn [watch-key state _ {:keys [status value error]}]
@@ -27,16 +26,6 @@
                 (partial swap! state assoc :status :error :error))))
   (status [_]
     (:status @state))
-
-  pv/IPromise
-  (then [_ on-success on-error]
-    (v/then (v/create (fn [resolve reject]
-                        (let [watch-key (gensym)
-                              watcher (->watch-fn resolve reject)]
-                          (add-watch state watch-key watcher)
-                          (watcher watch-key state nil @state))))
-            on-success
-            on-error))
 
   IDeref
   (-deref [_]

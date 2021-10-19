@@ -8,7 +8,6 @@
     [com.ben-allred.audiophile.ui.infrastructure.resources.multi :as multi]
     [com.ben-allred.audiophile.ui.infrastructure.resources.redirect :as redirect]
     [com.ben-allred.audiophile.ui.infrastructure.resources.toaster :as toaster]
-    [com.ben-allred.audiophile.ui.infrastructure.resources.users :as rusers]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.resources/cached [_ cfg]
@@ -42,7 +41,7 @@
   (toaster/toast-fn cfg))
 
 (defmethod ig/init-key :audiophile.resources.user/login-fn [_ cfg]
-  (rusers/login-fn cfg))
+  (cres/login-fn cfg))
 
 (defmethod ig/init-key :audiophile.resource.validated/opts->request [_ cfg]
   (form.sub/opts->request cfg))
