@@ -20,12 +20,6 @@
   ([accessor artifact-id opts]
    (pf/find-by-artifact-id accessor artifact-id opts)))
 
-(defn supported?
-  ([store artifact]
-   (supported? store artifact nil))
-  ([store artifact opts]
-   (pf/supported? store artifact opts)))
-
 (defn insert-file-access?
   ([accessor file]
    (insert-file-access? accessor file nil))

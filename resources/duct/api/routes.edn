@@ -150,9 +150,6 @@
  :audiophile.middleware/with-route
  {:nav #ig/ref :services/nav}
 
- :audiophile.middleware/with-logging
- {}
-
  :audiophile.handlers.auth/login
  {:auth #ig/ref :audiophile.services.auth/provider}
 

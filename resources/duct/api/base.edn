@@ -10,14 +10,14 @@
   #ig/ref :routes/table
 
   [:audiophile.handlers/app :api/handler]
-  {:middleware [#ig/ref :audiophile.middleware/with-auth
-                #ig/ref :audiophile.middleware/vector-response
-                #ig/ref :audiophile.middleware/with-serde
-                #ig/ref :audiophile.middleware/with-logging
-                #ig/ref :audiophile.middleware/with-route
-                #ig/ref :audiophile.middleware/with-cors
-                #ig/ref :audiophile.middleware/with-headers]
-   :router     #ig/ref :api/router}
+  {:middleware       [#ig/ref :audiophile.middleware/with-auth
+                      #ig/ref :audiophile.middleware/vector-response
+                      #ig/ref :audiophile.middleware/with-serde
+                      #ig/ref :audiophile.middleware/with-route
+                      #ig/ref :audiophile.middleware/with-cors
+                      #ig/ref :audiophile.middleware/with-headers]
+   :router           #ig/ref :api/router
+   :max-request-size #ig/ref :env/max-file-upload-size}
 
   [:audiophile.core/server :duct/daemon]
   {:server-port #ig/ref :env/server-port}}]

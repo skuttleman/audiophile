@@ -97,26 +97,6 @@
                                                query-string (str "?" query-string))))
           handler))))
 
-(defn with-logging
-  "Ring middleware that logs response statistics."
-  [_]
-  (fn [handler]
-    (fn [{:keys [uri] :as request}]
-      (log/with-ctx {:request/id (some-> request :headers :x-request-id uuids/->uuid)
-                     :logger/id  :SERVER}
-        (if (or (string/starts-with? uri "/js")
-                (string/starts-with? uri "/css"))
-          (handler request)
-          (let [start (System/nanoTime)
-                response (handler request)
-                end (System/nanoTime)
-                elapsed (- end start)
-                msg (log-msg request response elapsed)]
-            (if (::ex (meta response))
-              (log/warn msg)
-              (log/info msg))
-            response))))))
-
 (defn with-auth
   "Ring middleware to decodes JWT in request headers."
   [{:keys [jwt-serde]}]

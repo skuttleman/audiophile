@@ -13,9 +13,7 @@
 
 (defprotocol IArtifactStore
   "An [[com.ben-allred.audiophile.backend.api.repositories.protocols/IKVStore]]
-   implementation for storing and retrieving artifacts"
-  (supported? [this artifact opts]
-    "Checks that the file being uploaded is supported."))
+   implementation for storing and retrieving artifacts")
 
 (defprotocol IFilesExecutor
   "Abstraction for querying files"

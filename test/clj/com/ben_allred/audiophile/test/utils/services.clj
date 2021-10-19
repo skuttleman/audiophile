@@ -24,8 +24,6 @@
 
 (defn ->store []
   (stubs/create (reify
-                  pf/IArtifactStore
-                  (supported? [_ _ _])
                   prepos/IKVStore
                   (uri [_ _ _])
                   (get [_ _ _])

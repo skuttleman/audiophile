@@ -27,10 +27,8 @@
           uri (repos/uri store key opts)
           data (assoc data :artifact/uri uri :artifact/key key)
           payload (dissoc data :artifact/tempfile)]
-      (if (rfiles/supported? store data opts)
-        (do (repos/put! store key data opts)
-            (ps/emit-command! ch :artifact/create! payload opts))
-        (throw (ex-info "artifact cannot be stored" payload)))))
+      (repos/put! store key data opts)
+      (ps/emit-command! ch :artifact/create! payload opts)))
   (create-file! [_ data opts]
     (ps/emit-command! ch :file/create! data opts))
   (create-file-version! [_ data opts]

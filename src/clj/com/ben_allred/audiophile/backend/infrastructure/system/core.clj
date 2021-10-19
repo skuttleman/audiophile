@@ -37,9 +37,6 @@
 (defmethod ig/init-key :audiophile.middleware/with-route [_ cfg]
   (middleware/with-route cfg))
 
-(defmethod ig/init-key :audiophile.middleware/with-logging [_ cfg]
-  (middleware/with-logging cfg))
-
 (defmethod ig/init-key :audiophile.middleware/with-auth [_ cfg]
   (middleware/with-auth cfg))
 

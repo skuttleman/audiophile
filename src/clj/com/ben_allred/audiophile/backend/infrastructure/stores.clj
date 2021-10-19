@@ -5,9 +5,6 @@
 
 (deftype ArtifactStore [store max-file-size]
   pf/IArtifactStore
-  (supported? [_ {:artifact/keys [tempfile]} _]
-    (<= (.length tempfile) max-file-size))
-
   prepos/IKVStore
   (uri [_ key opts]
     (prepos/uri store key opts))

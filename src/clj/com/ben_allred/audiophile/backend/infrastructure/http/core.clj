@@ -2,13 +2,13 @@
   (:require
     [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
-    [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]))
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]))
 
 (defmulti ex->response (comp :interactor/reason ex-data))
 
@@ -62,11 +62,14 @@
 
 (defn app
   "Builds middleware and router into a single function that handles all http requests."
-  [{:keys [middleware router]}]
+  [{:keys [max-request-size middleware router]}]
   (reduce (fn [handler mw]
             (mw handler))
           router
-          (concat middleware [ring/wrap-multipart-params ring/wrap-cookies])))
+          (concat middleware [ring/wrap-multipart-params
+                              (ring/limit {:max-size max-request-size})
+                              ring/wrap-cookies
+                              ring/with-logging])))
 
 (defn ^:private data-responder [result]
   (if result
