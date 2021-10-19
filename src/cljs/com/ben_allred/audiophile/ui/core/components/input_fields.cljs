@@ -41,7 +41,7 @@
     [:div {:style {:height height}}
      (when-let [percent (cond
                           complete? 1
-                          total (/ current total)
+                          total (min (/ current total) 0.99)
                           current 0)]
        [:div.progress-bar
         {:style {:height        height}}

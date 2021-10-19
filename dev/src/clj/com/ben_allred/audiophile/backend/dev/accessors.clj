@@ -41,14 +41,11 @@
 
 (defmacro ^:private mock! [[_ action :as key] ch opts impl]
   `(if-let [[key# mock#] (find @repl-mock-state ~key)]
-     (let [val# (if (fn? mock#)
-                  (try (mock#)
-                       (catch Throwable ex#
-                         ex#))
-                  mock#)
-           async?# (= \! (let [s# (name ~action)]
-                           (get s# (dec (count s#)))))]
-       (return-mock async?# key# val# ~ch ~opts))
+     (if (fn? mock#)
+       (mock# (fn [] ~impl))
+       (let [async?# (= \! (let [s# (name ~action)]
+                             (get s# (dec (count s#)))))]
+         (return-mock async?# key# mock# ~ch ~opts)))
      ~impl))
 
 (defn ^:private set-mock!
@@ -101,7 +98,7 @@
       (pint/get-artifact accessor opts))))
 
 (comment
-  (set-mock! [::file :create-artifact!] (fn [] (Thread/sleep 5000)))
+  (set-mock! [::file :create-artifact!] (fn [impl] (Thread/sleep 5000) (impl)))
   (unset-mock! [::file :create-artifact!]))
 
 (deftype MockProjectAccessor [accessor ch]

@@ -91,9 +91,10 @@
                  (int/not-authenticated!)
                  (log/with-ctx :SERVER
                    (if details
-                     (log/warn "Invalid data" spec details)
-                     (log/error ex "error occurred applying spec:" spec))
-                   (int/invalid-input!)))))))))
+                     (do (log/warn "Invalid data" spec details)
+                         (int/invalid-input!))
+                     (do (log/error ex "an error occurred")
+                         (int/internal-error!)))))))))))
 
 (defn ok
   "Wraps result in an http success response"
