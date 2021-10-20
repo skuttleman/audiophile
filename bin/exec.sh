@@ -2,9 +2,13 @@
 
 set -e
 
+function install() {
+  cp bin/pre-commit.sh .git/hooks/pre-commit
+  npm install
+  clj -X:deps prep
+}
 function build_ui() {
   echo "[building ui ...]"
-  rm -rf node_modules
   npm install
   rm -rf resources/public/css
   sass --style=compressed src/scss/main.scss resources/public/css/main.css
@@ -14,7 +18,7 @@ function build_ui() {
 }
 
 function clean_ui() {
-  rm -rf .shadow-cljs resources/public/css resources/public/js
+  rm -rf .shadow-cljs resources/public/css resources/public/js node_modules
 }
 
 function clean() {

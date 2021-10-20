@@ -12,23 +12,23 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 - Install [Sass](https://sass-lang.com/install)
 - Install [Foreman](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html)
 - Install [Graphviz](https://graphviz.org/download/)
+- Install [Make](https://askubuntu.com/questions/161104/how-do-i-install-make)
 
 ### Install
 
 ```bash
 $ git clone git@github.com:skuttleman/audiophile.git
 $ cd audiophile
-$ cp bin/pre-commit.sh .git/hooks/pre-commit
-$ npm install
+$ make install
 ```
 
 ### Run application in dev mode
 
 ```bash
-$ bin/exec.sh run single # runs the entire server side api in a single process
-$ bin/exec.sh run split # runs the server side api as separate microservices
-$ bin/exec.sh run multi # runs multiple instances of each microservice
-$ bin/exec.sh run jar # builds static assets and run a pre-compiled jar without any dev-only implementations
+$ make run # runs the entire server side api in a single process
+$ make run-split # runs the server side api as separate microservices
+$ make run-multi # runs multiple instances of each microservice
+$ make run-jar # builds static assets and run a pre-compiled jar without any dev-only implementations
 ```
 
 Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
@@ -36,13 +36,14 @@ Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
 ## Tests
 
 ### Dependencies
+
 - Install [firefox](https://www.mozilla.org/en-US/firefox/mac/)
 - Install [gecko](https://www.kenst.com/2016/12/installing-marionette-firefoxdriver-on-mac-osx/)
 
 ### Run tests
 
 ```bash
-$ bin/exec.sh test
+$ make test
 ```
 
 ## ERD

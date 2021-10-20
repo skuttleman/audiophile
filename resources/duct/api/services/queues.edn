@@ -5,7 +5,6 @@
   :global?  #ig/ref :env.rabbitmq/global
   :opts     {:durable     true
              :exclusive   false
-             :auto-delete false
              :arguments   {"x-message-ttl" 604800000}}
   :serde    #ig/ref :serdes/edn}
 
@@ -16,7 +15,6 @@
   :global?  #ig/ref :env.rabbitmq/global
   :opts     {:durable     true
              :exclusive   false
-             :auto-delete false
              :arguments   {"x-message-ttl" 604800000}}
   :serde    #ig/ref :serdes/edn}
 

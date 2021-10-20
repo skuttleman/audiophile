@@ -37,6 +37,9 @@ clean:
 deploy:
 	bin/exec.sh deploy
 
+install:
+	bin/exec.sh install
+
 docker:
 	bin/exec.sh docker
 

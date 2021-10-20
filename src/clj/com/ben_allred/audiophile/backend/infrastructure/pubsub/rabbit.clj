@@ -14,7 +14,8 @@
     [langohr.exchange :as le]
     [langohr.queue :as lq])
   (:import
-    (java.io Closeable)))
+    (java.io Closeable)
+    (java.nio.charset StandardCharsets)))
 
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
@@ -32,7 +33,7 @@
   pps/IMQChannel
   (subscribe! [_ handler opts]
     (letfn [(handler* [_ch _metadata ^bytes msg]
-              (let [msg (serdes/deserialize serde (String. msg "UTF-8"))]
+              (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))]
                 (log/with-ctx (assoc (or (:command/ctx msg) (:event/ctx msg)) :logger/id :MQ)
                   (log/info "consuming from" exchange (select-keys msg #{:event/type :command/type}))
                   (int/handle! handler msg))))]
@@ -57,7 +58,7 @@
                         (:consumer cfg)
                         (when (:global? cfg)
                           (str "." (uuids/random))))
-        ch-opts (assoc (:opts cfg) :auto-delete (:global? cfg))]
+        ch-opts (assoc (:opts cfg) :auto-delete (boolean (:global? cfg)))]
     (le/declare ch exchange "fanout" (:opts cfg))
     (lq/declare ch queue-name ch-opts)
     (lq/bind ch queue-name exchange)
