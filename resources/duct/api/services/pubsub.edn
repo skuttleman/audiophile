@@ -15,8 +15,7 @@
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/events#persist]
  {:ch      #ig/ref :rabbitmq.chan/events
   :handler #ig/ref :audiophile.services.rabbitmq/db-handler
-  :opts    {:auto-ack         true
-            :internal/handler "persist"}}
+  :opts    {:internal/handler "persist"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/events#ws]
  {:ch      #ig/ref :rabbitmq.chan/events
@@ -27,26 +26,22 @@
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#comments]
  {:ch      #ig/ref :rabbitmq.chan/commands
   :handler #ig/ref :audiophile.services.rabbitmq/command-handler#comments
-  :opts    {:auto-ack         true
-            :internal/handler "comments"}}
+  :opts    {:internal/handler "comments"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#files]
  {:ch      #ig/ref :rabbitmq.chan/commands
   :handler #ig/ref :audiophile.services.rabbitmq/command-handler#files
-  :opts    {:auto-ack         true
-            :internal/handler "files"}}
+  :opts    {:internal/handler "files"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#projects]
  {:ch      #ig/ref :rabbitmq.chan/commands
   :handler #ig/ref :audiophile.services.rabbitmq/command-handler#projects
-  :opts    {:auto-ack         true
-            :internal/handler "projects"}}
+  :opts    {:internal/handler "projects"}}
 
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#teams]
  {:ch      #ig/ref :rabbitmq.chan/commands
   :handler #ig/ref :audiophile.services.rabbitmq/command-handler#teams
-  :opts    {:auto-ack         true
-            :internal/handler "teams"}}
+  :opts    {:internal/handler "teams"}}
 
  [:audiophile.services.rabbitmq/conn :component/health]
  {:cfg {:uri #ig/ref :env.rabbitmq/uri}}

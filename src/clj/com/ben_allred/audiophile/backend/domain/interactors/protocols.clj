@@ -45,4 +45,5 @@
     "Handles callback from auth provider"))
 
 (defprotocol IMessageHandler
+  (handle? [this msg] "Does this handler handle the message")
   (handle! [this msg] "Handle a message from a subscription"))

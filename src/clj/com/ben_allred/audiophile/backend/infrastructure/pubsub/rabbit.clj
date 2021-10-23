@@ -14,6 +14,7 @@
     [langohr.exchange :as le]
     [langohr.queue :as lq])
   (:import
+    (com.rabbitmq.client Channel)
     (java.io Closeable)
     (java.nio.charset StandardCharsets)))
 
@@ -32,11 +33,22 @@
 
   pps/IMQChannel
   (subscribe! [_ handler opts]
-    (letfn [(handler* [_ch _metadata ^bytes msg]
-              (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))]
-                (log/with-ctx (assoc (or (:command/ctx msg) (:event/ctx msg)) :logger/id :MQ)
-                  (log/info "consuming from" exchange (select-keys msg #{:event/type :command/type}))
-                  (int/handle! handler msg))))]
+    (letfn [(handler* [^Channel channel {:keys [delivery-tag]} ^bytes msg]
+              (try
+                (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))
+                      ctx (or (:command/ctx msg) (:event/ctx msg))
+                      msg* (select-keys msg #{:event/type :command/type})]
+                  (when (int/handle? handler msg)
+                    (log/with-ctx (assoc ctx :logger/id :MQ)
+                      (log/info "consuming from" exchange msg*)
+                      (int/handle! handler msg)
+                      (when-not (:auto-ack opts)
+                        (.basicAck channel delivery-tag true)))))
+                (catch Throwable ex
+                  (log/error ex "an error occurred while handling msg")
+                  (when-not (:auto-ack opts)
+                    (u/silent!
+                      (.basicReject channel delivery-tag true))))))]
       (let [queue-name (if-let [handler (:internal/handler opts)]
                          (let [queue-name (str queue-name ":" handler)]
                            (lq/declare ch queue-name ch-opts)

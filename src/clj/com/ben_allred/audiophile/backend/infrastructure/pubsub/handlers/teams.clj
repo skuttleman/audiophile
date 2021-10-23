@@ -15,24 +15,22 @@
 
 (deftype TeamCommandHandler [repo ch]
   pint/IMessageHandler
-  (handle! [this {command-id :command/id :command/keys [ctx data type] :as command}]
-    (when (= type :team/create!)
-      (log/with-ctx [this :CP]
-        (try
-          (log/info "saving team to db" command-id)
-          (let [team (repos/transact! repo create* data ctx)]
-            (ps/emit-event! ch (:team/id team) :team/created team ctx))
-          (catch Throwable ex
-            (log/error ex "failed: saving team to db" command)
-            (try
-              (ps/command-failed! ch
-                                  (or (:request/id ctx)
-                                      (uuids/random))
-                                  (assoc ctx
-                                         :error/command type
-                                         :error/reason (.getMessage ex)))
-              (catch Throwable ex
-                (log/error ex "failed to emit command/failed")))))))))
+  (handle? [_ msg]
+    (= :team/create! (:command/type msg)))
+  (handle! [this {command-id :command/id :command/keys [ctx data type]}]
+    (log/with-ctx [this :CP]
+      (try
+        (log/info "saving team to db" command-id)
+        (let [team (repos/transact! repo create* data ctx)]
+          (ps/emit-event! ch (:team/id team) :team/created team ctx))
+        (catch Throwable ex
+          (ps/command-failed! ch
+                              (or (:request/id ctx)
+                                  (uuids/random))
+                              (assoc ctx
+                                     :error/command type
+                                     :error/reason (.getMessage ex)))
+          (throw ex))))))
 
 (defn msg-handler [{:keys [ch repo]}]
   (->TeamCommandHandler repo ch))

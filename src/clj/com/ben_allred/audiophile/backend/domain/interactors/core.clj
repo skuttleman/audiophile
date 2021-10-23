@@ -39,5 +39,8 @@
 (defn get-artifact [interactor opts]
   (pint/get-artifact interactor opts))
 
+(defn handle? [interactor msg]
+  (pint/handle? interactor msg))
+
 (defn handle! [interactor msg]
   (pint/handle! interactor msg))

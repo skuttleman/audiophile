@@ -108,13 +108,12 @@
 
 (deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler
+  (handle? [_ _]
+    true)
   (handle! [this {event-id :event/id :event/keys [ctx] :as event}]
     (log/with-ctx [this :CP]
-      (try
-        (log/info "publishing event to ws" event-id)
-        (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx)
-        (catch Throwable ex
-          (log/error ex "failed: publishing event to ws" event))))))
+      (log/info "publishing event to ws" event-id)
+      (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx))))
 
 (defn event->ws-handler [{:keys [pubsub]}]
   (->WebSocketMessageHandler pubsub))
