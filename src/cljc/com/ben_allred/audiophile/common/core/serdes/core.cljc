@@ -89,7 +89,7 @@
 
 (defn ^:private json#serialize [value]
   #?(:clj  (jsonista/write-value-as-string value object-mapper)
-     :cljs (js/JSON.stringify (clj->js value))))
+     :cljs (js/JSON.stringify (clj->js value :keyword-fn keywords/str))))
 
 (defn ^:private json#deserialize [value]
   #?(:clj (jsonista/read-value value object-mapper)

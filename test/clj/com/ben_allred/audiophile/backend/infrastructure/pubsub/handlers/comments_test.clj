@@ -73,9 +73,9 @@
 
         (testing "emits an event"
           (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
+                                                   (stubs/calls :send!)
+                                                   colls/only!
+                                                   first)]
             (is (uuid? event-id))
             (is (= {:event/id         event-id
                     :event/type       :comment/created
@@ -91,9 +91,10 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (int/handle! handler
-                       {:command/type :comment/create!
-                        :command/ctx  {:user/id user-id :request/id request-id}})
+          (is (thrown? Throwable
+                       (int/handle! handler
+                                    {:command/type :comment/create!
+                                     :command/ctx  {:user/id user-id :request/id request-id}})))
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> ch
@@ -121,10 +122,11 @@
                       [comment])
           (stubs/use! ch :send!
                       (ex-info "Channel" {}))
-          (int/handle! handler
-                       {:command/type :comment/create!
-                        :command/ctx  {:user/id    user-id
-                                       :request/id request-id}})
+          (is (thrown? Throwable
+                       (int/handle! handler
+                                    {:command/type :comment/create!
+                                     :command/ctx  {:user/id    user-id
+                                                    :request/id request-id}})))
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> ch
@@ -139,6 +141,6 @@
                       :event/data       {:error/command :comment/create!
                                          :error/reason  "Channel"}
                       :event/emitted-by user-id
-                      :event/ctx {:request/id request-id
-                                  :user/id    user-id}}
+                      :event/ctx        {:request/id request-id
+                                         :user/id    user-id}}
                      event)))))))))

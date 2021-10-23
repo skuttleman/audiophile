@@ -29,7 +29,7 @@
      (if (seq teams)
        [:ul
         (for [{team-name :team/name :team/keys [id type]} teams
-              :let [[title icon] (team-type->icon type)]]
+              :let [[title icon] (team-type->icon (keyword type))]]
           ^{:key id} [:li {:style {:display :flex}}
                       [:div {:style {:display         :flex
                                      :justify-content :center

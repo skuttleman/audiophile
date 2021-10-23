@@ -40,8 +40,9 @@
         serde (or (find-serde headers serdes) serde)]
     (-> response
         (update :status #(http/code->status % %))
-        (update :body #(cond->> %
-                         (and serde (string? %)) (serdes/deserialize serde))))))
+        (update :body (comp #(cond->> %
+                               (and serde (string? %)) (serdes/deserialize serde))
+                            not-empty)))))
 
 (defn ^:private with-headers*
   ([]

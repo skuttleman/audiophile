@@ -103,7 +103,8 @@
                                    (async/chan))]
               (async/go-loop []
                 (when-let [msg (async/<! mq-ch)]
-                  (int/handle! handler msg)
+                  (when (int/handle? handler msg)
+                    (int/handle! handler msg))
                   (recur)))))
 
           pps/IChannel

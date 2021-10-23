@@ -86,11 +86,12 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (int/handle! handler
-                       {:command/type :project/create!
-                        :command/data {}
-                        :command/ctx  {:user/id    user-id
-                                       :request/id request-id}})
+          (is (thrown? Throwable
+                       (int/handle! handler
+                                    {:command/type :project/create!
+                                     :command/data {}
+                                     :command/ctx  {:user/id    user-id
+                                                    :request/id request-id}})))
 
           (testing "does not emit a successful event"
             (empty? (stubs/calls ch :send!)))
@@ -107,8 +108,8 @@
                       :event/data       {:error/command :project/create!
                                          :error/reason  "Executor"}
                       :event/emitted-by user-id
-                      :event/ctx {:request/id request-id
-                                  :user/id    user-id}}
+                      :event/ctx        {:request/id request-id
+                                         :user/id    user-id}}
                      event))))))
 
       (testing "when the pubsub throws an exception"
@@ -119,11 +120,12 @@
                       [{:id "project-id"}])
           (stubs/use! ch :send!
                       (ex-info "Channel" {}))
-          (int/handle! handler
-                       {:command/type :project/create!
-                        :command/data {}
-                        :command/ctx  {:user/id    user-id
-                                       :request/id request-id}})
+          (is (thrown? Throwable
+                       (int/handle! handler
+                                    {:command/type :project/create!
+                                     :command/data {}
+                                     :command/ctx  {:user/id    user-id
+                                                    :request/id request-id}})))
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> ch
@@ -138,6 +140,6 @@
                       :event/data       {:error/command :project/create!
                                          :error/reason  "Channel"}
                       :event/emitted-by user-id
-                      :event/ctx {:request/id request-id
-                                  :user/id    user-id}}
+                      :event/ctx        {:request/id request-id
+                                         :user/id    user-id}}
                      event)))))))))

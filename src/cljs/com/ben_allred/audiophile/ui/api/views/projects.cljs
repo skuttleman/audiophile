@@ -17,7 +17,7 @@
   [:em name])
 
 (def ^:private personal?
-  (comp #{:PERSONAL} :team/type))
+  (comp #{:PERSONAL} keyword :team/type))
 
 (defn ^:private attrs->content [{:keys [options-by-id value]}]
   (if-let [team-id (first value)]
