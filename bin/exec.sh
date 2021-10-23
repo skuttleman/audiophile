@@ -139,9 +139,17 @@ function wipe() {
     COMMIT"
   echo "postgres data reset"
 
+  echo "deleting rabbitmq queues"
+  for QUEUE in $(curl -s http://guest:guest@localhost:15672/api/queues | \
+                 jq -r '.[] | .name | select(test("(audiophile)"))'); do
+    echo "deleting ${QUEUE}"
+    rabbitmqadmin delete queue name=$QUEUE
+  done
+  echo "all queues deleted from rabbitmq"
+
   echo "deleting rabbitmq exchanges"
   for EXCHANGE in $(curl -s http://guest:guest@localhost:15672/api/exchanges | \
-                    jq -r '.[] | .name | select(test("(events|commands)"))'); do
+                    jq -r '.[] | .name | select(test("(audiophile)"))'); do
     echo "deleting ${EXCHANGE}"
     rabbitmqadmin delete exchange name=$EXCHANGE
   done

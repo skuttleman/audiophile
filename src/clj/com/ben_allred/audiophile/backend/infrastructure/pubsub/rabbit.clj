@@ -95,4 +95,4 @@
   (pps/subscribe! ch handler opts))
 
 (defn exchange [{:keys [name namespace]}]
-  (str namespace "." name))
+  (str "audiophile." namespace "." name))
