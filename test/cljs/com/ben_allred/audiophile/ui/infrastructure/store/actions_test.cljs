@@ -60,11 +60,11 @@
 (deftest banner!-test
   (let [store (stub-store)]
     (testing "creates a banner"
-      (store/dispatch! store (actions/banner! ::level ::body))
+      (store/dispatch! store (actions/banner! ::key ::level ::body))
 
       (let [add (colls/only! (colls/only! (stubs/calls store :dispatch!)))
             {:keys [id]} (get add 1)]
-        (is (= [:banners/add! {:id id :level ::level :body ::body}]
+        (is (= [:banners/add! {:id id :level ::level :body ::body :key ::key}]
                add))))))
 
 (deftest remove-modal!-test

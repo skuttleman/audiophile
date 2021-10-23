@@ -35,14 +35,18 @@
 (defn remove-banner! [id]
   [:banners/remove! {:id id}])
 
-(defn banner! [level body]
-  (fn [store]
-    (let [id (.getTime (js/Date.))]
-      (store/dispatch! store
-                          [:banners/add! {:id    id
-                                          :level level
-                                          :body  body}])
-      id)))
+(defn banner!
+  ([level body]
+   (banner! nil level body))
+  ([key level body]
+   (fn [store]
+     (let [id (.getTime (js/Date.))]
+       (store/dispatch! store
+                        [:banners/add! {:id    id
+                                        :key   key
+                                        :level level
+                                        :body  body}])
+       id))))
 
 (defn remove-modal! [id]
   (fn [store]

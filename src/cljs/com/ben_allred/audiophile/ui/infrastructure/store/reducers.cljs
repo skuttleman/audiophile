@@ -26,10 +26,16 @@
 
 (defn banners
   ([] {})
-  ([state [type {:keys [id level body]}]]
+  ([state [type {:keys [id key level body]}]]
    (case type
-     :banners/add! (assoc state id {:level level :body body})
-     :banners/remove! (dissoc state id)
+     :banners/add! (cond-> state
+                     (not (contains? (::keys (meta state)) key))
+                     (-> (assoc id (maps/->m body level key))
+                         (cond->
+                           key (vary-meta update ::keys (fnil conj #{}) key))))
+     :banners/remove! (-> state
+                          (dissoc id)
+                          (vary-meta update ::keys disj (get-in state [id :key])))
      state)))
 
 (defn modals

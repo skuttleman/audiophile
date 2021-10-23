@@ -38,8 +38,14 @@
     (is (= {} (reducers/banners))))
 
   (testing "updates on :banners/add!"
-    (is (= {:a 1 ::id {:level ::level :body ::body}}
-           (reducers/banners {:a 1} [:banners/add! {:id ::id :level ::level :body ::body}]))))
+    (is (= {:a 1 ::id {:level ::level :body ::body :key ::key}}
+           (reducers/banners {:a 1} [:banners/add! {:id ::id :level ::level :body ::body :key ::key}]))))
+
+  (testing "when the banner key exists"
+    (is (= {:a 1 ::id-1 {:level ::level :body ::body :key ::key}}
+           (-> {:a 1}
+               (reducers/banners [:banners/add! {:id ::id-1 :level ::level :body ::body :key ::key}])
+               (reducers/banners [:banners/add! {:id ::id-2 :level ::level :body ::body :key ::key}])))))
 
   (testing "updates on :banners/hide!"
     (is (= {}

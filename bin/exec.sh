@@ -81,6 +81,7 @@ function migrate() {
 
 function run() {
   PROFILE="${1:-single}"
+  rm -rf classes
 
   set -x
   case "${PROFILE}" in

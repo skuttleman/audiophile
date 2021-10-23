@@ -1,6 +1,8 @@
 (ns com.ben-allred.audiophile.common.infrastructure.http.impl
   (:require
-    #?(:clj [clj-http.cookies :as cook])
+    #?@(:clj  [[clj-http.cookies :as cook]]
+        :cljs [[com.ben-allred.audiophile.ui.core.components.core :as comp]
+               [com.ben-allred.audiophile.ui.core.utils.dom :as dom]])
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
     [clojure.set :as set]
@@ -53,26 +55,56 @@
          #?(:clj (assoc :cookies (cook/get-cookies cs)))
          (update :headers (partial maps/map-keys keyword))))))
 
+(deftype HttpBase [http-client timeout]
+  pres/IResource
+  (request! [_ request]
+    (v/create (fn [resolve reject]
+                (async/go
+                  (try
+                    (let [val (-> request
+                                  (->> (pres/request! http-client))
+                                  #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
+                      (if (http/success? val)
+                        (resolve val)
+                        (reject val)))
+                    (catch #?(:cljs :default :default Throwable) ex
+                      (reject (ex-data ex)))))
+                (async/go
+                  (async/<! (async/timeout timeout))
+                  (reject {:body timeout-msg}))))))
+
 (defn base [{:keys [timeout]}]
   (let [timeout (or timeout default-timeout)]
     (fn [http-client]
-      (reify
-        pres/IResource
-        (request! [_ request]
-          (v/create (fn [resolve reject]
-                      (async/go
-                        (try
-                          (let [val (-> request
-                                        (->> (pres/request! http-client))
-                                        #?@(:cljs [async/<! (as-> $ (or (ex-data $) $))]))]
-                            (if (http/success? val)
-                              (resolve val)
-                              (reject val)))
-                          (catch #?(:cljs :default :default Throwable) ex
-                            (reject (ex-data ex)))))
-                      (async/go
-                        (async/<! (async/timeout timeout))
-                        (reject {:body timeout-msg})))))))))
+      (->HttpBase http-client timeout))))
+
+(defn ^:private ->auth-handler [*banners nav]
+  #?(:cljs    (let [banner {:level :error
+                            :key   ::unauthenticated
+                            :body  [:div
+                                    "Your session has expired. Please "
+                                    [:a
+                                     {:href     "#"
+                                      :on-click (fn [e]
+                                                  (dom/stop-propagation e)
+                                                  (nav/goto! nav :auth/logout))}
+                                     "login"]
+                                    "."]}]
+                (fn [err]
+                  (when (= ::http/unauthorized (-> err :status http/code->status))
+                    (comp/create! *banners banner))
+                  (v/reject err)))
+     :default v/reject))
+
+(deftype HttpAuth [http-client auth-handler]
+  pres/IResource
+  (request! [_ request]
+    (-> (pres/request! http-client request)
+        (v/catch auth-handler))))
+
+(defn with-unauthorized [{:keys [*banners nav]}]
+  (fn [http-client]
+    (->HttpAuth http-client (->auth-handler *banners nav))))
 
 (defn ^:private response-logger [this request level ks]
   (fn [result]
@@ -92,68 +124,74 @@
 (defn with-logging [_]
   ->HttpLogger)
 
+(deftype HttpHeaders [http-client]
+  pres/IResource
+  (request! [_ request]
+    (let [#?@(:clj [cs (cook/cookie-store)])
+          result-fn (with-headers* #?(:clj cs))]
+      (-> request
+          (update :headers (partial maps/map-keys name))
+          #?(:clj (assoc :cookie-store cs))
+          (->> (pres/request! http-client))
+          (v/then result-fn (comp v/reject result-fn))))))
+
 (defn with-headers [_]
-  (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ request]
-        (let [#?@(:clj [cs (cook/cookie-store)])
-              result-fn (with-headers* #?(:clj cs))]
-          (-> request
-              (update :headers (partial maps/map-keys name))
-              #?(:clj (assoc :cookie-store cs))
-              (->> (pres/request! http-client))
-              (v/then result-fn (comp v/reject result-fn))))))))
+  ->HttpHeaders)
+
+(deftype HttpSerde [http-client serdes]
+  pres/IResource
+  (request! [_ request]
+    (let [serde (find-serde (:headers request) serdes "application/edn")
+          mime-type (serdes/mime-type serde)
+          body (:body request)
+          deserde (comp :body #(deserialize* % serde serdes))]
+      (-> request
+          (update :headers maps/assoc-defaults :accept mime-type)
+          (cond->
+            body
+            (update :headers assoc :content-type mime-type)
+
+            (and serde body)
+            (update :body (partial serdes/serialize serde)))
+          (->> (pres/request! http-client))
+          (v/then deserde (comp v/reject deserde))))))
 
 (defn with-serde [{:keys [serdes]}]
   (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ request]
-        (let [serde (find-serde (:headers request) serdes "application/edn")
-              mime-type (serdes/mime-type serde)
-              body (:body request)
-              deserde (comp :body #(deserialize* % serde serdes))]
-          (-> request
-              (update :headers maps/assoc-defaults :accept mime-type)
-              (cond->
-                body
-                (update :headers assoc :content-type mime-type)
+    (->HttpSerde http-client serdes)))
 
-                (and serde body)
-                (update :body (partial serdes/serialize serde)))
-              (->> (pres/request! http-client))
-              (v/then deserde (comp v/reject deserde))))))))
+(deftype HttpNav [http-client nav]
+  pres/IResource
+  (request! [_ {:nav/keys [route params] :as request}]
+    (-> request
+        (dissoc :nav/route :nav/params)
+        (cond-> route (assoc :url (nav/path-for nav route params)))
+        (->> (pres/request! http-client)))))
 
 (defn with-nav [{:keys [nav]}]
   (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ {:nav/keys [route params] :as request}]
-        (-> request
-            (dissoc :nav/route :nav/params)
-            (cond-> route (assoc :url (nav/path-for nav route params)))
-            (->> (pres/request! http-client)))))))
+    (->HttpNav http-client nav)))
+
+(deftype HttpProgress [http-client]
+  pres/IResource
+  (request! [_ request]
+    (if-let [on-progress (:on-progress request)]
+      (let [progress-ch (async/chan 100 (filter (comp #{:upload} :direction)))
+            request (assoc request :progress progress-ch)]
+        (async/go-loop []
+          (when-let [{:keys [loaded total]} (async/<! progress-ch)]
+            (on-progress {:progress/current loaded
+                          :progress/total   total})
+            (recur)))
+        (-> http-client
+            (pres/request! request)
+            (v/peek (fn [[status]]
+                      (on-progress {:progress/status status})
+                      (async/close! progress-ch)))))
+      (pres/request! http-client request))))
 
 (defn with-progress [_]
-  (fn [http-client]
-    (reify
-      pres/IResource
-      (request! [_ request]
-        (if-let [on-progress (:on-progress request)]
-          (let [progress-ch (async/chan 100 (filter (comp #{:upload} :direction)))
-                request (assoc request :progress progress-ch)]
-            (async/go-loop []
-              (when-let [{:keys [loaded total]} (async/<! progress-ch)]
-                (on-progress {:progress/current loaded
-                              :progress/total   total})
-                (recur)))
-            (-> http-client
-                (pres/request! request)
-                (v/peek (fn [[status]]
-                          (on-progress {:progress/status status})
-                          (async/close! progress-ch)))))
-          (pres/request! http-client request))))))
+  ->HttpProgress)
 
 (defn ^:private with-async* [http-client pubsub ms {{request-id :x-request-id} :headers :as request}]
   (let [pubsub-id (uuids/random)]
@@ -170,16 +208,18 @@
         (v/peek (fn [_]
                   (pubsub/unsubscribe! pubsub pubsub-id))))))
 
+(deftype HttpAsync [http-client pubsub timeout]
+  pres/IResource
+  (request! [_ request]
+    (let [request (assoc-in request [:headers :x-request-id] (uuids/random))]
+      (if (:http/async? request)
+        (with-async* http-client pubsub timeout request)
+        (pres/request! http-client request)))))
+
 (defn with-async [{:keys [pubsub timeout]}]
   (let [timeout (or timeout default-timeout)]
     (fn [http-client]
-      (reify
-        pres/IResource
-        (request! [_ request]
-          (let [request (assoc-in request [:headers :x-request-id] (uuids/random))]
-            (if (:http/async? request)
-              (with-async* http-client pubsub timeout request)
-              (pres/request! http-client request))))))))
+      (->HttpAsync http-client pubsub timeout))))
 
 (defn create [respond-fn middlewares]
   (reduce (fn [client middleware]

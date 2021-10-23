@@ -31,8 +31,8 @@
 
 (deftype Banner [store]
   pcomp/IAlert
-  (create! [_ {:keys [level body]}]
-    (store/dispatch! store (actions/banner! level body)))
+  (create! [_ {:keys [key level body]}]
+    (store/dispatch! store (actions/banner! key level body)))
   (remove! [_ id]
     (store/dispatch! store (actions/remove-banner! id))))
 
