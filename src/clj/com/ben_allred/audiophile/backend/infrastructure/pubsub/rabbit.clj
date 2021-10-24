@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.protocols :as phttp]
     [langohr.basic :as lb]
@@ -17,6 +18,30 @@
     (com.rabbitmq.client Channel)
     (java.io Closeable)
     (java.nio.charset StandardCharsets)))
+
+(defn ^:private ->handler [handler retries max-retries exchange serde opts]
+  (fn [^Channel channel {:keys [delivery-tag]} ^bytes msg]
+    (try
+      (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))
+            ctx (or (:command/ctx msg) (:event/ctx msg))
+            msg* (select-keys msg #{:event/type :command/type})]
+        (when (int/handle? handler msg)
+          (swap! retries maps/assoc-defaults delivery-tag max-retries)
+          (log/with-ctx (assoc ctx :logger/id :MQ)
+            (log/info "consuming from" exchange msg*)
+            (int/handle! handler msg)
+            (when-not (:auto-ack opts)
+              (swap! retries dissoc delivery-tag)
+              (.basicAck channel delivery-tag false)))))
+      (catch Throwable ex
+        (log/error ex "an error occurred while handling msg")
+        (when-not (:auto-ack opts)
+          (let [done? (zero? (get (swap! retries update delivery-tag dec) delivery-tag))]
+            (when done?
+              (swap! retries dissoc delivery-tag)
+              (log/warn "exhausted retries" delivery-tag))
+            (u/silent!
+              (.basicReject channel delivery-tag (not done?)))))))))
 
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
@@ -33,31 +58,16 @@
 
   pps/IMQChannel
   (subscribe! [_ handler opts]
-    (letfn [(handler* [^Channel channel {:keys [delivery-tag]} ^bytes msg]
-              (try
-                (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))
-                      ctx (or (:command/ctx msg) (:event/ctx msg))
-                      msg* (select-keys msg #{:event/type :command/type})]
-                  (when (int/handle? handler msg)
-                    (log/with-ctx (assoc ctx :logger/id :MQ)
-                      (log/info "consuming from" exchange msg*)
-                      (int/handle! handler msg)
-                      (when-not (:auto-ack opts)
-                        (.basicAck channel delivery-tag true)))))
-                (catch Throwable ex
-                  (log/error ex "an error occurred while handling msg")
-                  (when-not (:auto-ack opts)
-                    (u/silent!
-                      (.basicReject channel delivery-tag true))))))]
-      (let [queue-name (if-let [handler (:internal/handler opts)]
-                         (let [queue-name (str queue-name ":" handler)]
-                           (lq/declare ch queue-name ch-opts)
-                           (lq/bind ch queue-name exchange)
-                           queue-name)
-                         queue-name)]
-        (log/with-ctx :MQ
-          (log/info "subscribing" queue-name "to" exchange)
-          (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler)))))))
+    (let [queue-name (if-let [handler (:internal/handler opts)]
+                       (let [queue-name (str queue-name ":" handler)]
+                         (lq/declare ch queue-name ch-opts)
+                         (lq/bind ch queue-name exchange)
+                         queue-name)
+                       queue-name)
+          handler* (->handler handler (atom nil) (:max-retries ch-opts) exchange serde opts)]
+      (log/with-ctx :MQ
+        (log/info "subscribing" queue-name "to" exchange)
+        (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler))))))
 
 (defmulti ->channel :type)
 
@@ -70,7 +80,9 @@
                         (:consumer cfg)
                         (when (:global? cfg)
                           (str "." (uuids/random))))
-        ch-opts (assoc (:opts cfg) :auto-delete (boolean (:global? cfg)))]
+        ch-opts (-> cfg (:opts)
+                    (assoc :auto-delete (boolean (:global? cfg)))
+                    (maps/assoc-defaults :max-retries 2))]
     (le/declare ch exchange "fanout" (:opts cfg))
     (lq/declare ch queue-name ch-opts)
     (lq/bind ch queue-name exchange)
