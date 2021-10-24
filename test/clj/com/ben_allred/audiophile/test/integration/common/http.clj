@@ -21,8 +21,10 @@
   ([request system]
    (login request system nil))
   ([request system user]
+   (login request system user nil))
+  ([request system user opts]
    (let [serde (int/component system :serdes/jwt)
-         token (serdes/serialize serde user)]
+         token (serdes/serialize serde user opts)]
      (assoc-in request [:headers "cookie"] (str "auth-token=" token)))))
 
 (defmacro with-ws [[sym response] & body]

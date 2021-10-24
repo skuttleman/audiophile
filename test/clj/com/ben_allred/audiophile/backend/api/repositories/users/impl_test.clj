@@ -6,7 +6,9 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.test.utils :as tu]
+    [com.ben-allred.audiophile.test.utils.assertions :as assert]
     [com.ben-allred.audiophile.test.utils.repositories :as trepos]
+    [com.ben-allred.audiophile.test.utils.services :as ts]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
 (deftest query-by-email-test
@@ -34,3 +36,17 @@
                     (ex-info "Nope" {}))
         (testing "fails"
           (is (thrown? Throwable (int/query-one repo {:user/email "user@domain.tld"}))))))))
+
+(deftest create!-test
+  (testing "create!"
+    (let [ch (ts/->chan)
+          repo (rusers/->UserAccessor nil ch)
+          user-id (uuids/random)]
+      (int/create! repo {:some :data} {:user/id user-id})
+      (testing "emits a command"
+        (assert/is? {:command/id         uuid?
+                     :command/type       :user/create!
+                     :command/data       {:some :data}
+                     :command/emitted-by user-id
+                     :command/ctx        {:user/id user-id}}
+                    (first (colls/only! (stubs/calls ch :send!))))))))

@@ -2,15 +2,18 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.infrastructure.http.impl :as client]
+    [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.vow.core :as v]
+    [com.ben-allred.audiophile.common.infrastructure.http.impl :as client]
     [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
-    [com.ben-allred.audiophile.test.utils.stubs :as stubs])
+    [com.ben-allred.audiophile.test.utils.spies :as spies]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]
+    [com.ben-allred.vow.core :as v])
   #?(:clj
      (:import
        (java.util Date)
@@ -211,5 +214,139 @@
 
                   (testing "returns the response"
                     (is (= [:success "result"] result)))))))
+
+          (done))))))
+
+(deftest with-async-test
+  (testing "with-async"
+    (let [pubsub (stubs/create
+                   (reify
+                     ppubsub/ISub
+                     (subscribe! [_ _ _ _])
+                     (unsubscribe! [_ _])
+                     (unsubscribe! [_ _ _])))
+          client (stubs/create
+                   (reify
+                     pres/IResource
+                     (request! [_ _])))]
+      (async done
+        (async/go
+          (testing "#request!"
+            (let [resource ((client/with-async {:pubsub  pubsub
+                                                :timeout 100})
+                            client)]
+              (testing "when the request is async"
+                (stubs/use! client :request!
+                            (v/resolve {:data {:some :data}}))
+                (testing "and when the request succeeds"
+                  (let [prom (res/request! resource {:http/async?       true
+                                                     :async/event-types #{:some/event :another/thing}
+                                                     :some              :request})
+                        request (first (colls/only! (stubs/calls client :request!)))
+                        request-id (get-in request [:headers :x-request-id])
+                        [_ req-id handler] (colls/only! (stubs/calls pubsub :subscribe!))]
+                    (is (= req-id request-id))
+
+                    (testing "and when the success events are published"
+                      (handler nil {:event/type :some/event :data {:some :event}})
+                      (handler nil {:event/type :another/thing :data {:another :thing}})
+                      (is (= [:success {:data {:some :event :another :thing}}]
+                             (tu/<p! prom)))))
+
+                  (stubs/init! pubsub)
+                  (stubs/init! client)
+                  (stubs/use! client :request!
+                              (v/resolve {:data {:some :data}}))
+                  (let [prom (res/request! resource {:http/async?       true
+                                                     :async/event-types #{:some/event :another/thing}
+                                                     :some              :request})
+                        [_ _ handler] (colls/only! (stubs/calls pubsub :subscribe!))]
+                    (testing "and when a failure event is published"
+                      (handler nil {:event/type :some/event :data {:some :event}})
+                      (handler nil {:event/type :command/failed :error {:some :error}})
+                      (is (= [:error {:event/type :command/failed, :error {:some :error}}]
+                             (tu/<p! prom))))))
+
+                (testing "and when the request fails"
+                  (stubs/init! pubsub)
+                  (stubs/init! client)
+                  (stubs/use! client :request!
+                              (v/reject {:error {:some :error}}))
+                  (is (= [:error {:error {:some :error}}]
+                         (-> resource
+                             (res/request! {:http/async?       true
+                                            :async/event-types #{:some/event :another/thing}
+                                            :some              :request})
+                             tu/<p!))))
+
+                (testing "and when the request times out"
+                  (stubs/init! pubsub)
+                  (stubs/init! client)
+                  (stubs/use! client :request!
+                              (v/resolve {:data {:some :data}}))
+                  (is (= [:error {:error [{:message "upload timed out"}]}]
+                         (-> resource
+                             (res/request! {:some :request :http/async? true})
+                             tu/<p!)))))
+
+              (testing "when the request is not async"
+                (stubs/init! pubsub)
+                (stubs/init! client)
+                (stubs/use! client :request!
+                            (v/resolve {:data {:some :data}}))
+                (let [result (-> resource
+                                 (res/request! {:some :request})
+                                 tu/<p!)
+                      request (first (colls/only! (stubs/calls client :request!)))]
+                  (testing "sends the request normally"
+                    (is (= [:success {:data {:some :data}}]
+                           result))
+                    (is (= {:some :request}
+                           (dissoc request :headers)))
+                    (is (uuid? (get-in request [:headers :x-request-id]))))))))
+
+          (done))))))
+
+(deftest with-progress-test
+  (testing "with-async"
+    (let [client (stubs/create
+                   (reify
+                     pres/IResource
+                     (request! [_ _])))
+          on-progress (spies/create)]
+      (async done
+        (async/go
+          (testing "#request!"
+            (let [resource ((client/with-progress {})
+                            client)]
+              (testing "when the request succeeds"
+                (stubs/use! client :request!
+                            (v/sleep (v/resolve :ok) 100))
+                (let [prom (res/request! resource {:on-progress on-progress})
+                      ch (:progress (first (colls/only! (stubs/calls client :request!))))]
+                  (async/put! ch {:direction :upload :loaded 1 :total 2})
+                  (async/put! ch {:direction :upload :loaded 2 :total 2})
+                  (async/put! ch {:direction :download :loaded 1 :total 1})
+                  (is (= [:success :ok] (tu/<p! prom)))
+                  (is (= [{:progress/total 2, :progress/current 1}
+                          {:progress/total 2, :progress/current 2}
+                          {:progress/status :success}]
+                         (map colls/only! (spies/calls on-progress))))))
+
+              (testing "when the request fails"
+                (spies/init! on-progress)
+                (stubs/init! client)
+                (stubs/use! client :request!
+                            (v/sleep (v/reject :bad) 100))
+                (let [prom (res/request! resource {:on-progress on-progress})
+                      ch (:progress (first (colls/only! (stubs/calls client :request!))))]
+                  (async/put! ch {:direction :upload :loaded 1 :total 2})
+                  (async/put! ch {:direction :upload :loaded 2 :total 2})
+                  (async/put! ch {:direction :download :loaded 1 :total 1})
+                  (is (= [:error :bad] (tu/<p! prom)))
+                  (is (= [{:progress/total 2, :progress/current 1}
+                          {:progress/total 2, :progress/current 2}
+                          {:progress/status :error}]
+                         (map colls/only! (spies/calls on-progress))))))))
 
           (done))))))

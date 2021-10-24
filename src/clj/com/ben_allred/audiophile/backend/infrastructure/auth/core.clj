@@ -27,10 +27,23 @@
                           ["" {:max-age 0}])]
      (assoc response :cookies (ring/->cookie "auth-token" value cookie)))))
 
-(defn ^:private redirect* [nav oauth jwt-serde params]
+(defn ^:private home-path [nav error-msg]
+  (nav/path-for nav
+                :ui/home
+                (when error-msg
+                  {:params {:error-msg error-msg}})))
+
+(defn ^:private ->redirect-url
+  "Generates redirect url"
+  ([nav base-url]
+   (->redirect-url nav base-url nil))
+  ([nav base-url error-msg]
+   (str base-url (home-path nav error-msg))))
+
+(defn ^:private redirect* [nav oauth jwt-serde base-url params]
   (let [claims (some->> params :login-token (serdes/deserialize jwt-serde))
         token (when claims (jwt/auth-token jwt-serde (select-keys claims #{:user/id :user/email})))]
-    (-> (or (when token (nav/path-for nav :ui/home))
+    (-> (or (when token (->redirect-url nav base-url))
             (safely! "generating a redirect url to the auth provider"
               (papp/redirect-uri oauth params))
             (nav/path-for nav
@@ -59,25 +72,12 @@
         (jwt/signup-token jwt-serde {:user/id    (uuids/random)
                                      :user/email email}))))
 
-(defn ^:private home-path [nav error-msg]
-  (nav/path-for nav
-                :ui/home
-                (when error-msg
-                  {:params {:error-msg error-msg}})))
-
-(defn ^:private ->redirect-url
-  "Generates redirect url"
-  ([nav base-url]
-   (->redirect-url nav base-url nil))
-  ([nav base-url error-msg]
-   (str base-url (home-path nav error-msg))))
-
 (deftype AuthInteractor [interactor oauth nav jwt-serde base-url]
   pint/IAuthInteractor
   (login [_ params]
     (some->> params
              request->params
-             (redirect* nav oauth jwt-serde)))
+             (redirect* nav oauth jwt-serde base-url)))
   (logout [_ _]
     (-> nav
         (->redirect-url base-url)
