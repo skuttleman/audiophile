@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.http.core :as handlers]
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.backend.infrastructure.templates.html :as html]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]))
 
@@ -44,7 +45,7 @@
   (fn [{:auth/keys [user]}]
     [::http/ok
      (html/render template
-                  {:auth/user  user
-                   :api-base   api-base
-                   :auth-base  auth-base})
+                  {:auth/user (when user (assoc user :token/type (colls/only! (:jwt/aud user))))
+                   :api-base  api-base
+                   :auth-base auth-base})
      {:content-type "text/html"}]))

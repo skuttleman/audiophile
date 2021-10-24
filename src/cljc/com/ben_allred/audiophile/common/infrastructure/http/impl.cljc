@@ -144,8 +144,10 @@
     (let [serde (find-serde (:headers request) serdes "application/edn")
           mime-type (serdes/mime-type serde)
           body (:body request)
-          deserde (comp :body #(deserialize* % serde serdes))]
+          blob? (= :blob (:response-type request))
+          deserde (comp :body (if blob? identity #(deserialize* % serde serdes)))]
       (-> request
+          (cond-> blob? (assoc-in [:headers :accept] "audio/mpeg"))
           (update :headers maps/assoc-defaults :accept mime-type)
           (cond->
             body

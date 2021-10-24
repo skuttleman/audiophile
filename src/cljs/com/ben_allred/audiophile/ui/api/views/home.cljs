@@ -21,7 +21,7 @@
       (fn [state]
         (let [handle (get-in state [:nav/route :handle])
               user (:auth/user state)
-              text (if (contains? (:jwt/aud user) :token/signup)
+              text (if (= (:token/type user) :token/signup)
                      "Start over"
                      "Logout")
               home (nav/path-for nav :ui/home)]
@@ -67,7 +67,7 @@
   (fn [state]
     (let [user (:auth/user state)]
       (cond
-        (contains? (:jwt/aud user) :token/signup)
+        (= (:token/type user) :token/signup)
         [signup-form user]
 
         user
