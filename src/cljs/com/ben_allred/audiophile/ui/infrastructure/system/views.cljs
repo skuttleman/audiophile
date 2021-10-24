@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.ui.api.views.home :as views.home]
     [com.ben-allred.audiophile.ui.api.views.login :as views.login]
     [com.ben-allred.audiophile.ui.api.views.projects :as views.projects]
+    [com.ben-allred.audiophile.ui.api.views.signup :as views.signup]
     [com.ben-allred.audiophile.ui.api.views.teams :as views.teams]
     [com.ben-allred.audiophile.ui.core.components.audio :as audio]
     [com.ben-allred.audiophile.ui.core.components.modal :as modal]
@@ -13,6 +14,7 @@
     [com.ben-allred.audiophile.ui.core.components.toast :as toast]
     [com.ben-allred.audiophile.ui.infrastructure.interactors.files :as int.files]
     [com.ben-allred.audiophile.ui.infrastructure.interactors.projects :as int.projects]
+    [com.ben-allred.audiophile.ui.infrastructure.interactors.signup :as int.signup]
     [com.ben-allred.audiophile.ui.infrastructure.interactors.teams :as int.teams]
     [integrant.core :as ig]))
 
@@ -57,6 +59,12 @@
 
 (defmethod ig/init-key :audiophile.views.projects/interactor [_ cfg]
   (int.projects/interactor cfg))
+
+(defmethod ig/init-key :audiophile.views.signup/root [_ cfg]
+  (views.signup/root cfg))
+
+(defmethod ig/init-key :audiophile.views.signup/interactor [_ cfg]
+  (int.signup/interactor cfg))
 
 (defmethod ig/init-key :audiophile.views.teams/list [_ cfg]
   (views.teams/list cfg))

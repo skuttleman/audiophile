@@ -75,9 +75,10 @@
 
        (testing "equal after a round trip through serialization"
          (is (= {:a 1 [:b :c] #{:d ()}}
-                (->> {:a 1 [:b :c] #{:d ()}}
-                     (serdes/serialize serde)
-                     (serdes/deserialize serde))))))))
+                (-> {:a 1 [:b :c] #{:d ()}}
+                    (->> (serdes/serialize serde)
+                         (serdes/deserialize serde))
+                    (dissoc :jwt/exp :jwt/iat))))))))
 
 (deftest find-serde-test
   (let [serde-1 (reify pserdes/IMime

@@ -6,25 +6,29 @@
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
-(defn ^:private logout [{:keys [nav] :as attrs}]
+(defn ^:private logout [{:keys [nav text] :as attrs}]
   [:a (-> attrs
           (select-keys #{:class})
           (assoc :href "#"
                  :on-click (fn [_]
                              (nav/goto! nav :auth/logout)))
           (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
-   "Logout"])
+   (or text "Logout")])
 
 (defn header [{:keys [nav]}]
   (fn [_state]
     (let [shown? (r/atom false)]
       (fn [state]
         (let [handle (get-in state [:nav/route :handle])
+              user (:auth/user state)
+              text (if (contains? (:jwt/aud user) :token/signup)
+                     "Start over"
+                     "Logout")
               home (nav/path-for nav :ui/home)]
           [:header.header
            [:nav.navbar
             {:role "navigation" :aria-label "main navigation"}
-            (when (:auth/user state)
+            (when user
               [:<>
                [:div.navbar-brand
                 [:a.navbar-item {:href home}
@@ -48,6 +52,7 @@
                   [:li
                    [logout {:minimal? true
                             :nav      nav
+                            :text     text
                             :class    ["navbar-item"]}]]]
                  [:ul.navbar-start.oversize.tabs
                   [:li
@@ -56,28 +61,35 @@
                [:div.navbar-end.oversize
                 [:div.navbar-item
                  [:div.buttons
-                  [logout {:nav nav}]]]]])]])))))
+                  [logout {:nav nav :text text}]]]]])]])))))
 
-(defn root [{:keys [nav project-form *modals projects-tile team-form teams-tile]}]
+(defn root [{:keys [nav project-form *modals projects-tile signup-form team-form teams-tile]}]
   (fn [state]
-    (if (:auth/user state)
-      [:div
-       [:div.level.layout--space-below.layout--xxl.gutters
-        {:style {:align-items :flex-start}}
-        [projects-tile
-         state
-         [in/plain-button
-          {:class    ["is-primary"]
-           :on-click (comp/modal-opener *modals
-                                        "Create project"
-                                        project-form)}
-          "Create one"]]
-        [teams-tile
-         state
-         [in/plain-button
-          {:class    ["is-primary"]
-           :on-click (comp/modal-opener *modals
-                                        "Create team"
-                                        team-form)}
-          "Create one"]]]]
-      (nav/navigate! nav :ui/login))))
+    (let [user (:auth/user state)]
+      (cond
+        (contains? (:jwt/aud user) :token/signup)
+        [signup-form user]
+
+        user
+        [:div
+         [:div.level.layout--space-below.layout--xxl.gutters
+          {:style {:align-items :flex-start}}
+          [projects-tile
+           state
+           [in/plain-button
+            {:class    ["is-primary"]
+             :on-click (comp/modal-opener *modals
+                                          "Create project"
+                                          project-form)}
+            "Create one"]]
+          [teams-tile
+           state
+           [in/plain-button
+            {:class    ["is-primary"]
+             :on-click (comp/modal-opener *modals
+                                          "Create team"
+                                          team-form)}
+            "Create one"]]]]
+
+        :else
+        (nav/navigate! nav :ui/login)))))

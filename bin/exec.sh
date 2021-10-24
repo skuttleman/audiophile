@@ -82,6 +82,7 @@ function migrate() {
 function run() {
   PROFILE="${1:-single}"
   rm -rf classes
+  npm install > /dev/null 2>&1
 
   set -x
   case "${PROFILE}" in
@@ -130,13 +131,10 @@ function wipe() {
   psql audiophile -c " \
     BEGIN; \
     TRUNCATE projects CASCADE; \
+    TRUNCATE events CASCADE; \
+    TRUNCATE users CASCADE; \
+    TRUNCATE teams CASCADE; \
     DELETE FROM artifacts; \
-    DELETE FROM user_teams \
-    WHERE team_id IN (SELECT id \
-                      FROM teams \
-                      WHERE type = 'COLLABORATIVE'); \
-    DELETE FROM teams WHERE type = 'COLLABORATIVE'; \
-    DELETE FROM events; \
     COMMIT"
   echo "postgres data reset"
 

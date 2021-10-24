@@ -15,11 +15,16 @@
   (find-by-email [_ email opts]
     (colls/only! (repos/execute! executor
                                  (select-by users [:= :users.email email])
-                                 opts))))
+                                 opts)))
+  (insert-user! [_ user _]
+    (-> executor
+        (repos/execute! (models/insert-into users user))
+        colls/only!
+        :id)))
 
 (defn ->executor
   "Factory function for creating [[UserExecutor]] which provides access to the user repository
-   inside of a transaction."
+   inside a transaction."
   [{:keys [users user-teams]}]
   (fn [executor]
     (->UserExecutor executor users user-teams)))

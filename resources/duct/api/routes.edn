@@ -16,6 +16,7 @@
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
   [:post :api/projects]      #ig/ref :api.handler/projects#post
   [:post :api/teams]         #ig/ref :api.handler/teams#post
+  [:post :api/users]         #ig/ref :api.handler/users#post
   :internal/deps             #{#ig/ref :rabbitmq.sub/events#ws}}
 
  [:duct/const :routes/table#auth]
@@ -30,6 +31,7 @@
                              #ig/ref :rabbitmq.sub/commands#files
                              #ig/ref :rabbitmq.sub/commands#projects
                              #ig/ref :rabbitmq.sub/commands#teams
+                             #ig/ref :rabbitmq.sub/commands#users
                              #ig/ref :rabbitmq.sub/events#persist}}
 
  [:duct/const :routes/table#ui]
@@ -110,6 +112,11 @@
   :handler    #ig/ref :audiophile.handlers.teams/create
   :spec       :api.team/create}
 
+ [:audiophile.spec/with-spec :api.handler/users#post]
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.users/create
+  :spec       :api.user/create}
+
  :audiophile.spec/ok
  {}
 
@@ -187,6 +194,9 @@
 
  :audiophile.handlers.teams/create
  {:interactor #ig/ref :interactors/teams}
+
+ :audiophile.handlers.users/create
+ {:interactor #ig/ref :interactors/users}
 
  :audiophile.handlers.comments/fetch-all
  {:interactor #ig/ref :interactors/comments}

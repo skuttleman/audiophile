@@ -160,17 +160,26 @@
   (fn [http-client]
     (->HttpSerde http-client serdes)))
 
-(deftype HttpNav [http-client nav]
+(deftype HttpNav [http-client nav route->event-type]
   pres/IResource
   (request! [_ {:nav/keys [route params] :as request}]
     (-> request
         (dissoc :nav/route :nav/params)
+        (update :async/event-types #(or % (route->event-type route)))
         (cond-> route (assoc :url (nav/path-for nav route params)))
         (->> (pres/request! http-client)))))
 
-(defn with-nav [{:keys [nav]}]
-  (fn [http-client]
-    (->HttpNav http-client nav)))
+(defn with-nav [{:keys [nav route->event-type]}]
+  (let [route->event-type (or route->event-type
+                              {:api/artifacts     #{:artifact/created}
+                               :api/comments      #{:comment/created}
+                               :api/file          #{:file-version/created}
+                               :api/project.files #{:file/created}
+                               :api/projects      #{:project/created}
+                               :api/teams         #{:team/created}
+                               :api/users         #{:user/created :team/created}})]
+    (fn [http-client]
+      (->HttpNav http-client nav route->event-type))))
 
 (deftype HttpProgress [http-client]
   pres/IResource
@@ -194,17 +203,22 @@
   ->HttpProgress)
 
 (defn ^:private with-async* [http-client pubsub ms {{request-id :x-request-id} :headers :as request}]
-  (let [pubsub-id (uuids/random)]
+  (let [pubsub-id (uuids/random)
+        sub-events (:async/event-types request)
+        results (atom {})]
     (-> (v/create (fn [resolve reject]
-                    (pubsub/subscribe! pubsub pubsub-id request-id (fn [_ event]
-                                                                     (if (:error event)
-                                                                       (reject event)
-                                                                       (resolve event))))
-                    (-> http-client
-                        (pres/request! request)
-                        (v/catch reject))
-                    (v/and (v/sleep ms)
-                           (reject timeout-msg))))
+                    (letfn [(handler [_ {event-type :event/type :as event}]
+                              (if (= :command/failed event-type)
+                                (reject event)
+                                (let [results (swap! results assoc event-type event)]
+                                  (when (every? results sub-events)
+                                    (resolve {:data (transduce (map :data) into {} (vals results))})))))]
+                      (pubsub/subscribe! pubsub pubsub-id request-id handler)
+                      (-> http-client
+                          (pres/request! request)
+                          (v/catch reject))
+                      (v/and (v/sleep ms)
+                             (reject timeout-msg)))))
         (v/peek (fn [_]
                   (pubsub/unsubscribe! pubsub pubsub-id))))))
 

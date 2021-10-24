@@ -7,6 +7,7 @@
     [com.ben-allred.audiophile.backend.api.handlers.files :as files]
     [com.ben-allred.audiophile.backend.api.handlers.projects :as projects]
     [com.ben-allred.audiophile.backend.api.handlers.teams :as teams]
+    [com.ben-allred.audiophile.backend.api.handlers.users :as users]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.handlers/router [_ cfg]
@@ -71,3 +72,6 @@
 
 (defmethod ig/init-key :audiophile.handlers.teams/create [_ cfg]
   (teams/create cfg))
+
+(defmethod ig/init-key :audiophile.handlers.users/create [_ cfg]
+  (users/create cfg))

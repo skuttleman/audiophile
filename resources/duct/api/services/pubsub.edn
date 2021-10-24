@@ -43,6 +43,11 @@
   :handler #ig/ref :audiophile.services.rabbitmq/command-handler#teams
   :opts    {:internal/handler "teams"}}
 
+ [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#users]
+ {:ch      #ig/ref :rabbitmq.chan/commands
+  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#users
+  :opts    {:internal/handler "users"}}
+
  [:audiophile.services.rabbitmq/conn :component/health]
  {:cfg {:uri #ig/ref :env.rabbitmq/uri}}
 
@@ -53,7 +58,8 @@
  {:repo #ig/ref :repositories/events}
 
  :audiophile.services.rabbitmq/ws-handler
- {:pubsub #ig/ref :services/pubsub}
+ {:jwt-serde #ig/ref :serdes/jwt
+  :pubsub    #ig/ref :services/pubsub}
 
  :audiophile.services.rabbitmq/command-handler#comments
  {:ch   #ig/ref :rabbitmq.chan/events
@@ -69,4 +75,9 @@
 
  :audiophile.services.rabbitmq/command-handler#teams
  {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :repositories/teams}}
+  :repo #ig/ref :repositories/teams}
+
+ :audiophile.services.rabbitmq/command-handler#users
+ {:commands #ig/ref :rabbitmq.chan/commands
+  :events   #ig/ref :rabbitmq.chan/events
+  :repo     #ig/ref :repositories/users}}

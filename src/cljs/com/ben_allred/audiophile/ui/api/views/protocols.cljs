@@ -25,6 +25,11 @@
   (comment-form [this file-id file-version-id] "Creates a comment form")
   (on-comment-created [this cb] "Handle comment creation"))
 
+(defprotocol ISignupViewInteractor
+  "Infrastructural interactions from signup view"
+  (signup-form [this] "Creates a new user form")
+  (on-user-created [this cb] "Handle user creation"))
+
 (defprotocol IQueryParamsViewInteractor
   "Infrastructural interactions for query params"
   (qp-form [this file-version-id] "Creates a comment form")

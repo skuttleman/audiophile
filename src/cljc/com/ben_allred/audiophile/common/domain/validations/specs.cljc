@@ -69,6 +69,13 @@
    [:team/name trimmed-string?]
    [:team/type [:fn #{:PERSONAL :COLLABORATIVE}]]])
 
+(def user:create
+  [:map
+   [:user/first-name trimmed-string?]
+   [:user/last-name trimmed-string?]
+   [:user/handle trimmed-string?]
+   [:user/mobile-number [:re #"^\d{10}$"]]])
+
 (def api-artifact:create
   (-> auth
       (mu/merge [:map
@@ -107,6 +114,13 @@
   (-> auth
       (mu/merge [:map [:request/id {:optional true} uuid?]])
       (mu/merge team:create)))
+
+(def api-user:create
+  (-> auth
+      (mu/merge [:map
+                 [:request/id {:optional true} uuid?]
+                 [:user/email [:re #"^[a-z\-\+_0-9\.]+@[a-z\-\+_0-9]+\.[a-z\-\+_0-9\.]+$"]]])
+      (mu/merge user:create)))
 
 (def res-version:download
   (mu/merge auth

@@ -12,7 +12,7 @@
 (deftest query-by-email-test
   (testing "query-by-email"
     (let [tx (trepos/stub-transactor trepos/->user-executor)
-          repo (rusers/->UserAccessor tx)
+          repo (rusers/->UserAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying for a user"
         (stubs/use! tx :execute!

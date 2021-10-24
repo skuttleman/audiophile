@@ -7,3 +7,9 @@
    (find-by-email accessor email nil))
   ([accessor email opts]
    (pu/find-by-email accessor email opts)))
+
+(defn insert-user!
+  ([accessor user]
+   (insert-user! accessor user nil))
+  ([accessor user opts]
+   (pu/insert-user! accessor user opts)))

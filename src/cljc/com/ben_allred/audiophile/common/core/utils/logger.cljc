@@ -111,8 +111,7 @@
         (str " |\u001b[34;1m" ctx "\u001b[0m|"))
       ": "
       @msg_
-      (when ?err
-        (str "\n" ?err)))))
+      (some-> ?err log*/stacktrace))))
 
 (log*/merge-config! {:level      (keyword (or #?(:clj (System/getenv "LOG_LEVEL"))
                                               :info))

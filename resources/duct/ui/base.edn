@@ -4,8 +4,8 @@
  #duct/include "duct/ui/services.edn"
  #duct/include "duct/ui/components.edn"
  {:audiophile.services.http/client
-  ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-nav
-                           #ig/ref :audiophile.services.http/with-async
+  ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-async
+                           #ig/ref :audiophile.services.http/with-nav
                            #ig/ref :audiophile.services.http/with-progress]}
 
   :audiophile.services.http/with-nav

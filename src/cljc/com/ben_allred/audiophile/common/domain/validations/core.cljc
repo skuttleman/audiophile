@@ -50,6 +50,7 @@
    :api.file/create       specs/api-file:create
    :api.project/create    specs/api-project:create
    :api.team/create       specs/api-team:create
+   :api.user/create       specs/api-user:create
    :api.version/create    specs/api-version:create
    :api.ws/connect        specs/api-ws:connect
    :res.version/download  specs/res-version:download})

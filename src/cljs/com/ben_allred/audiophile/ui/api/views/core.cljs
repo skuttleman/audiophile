@@ -42,6 +42,12 @@
 (defn on-team-created [interactor cb]
   (vp/on-team-created interactor cb))
 
+(defn signup-form [interactor]
+  (vp/signup-form interactor))
+
+(defn on-user-created [interactor cb]
+  (vp/on-user-created interactor cb))
+
 (defn qp-form [interactor file-version-id]
   (vp/qp-form interactor file-version-id))
 

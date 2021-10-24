@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
+    [com.ben-allred.audiophile.backend.core.serdes.jwt :as jwt]
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
@@ -106,14 +107,38 @@
       (assoc :user/id (get-in request [:auth/user :user/id]))
       (merge (:headers request) (get-in request [:nav/route :params]))))
 
-(deftype WebSocketMessageHandler [pubsub]
+(defmulti handle-event* (fn [_ _ event]
+                          (case (:event/type event)
+                            :user/created ::signup
+                            nil)))
+
+(defmethod handle-event* ::signup
+  [pubsub jwt-serde {event-id :event/id :event/keys [ctx] :as event}]
+  (let [token (jwt/login-token jwt-serde (:event/data event))]
+    (ps/send-user! pubsub
+                   (:signup/id ctx)
+                   event-id
+                   (-> event
+                       (dissoc :event/ctx)
+                       (assoc-in [:event/data :login/token] token))
+                   ctx)))
+
+(defmethod handle-event* :default
+  [pubsub _ {event-id :event/id :event/keys [ctx] :as event}]
+  (ps/send-user! pubsub
+                 (or (:signup/id ctx) (:user/id ctx))
+                 event-id
+                 (dissoc event :event/ctx)
+                 ctx))
+
+(deftype WebSocketMessageHandler [pubsub jwt-serde]
   pint/IMessageHandler
   (handle? [_ _]
     true)
-  (handle! [this {event-id :event/id :event/keys [ctx] :as event}]
+  (handle! [this {event-id :event/id :as event}]
     (log/with-ctx [this :CP]
       (log/info "publishing event to ws" event-id)
-      (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx))))
+      (handle-event* pubsub jwt-serde event))))
 
-(defn event->ws-handler [{:keys [pubsub]}]
-  (->WebSocketMessageHandler pubsub))
+(defn event->ws-handler [{:keys [jwt-serde pubsub]}]
+  (->WebSocketMessageHandler pubsub jwt-serde))

@@ -10,6 +10,7 @@
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.keywords :as keywords]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri])
   #?(:clj
      (:import
@@ -119,28 +120,39 @@
     (mime-type [_]
       "application/x-www-form-urlencoded")))
 
+#?(:clj
+   (defn ^:private date->date-time [^Date date]
+     (-> date .getTime DateTime.)))
+
 (defn jwt [{:keys [data-serde expiration secret]}]
   (reify
     pserdes/ISerde
     (serialize [_ payload opts]
       #?(:clj
-          (let [now (Date.)]
-            (-> {:iat  (-> now .getTime DateTime.)
-                 :data (pserdes/serialize data-serde payload opts)
-                 :exp  (-> now
-                           .toInstant
-                           (.plus expiration ChronoUnit/DAYS)
-                           Date/from
-                           .getTime
-                           DateTime.)}
+          (let [now (Date.)
+                expiration (:jwt/expiration opts expiration)
+                unit (case (:jwt/unit opts)
+                       :minutes ChronoUnit/MINUTES
+                       :hours ChronoUnit/HOURS
+                       ChronoUnit/DAYS)]
+            (-> (:jwt/claims opts)
+                (assoc :iat (date->date-time now)
+                       :data (pserdes/serialize data-serde payload opts)
+                       :exp (-> now
+                                .toInstant
+                                (.plus expiration unit)
+                                Date/from
+                                date->date-time))
                 (jwt*/sign secret)))))
     (deserialize [_ token opts]
       #?(:clj
           (u/silent!
-            (some-> token
-                    (jwt*/unsign secret)
-                    :data
-                    (as-> $ (pserdes/deserialize data-serde $ opts))))))))
+            (when-let [value (some-> token (jwt*/unsign secret))]
+              (-> value
+                  (dissoc :data)
+                  (maps/update-maybe :aud (partial into #{} (map keyword)))
+                  (maps/qualify :jwt)
+                  (merge (pserdes/deserialize data-serde (:data value) opts)))))))))
 
 (defn serialize
   ([serde value]

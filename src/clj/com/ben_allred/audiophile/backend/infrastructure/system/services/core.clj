@@ -9,6 +9,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.files :as pub.files]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.projects :as pub.projects]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.teams :as pub.teams]
+    [com.ben-allred.audiophile.backend.infrastructure.pubsub.handlers.users :as pub.users]
     [com.ben-allred.audiophile.backend.infrastructure.resources.s3 :as s3]
     [integrant.core :as ig]
     com.ben-allred.audiophile.backend.infrastructure.system.services.repositories))
@@ -60,3 +61,6 @@
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#teams [_ cfg]
   (pub.teams/msg-handler cfg))
+
+(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#users [_ cfg]
+  (pub.users/msg-handler cfg))

@@ -45,7 +45,8 @@
   :repo #ig/ref :repositories/teams}
 
  :audiophile.repositories.users/accessor
- {:repo #ig/ref :repositories/users}
+ {:ch   #ig/ref :rabbitmq.chan/commands
+  :repo #ig/ref :repositories/users}
 
  [:audiophile.repositories/repo :repositories/comments]
  {:->executor #ig/ref :audiophile.repositories.comments/->executor

@@ -16,6 +16,7 @@
   :project-form  #ig/ref :audiophile.views.projects/create
   :projects-tile #ig/ref :tiles/projects#all
   :*modals       #ig/ref :audiophile.core/modals
+  :signup-form   #ig/ref :audiophile.views.signup/root
   :team-form     #ig/ref :audiophile.views.teams/create
   :teams-tile    #ig/ref :tiles/teams#all}
 
@@ -25,6 +26,29 @@
 
  :audiophile.views.login/form
  {:nav #ig/ref :services/nav}
+
+ :audiophile.views.signup/root
+ {:*int #ig/ref :audiophile.views.signup/interactor
+  :nav  #ig/ref :services/nav}
+
+ :audiophile.views.signup/interactor
+ {:*users #ig/ref [:audiophile.resources/toaster :users/create]}
+
+ [:audiophile.resources/toaster :users/create]
+ {:error-fn  #ig/ref [:audiophile.resources.toaster/result-fn :toaster/error]
+  :error-msg "Error - signup failed"
+  :resource  #ig/ref [:audiophile.resources/base :users/create]
+  :store     #ig/ref :services/store
+  :*toasts   #ig/ref :audiophile.core/toasts}
+
+ [:audiophile.resources/base :users/create]
+ {:opts->vow #ig/ref [:audiophile.resources/http-handler :users/create]}
+
+ [:audiophile.resources/http-handler :users/create]
+ {:http-client   #ig/ref :services/http
+  :method        :post
+  :route         :api/users
+  :opts->request #ig/ref :audiophile.resource.validated/opts->request}
 
  :audiophile.views.home/header
  {:nav #ig/ref :services/nav}
@@ -36,5 +60,5 @@
  {:*toasts #ig/ref :audiophile.core/toasts}
 
  :audiophile.views.components/banners
- {:*banners   #ig/ref :audiophile.core/banners
+ {:*banners  #ig/ref :audiophile.core/banners
   :err-codes #ig/ref :ui/err-codes}}

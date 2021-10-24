@@ -196,7 +196,8 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((client/with-nav {:nav nav})
+            (let [resource ((client/with-nav {:nav               nav
+                                              :route->event-type {::handle #{::event}}})
                             client)]
               (testing "when sending a request"
                 (stubs/use! client :request!
@@ -204,7 +205,8 @@
                 (let [result (tu/<p! (res/request! resource {:nav/route  ::handle
                                                              :nav/params ::params}))]
                   (testing "calculates the url"
-                    (is (= {:url (->url ::handle ::params)}
+                    (is (= {:url               (->url ::handle ::params)
+                            :async/event-types #{::event}}
                            (ffirst (stubs/calls client :request!)))))
 
                   (testing "returns the response"
