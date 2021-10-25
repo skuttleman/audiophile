@@ -7,7 +7,8 @@
     [com.ben-allred.audiophile.ui.core.components.protocols :as pcomp]
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]))
+    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
 (def ^:private level->class
   {:error "is-danger"})
@@ -18,16 +19,15 @@
    [:div.message-body
     body]])
 
-(defn with-resource [*res _component & _args]
-  (let [[*resource opts] (colls/force-sequential *res)]
-    (res/request! *resource opts)
-    (fn [_*res component & args]
-      (case (res/status *resource)
-        :success (into [component @*resource] args)
-        :error [:div.error (if (some-> @*resource meta :http/timeout?)
-                             "The request timed out. Check your internet connection."
-                             "An error occurred. Please try again.")]
-        [in/spinner {:size (:spinner/size opts)}]))))
+(defn with-resource [*res component & args]
+  (r/with-let [[*resource opts] (colls/force-sequential *res)
+               _ (res/request! *resource opts)]
+    (case (res/status *resource)
+      :success (into [component @*resource] args)
+      :error [:div.error (if (some-> @*resource meta :http/timeout?)
+                           "The request timed out. Check your internet connection."
+                           "An error occurred. Please try again.")]
+      [in/spinner {:size (:spinner/size opts)}])))
 
 (defn not-found [_]
   [:div {:style {:display         :flex

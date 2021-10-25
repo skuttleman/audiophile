@@ -25,7 +25,7 @@
                 _ (tu/<ch! (store/dispatch! store (actions/remove-toast! ::id 100)))
                 after (.getTime (js/Date.))
                 [hide remove] (colls/only! 2 (stubs/calls store :dispatch!))]
-            (is (> (- after before) 100))
+            (is (>= (- after before) 100))
             (is (= [:toasts/hide! {:id ::id}] (colls/only! hide)))
             (is (= [:toasts/remove! {:id ::id}] (colls/only! remove)))))
 

@@ -1,28 +1,28 @@
 (ns com.ben-allred.audiophile.ui.core.components.input-fields.dropdown
   (:require
     [clojure.set :as set]
-    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
-(defn option-list [{:keys [value options]}]
-  (let [options (concat (filter (comp (partial contains? value) first) options)
-                        (remove (comp (partial contains? value) first) options))]
-    (fn [{:keys [item-control on-change value]}]
-      [:ul.dropdown-items.lazy-list
-       (for [[id display] options
-             :let [selected? (contains? value id)]]
-         ^{:key id}
-         [:li.dropdown-item.pointer
-          {:class    [(when selected? "is-active")]
-           :on-click (fn [e]
-                       (dom/stop-propagation e)
-                       (-> (if (contains? value id)
-                             (disj value id)
-                             ((fnil conj #{}) value id))
-                           on-change))}
-          [item-control display]])])))
+(defn option-list [{:keys [item-control on-change value options]}]
+  (r/with-let [options (concat (filter (comp (partial contains? value) first) options)
+                               (remove (comp (partial contains? value) first) options))]
+    [:ul.dropdown-items.lazy-list
+     (for [[id display] options
+           :let [selected? (contains? value id)]]
+       ^{:key id}
+       [:li.dropdown-item.pointer
+        {:class    [(when selected? "is-active")]
+         :on-click (fn [e]
+                     (dom/stop-propagation e)
+                     (-> (if (contains? value id)
+                           (disj value id)
+                           ((fnil conj #{}) value id))
+                         on-change))}
+        [item-control display]])]))
 
 (defn button [{:keys [attrs->content selected] :as attrs}]
   (let [selected-count (count selected)

@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.ui.core.components.toast
   (:require
-    [com.ben-allred.audiophile.ui.core.components.core :as comp]))
+    [com.ben-allred.audiophile.ui.core.components.core :as comp]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
 (defn ^:private banner-message [*banners err-codes banner-id {:keys [body level]}]
   (let [body (or (cond-> body
@@ -20,30 +21,29 @@
      [:div.message-body
       [:div.body-text body]]]))
 
-(defn ^:private toast-message [_*toasts _toast-id _toast]
-  (let [height (volatile! nil)]
-    (fn [*toasts toast-id {:keys [body level state]}]
-      (let [adding? (= state :init)
-            removing? (= state :removing)]
-        [:li.toast-message.message
-         (cond-> {:ref   (fn [node]
-                           (some->> node
-                                    (.getBoundingClientRect)
-                                    (.-height)
-                                    (vreset! height)))
-                  :class [({:success "is-success"
-                            :error   "is-danger"
-                            :warning "is-warning"
-                            :info    "is-info"}
-                           level)
-                          (when adding? "adding")
-                          (when removing? "removing")]}
-           (and removing? @height) (update :style assoc :margin-top (str "-" @height "px")))
-         [:div.message-body
-          {:on-click (fn [_]
-                       (comp/remove! *toasts toast-id))
-           :style    {:cursor :pointer}}
-          [:div.body-text @body]]]))))
+(defn ^:private toast-message [*toasts toast-id {:keys [body level state]}]
+  (r/with-let [height (volatile! nil)]
+    (let [adding? (= state :init)
+          removing? (= state :removing)]
+      [:li.toast-message.message
+       (cond-> {:ref   (fn [node]
+                         (some->> node
+                                  (.getBoundingClientRect)
+                                  (.-height)
+                                  (vreset! height)))
+                :class [({:success "is-success"
+                          :error   "is-danger"
+                          :warning "is-warning"
+                          :info    "is-info"}
+                         level)
+                        (when adding? "adding")
+                        (when removing? "removing")]}
+         (and removing? @height) (update :style assoc :margin-top (str "-" @height "px")))
+       [:div.message-body
+        {:on-click (fn [_]
+                     (comp/remove! *toasts toast-id))
+         :style    {:cursor :pointer}}
+        [:div.body-text @body]]])))
 
 (defn banners [{:keys [*banners err-codes]}]
   (fn [banners]

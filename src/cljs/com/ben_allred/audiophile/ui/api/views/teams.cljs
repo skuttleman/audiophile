@@ -5,22 +5,22 @@
     [com.ben-allred.audiophile.ui.api.views.core :as views]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
-    [com.ben-allred.audiophile.ui.core.forms.core :as forms]))
+    [com.ben-allred.audiophile.ui.core.forms.core :as forms]
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
 (def ^:private team-type->icon
   {:PERSONAL      ["Personal Team" :user]
    :COLLABORATIVE ["Collaborative Team" :users]})
 
-(defn ^:private create* [*int _cb]
-  (let [*form (views/team-form *int)]
-    (fn [_*int cb]
-      [:div
-       [comp/form {:*form        *form
-                   :on-submitted (views/on-team-created *int cb)}
-        [in/input (forms/with-attrs {:label       "Name"
-                                     :auto-focus? true}
-                                    *form
-                                    [:team/name])]]])))
+(defn ^:private create* [*int cb]
+  (r/with-let [*form (views/team-form *int)]
+    [:div
+     [comp/form {:*form        *form
+                 :on-submitted (views/on-team-created *int cb)}
+      [in/input (forms/with-attrs {:label       "Name"
+                                   :auto-focus? true}
+                                  *form
+                                  [:team/name])]]]))
 
 (defn list [_]
   (fn [teams _state]

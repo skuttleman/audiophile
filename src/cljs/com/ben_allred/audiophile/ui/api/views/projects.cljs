@@ -6,12 +6,12 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.strings :as strings]
+    [com.ben-allred.audiophile.ui.api.views.core :as views]
     [com.ben-allred.audiophile.ui.core.components.core :as comp]
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.input-fields.dropdown :as dd]
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
-    [com.ben-allred.vow.core :as v :include-macros true]
-    [com.ben-allred.audiophile.ui.api.views.core :as views]))
+    [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
 (defn team-name [{:team/keys [name]}]
   [:em name])
@@ -40,68 +40,65 @@
      [:div {:style {:width "16px"}}]
      [comp/with-resource [*team opts] team-view]]))
 
-(defn ^:private create* [teams *int _cb]
-  (let [options (->> teams
-                     (colls/split-on personal?)
-                     (apply concat)
-                     (map (juxt :team/id identity)))
-        *form (views/project-form *int options)
-        options-by-id (into {} options)]
-    (fn [_teams _*projects cb]
-      [:div
-       [comp/form {:*form        *form
-                   :on-submitted (views/on-project-created *int cb)}
-        (when (>= (count options-by-id) 2)
-          [dd/dropdown (-> {:options        options
-                            :options-by-id  options-by-id
-                            :item-control   team-name
-                            :force-value?   true
-                            :label          "Team"
-                            :attrs->content attrs->content}
-                           (forms/with-attrs *form [:project/team-id])
-                           dd/singleable)])
-        [in/input (forms/with-attrs {:label       "Name"
-                                     :auto-focus? true}
-                                    *form
-                                    [:project/name])]]])))
+(defn ^:private create* [teams *int cb]
+  (r/with-let [options (->> teams
+                            (colls/split-on personal?)
+                            (apply concat)
+                            (map (juxt :team/id identity)))
+               *form (views/project-form *int options)
+               options-by-id (into {} options)]
+    [:div
+     [comp/form {:*form        *form
+                 :on-submitted (views/on-project-created *int cb)}
+      (when (>= (count options-by-id) 2)
+        [dd/dropdown (-> {:options        options
+                          :options-by-id  options-by-id
+                          :item-control   team-name
+                          :force-value?   true
+                          :label          "Team"
+                          :attrs->content attrs->content}
+                         (forms/with-attrs *form [:project/team-id])
+                         dd/singleable)])
+      [in/input (forms/with-attrs {:label       "Name"
+                                   :auto-focus? true}
+                                  *form
+                                  [:project/name])]]]))
 
 (defn version-form [{:keys [*artifacts *int]}]
   (fn [file cb]
-    (let [project-id (:file/project-id file)
+    (r/with-let [project-id (:file/project-id file)
           *form (views/version-form *int project-id (:file/id file))
           on-submitted (views/on-version-created *int project-id cb)]
-      (fn [_file _cb]
-        (let [filename (get-in @*form [:artifact/details :artifact/filename])]
-          [comp/form {:*form        *form
-                      :disabled     (res/requesting? *artifacts)
-                      :on-submitted on-submitted}
-           [in/uploader (-> {:label     "File"
-                             :*resource *artifacts
-                             :display   (or filename "Select file…")}
-                            (forms/with-attrs *form [:artifact/details]))]
-           [in/input (forms/with-attrs {:label "Version name"}
-                                       *form
-                                       [:version/name])]])))))
+      (let [filename (get-in @*form [:artifact/details :artifact/filename])]
+        [comp/form {:*form        *form
+                    :disabled     (res/requesting? *artifacts)
+                    :on-submitted on-submitted}
+         [in/uploader (-> {:label     "File"
+                           :*resource *artifacts
+                           :display   (or filename "Select file…")}
+                          (forms/with-attrs *form [:artifact/details]))]
+         [in/input (forms/with-attrs {:label "Version name"}
+                                     *form
+                                     [:version/name])]]))))
 
 (defn file-form [{:keys [*artifacts *int]}]
   (fn [project-id cb]
-    (let [*form (views/file-form *int project-id)
-          on-submitted (views/on-file-created *int project-id cb)]
-      (fn [_project-id _cb]
-        (let [filename (get-in @*form [:artifact/details :artifact/filename])]
-          [comp/form {:*form        *form
-                      :disabled     (res/requesting? *artifacts)
-                      :on-submitted on-submitted}
-           [in/uploader (-> {:label     "File"
-                             :*resource *artifacts
-                             :display   (or filename "Select file…")}
-                            (forms/with-attrs *form [:artifact/details]))]
-           [in/input (forms/with-attrs {:label "Track name"}
-                                       *form
-                                       [:file/name])]
-           [in/input (forms/with-attrs {:label "Version name"}
-                                       *form
-                                       [:version/name])]])))))
+    (r/with-let [*form (views/file-form *int project-id)
+                 on-submitted (views/on-file-created *int project-id cb)]
+      (let [filename (get-in @*form [:artifact/details :artifact/filename])]
+        [comp/form {:*form        *form
+                    :disabled     (res/requesting? *artifacts)
+                    :on-submitted on-submitted}
+         [in/uploader (-> {:label     "File"
+                           :*resource *artifacts
+                           :display   (or filename "Select file…")}
+                          (forms/with-attrs *form [:artifact/details]))]
+         [in/input (forms/with-attrs {:label "Track name"}
+                                     *form
+                                     [:file/name])]
+         [in/input (forms/with-attrs {:label "Version name"}
+                                     *form
+                                     [:version/name])]]))))
 
 (defn track-list [{:keys [file-form nav *modals version-form]}]
   (fn [files *project project-id]

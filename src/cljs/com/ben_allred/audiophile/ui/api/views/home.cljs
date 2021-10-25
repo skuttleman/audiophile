@@ -16,52 +16,51 @@
    (or text "Logout")])
 
 (defn header [{:keys [nav]}]
-  (fn [_state]
-    (let [shown? (r/atom false)]
-      (fn [state]
-        (let [handle (get-in state [:nav/route :handle])
-              user (:auth/user state)
-              text (if (= (:token/type user) :token/signup)
-                     "Start over"
-                     "Logout")
-              home (nav/path-for nav :ui/home)]
-          [:header.header
-           [:nav.navbar
-            {:role "navigation" :aria-label "main navigation"}
-            (when user
-              [:<>
-               [:div.navbar-brand
-                [:a.navbar-item {:href home}
-                 [comp/icon :headphones]]]
-               [:div.navbar-start
-                {:style {:position :relative}}
-                [:span.navbar-burger.burger
-                 {:on-click #(swap! shown? not) :cursor :pointer}
-                 [:span {:aria-hidden "true"}]
-                 [:span {:aria-hidden "true"}]
-                 [:span {:aria-hidden "true"}]]
-                [:div#header-nav.navbar-menu
-                 (when @shown?
-                   {:on-click #(reset! shown? false)
-                    :class    ["expanded"]})
-                 [:ul.navbar-start.undersize
-                  [:li
-                   [:a.navbar-item {:href home} "Home"]]
-                  [:li
-                   [:hr.nav-divider]]
-                  [:li
-                   [logout {:minimal? true
-                            :nav      nav
-                            :text     text
-                            :class    ["navbar-item"]}]]]
-                 [:ul.navbar-start.oversize.tabs
-                  [:li
-                   {:class [(when (= :ui/home handle) "is-active")]}
-                   [:a.navbar-item {:href home} "Home"]]]]]
-               [:div.navbar-end.oversize
-                [:div.navbar-item
-                 [:div.buttons
-                  [logout {:nav nav :text text}]]]]])]])))))
+  (fn [state]
+    (r/with-let [shown? (r/atom false)]
+      (let [handle (get-in state [:nav/route :handle])
+            user (:auth/user state)
+            text (if (= (:token/type user) :token/signup)
+                   "Start over"
+                   "Logout")
+            home (nav/path-for nav :ui/home)]
+        [:header.header
+         [:nav.navbar
+          {:role "navigation" :aria-label "main navigation"}
+          (when user
+            [:<>
+             [:div.navbar-brand
+              [:a.navbar-item {:href home}
+               [comp/icon :headphones]]]
+             [:div.navbar-start
+              {:style {:position :relative}}
+              [:span.navbar-burger.burger
+               {:on-click #(swap! shown? not) :cursor :pointer}
+               [:span {:aria-hidden "true"}]
+               [:span {:aria-hidden "true"}]
+               [:span {:aria-hidden "true"}]]
+              [:div#header-nav.navbar-menu
+               (when @shown?
+                 {:on-click #(reset! shown? false)
+                  :class    ["expanded"]})
+               [:ul.navbar-start.undersize
+                [:li
+                 [:a.navbar-item {:href home} "Home"]]
+                [:li
+                 [:hr.nav-divider]]
+                [:li
+                 [logout {:minimal? true
+                          :nav      nav
+                          :text     text
+                          :class    ["navbar-item"]}]]]
+               [:ul.navbar-start.oversize.tabs
+                [:li
+                 {:class [(when (= :ui/home handle) "is-active")]}
+                 [:a.navbar-item {:href home} "Home"]]]]]
+             [:div.navbar-end.oversize
+              [:div.navbar-item
+               [:div.buttons
+                [logout {:nav nav :text text}]]]]])]]))))
 
 (defn root [{:keys [nav project-form *modals projects-tile signup-form team-form teams-tile]}]
   (fn [state]

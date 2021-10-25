@@ -56,7 +56,7 @@
  {}
 
  :audiophile.views.components/audio-player
- {:player #ig/ref :audiophile.views.components/artifact-player}
+ {:*player #ig/ref :audiophile.views.components/artifact-player}
 
  :audiophile.views.components/artifact-player
  {:*artifact #ig/ref :audiophile.resource.audio/artifact}

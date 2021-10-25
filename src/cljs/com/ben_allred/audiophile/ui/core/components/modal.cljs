@@ -7,38 +7,33 @@
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.components.tiles :as tiles]))
 
-(defn modal* [*modals _idx id _frame]
-  (let [close! (comp (fn [_]
-                       (comp/remove! *modals id))
-                     dom/stop-propagation)
-        listener (dom/add-listener dom/window
-                                   :keydown
-                                   #(when (#{:key-codes/esc} (dom/event->key %))
-                                      (close! %))
-                                   true)]
-    (r/create-class
-      {:component-will-unmount
-       (fn [_]
-         (dom/remove-listener listener))
-       :reagent-render
-       (fn [_*modals idx _id frame]
-         (let [inset (str (* 8 idx) "px")]
-           [:li.modal-item
-            {:class    [(case (:state frame)
-                          :init "adding"
-                          :removing "removing"
-                          nil)]
-             :style    {:padding-left inset
-                        :padding-top  inset}
-             :on-click dom/stop-propagation}
-            [tiles/tile
-             [:div.layout--space-between
-              [:div (:header frame)]
-              [in/plain-button
-               {:class    ["is-white" "is-light"]
-                :on-click close!}
-               [comp/icon :times]]]
-             [:div (some-> (:body frame) (conj close!))]]]))})))
+(defn ^:private modal* [*modals idx id frame]
+  (r/with-let [close! (comp (fn [_]
+                              (comp/remove! *modals id))
+                            dom/stop-propagation)
+               listener (dom/add-listener dom/window
+                                          :keydown
+                                          #(when (#{:key-codes/esc} (dom/event->key %))
+                                             (close! %))
+                                          true)]
+    (let [inset (str (* 8 idx) "px")]
+      [:li.modal-item
+       {:class    [(case (:state frame)
+                     :init "adding"
+                     :removing "removing"
+                     nil)]
+        :style    {:padding-left inset
+                   :padding-top  inset}
+        :on-click dom/stop-propagation}
+       [tiles/tile
+        [:div.layout--space-between
+         [:div (:header frame)]
+         [in/plain-button
+          {:class    ["is-white" "is-light"]
+           :on-click close!}
+          [comp/icon :times]]]
+        [:div (some-> (:body frame) (conj close!))]]])
+    (finally (dom/remove-listener listener))))
 
 (defn modals [{:keys [*modals]}]
   (fn [modals]
