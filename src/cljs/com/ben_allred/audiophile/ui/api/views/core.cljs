@@ -45,6 +45,12 @@
 (defn signup-form [interactor]
   (vp/signup-form interactor))
 
+(defn field-resource [interactor path]
+  (vp/field-resource interactor path))
+
+(defn on-blur [interactor path]
+  (vp/on-blur interactor path))
+
 (defn on-user-created [interactor cb]
   (vp/on-user-created interactor cb))
 

@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.backend.api.handlers.events :as events]
     [com.ben-allred.audiophile.backend.api.handlers.files :as files]
     [com.ben-allred.audiophile.backend.api.handlers.projects :as projects]
+    [com.ben-allred.audiophile.backend.api.handlers.search :as search]
     [com.ben-allred.audiophile.backend.api.handlers.teams :as teams]
     [com.ben-allred.audiophile.backend.api.handlers.users :as users]
     [integrant.core :as ig]))
@@ -42,6 +43,9 @@
 
 (defmethod ig/init-key :audiophile.handlers.files/fetch-all [_ cfg]
   (files/fetch-all cfg))
+
+(defmethod ig/init-key :audiophile.handlers/search [_ cfg]
+  (search/search cfg))
 
 (defmethod ig/init-key :audiophile.handlers.files/fetch [_ cfg]
   (files/fetch cfg))

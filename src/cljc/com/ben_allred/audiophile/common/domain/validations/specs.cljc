@@ -30,6 +30,12 @@
 (def team-id
   (mu/merge auth [:map [:team/id uuid?]]))
 
+(def search
+  (mu/merge auth
+            [:map
+             [:search/field [:fn #{:user/handle :user/mobile-number}]]
+             [:search/value trimmed-string?]]))
+
 (def artifact:create
   [:map
    [:artifact/filename trimmed-string?]

@@ -27,7 +27,7 @@
   event)
 
 (defn target-value [event]
-  (some-> event .-target .-value))
+  (some-> event .-target .-value not-empty))
 
 (defn query-one [selector]
   (.querySelector document selector))

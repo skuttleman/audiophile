@@ -43,6 +43,7 @@
   {:api.common/auth       specs/auth
    :api.common/file-id    specs/file-id
    :api.common/project-id specs/project-id
+   :api.common/search     specs/search
    :api.common/team-id    specs/team-id
    :api.artifact/create   specs/api-artifact:create
    :api.comment/create    specs/api-comment:create

@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.events.impl :as events]
     [com.ben-allred.audiophile.backend.api.repositories.files.impl :as files]
     [com.ben-allred.audiophile.backend.api.repositories.projects.impl :as projects]
+    [com.ben-allred.audiophile.backend.api.repositories.search.impl :as search]
     [com.ben-allred.audiophile.backend.api.repositories.teams.impl :as teams]
     [com.ben-allred.audiophile.backend.api.repositories.users.impl :as rusers]
     [com.ben-allred.audiophile.backend.infrastructure.db.comments :as db.comments]
@@ -68,6 +69,9 @@
 
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
   (files/accessor cfg))
+
+(defmethod ig/init-key :audiophile.repositories.search/accessor [_ cfg]
+  (search/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/artifact-store [_ cfg]
   (stores/artifact-store cfg))

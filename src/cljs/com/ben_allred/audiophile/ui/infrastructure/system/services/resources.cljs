@@ -43,6 +43,9 @@
 (defmethod ig/init-key :audiophile.resources.user/login-fn [_ cfg]
   (cres/login-fn cfg))
 
+(defmethod ig/init-key :audiophile.resources.user/search [_ cfg]
+  (cres/search cfg))
+
 (defmethod ig/init-key :audiophile.resource.validated/opts->request [_ cfg]
   (form.sub/opts->request cfg))
 

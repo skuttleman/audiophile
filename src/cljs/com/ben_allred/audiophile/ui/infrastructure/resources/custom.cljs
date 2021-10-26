@@ -52,7 +52,12 @@
 
 (defn login-fn [{:keys [nav]}]
   (fn [{value :form/value :keys [route]}]
-    (let [params {:email        (:email value)
+    (let [params {:email        (:email value) ;; TODO - Dev only??!?
                   :redirect-uri (get-in route [:params :redirect-uri] "/")}]
       (nav/goto! nav :auth/login {:params params})
       (v/resolve))))
+
+(defn search [_]
+  (fn [opts]
+    {:nav/params {:params opts}
+     :nav/route  :api/search}))

@@ -30,6 +30,11 @@
   (signup-form [this] "Creates a new user form")
   (on-user-created [this cb] "Handle user creation"))
 
+(defprotocol IAsyncFieldValidator
+  "Infrastructural interactions for asynchronously validating fields"
+  (field-resource [this path] "Resource for the field")
+  (on-blur [this path] "Blur handler for field"))
+
 (defprotocol IQueryParamsViewInteractor
   "Infrastructural interactions for query params"
   (qp-form [this file-version-id] "Creates a comment form")

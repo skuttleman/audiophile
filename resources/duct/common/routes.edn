@@ -31,6 +31,8 @@
      ["/teams"
       [["" :api/teams]
        [["/" #audiophile/uuid-param :team/id] :api/team]]]
+     ["/search"
+      [[["/" :field/entity "/" :field/name "/" :field/value] :api/search]]]
      ["/users"
       [["" :api/users]]]
      [true :api/not-found]]]

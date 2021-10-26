@@ -55,6 +55,14 @@
     }
 }
 
+.text--success {
+    color: $green
+}
+
+.text--error {
+    color: $red
+}
+
 .form-field {
     &.inline {
         display: flex;

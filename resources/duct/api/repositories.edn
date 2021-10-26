@@ -7,6 +7,9 @@
  [:duct/const :interactors/files]
  #ig/ref :audiophile.repositories.files/accessor
 
+ [:duct/const :interactors/search]
+ #ig/ref :audiophile.repositories.search/accessor
+
  [:duct/const :interactors/projects]
  #ig/ref :audiophile.repositories.projects/accessor
 
@@ -35,6 +38,9 @@
   :pubsub #ig/ref :services/pubsub
   :repo   #ig/ref :repositories/files
   :store  #ig/ref :audiophile.repositories.files/artifact-store}
+
+ :audiophile.repositories.search/accessor
+ {:users #ig/ref :repositories/users}
 
  :audiophile.repositories.projects/accessor
  {:ch   #ig/ref :rabbitmq.chan/commands

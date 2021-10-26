@@ -11,6 +11,8 @@
     [com.ben-allred.audiophile.test.utils.services :as ts]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
 
+
+;; TODO - test handle and mobile-number
 (deftest query-by-email-test
   (testing "query-by-email"
     (let [tx (trepos/stub-transactor trepos/->user-executor)

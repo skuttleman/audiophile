@@ -17,7 +17,7 @@
      [:div.column.has-background-info
       [:div.has-text-centered {:style {:color :white}} "Assign follow up tasks to get changes made"]]]]
    [:div.gutters.layout--xxl
-    [:div "Login to get started"]
+    [:div.layout--space-above.layout--space-below "Login to get started"]
     [login-form (:nav/route state)]]])
 
 (defn form [{:keys [nav]}]
