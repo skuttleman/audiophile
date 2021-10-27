@@ -71,8 +71,7 @@
   :spec    :api.common/auth}
 
  [:audiophile.spec/with-spec :api.handler/search]
- {:->response #ig/ref :audiophile.spec/bool
-  :handler    #ig/ref :audiophile.handlers/search
+ {:handler    #ig/ref :audiophile.handlers/search
   :spec       :api.common/search}
 
  [:audiophile.spec/with-spec :api.handler/team#get]
@@ -130,9 +129,6 @@
  {}
 
  :audiophile.spec/no-content
- {}
-
- :audiophile.spec/bool
  {}
 
  [:audiophile.routes/health :res.handler/health]

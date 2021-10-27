@@ -6,7 +6,7 @@
 
 (defn search [{:keys [interactor]}]
   (fn [data]
-    (not (int/exists? interactor data))))
+    {:in-use? (int/exists? interactor data)}))
 
 (defmethod selectors/select [:get :api/search]
   [_ request]

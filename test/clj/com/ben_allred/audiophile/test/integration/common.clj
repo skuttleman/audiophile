@@ -90,7 +90,8 @@
                             [:email "user/email"]
                             [:first-name "user/first-name"]
                             [:last-name "user/last-name"]
-                            [:handle "user/handle"]]
+                            [:handle "user/handle"]
+                            [:mobile-number "user/mobile-number"]]
                    :from   [:users]
                    :where  [:= :email email]}))
 

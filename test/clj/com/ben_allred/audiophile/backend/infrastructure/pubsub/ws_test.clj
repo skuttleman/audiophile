@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.backend.infrastructure.pubsub.ws-test
+(ns ^:unit com.ben-allred.audiophile.backend.infrastructure.pubsub.ws-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]

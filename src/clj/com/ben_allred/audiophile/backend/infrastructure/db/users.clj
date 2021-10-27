@@ -26,11 +26,15 @@
   ps/ISearchUserExecutor
   (find-by-handle [_ handle opts]
     (colls/only! (repos/execute! executor
-                                 (select-by users [:= :users.handle handle])
+                                 (-> users
+                                     (select-by [:= :users.handle handle])
+                                     (assoc :select [1]))
                                  opts)))
   (find-by-mobile-number [_ mobile-number opts]
     (colls/only! (repos/execute! executor
-                                 (select-by users [:= :users.mobile-number mobile-number])
+                                 (-> users
+                                     (select-by [:= :users.mobile-number mobile-number])
+                                     (assoc :select [1]))
                                  opts))))
 
 (defn ->executor

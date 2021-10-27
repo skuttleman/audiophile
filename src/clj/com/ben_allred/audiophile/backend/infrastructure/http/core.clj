@@ -115,12 +115,6 @@
   [_]
   (constantly [::http/no-content]))
 
-(defn bool
-  "Found or not found"
-  [_]
-  (fn [result]
-    [(if result ::http/no-content ::http/not-found)]))
-
 (defn display-name [component]
   (phttp/display-name component))
 

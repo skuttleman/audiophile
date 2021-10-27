@@ -28,9 +28,6 @@
 (defmethod ig/init-key :audiophile.spec/no-content [_ cfg]
   (handlers/no-content cfg))
 
-(defmethod ig/init-key :audiophile.spec/bool [_ cfg]
-  (handlers/bool cfg))
-
 (defmethod ig/init-key :audiophile.middleware/vector-response [_ cfg]
   (middleware/vector-response cfg))
 
