@@ -20,7 +20,8 @@
       (get-in [:params "files[]"])
       (select-keys #{:filename :content-type :tempfile :size})
       (maps/qualify :artifact)
-      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
       (maps/assoc-maybe :request/id (uuids/->uuid (:x-request-id headers)))))
 
 (defn fetch-all
@@ -32,6 +33,7 @@
 (defmethod selectors/select [:get :api/project.files]
   [_ request]
   {:user/id    (get-in request [:auth/user :user/id])
+   :token/aud  (get-in request [:auth/user :jwt/aud])
    :project/id (get-in request [:nav/route :params :project/id])})
 
 (defn fetch
@@ -42,8 +44,9 @@
 
 (defmethod selectors/select [:get :api/file]
   [_ request]
-  {:user/id (get-in request [:auth/user :user/id])
-   :file/id (get-in request [:nav/route :params :file/id])})
+  {:user/id   (get-in request [:auth/user :user/id])
+   :token/aud (get-in request [:auth/user :jwt/aud])
+   :file/id   (get-in request [:nav/route :params :file/id])})
 
 (defn create
   "Handles a request to create a new file in the system."
@@ -56,8 +59,9 @@
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :project/id (get-in request [:nav/route :params :project/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud])
+             :project/id (get-in request [:nav/route :params :project/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defn create-version
@@ -71,8 +75,9 @@
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))
-      (assoc :file/id (get-in request [:nav/route :params :file/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud])
+             :file/id (get-in request [:nav/route :params :file/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
 
 (defn download
@@ -84,4 +89,5 @@
 (defmethod selectors/select [:get :api/artifact]
   [_ request]
   {:user/id     (get-in request [:auth/user :user/id])
+   :token/aud   (get-in request [:auth/user :jwt/aud])
    :artifact/id (get-in request [:nav/route :params :artifact/id])})

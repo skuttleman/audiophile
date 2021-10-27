@@ -6,6 +6,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.templates.html :as html]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]))
 
 (defn assets
@@ -23,7 +24,8 @@
 (defn health
   "Ring handler for communicating the health of the system."
   [{:keys [components]}]
-  (log/debug "Health Check components" (into #{} (map handlers/display-name) components))
+  (log/with-ctx :HEALTH
+    (log/debug "components" (into #{} (map handlers/display-name) components)))
   (fn [_]
     (log/with-ctx :HEALTH
       (let [result (into {}
@@ -45,7 +47,9 @@
   (fn [{:auth/keys [user]}]
     [::http/ok
      (html/render template
-                  {:auth/user (when user (assoc user :token/type (colls/only! (:jwt/aud user))))
+                  {:auth/user (some-> user
+                                      (maps/select (comp #{"user"} namespace))
+                                      (assoc :token/type (colls/only! (:jwt/aud user))))
                    :api-base  api-base
                    :auth-base auth-base})
      {:content-type "text/html"}]))

@@ -11,7 +11,7 @@ help:
 	@echo "  run-jar   - compile artifact and run the jar"
 	@echo "  run-multi - run the application split into multiple instances of microservices"
 	@echo "  run-split - run the application split into microservices"
-	@echo "  test      - run tests"
+	@echo "  tests     - run tests"
 
 run:
 	bin/exec.sh run
@@ -25,7 +25,7 @@ run-split:
 run-multi:
 	bin/exec.sh run multi
 
-test:
+tests:
 	bin/exec.sh test
 
 build:

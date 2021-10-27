@@ -14,4 +14,4 @@
     {:search/field (keyword (:field/entity params)
                             (:field/name params))
      :search/value (:field/value params)
-     :user/id (get-in request [:auth/user :user/id])}))
+     :token/aud    (get-in request [:auth/user :jwt/aud])}))

@@ -22,7 +22,9 @@
         (let [result (int/query-one repo {:user/email "user@domain.tld"})]
           (testing "sends the query to the repository"
             (let [[{:keys [from select where]}] (colls/only! (stubs/calls tx :execute!))]
-              (is (= #{[:users.id "user/id"]}
+              (is (= #{[:users.id "user/id"]
+                       [:users.first-name "user/first-name"]
+                       [:users.handle "user/handle"]}
                      (set select)))
               (is (= [:users] from))
               (is (= [:= #{:users.email "user@domain.tld"}]

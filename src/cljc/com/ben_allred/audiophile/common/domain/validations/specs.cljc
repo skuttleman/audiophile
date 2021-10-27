@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.common.domain.validations.specs
   (:require
+    [clojure.set :as set]
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [malli.util :as mu])
@@ -19,7 +20,12 @@
 
 (def auth
   [:map
-   [:user/id uuid?]])
+   [:user/id uuid?]
+   [:token/aud [:fn (partial set/subset? #{:token/auth})]]])
+
+(def signup
+  [:map
+   [:token/aud [:fn (partial set/subset? #{:token/signup})]]])
 
 (def file-id
   (mu/merge auth [:map [:file/id uuid?]]))
@@ -31,7 +37,7 @@
   (mu/merge auth [:map [:team/id uuid?]]))
 
 (def search
-  (mu/merge auth
+  (mu/merge signup
             [:map
              [:search/field [:fn #{:user/handle :user/mobile-number}]]
              [:search/value trimmed-string?]]))
@@ -96,6 +102,9 @@
 (def api-ws:connect
   (mu/merge auth
             [:map
+             [:token/aud [:fn (fn [s]
+                                (or (contains? s :token/auth)
+                                    (contains? s :token/signup)))]]
              [:accept trimmed-string?]
              [:content-type trimmed-string?]
              [:websocket? [:fn #{true}]]]))
@@ -122,7 +131,7 @@
       (mu/merge team:create)))
 
 (def api-user:create
-  (-> auth
+  (-> signup
       (mu/merge [:map
                  [:request/id {:optional true} uuid?]
                  [:user/email [:re #"^[a-z\-\+_0-9\.]+@[a-z\-\+_0-9]+\.[a-z\-\+_0-9\.]+$"]]])

@@ -13,7 +13,8 @@
 
 (defmethod selectors/select [:get :api/events]
   [_ request]
-  (-> {:user/id (get-in request [:auth/user :user/id])}
+  (-> {:user/id   (get-in request [:auth/user :user/id])
+       :token/aud (get-in request [:auth/user :jwt/aud])}
       (maps/assoc-maybe :filter/since (some-> request
                                               (get-in [:nav/route :params :since])
                                               uuids/->uuid))))

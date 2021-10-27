@@ -13,8 +13,9 @@
 
 (defmethod selectors/select [:get :api/file.comments]
   [_ request]
-  {:user/id (get-in request [:auth/user :user/id])
-   :file/id (get-in request [:nav/route :params :file/id])})
+  {:user/id   (get-in request [:auth/user :user/id])
+   :token/aud (get-in request [:auth/user :jwt/aud])
+   :file/id   (get-in request [:nav/route :params :file/id])})
 
 (defn create
   "Handles a request to create a comment."
@@ -27,5 +28,6 @@
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

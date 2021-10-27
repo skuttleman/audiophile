@@ -43,7 +43,7 @@ Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
 ### Run tests
 
 ```bash
-$ make test
+$ make tests
 ```
 
 ## ERD

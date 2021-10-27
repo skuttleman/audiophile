@@ -14,7 +14,8 @@
 
 (defmethod selectors/select [:get :api/projects]
   [_ request]
-  {:user/id (get-in request [:auth/user :user/id])})
+  {:user/id   (get-in request [:auth/user :user/id])
+   :token/aud (get-in request [:auth/user :jwt/aud])})
 
 (defn fetch
   "Handles a request to fetch one project for a user."
@@ -25,6 +26,7 @@
 (defmethod selectors/select [:get :api/project]
   [_ request]
   {:user/id    (get-in request [:auth/user :user/id])
+   :token/aud  (get-in request [:auth/user :jwt/aud])
    :project/id (get-in request [:nav/route :params :project/id])})
 
 (defn create
@@ -38,5 +40,6 @@
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

@@ -24,6 +24,7 @@
    (login request system user nil))
   ([request system user opts]
    (let [serde (int/component system :serdes/jwt)
+         opts (update-in opts [:jwt/claims :aud] #(or % #{:token/auth}))
          token (serdes/serialize serde user opts)]
      (assoc-in request [:headers "cookie"] (str "auth-token=" token)))))
 

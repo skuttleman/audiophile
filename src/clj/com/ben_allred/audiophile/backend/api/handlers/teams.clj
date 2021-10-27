@@ -14,7 +14,8 @@
 
 (defmethod selectors/select [:get :api/teams]
   [_ request]
-  {:user/id (get-in request [:auth/user :user/id])})
+  {:user/id   (get-in request [:auth/user :user/id])
+   :token/aud (get-in request [:auth/user :jwt/aud])})
 
 (defn fetch
   "Handles a request to fetch one team for a user."
@@ -24,8 +25,9 @@
 
 (defmethod selectors/select [:get :api/team]
   [_ request]
-  {:user/id (get-in request [:auth/user :user/id])
-   :team/id (get-in request [:nav/route :params :team/id])})
+  {:user/id   (get-in request [:auth/user :user/id])
+   :token/aud (get-in request [:auth/user :jwt/aud])
+   :team/id   (get-in request [:nav/route :params :team/id])})
 
 (defn create
   "Handles a request to create a team."
@@ -38,5 +40,6 @@
   [_ request]
   (-> request
       (get-in [:body :data])
-      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

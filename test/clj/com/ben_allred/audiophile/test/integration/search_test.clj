@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.test.integration.search-test
+(ns ^:integration com.ben-allred.audiophile.test.integration.search-test
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
@@ -13,9 +13,9 @@
             handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
-        (testing "when authenticated the handle is in use"
+        (testing "when the handle is in use"
           (let [response (-> {}
-                             (ihttp/login system {:user/id (uuids/random)})
+                             (ihttp/login system {:user/id (uuids/random)} {:jwt/claims {:aud #{:token/signup}}})
                              (ihttp/get system :api/search {:params {:field/entity "user"
                                                                      :field/name   "handle"
                                                                      :field/value  (:user/handle user)}})
@@ -24,9 +24,9 @@
               (is (http/success? response))
               (is (= {:in-use? true} (get-in response [:body :data]))))))
 
-        (testing "when authenticated the handle is not in use"
+        (testing "when the handle is not in use"
           (let [response (-> {}
-                             (ihttp/login system {:user/id (uuids/random)})
+                             (ihttp/login system {:user/id (uuids/random)} {:jwt/claims {:aud #{:token/signup}}})
                              (ihttp/get system :api/search {:params {:field/entity "user"
                                                                      :field/name   "handle"
                                                                      :field/value  "unused-handle"}})
@@ -51,9 +51,9 @@
             handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
-        (testing "when authenticated the mobile-number is in use"
+        (testing "when the mobile-number is in use"
           (let [response (-> {}
-                             (ihttp/login system {:user/id (uuids/random)})
+                             (ihttp/login system {:user/id (uuids/random)} {:jwt/claims {:aud #{:token/signup}}})
                              (ihttp/get system :api/search {:params {:field/entity "user"
                                                                      :field/name   "mobile-number"
                                                                      :field/value  (:user/mobile-number user)}})
@@ -62,9 +62,9 @@
               (is (http/success? response))
               (is (= {:in-use? true} (get-in response [:body :data]))))))
 
-        (testing "when authenticated the mobile-number is not in use"
+        (testing "when the mobile-number is not in use"
           (let [response (-> {}
-                             (ihttp/login system {:user/id (uuids/random)})
+                             (ihttp/login system {:user/id (uuids/random)} {:jwt/claims {:aud #{:token/signup}}})
                              (ihttp/get system :api/search {:params {:field/entity "user"
                                                                      :field/name   "mobile-number"
                                                                      :field/value  "9019019019"}})

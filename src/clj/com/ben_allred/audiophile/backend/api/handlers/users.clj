@@ -15,8 +15,8 @@
 
 (defmethod selectors/select [:post :api/users]
   [_ {user :auth/user :as request}]
-  (when (get-in user [:jwt/aud :token/signup])
-    (-> request
-        (get-in [:body :data])
-        (merge user)
-        (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id]))))))
+  (-> request
+      (get-in [:body :data])
+      (merge user)
+      (assoc :token/aud (:jwt/aud user))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

@@ -104,7 +104,8 @@
 (defmethod selectors/select [:get :ws/connection]
   [_ request]
   (-> request
-      (assoc :user/id (get-in request [:auth/user :user/id]))
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
       (merge (:headers request) (get-in request [:nav/route :params]))))
 
 (defmulti handle-event* (fn [_ _ event]

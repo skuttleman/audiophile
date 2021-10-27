@@ -8,7 +8,7 @@
 
 (defn ^:private select-by [model clause]
   (-> model
-      (models/select-fields #{:id})
+      (models/select-fields #{:id :first-name :handle})
       (models/select* clause)))
 
 (deftype UserExecutor [executor users user-teams]

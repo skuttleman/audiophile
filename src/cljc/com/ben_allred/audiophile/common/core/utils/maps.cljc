@@ -108,3 +108,9 @@
   [m ns]
   (when m
     (medley/map-keys (comp (partial keyword (name ns)) name) m)))
+
+(defn select
+  "Selects all keys that match a predicate"
+  [m pred]
+  (when m
+    (medley/filter-keys pred m)))
