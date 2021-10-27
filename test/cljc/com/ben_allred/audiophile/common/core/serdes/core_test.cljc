@@ -32,7 +32,7 @@
                   (serdes/deserialize serde)))))
 
     (testing "has a mime-type"
-      (is (= "application/json+transit"
+      (is (= "application/transit+json"
              (serdes/mime-type serde))))))
 
 (deftest json-test

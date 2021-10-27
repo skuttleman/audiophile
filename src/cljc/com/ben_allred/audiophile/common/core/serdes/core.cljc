@@ -86,7 +86,7 @@
 
     pserdes/IMime
     (mime-type [_]
-      "application/json+transit")))
+      "application/transit+json")))
 
 (defn ^:private json#serialize [value]
   #?(:clj  (jsonista/write-value-as-string value object-mapper)

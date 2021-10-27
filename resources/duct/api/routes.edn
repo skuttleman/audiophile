@@ -155,9 +155,9 @@
  {}
 
  :audiophile.middleware/with-serde
- {:edn-serde     #ig/ref :serdes/edn
-  :transit-serde #ig/ref :serdes/transit
-  :json-serde    #ig/ref :serdes/json}
+ {:edn     #ig/ref :serdes/edn
+  #_#_:transit #ig/ref :serdes/transit
+  #_#_:json    #ig/ref :serdes/json}
 
  :audiophile.middleware/with-route
  {:nav #ig/ref :services/nav}
