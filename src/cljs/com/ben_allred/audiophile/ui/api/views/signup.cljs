@@ -17,20 +17,30 @@
                            (when token
                              (nav/goto! nav :auth/login {:params {:login-token token}})))))
 
-(defn ^:private label-details-dispatch [*resource _]
-  (let [status (res/status *resource)
-        in-use? (:in-use? @*resource)]
-    (cond
-      (= :requesting status) ::requesting
-      (= :error status) ::error
-      (and (= :success status) (not in-use?)) ::available
-      (and (= :success status) in-use?) ::unavailable)))
+(defn ^:private label-details-dispatch [[status in-use?] _]
+  (cond
+    (= :requesting status) ::requesting
+    (= :error status) ::error
+    (and (= :success status) (not in-use?)) ::available
+    (and (= :success status) in-use?) ::unavailable))
 
 (defmulti ^:private async-label-details label-details-dispatch)
 
 (defmethod async-label-details :default
   [_ _]
   nil)
+
+(defn ^:private label-retry [on-retry & msg]
+  [:<>
+   (into [:div.text--error
+          [comp/icon :exclamation-circle]]
+         msg)
+   [:div
+    " You could try "
+    [:a {:href     "#"
+         :on-click on-retry}
+     "logging in"]
+    " again."]])
 
 (defmethod async-label-details ::requesting
   [_ _]
@@ -42,40 +52,20 @@
 
 (defmethod async-label-details ::unavailable
   [_ {:keys [field on-retry]}]
-  [:<>
-   [:div.text--error
-    [comp/icon :exclamation-circle]
-    " "
-    field
-    " in use."]
-   [:div
-    " You could try "
-    [:a {:href     "#"
-         :on-click on-retry}
-     "logging in"]
-    " again."]])
+  [label-retry on-retry " " field " in use."])
 
 (defmethod async-label-details ::error
   [_ {:keys [on-retry]}]
-  [:<>
-   [:div.text--error
-    [comp/icon :exclamation-circle]
-    " Something went wrong."]
-   [:div
-    " You could try "
-    [:a {:href     "#"
-         :on-click on-retry}
-     "logging in"]
-    " again."]])
+  [label-retry on-retry " Something went wrong."])
 
-(defn ^:private async-label [nav *resource path]
+(defn ^:private async-label [nav details path]
   (r/with-let [on-retry (fn [_]
                           (nav/goto! nav :auth/logout))]
     (let [field (name (first path))
           label (string/replace (string/capitalize field) #"-" " ")]
       [:div.layout--row label
-       (when-let [body (async-label-details *resource (maps/->m on-retry field))]
-         [:div.layout--row {:style {:margin-left "8px"}} body])])))
+       [:div.layout--row {:style {:margin-left "8px"}}
+        [async-label-details details (maps/->m on-retry field)]]])))
 
 (defn ^:private signup-form [*int nav]
   (r/with-let [*form (views/signup-form *int)
@@ -84,26 +74,31 @@
                on-mobile-blur (views/on-blur *int [:user/mobile-number])
                *handles (views/field-resource *int [:user/handle])
                *mobiles (views/field-resource *int [:user/mobile-number])]
-    [comp/form {:*form        *form
-                :style        {:min-width "300px"}
-                :disabled     (or (contains? #{:requesting :error} (res/status *handles))
-                                  (contains? #{:requesting :error} (res/status *mobiles)))
-                :on-submitted on-submitted}
-     [in/input (forms/with-attrs {:label       [async-label nav *handles [:user/handle]]
-                                  :auto-focus? true
-                                  :on-blur     on-handle-blur}
-                                 *form
-                                 [:user/handle])]
-     [in/input (forms/with-attrs {:label   [async-label nav *mobiles [:user/mobile-number]]
-                                  :on-blur on-mobile-blur}
-                                 *form
-                                 [:user/mobile-number])]
-     [in/input (forms/with-attrs {:label "First name"}
-                                 *form
-                                 [:user/first-name])]
-     [in/input (forms/with-attrs {:label "Last name"}
-                                 *form
-                                 [:user/last-name])]]))
+    (let [handle [(res/status *handles) (:in-use? @*handles)]
+          mobile [(res/status *mobiles) (:in-use? @*mobiles)]
+          disabled (or (contains? #{:requesting :error} (first handle))
+                       (contains? #{:requesting :error} (first mobile))
+                       (second handle)
+                       (second mobile))]
+      [comp/form {:*form        *form
+                  :style        {:min-width "300px"}
+                  :disabled     disabled
+                  :on-submitted on-submitted}
+       [in/input (forms/with-attrs {:label       [async-label nav handle [:user/handle]]
+                                    :auto-focus? true
+                                    :on-blur     on-handle-blur}
+                                   *form
+                                   [:user/handle])]
+       [in/input (forms/with-attrs {:label   [async-label nav mobile [:user/mobile-number]]
+                                    :on-blur on-mobile-blur}
+                                   *form
+                                   [:user/mobile-number])]
+       [in/input (forms/with-attrs {:label "First name"}
+                                   *form
+                                   [:user/first-name])]
+       [in/input (forms/with-attrs {:label "Last name"}
+                                   *form
+                                   [:user/last-name])]])))
 
 (defn root [{:keys [*int nav]}]
   (fn [user]
