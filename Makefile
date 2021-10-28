@@ -40,6 +40,9 @@ deploy:
 install:
 	bin/exec.sh install
 
+seed:
+	bin/exec.sh seed
+
 docker:
 	bin/exec.sh docker
 

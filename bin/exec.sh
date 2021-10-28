@@ -7,6 +7,11 @@ function install() {
   npm install
   clj -X:deps prep
 }
+
+function seed() {
+  psql audiophile -f $PWD/dev/resources/db/seed.sql
+}
+
 function build_ui() {
   echo "[building ui ...]"
   npm install
@@ -123,6 +128,10 @@ function test() {
 }
 
 function wipe() {
+  EXT=".${1}"
+  if [ -z "$1" ]; then
+    EXT=""
+  fi
   echo "deleting artifacts"
   /bin/rm -f target/artifacts/*
   echo "artifacts deleted"
@@ -140,7 +149,7 @@ function wipe() {
 
   echo "deleting rabbitmq queues"
   for QUEUE in $(curl -s http://guest:guest@localhost:15672/api/queues | \
-                 jq -r '.[] | .name | select(test("(audiophile)"))'); do
+                 jq -r ".[] | .name | select(test(\"(audiophile${EXT})\"))"); do
     echo "deleting ${QUEUE}"
     rabbitmqadmin delete queue name=$QUEUE
   done
@@ -148,7 +157,7 @@ function wipe() {
 
   echo "deleting rabbitmq exchanges"
   for EXCHANGE in $(curl -s http://guest:guest@localhost:15672/api/exchanges | \
-                    jq -r '.[] | .name | select(test("(audiophile)"))'); do
+                    jq -r ".[] | .name | select(test(\"(audiophile${EXT})\"))"); do
     echo "deleting ${EXCHANGE}"
     rabbitmqadmin delete exchange name=$EXCHANGE
   done
@@ -182,6 +191,9 @@ case "${FUNCTION}" in
     ;;
   run)
     run $@
+    ;;
+  seed)
+    seed $@
     ;;
   test)
     test $@
