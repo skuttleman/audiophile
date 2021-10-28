@@ -19,29 +19,22 @@
     (java.io Closeable)
     (java.nio.charset StandardCharsets)))
 
-(defn ^:private ->handler [handler retries max-retries exchange serde opts]
+(defn ^:private ->handler [handler exchange serde]
   (fn [^Channel channel {:keys [delivery-tag]} ^bytes msg]
     (try
       (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))
             ctx (or (:command/ctx msg) (:event/ctx msg))
             msg* (select-keys msg #{:event/type :command/type})]
         (when (int/handle? handler msg)
-          (swap! retries maps/assoc-defaults delivery-tag max-retries)
           (log/with-ctx (assoc ctx :logger/id :MQ)
             (log/info "consuming from" exchange msg*)
-            (int/handle! handler msg)
-            (when-not (:auto-ack opts)
-              (swap! retries dissoc delivery-tag)
-              (.basicAck channel delivery-tag false)))))
+            (int/handle! handler msg)))
+        (u/silent!
+          (.basicAck channel delivery-tag false)))
       (catch Throwable ex
         (log/error ex "an error occurred while handling msg")
-        (when-not (:auto-ack opts)
-          (let [done? (zero? (get (swap! retries update delivery-tag dec) delivery-tag))]
-            (when done?
-              (swap! retries dissoc delivery-tag)
-              (log/warn "exhausted retries" delivery-tag))
-            (u/silent!
-              (.basicReject channel delivery-tag (not done?)))))))))
+        (u/silent!
+          (.basicReject channel delivery-tag false))))))
 
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
@@ -64,7 +57,7 @@
                          (lq/bind ch queue-name exchange)
                          queue-name)
                        queue-name)
-          handler* (->handler handler (atom nil) (:max-retries ch-opts) exchange serde opts)]
+          handler* (->handler handler exchange serde)]
       (log/with-ctx :MQ
         (log/info "subscribing" queue-name "to" exchange)
         (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler))))))
