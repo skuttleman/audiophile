@@ -32,12 +32,9 @@
                    :redirect_uri redirect-uri)})
 
 (defn ^:private token* [http-client {:keys [token-uri] :as cfg} opts]
-  (-> opts
-      (->> (token-request cfg)
-           (http/post http-client token-uri))
-      (v/peek (fn [result]
-                (log/info "token response" result))
-              nil)))
+  (->> opts
+       (token-request cfg)
+       (http/post http-client token-uri)))
 
 (defn ^:private profile-request [tokens]
   {:params  (select-keys tokens #{:access_token})
@@ -45,8 +42,9 @@
              :accept       "application/json"}})
 
 (defn ^:private profile* [http-client {:keys [profile-uri] :as cfg} opts]
-  (let [result (-> (token* http-client cfg opts)
-                   (v/then-> (->> profile-request (http/get http-client profile-uri)))
+  (let [result (-> http-client
+                   (token* cfg opts)
+                   (v/then-> profile-request (->> (http/get http-client profile-uri)))
                    v/deref!)]
     (log/info "profile response" result)
     result))
