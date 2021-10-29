@@ -39,6 +39,38 @@
         (testing "fails"
           (is (thrown? Throwable (int/query-one repo {:user/email "user@domain.tld"}))))))))
 
+(deftest query-by-id-test
+  (testing "query-by-id"
+    (let [tx (trepos/stub-transactor trepos/->user-executor)
+          repo (rusers/->UserAccessor tx nil)
+          user-id (uuids/random)]
+      (testing "when querying for a user"
+        (stubs/use! tx :execute!
+                    [{:id user-id :some :details}])
+        (let [result (int/query-one repo {:user/id user-id})]
+          (testing "sends the query to the repository"
+            (let [[{:keys [from select where]}] (colls/only! (stubs/calls tx :execute!))]
+              (is (= #{[:users.id "user/id"]
+                       [:users.handle "user/handle"]
+                       [:users.email "user/email"]
+                       [:users.first-name "user/first-name"]
+                       [:users.last-name "user/last-name"]
+                       [:users.mobile-number "user/mobile-number"]
+                       [:users.created-at "user/created-at"]}
+                     (set select)))
+              (is (= [:users] from))
+              (is (= [:= #{:users.id user-id}]
+                     (tu/op-set where)))))
+
+          (testing "returns the result"
+            (is (= {:id user-id :some :details} result)))))
+
+      (testing "when the repository throws"
+        (stubs/use! tx :execute!
+                    (ex-info "Nope" {}))
+        (testing "fails"
+          (is (thrown? Throwable (int/query-one repo {:user/id user-id}))))))))
+
 (deftest create!-test
   (testing "create!"
     (let [ch (ts/->chan)
