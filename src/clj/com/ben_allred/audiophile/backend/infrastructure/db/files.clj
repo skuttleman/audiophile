@@ -155,14 +155,12 @@
     (when-let [file (-> (if (:includes/versions? opts)
                           (select-one-plain files file-id)
                           (select-one files file-id))
-                        (cond->
-                          (not (:internal/verified? opts))
-                          (update :where (fn [clause]
-                                           [:and
-                                            clause
-                                            [:exists (file-access-clause projects
-                                                                         user-teams
-                                                                         (:user/id opts))]])))
+                        (update :where (fn [clause]
+                                         [:and
+                                          clause
+                                          [:exists (file-access-clause projects
+                                                                       user-teams
+                                                                       (:user/id opts))]]))
                         (->> (repos/execute! executor))
                         colls/only!)]
       (cond-> file

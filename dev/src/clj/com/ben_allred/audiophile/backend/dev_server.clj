@@ -1,7 +1,9 @@
 (ns com.ben-allred.audiophile.backend.dev-server
   (:require
+    [com.ben-allred.audiophile.backend.core :as core]
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
     [duct.core :as duct]
@@ -39,9 +41,9 @@
       (require 'com.ben-allred.audiophile.backend.infrastructure.db.core :reload))))
 
 (defn reset-sys!
-  ([routes]
-   (reset-sys! system routes))
-  ([sys routes]
+  ([routes daemons]
+   (reset-sys! system routes daemons))
+  ([sys routes daemons]
    (some-> sys ig/halt!)
    (reload!)
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev"]))]
@@ -50,15 +52,14 @@
          (duct/read-config uduct/readers)
          (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]] routes)
          (duct/prep-config [:duct.profile/base :duct.profile/dev])
-         (ig/init [:duct/daemon])))))
+         (ig/init (log/spy (into [:duct/daemon] daemons)))))))
 
-(defn -main [& routes]
+(defn -main [& components]
   (duct/load-hierarchy)
-  (alter-var-root #'system reset-sys! (into #{}
-                                            (map (comp ig/ref
-                                                       keyword
-                                                       (partial str "routes/table#")))
-                                            routes))
+  (alter-var-root #'system
+                  reset-sys!
+                  (core/->refs ig/ref "routes/table#" components)
+                  (core/->refs identity "routes/daemon#" components))
   (let [nrepl-port (Long/parseLong (or (System/getenv "NREPL_PORT") "7000"))
         server (nrepl/start-server :port nrepl-port)]
     (log/with-ctx :nREPL
@@ -75,17 +76,35 @@
   (second (colls/only! (ig/find-derived system k))))
 
 (comment
-  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#api)
-                                            (ig/ref :routes/table#auth)
-                                            (ig/ref :routes/table#jobs)
-                                            (ig/ref :routes/table#ui)})
+  (do (alter-var-root #'system
+                      reset-sys!
+                      #{(ig/ref :routes/table#api)
+                        (ig/ref :routes/table#auth)
+                        (ig/ref :routes/table#jobs)
+                        (ig/ref :routes/table#ui)}
+                      #{:routes/daemon#api
+                        :routes/daemon#auth
+                        :routes/daemon#jobs
+                        :routes/daemon#ui})
       nil)
 
-  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#api)})
+  (do (alter-var-root #'system
+                      reset-sys!
+                      #{(ig/ref :routes/table#api)}
+                      #{:routes/daemon#api})
       nil)
-  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#auth)})
+  (do (alter-var-root #'system
+                      reset-sys!
+                      #{(ig/ref :routes/table#auth)}
+                      #{:routes/daemon#auth})
       nil)
-  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#jobs)})
+  (do (alter-var-root #'system
+                      reset-sys!
+                      #{(ig/ref :routes/table#jobs)}
+                      #{:routes/daemon#jobs})
       nil)
-  (do (alter-var-root #'system reset-sys! #{(ig/ref :routes/table#ui)})
+  (do (alter-var-root #'system
+                      reset-sys!
+                      #{(ig/ref :routes/table#ui)}
+                      #{:routes/daemon#ui})
       nil))

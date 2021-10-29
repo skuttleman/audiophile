@@ -18,8 +18,10 @@
   [:post :api/project.files] #ig/ref :api.handler/project.files#post
   [:post :api/projects]      #ig/ref :api.handler/projects#post
   [:post :api/teams]         #ig/ref :api.handler/teams#post
-  [:post :api/users]         #ig/ref :api.handler/users#post
-  :internal/deps             #{#ig/ref :rabbitmq.sub/events#ws}}
+  [:post :api/users]         #ig/ref :api.handler/users#post}
+
+ [:duct/const :routes/daemon#api]
+ #{#ig/ref :rabbitmq.sub/events#ws}
 
  [:duct/const :routes/table#auth]
  {[:get :auth/callback]    #ig/ref :audiophile.handlers.auth/callback
@@ -28,13 +30,15 @@
   [:get :resources/health] #ig/ref :res.handler/health}
 
  [:duct/const :routes/table#jobs]
- {[:get :resources/health] #ig/ref :res.handler/health
-  :internal/deps           #{#ig/ref :rabbitmq.sub/commands#comments
-                             #ig/ref :rabbitmq.sub/commands#files
-                             #ig/ref :rabbitmq.sub/commands#projects
-                             #ig/ref :rabbitmq.sub/commands#teams
-                             #ig/ref :rabbitmq.sub/commands#users
-                             #ig/ref :rabbitmq.sub/events#persist}}
+ {[:get :resources/health] #ig/ref :res.handler/health}
+
+ [:duct/const :routes/daemon#jobs]
+ #{#ig/ref :rabbitmq.sub/commands#comments
+   #ig/ref :rabbitmq.sub/commands#files
+   #ig/ref :rabbitmq.sub/commands#projects
+   #ig/ref :rabbitmq.sub/commands#teams
+   #ig/ref :rabbitmq.sub/commands#users
+   #ig/ref :rabbitmq.sub/events#persist}
 
  [:duct/const :routes/table#ui]
  {[:get :resources/css]    #ig/ref :audiophile.routes/assets

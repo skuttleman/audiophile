@@ -65,7 +65,10 @@
                config)))
 
 (defmacro with-config [[sym keys f & f-args] opts & body]
-  (let [[opts body] (if (map? opts)
+  (let [keys (into keys #{:routes/daemon#api
+                          :routes/daemon#auth
+                          :routes/daemon#jobs})
+        [opts body] (if (map? opts)
                       [opts body]
                       [nil (cons opts body)])]
     `(let [cfg# (~mocked-cfg ~config-base ~opts)
