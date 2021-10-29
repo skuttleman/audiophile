@@ -59,6 +59,9 @@
 (defmethod ig/init-key :audiophile.handlers.files/download [_ cfg]
   (files/download cfg))
 
+(defmethod ig/init-key :audiophile.handlers.users/profile [_ cfg]
+  (users/profile cfg))
+
 (defmethod ig/init-key :audiophile.handlers.projects/fetch-all [_ cfg]
   (projects/fetch-all cfg))
 

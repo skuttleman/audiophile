@@ -9,6 +9,18 @@
         component (get components-table handle comp/not-found)]
     [component state]))
 
+(defn root [{:keys [banners components-table header modals toasts]}]
+  (fn [state]
+    [:div
+     [banners (:banners state)]
+     [header state]
+     [:div.main.layout--inset
+      {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
+      [:div.layout--inset
+       [root* components-table state]]]
+     [modals (:modals state)]
+     [toasts (:toasts state)]]))
+
 (defn comment-form [interactor file-id file-version-id]
   (vp/comment-form interactor file-id file-version-id))
 
@@ -59,15 +71,3 @@
 
 (defn update-qp! [interactor m]
   (vp/update-qp! interactor m))
-
-(defn root [{:keys [banners components-table header modals toasts]}]
-  (fn [state]
-    [:div
-     [banners (:banners state)]
-     [header state]
-     [:div.main.layout--inset
-      {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
-      [:div.layout--inset
-       [root* components-table state]]]
-     [modals (:modals state)]
-     [toasts (:toasts state)]]))

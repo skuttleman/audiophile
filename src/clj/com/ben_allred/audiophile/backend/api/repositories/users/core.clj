@@ -2,6 +2,12 @@
   (:require
     [com.ben-allred.audiophile.backend.api.repositories.users.protocols :as pu]))
 
+(defn find-by-id
+  ([accessor user-id]
+   (find-by-id accessor user-id nil))
+  ([accessor user-id opts]
+   (pu/find-by-id accessor user-id opts)))
+
 (defn find-by-email
   ([accessor email]
    (find-by-email accessor email nil))

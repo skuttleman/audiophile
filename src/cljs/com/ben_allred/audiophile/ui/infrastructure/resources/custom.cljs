@@ -52,7 +52,7 @@
 
 (defn login-fn [{:keys [nav]}]
   (fn [{value :form/value :keys [route]}]
-    (let [params {:email        (:email value) ;; TODO - Dev only??!?
+    (let [params {:email        (:email value)
                   :redirect-uri (get-in route [:params :redirect-uri] "/")}]
       (nav/goto! nav :auth/login {:params params})
       (v/resolve))))
@@ -61,3 +61,11 @@
   (fn [opts]
     {:nav/params {:params opts}
      :nav/route  :api/search}))
+
+(defn profile-fetcher [{:keys [http-client nav]}]
+  (fn [_]
+    (-> http-client
+        (http/get (nav/path-for nav :api/profile))
+        (v/peek (fn [[status]]
+                  (when (= :error status)
+                    (nav/goto! nav :auth/logout)))))))

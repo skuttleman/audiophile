@@ -12,10 +12,11 @@
   :ui/file    #ig/ref :audiophile.views.files/one}
 
  :audiophile.views.home/root
- {:nav           #ig/ref :services/nav
+ {:*modals       #ig/ref :audiophile.core/modals
+  :*profile      #ig/ref [:audiophile.resources/base :users/profile]
+  :nav           #ig/ref :services/nav
   :project-form  #ig/ref :audiophile.views.projects/create
   :projects-tile #ig/ref :tiles/projects#all
-  :*modals       #ig/ref :audiophile.core/modals
   :signup-form   #ig/ref :audiophile.views.signup/root
   :team-form     #ig/ref :audiophile.views.teams/create
   :teams-tile    #ig/ref :tiles/teams#all}
@@ -36,13 +37,13 @@
   :*mobiles #ig/ref [:audiophile.resources/base :users/search#mobile-number]
   :*users   #ig/ref [:audiophile.resources/toaster :users/create]}
 
+ [:audiophile.resources/base :users/profile]
+ {:opts->vow #ig/ref :audiophile.resources.custom/profile-fetcher}
+
  [:audiophile.resources/base :users/search#handle]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :users/search]}
 
  [:audiophile.resources/base :users/search#mobile-number]
- {:opts->vow #ig/ref [:audiophile.resources/http-handler :users/search]}
-
- [:audiophile.resources/base :users/search]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :users/search]}
 
  [:audiophile.resources/toaster :users/create]
@@ -54,6 +55,10 @@
 
  [:audiophile.resources/base :users/create]
  {:opts->vow #ig/ref [:audiophile.resources/http-handler :users/create]}
+
+ :audiophile.resources.custom/profile-fetcher
+ {:http-client #ig/ref :services/http
+  :nav         #ig/ref :services/nav}
 
  [:audiophile.resources/http-handler :users/search]
  {:http-client   #ig/ref :services/http

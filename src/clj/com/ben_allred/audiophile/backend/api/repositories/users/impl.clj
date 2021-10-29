@@ -7,11 +7,24 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
+(defmulti ^:private find-by (fn [_ {:user/keys [email id]}]
+                              (cond
+                                id :user/id
+                                email :user/email)))
+
+(defmethod find-by :user/id
+  [executor opts]
+  (users/find-by-id executor (:user/id opts) opts))
+
+(defmethod find-by :user/email
+  [executor opts]
+  (users/find-by-email executor (:user/email opts) opts))
+
 (deftype UserAccessor [repo ch]
   pint/IUserAccessor
   pint/IAccessor
   (query-one [_ opts]
-    (repos/transact! repo users/find-by-email (:user/email opts) opts))
+    (repos/transact! repo find-by opts))
   (create! [_ data opts]
     (ps/emit-command! ch :user/create! data opts)))
 

@@ -34,7 +34,8 @@
      ["/search"
       [[["/" :field/entity "/" :field/name "/" :field/value] :api/search]]]
      ["/users"
-      [["" :api/users]]]
+      [["/profile" :api/profile]
+       ["" :api/users]]]
      [true :api/not-found]]]
 
    ;; UI

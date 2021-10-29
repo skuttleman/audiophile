@@ -37,6 +37,9 @@
 (defmethod ig/init-key :audiophile.resources.custom/comment-poster [_ cfg]
   (cres/comment-poster cfg))
 
+(defmethod ig/init-key :audiophile.resources.custom/profile-fetcher [_ cfg]
+  (cres/profile-fetcher cfg))
+
 (defmethod ig/init-key :audiophile.resources.toaster/result-fn [_ cfg]
   (toaster/toast-fn cfg))
 

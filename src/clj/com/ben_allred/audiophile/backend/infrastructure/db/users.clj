@@ -11,31 +11,38 @@
       (models/select-fields #{:id :first-name :handle})
       (models/select* clause)))
 
+(defn ^:private select!
+  ([executor query]
+   (select! executor query nil))
+  ([executor query opts]
+   (-> executor
+       (repos/execute! query opts)
+       colls/only!)))
+
 (deftype UserExecutor [executor users user-teams]
   pu/IUserExecutor
+  (find-by-id [_ user-id opts]
+    (select! executor (models/select* users [:= :users.id user-id]) opts))
   (find-by-email [_ email opts]
-    (colls/only! (repos/execute! executor
-                                 (select-by users [:= :users.email email])
-                                 opts)))
+    (select! executor (select-by users [:= :users.email email]) opts))
   (insert-user! [_ user _]
     (-> executor
-        (repos/execute! (models/insert-into users user))
-        colls/only!
+        (select! (models/insert-into users user))
         :id))
 
   ps/ISearchUserExecutor
   (find-by-handle [_ handle opts]
-    (colls/only! (repos/execute! executor
-                                 (-> users
-                                     (select-by [:= :users.handle handle])
-                                     (assoc :select [1]))
-                                 opts)))
+    (select! executor
+             (-> users
+                 (select-by [:= :users.handle handle])
+                 (assoc :select [1]))
+             opts))
   (find-by-mobile-number [_ mobile-number opts]
-    (colls/only! (repos/execute! executor
-                                 (-> users
-                                     (select-by [:= :users.mobile-number mobile-number])
-                                     (assoc :select [1]))
-                                 opts))))
+    (select! executor
+             (-> users
+                 (select-by [:= :users.mobile-number mobile-number])
+                 (assoc :select [1]))
+             opts)))
 
 (defn ->executor
   "Factory function for creating [[UserExecutor]] which provides access to the user repository

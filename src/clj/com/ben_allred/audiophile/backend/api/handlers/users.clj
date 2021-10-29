@@ -20,3 +20,14 @@
       (merge user)
       (assoc :token/aud (:jwt/aud user))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
+
+(defn profile
+  "Loads the user's profile data"
+  [{:keys [interactor]}]
+  (fn [data]
+    (int/query-one interactor data)))
+
+(defmethod selectors/select [:get :api/profile]
+  [_ {user :auth/user}]
+  {:user/id   (:user/id user)
+   :token/aud (:jwt/aud user)})

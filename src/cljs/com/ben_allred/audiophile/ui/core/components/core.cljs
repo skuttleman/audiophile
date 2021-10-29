@@ -19,15 +19,27 @@
    [:div.message-body
     body]])
 
+(defmulti resource-error (fn [error-type _ _] error-type))
+
+(defmethod resource-error :default
+  [_ _ _]
+  [:div.error "An error occurred. Please try again."])
+
+(defmethod resource-error :http/timeout
+  [_ _ _]
+  [:div.error "The request timed out. Check your internet connection and refresh."])
+
 (defn with-resource [*res component & args]
   (r/with-let [[*resource opts] (colls/force-sequential *res)
                _ (res/request! *resource opts)]
-    (case (res/status *resource)
-      :success (into [component @*resource] args)
-      :error [:div.error (if (some-> @*resource meta :http/timeout?)
-                           "The request timed out. Check your internet connection."
-                           "An error occurred. Please try again.")]
-      [in/spinner {:size (:spinner/size opts)}])))
+    (let [value @*resource
+          error-type (if (some-> value meta :http/timeout?)
+                       :http/timeout
+                       (::error-type opts))]
+      (case (res/status *resource)
+        :success (into [component @*resource] args)
+        :error [resource-error error-type value opts]
+        [in/spinner {:size (:spinner/size opts)}]))))
 
 (defn not-found [_]
   [:div {:style {:display         :flex

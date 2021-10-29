@@ -3,6 +3,7 @@
   [:get :api/events]         #ig/ref :api.handler/events#get
   [:get :api/file.comments]  #ig/ref :api.handler/comments#get
   [:get :api/file]           #ig/ref :api.handler/file#get
+  [:get :api/profile]        #ig/ref :api.handler/user#get
   [:get :api/project.files]  #ig/ref :api.handler/project.files#get
   [:get :api/project]        #ig/ref :api.handler/project#get
   [:get :api/projects]       #ig/ref :api.handler/projects#get
@@ -61,6 +62,10 @@
  [:audiophile.spec/with-spec :api.handler/project.files#get]
  {:handler #ig/ref :audiophile.handlers.files/fetch-all
   :spec    :api.common/project-id}
+
+ [:audiophile.spec/with-spec :api.handler/user#get]
+ {:handler #ig/ref :audiophile.handlers.users/profile
+  :spec    :api.common/auth}
 
  [:audiophile.spec/with-spec :api.handler/project#get]
  {:handler #ig/ref :audiophile.handlers.projects/fetch
@@ -181,6 +186,9 @@
   :jwt-serde  #ig/ref :serdes/jwt
   :nav        #ig/ref :services/nav
   :oauth      #ig/ref :services/oauth}
+
+ :audiophile.handlers.users/profile
+ {:interactor #ig/ref :interactors/users}
 
  :audiophile.handlers.projects/fetch-all
  {:interactor #ig/ref :interactors/projects}

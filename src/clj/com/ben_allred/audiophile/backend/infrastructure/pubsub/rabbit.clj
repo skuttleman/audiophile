@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.backend.infrastructure.pubsub.rabbit
   (:require
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
     [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
