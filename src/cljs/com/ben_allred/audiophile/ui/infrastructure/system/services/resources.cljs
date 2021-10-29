@@ -43,9 +43,6 @@
 (defmethod ig/init-key :audiophile.resources.toaster/result-fn [_ cfg]
   (toaster/toast-fn cfg))
 
-(defmethod ig/init-key :audiophile.resources.user/login-fn [_ cfg]
-  (cres/login-fn cfg))
-
 (defmethod ig/init-key :audiophile.resources.user/search [_ cfg]
   (cres/search cfg))
 

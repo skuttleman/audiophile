@@ -9,4 +9,7 @@
   {:login-resource #ig/ref :resources/user-login}
 
   [:audiophile.resources/base :resources/user-login]
-  {:opts->vow #ig/ref :audiophile.resources.user/login-fn}}}
+  {:opts->vow #ig/ref :audiophile.dev/login-fn}
+
+  :audiophile.dev/login-fn
+  {:nav #ig/ref :services/nav}}}

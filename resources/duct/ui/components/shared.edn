@@ -10,9 +10,6 @@
  :audiophile.services/store
  {:env #ig/ref :services.ui/env}
 
- :audiophile.resources.user/login-fn
- {:nav #ig/ref :services/nav}
-
  [:audiophile.resources.toaster/result-fn :toaster/success]
  {:msg "Success"}
 

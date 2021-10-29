@@ -2,6 +2,7 @@
   (:require
     [clojure.core.async :as async]
     [clojure.pprint :as pp]
+    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
@@ -12,6 +13,7 @@
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.forms.core :as forms]
     [com.ben-allred.audiophile.ui.infrastructure.system :as cfg]
+    [com.ben-allred.vow.core :as v]
     [integrant.core :as ig]))
 
 (defonce ^:private sys
@@ -53,6 +55,13 @@
                                       :auto-focus? true}
                                      *form
                                      [:email])]]))))
+
+(defmethod ig/init-key :audiophile.dev/login-fn [_ {:keys [nav]}]
+  (fn [{value :form/value :keys [route]}]
+    (let [params {:email        (:email value)
+                  :redirect-uri (get-in route [:params :redirect-uri] "/")}]
+      (nav/goto! nav :auth/login {:params params})
+      (v/resolve))))
 
 (defn component [k]
   (second (colls/only! (ig/find-derived @sys k))))
