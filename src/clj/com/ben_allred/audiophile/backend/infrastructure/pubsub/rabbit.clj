@@ -16,12 +16,11 @@
     [langohr.exchange :as le]
     [langohr.queue :as lq])
   (:import
-    (com.rabbitmq.client Channel)
     (java.io Closeable)
     (java.nio.charset StandardCharsets)))
 
 (defn ^:private ->handler [handler exchange serde]
-  (fn [^Channel channel {:keys [delivery-tag]} ^bytes msg]
+  (fn [_ch _metadata ^bytes msg]
     (try
       (let [msg (serdes/deserialize serde (String. msg StandardCharsets/UTF_8))
             ctx (or (:command/ctx msg) (:event/ctx msg))
@@ -29,13 +28,9 @@
         (when (int/handle? handler msg)
           (log/with-ctx (assoc ctx :logger/id :MQ)
             (log/info "consuming from" exchange msg*)
-            (int/handle! handler msg)))
-        (u/silent!
-          (.basicAck channel delivery-tag false)))
+            (int/handle! handler msg))))
       (catch Throwable ex
-        (log/error ex "an error occurred while handling msg")
-        (u/silent!
-          (.basicReject channel delivery-tag false))))))
+        (log/error ex "an error occurred while handling msg")))))
 
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
@@ -107,10 +102,10 @@
   (.close ^Closeable conn))
 
 (defn channel [{:keys [conn queue-cfg]}]
-  (pps/chan conn queue-cfg))
+  (ps/chan conn queue-cfg))
 
 (defn subscriber [{:keys [ch handler opts]}]
-  (pps/subscribe! ch handler opts))
+  (ps/subscribe! ch handler opts))
 
 (defn exchange [{:keys [name namespace]}]
   (str "audiophile." namespace "." name))
