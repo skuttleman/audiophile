@@ -170,39 +170,10 @@ if [ ${1+x} ]; then
   shift
 fi
 
-case "${FUNCTION}" in
-  build)
-    build $@
-    ;;
-  clean)
-    clean $@
-    ;;
-  deploy)
-    deploy $@
-    ;;
-  docker)
-    dockerize $@
-    ;;
-  migrate)
-    migrate $@
-    ;;
-  purge)
-    purge $@
-    ;;
-  run)
-    run $@
-    ;;
-  seed)
-    seed $@
-    ;;
-  test)
-    test $@
-    ;;
-  wipe)
-    wipe $@
-    ;;
-  *)
-    echo "unknown function ${FUNCTION}"
-    exit 1
-    ;;
-esac
+if [[ $(type -t $FUNCTION) == function ]]; then
+  $FUNCTION $@
+  exit 0
+fi
+
+1>&2 echo "unknown function: '${FUNCTION}'"
+exit 1
