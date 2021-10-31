@@ -35,7 +35,7 @@
 
 (defn ^:private project-details [project *team]
   (let [opts {:nav/params {:params {:team/id (:project/team-id project)}}}]
-    [:div {:style {:display :flex}}
+    [:div.layout--row
      [:h2.subtitle (:project/name project)]
      [:div {:style {:width "16px"}}]
      [comp/with-resource [*team opts] team-view]]))
@@ -146,10 +146,10 @@
     [:div
      [:p [:strong "Your projects"]]
      (if (seq projects)
-       [:ul
+       [:ul.project-list
         (for [{:project/keys [id name]} projects]
           ^{:key id}
-          [:li.layout--space-between
+          [:li.project-item.layout--space-between
            [:a.link {:href (project-href nav id)}
             [:span name]]])]
        [:p "You don't have any projects. Why not create one?"])]))

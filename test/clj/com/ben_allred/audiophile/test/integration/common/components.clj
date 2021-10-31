@@ -65,7 +65,7 @@
 
 (defmethod ig/init-key :audiophile.test/datasource [_ {:keys [spec]}]
   (let [datasource (hikari/make-datasource spec)
-        db-name (str "test_db_" (string/replace (str (uuids/random)) #"-" ""))]
+        db-name (str "audiophile_test_" (string/replace (str (uuids/random)) #"-" ""))]
     (jdbc/execute! datasource [(str "CREATE DATABASE " db-name)])
     (let [ds (hikari/make-datasource (assoc spec :database-name db-name))]
       (reify

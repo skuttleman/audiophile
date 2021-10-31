@@ -15,6 +15,12 @@
            :compiler   {:optimizations :advanced}
            :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}
 
+          :web-test
+          {:target     :browser
+           :output-dir "resources/public/js"
+           :compiler   {:optimizations :advanced}
+           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
+
           :test
           {:target    :browser-test
            :test-dir  "resources/private"

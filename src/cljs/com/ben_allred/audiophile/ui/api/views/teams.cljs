@@ -27,10 +27,10 @@
     [:div
      [:p [:strong "Your teams"]]
      (if (seq teams)
-       [:ul
+       [:ul.team-list
         (for [{team-name :team/name :team/keys [id type]} teams
               :let [[title icon] (team-type->icon (keyword type))]]
-          ^{:key id} [:li {:style {:display :flex}}
+          ^{:key id} [:li.layout--row.team-item
                       [:div {:style {:display         :flex
                                      :justify-content :center
                                      :width           "32px"}}

@@ -12,8 +12,7 @@
     [nrepl.server :as nrepl]
     [ring.middleware.reload :as rel]
     com.ben-allred.audiophile.backend.dev.accessors
-    com.ben-allred.audiophile.backend.dev.handler
-    com.ben-allred.audiophile.backend.infrastructure.system.core))
+    com.ben-allred.audiophile.backend.dev.handler))
 
 (defonce system nil)
 
@@ -52,7 +51,7 @@
          (duct/read-config uduct/readers)
          (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]] routes)
          (duct/prep-config [:duct.profile/base :duct.profile/dev])
-         (ig/init (log/spy (into [:duct/daemon] daemons)))))))
+         (ig/init (into [:duct/daemon] daemons))))))
 
 (defn -main [& components]
   (duct/load-hierarchy)

@@ -50,6 +50,7 @@
       (fn [route]
         [comp/form {:*form       *form
                     :route       route
+                    :class       ["login-form"]
                     :submit/text "Login"}
          [in/input (forms/with-attrs {:label       "email"
                                       :auto-focus? true}

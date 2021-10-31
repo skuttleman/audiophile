@@ -83,7 +83,8 @@
       [comp/form {:*form        *form
                   :style        {:min-width "300px"}
                   :disabled     disabled
-                  :on-submitted on-submitted}
+                  :on-submitted on-submitted
+                  :class        ["signup-form"]}
        [in/input (forms/with-attrs {:label       [async-label nav handle [:user/handle]]
                                     :auto-focus? true
                                     :on-blur     on-handle-blur}

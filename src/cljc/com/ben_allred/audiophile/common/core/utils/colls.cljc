@@ -20,6 +20,14 @@
   (cond-> item
     (not (sequential? item)) vector))
 
+(defn force-seq
+  "Wraps `item` in a sequential singleton collection if it's not already seqable (other than string"
+  [item]
+  (cond-> item
+    (and (not (string? item))
+         (not (seqable? item)))
+    vector))
+
 (defn only!
   "arity-1 - if `coll` has more than one item, throws an exception.
              otherwise it returns the first item

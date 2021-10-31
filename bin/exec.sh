@@ -124,7 +124,8 @@ function test_ui() {
 }
 
 function test() {
-  clj -A:dev:test -Sthreads 1 -m kaocha.runner && test_ui
+  clj -A:cljs-dev:test:shadow-cljs -Sthreads 1 -m shadow.cljs.devtools.cli compile web-test && \
+    clj -A:dev:test -Sthreads 1 -m kaocha.runner && test_ui
 }
 
 function wipe() {

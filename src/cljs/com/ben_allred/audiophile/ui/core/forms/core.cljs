@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.ui.core.forms.core
   (:require
+    [clojure.string :as string]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.ui.core.forms.protocols :as pforms]))
@@ -64,9 +65,11 @@
                   (get-in (errors *form) path))
          [attempted? attempting?] (when (satisfies? pforms/IAttempt *form)
                                     [(attempted? *form)
-                                     (attempting? *form)])]
+                                     (attempting? *form)])
+         class (string/join "-" (map name path))]
      (-> attrs
-         (assoc :visited? visited? :attempted? attempted? :errors errors)
+         (merge (maps/->m visited? attempted? errors))
+         (update :class (fnil conj []) class)
          (maps/assoc-defaults :disabled attempting?
                               :on-blur  (constantly nil))
 

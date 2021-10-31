@@ -1,0 +1,23 @@
+#audiophile/merge
+[#duct/include "dev.edn"
+ {:duct.profile/test {[:duct/const :services/transactor]
+                      ^:promote #ig/ref :audiophile.test/transactor
+
+                      [:duct/const :services/datasource]
+                      ^:promote #ig/ref :audiophile.test/datasource
+
+                      [:duct/const :test/seed-data]
+                      #duct/include "seed.edn"
+
+                      :audiophile.test/transactor
+                      {:->executor #ig/ref :audiophile.repositories/->executor
+                       :datasource #ig/ref :services/datasource
+                       :migrator   #ig/ref :audiophile.migrations/migrator
+                       :seed-data  #ig/ref :test/seed-data}
+
+                      :audiophile.test/datasource
+                      {:spec #ig/ref :config/db}
+
+                      :audiophile.migrations/migrator
+                      {:datasource          #ig/ref :audiophile.test/datasource
+                       :migrations-res-path #ig/ref :resources/migration-path}}}]

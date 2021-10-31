@@ -32,6 +32,11 @@
     flex-direction: row;
 }
 
+.layout--col {
+    display: flex;
+    flex-direction: row;
+}
+
 .layout--space-above {
     padding-top: 12px;
 }
