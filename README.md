@@ -12,23 +12,23 @@ This is a pet project to make a tool that helps audio engineers and musicians re
 - Install [Sass](https://sass-lang.com/install)
 - Install [Foreman](http://blog.daviddollar.org/2011/05/06/introducing-foreman.html)
 - Install [Graphviz](https://graphviz.org/download/)
-- Install [Make](https://askubuntu.com/questions/161104/how-do-i-install-make)
+- Install [Babashka](https://book.babashka.org/#_installation)
 
 ### Install
 
 ```bash
 $ git clone git@github.com:skuttleman/audiophile.git
 $ cd audiophile
-$ make install
+$ bb go install
 ```
 
 ### Run application in dev mode
 
 ```bash
-$ make run # runs the entire server side api in a single process
-$ make run-split # runs the server side api as separate microservices
-$ make run-multi # runs multiple instances of each microservice
-$ make run-jar # builds static assets and run a pre-compiled jar without any dev-only implementations
+$ bb go run # runs the entire server side api in a single process
+$ bb go run split # runs the server side api as separate microservices
+$ bb go run multi # runs multiple instances of each microservice
+$ bb go run jar # builds static assets and run a pre-compiled jar without any dev-only implementations
 ```
 
 Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
@@ -43,7 +43,7 @@ Visit `http://localhost:{UI_PORT:-8080}` in your browser to use app.
 ### Run tests
 
 ```bash
-$ make tests
+$ bb go test
 ```
 
 ## ERD

@@ -1,0 +1,6 @@
+{:paths ["bin/bb"]
+ :deps  {babashka/babashka.curl {:mvn/version "0.0.3"}
+         babashka/process       {:mvn/version "0.0.1"}
+         cheshire/cheshire      {:mvn/version "5.10.1"}}
+ :tasks {:requires ([audiophile.exec.core :as ex])
+         go        (apply ex/-main *command-line-args*)}}

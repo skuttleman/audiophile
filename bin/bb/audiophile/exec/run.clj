@@ -1,0 +1,77 @@
+(ns audiophile.exec.run
+  (:require
+    [audiophile.exec.shared :as shared]
+    [babashka.process :as p]))
+
+(defmethod shared/main* :run
+  [_ [mode & args]]
+  (println "running with profile" (or (keyword mode) :single))
+  (shared/run* mode args))
+
+(defmethod shared/run* :jar
+  [_ _]
+  (shared/main* :clean nil)
+  (shared/main* :build nil)
+  (shared/process! "foreman start"
+                   (-> {"LOG_LEVEL" "info"}
+                       shared/with-default-env
+                       (assoc "ENV" "production"
+                              "SERVICES" "api auth jobs ui"))))
+
+(defmethod shared/run* :split
+  [_ _]
+  (shared/process! "foreman start --procfile Procfile-split"
+                   (-> {"LOG_LEVEL" "debug"}
+                       shared/with-default-env
+                       (assoc "ENV" "development"
+                              "WS_RECONNECT_MS" "1000"))))
+
+(defmethod shared/run* :multi
+  [_ _]
+  (shared/process! "foreman start --procfile Procfile-multi"
+                   (-> {"LOG_LEVEL" "debug"}
+                       shared/with-default-env
+                       (assoc "ENV" "development"
+                              "WS_RECONNECT_MS" "1000"))))
+
+(defmethod shared/run* :default
+  [_ _]
+  (shared/process! "foreman start --procfile Procfile-single"
+                   (-> {"LOG_LEVEL" "debug"}
+                       shared/with-default-env
+                       (assoc "ENV" "development"
+                              "WS_RECONNECT_MS" "1000"))))
+
+(defmethod shared/main* :test
+  [_ [mode & args]]
+  (if mode
+    (shared/test* mode args)
+    (doseq [mode [:clj :cljs]]
+      (shared/test* mode nil))))
+
+(defmethod shared/test* :clj
+  [_ _]
+  (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
+                               "-m shadow.cljs.devtools.cli compile web-test"))
+  (shared/process! (shared/clj #{:dev :test}
+                               "-m kaocha.runner")))
+
+(defmethod shared/test* :cljs
+  [_ _]
+  (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
+                               "-m shadow.cljs.devtools.cli compile test"))
+  (shared/process! (shared/clj #{:dev :test}
+                               "-m com.ben-allred.audiophile.test.browser-runner")))
+
+(defmethod shared/main* :seed
+  [_ [file :as args]]
+  (let [sql (or file (str (System/getenv "PWD") "/dev/resources/db/seed.sql"))]
+    (println ["seeding" "db" "…" args])
+    (shared/process! (str "psql audiophile -f " sql))
+    (println ["…" "db" "seeded"])))
+
+(defmethod shared/main* :migrate
+  [_ _]
+  (println ["migrating" "db" "…"])
+  (shared/process! #{:dev} "-m com.ben-allred.audiophile.backend.dev.migrations migrate")
+  (println ["…" "db" "migrated"]))
