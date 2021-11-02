@@ -9,7 +9,10 @@
   [_ [mode & args]]
   (if mode
     (shared/build* mode args)
-    (doseq [mode [:clj :cljs]]
+    (doseq [mode (->> (methods shared/build*)
+                      keys
+                      (concat [:clj :cljs])
+                      distinct)]
       (shared/build* mode nil)) ))
 
 (defmethod shared/build* :clj
@@ -112,10 +115,13 @@
 
 (defmethod shared/wipe* :rabbit
   [_ [mode & args]]
-  (if mode
-    (shared/rabbit* mode args)
-    (doseq [[mode] (methods shared/rabbit*)]
-      (shared/rabbit* mode nil))))
+  (case mode
+    (nil "all") (doseq [mode (->> (methods shared/rabbit*)
+                                  keys
+                                  (concat [:queues :exchanges])
+                                  distinct)]
+                  (shared/rabbit* mode args))
+    (shared/rabbit* mode args)))
 
 (defn ^:private rabbit* [single plural ext]
   (let [url (str "http://guest:guest@localhost:15672/api/" plural)]

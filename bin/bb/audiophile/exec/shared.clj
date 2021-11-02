@@ -4,7 +4,7 @@
     [clojure.string :as string]))
 
 (defn ^:private dispatch-fn [k _]
-  (keyword k))
+  (keyword (cond-> k (and (string? k) (= \: (first k))) (subs 1))))
 
 (defmulti build* dispatch-fn)
 

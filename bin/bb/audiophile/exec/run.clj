@@ -46,15 +46,19 @@
   [_ [mode & args]]
   (if mode
     (shared/test* mode args)
-    (doseq [mode [:clj :cljs]]
+    (doseq [mode (->> (methods shared/test*)
+                      keys
+                      (concat [:clj :cljs])
+                      distinct)]
       (shared/test* mode nil))))
 
 (defmethod shared/test* :clj
   [_ _]
-  (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
-                               "-m shadow.cljs.devtools.cli compile web-test"))
-  (shared/process! (shared/clj #{:dev :test}
-                               "-m kaocha.runner")))
+  (try (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
+                                    "-m shadow.cljs.devtools.cli compile web-test"))
+       (shared/process! (shared/clj #{:dev :test} "-m kaocha.runner"))
+       (finally
+         (shared/main* :wipe ["rabbit" "all" "test"]))))
 
 (defmethod shared/test* :cljs
   [_ _]
