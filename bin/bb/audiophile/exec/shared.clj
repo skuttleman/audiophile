@@ -30,11 +30,11 @@
   ([command]
    (process! command {}))
   ([command env]
-   (let [status (:exit @(p/process ["sh" "-c" command]
-                                   {:inherit   true
-                                    :extra-env env}))]
-     (when-not (zero? status)
-       (throw (ex-info "non-zero status" {:command command :env env}))))))
+   (-> ["sh" "-c" command]
+       (p/process {:extra-env env
+                   :inherit true
+                   :shutdown p/destroy-tree})
+       p/check)))
 
 (defn clj
   ([arg]

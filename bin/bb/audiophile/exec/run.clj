@@ -1,7 +1,8 @@
 (ns audiophile.exec.run
   (:require
     [audiophile.exec.shared :as shared]
-    [babashka.process :as p]))
+    [babashka.process :as p]
+    [clojure.string :as string]))
 
 (defmethod shared/main* :run
   [_ [mode & args]]
@@ -53,10 +54,12 @@
       (shared/test* mode nil))))
 
 (defmethod shared/test* :clj
-  [_ _]
+  [_ args]
   (try (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
                                     "-m shadow.cljs.devtools.cli compile web-test"))
-       (shared/process! (shared/clj #{:dev :test} "-m kaocha.runner"))
+       (shared/process! (shared/clj #{:dev :test} (str "-m kaocha.runner"
+                                                       (when (seq args)
+                                                         (str " " (string/join " " args))))))
        (finally
          (shared/main* :wipe ["rabbit" "all" "test"]))))
 
