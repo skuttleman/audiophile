@@ -11,7 +11,7 @@
 
 (deftest fetch-all-projects-test
   (testing "GET /api/projects"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -49,7 +49,7 @@
 
 (deftest fetch-project-test
   (testing "GET /api/projects/:project-id"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [project-id (:project/id (int/lookup-project system "Project Seed"))
             handler (-> system
                         (int/component :api/handler)
@@ -84,7 +84,7 @@
 
 (deftest create-projects-test
   (testing "POST /api/projects"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))

@@ -16,7 +16,7 @@
 
 (deftest auth-callback-test
   (testing "GET /auth/callback"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
@@ -76,7 +76,7 @@
 
 (deftest auth-login-test
   (testing "GET /auth/login"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
@@ -100,7 +100,7 @@
 
 (deftest auth-signup-test
   (testing "GET /api/users"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))
@@ -139,7 +139,7 @@
                              (ihttp/login system signup {:jwt/claims {:aud #{:token/signup}}})
                              (ihttp/post system :api/users)
                              (ihttp/as-async system handler))]
-            (testing "produces a login token"
+            (testing "returns an error"
               (is (http/client-error? response))
               (is (= :user/create!
                      (get-in response [:body :data :error/command]))))))))))

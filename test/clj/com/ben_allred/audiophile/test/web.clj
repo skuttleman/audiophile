@@ -1,20 +1,20 @@
 (ns com.ben-allred.audiophile.test.web
   (:require
+    [clojure.string :as string]
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
+    [com.ben-allred.audiophile.test.integration.common.components :as tcomp]
     [com.ben-allred.audiophile.test.utils.selenium :as selenium]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
     com.ben-allred.audiophile.backend.dev.accessors
     com.ben-allred.audiophile.backend.dev.handler
-    com.ben-allred.audiophile.backend.infrastructure.system.core
-    com.ben-allred.audiophile.test.integration.common.components
-    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
-    [clojure.string :as string]
-    [com.ben-allred.audiophile.common.core.utils.core :as u])
+    com.ben-allred.audiophile.backend.infrastructure.system.core)
   (:import
     (java.net ServerSocket)
     (org.apache.commons.io.output NullWriter)))
@@ -63,20 +63,22 @@
               (u/silent!
                 (selenium/close! ~sym)))))))
 
-(defmacro with-web [& body]
-  `(binding [*system* (binding [*out* NullWriter/NULL_WRITER]
-                        (run-system!))]
-     (try ~@body
-          (finally
-            (binding [*out* NullWriter/NULL_WRITER]
-              (u/silent!
-                (ig/halt! *system*)))))))
+(defmacro with-web [test-id & body]
+  `(if (= ~test-id :web)
+     (binding [*system* (binding [*out* NullWriter/NULL_WRITER]
+                          (run-system!))]
+       (try ~@body
+            (finally
+              (binding [*out* NullWriter/NULL_WRITER]
+                (u/silent!
+                  (ig/halt! *system*))))))
+     (do ~@body)))
 
 (defn wrap-run [run]
   (fn [testable plan]
-    (if-not (= :web (:kaocha.testable/id testable))
-      (run testable plan)
-      (with-web (run testable plan)))))
+    (tcomp/with-db (:kaocha.testable/id testable)
+      (with-web (:kaocha.testable/id testable)
+        (run testable plan)))))
 
 (defn visit! [driver path]
   (selenium/visit! driver (str (get *system* [:duct/const :env/base-url#ui]) path)))

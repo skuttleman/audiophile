@@ -55,10 +55,9 @@
     {:nav/params {:params opts}
      :nav/route  :api/search}))
 
-(defn profile-fetcher [{:keys [http-client nav]}]
+(defn profile-fetcher [{:keys [http-client nav store]}]
   (fn [_]
     (-> http-client
         (http/get (nav/path-for nav :api/profile))
-        (v/peek (fn [[status]]
-                  (when (= :error status)
-                    (nav/goto! nav :auth/logout)))))))
+        (v/peek nil (fn [_]
+                      (nav/goto! nav :auth/logout))))))

@@ -8,7 +8,7 @@
 
 (deftest search-handle-test
   (testing "GET /api/search/:entity/:name/:value"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
@@ -46,7 +46,7 @@
 
 (deftest search-mobile-number-test
   (testing "GET /api/search/:entity/:name/:value"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)

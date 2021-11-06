@@ -3,12 +3,12 @@
     [clojure.core.async :as async]
     [clojure.core.async.impl.protocols :as async.protocols]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
+    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
+    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.backend.dev.migrations :as mig]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.backend.infrastructure.db.core :as db]
-    [com.ben-allred.audiophile.backend.api.pubsub.core :as ps]
-    [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
+    [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.backend.infrastructure.pubsub.ws :as ws]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
@@ -18,9 +18,34 @@
     [next.jdbc :as jdbc]
     [next.jdbc.protocols :as pjdbc])
   (:import
+    (com.opentable.db.postgres.embedded EmbeddedPostgres)
     (java.io Closeable)
+    (java.sql Timestamp)
     (javax.sql DataSource)
     (org.projectodd.wunderboss.web.async Channel)))
+
+(def ^:dynamic *datasource*)
+
+(defn migrate! [datasource]
+  (mig/migrate! (mig/create-migrator datasource)))
+
+(defn seed! [datasource seed-data]
+  (doseq [query seed-data]
+    (jdbc/execute! datasource
+                   (mapv (fn [x]
+                           (cond-> x
+                             (inst? x) (-> .getTime Timestamp.)))
+                         (sql/format query)))))
+
+(defmacro with-db [test-id & body]
+  `(if (= ~test-id :integration)
+     (let [pg# (.start (EmbeddedPostgres/builder))]
+       (binding [*datasource* (.getPostgresDatabase pg#)]
+         (try (migrate! *datasource*)
+              ~@body
+              (finally
+                (.close pg#)))))
+     (do ~@body)))
 
 (defmethod ig/init-key :audiophile.test/ws-handler [_ {:keys [pubsub]}]
   (fn [request]
@@ -56,18 +81,16 @@
                    (close! [_]
                      (ps/close! ch)))])))
 
-(defmethod ig/init-key :audiophile.test/transactor [_ {:keys [->executor datasource migrator opts seed-data]}]
-  (mig/migrate! migrator)
-  (doto (db/->Transactor datasource opts ->executor)
-    (repos/transact! (fn [executor]
-                       (doseq [query seed-data]
-                         (repos/execute! executor query))))))
+(defmethod ig/init-key :audiophile.test/transactor [_ {:keys [->executor datasource opts]}]
+  (db/->Transactor datasource opts ->executor))
 
-(defmethod ig/init-key :audiophile.test/datasource [_ {:keys [spec]}]
+(defmethod ig/init-key :audiophile.test/datasource#pg [_ {:keys [seed-data spec]}]
   (let [datasource (hikari/make-datasource spec)
         db-name (str "audiophile_test_" (string/replace (str (uuids/random)) #"-" ""))]
     (jdbc/execute! datasource [(str "CREATE DATABASE " db-name)])
     (let [ds (hikari/make-datasource (assoc spec :database-name db-name))]
+      (migrate! ds)
+      (seed! ds seed-data)
       (reify
         Closeable
         (close [_]
@@ -83,8 +106,22 @@
         (-transact [_ body-fn opts]
           (pjdbc/-transact ds body-fn opts))))))
 
-(defmethod ig/halt-key! :audiophile.test/datasource [_ datasource]
+(defmethod ig/halt-key! :audiophile.test/datasource#pg [_ datasource]
   (.close datasource))
+
+(defmethod ig/init-key :audiophile.test/datasource#mem [_ {:keys [seed-data]}]
+  (doseq [query seed-data]
+    (jdbc/execute! *datasource* (mapv (fn [x]
+                                        (cond-> x
+                                          (inst? x) (-> .getTime Timestamp.)))
+                                      (sql/format query))))
+  *datasource*)
+
+(defmethod ig/halt-key! :audiophile.test/datasource#mem [_ ds]
+  (doto ds
+    (jdbc/execute! ["TRUNCATE users CASCADE"])
+    (jdbc/execute! ["TRUNCATE teams CASCADE"])
+    (jdbc/execute! ["TRUNCATE artifacts CASCADE"])))
 
 (defmethod ig/init-key :audiophile.test/rabbitmq#conn [_ _]
   (let [chs (atom nil)]

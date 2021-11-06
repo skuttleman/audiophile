@@ -39,9 +39,9 @@
       (require 'com.ben-allred.audiophile.common.infrastructure.pubsub.memory :reload)
       (require 'com.ben-allred.audiophile.backend.infrastructure.db.core :reload))))
 
-(defn reset-sys!
+(defn system-init!
   ([routes daemons]
-   (reset-sys! system routes daemons))
+   (system-init! system routes daemons))
   ([sys routes daemons]
    (some-> sys ig/halt!)
    (reload!)
@@ -53,12 +53,16 @@
          (duct/prep-config [:duct.profile/base :duct.profile/dev])
          (ig/init (into [:duct/daemon] daemons))))))
 
-(defn -main [& components]
-  (duct/load-hierarchy)
+(defn reset-system! [components]
   (alter-var-root #'system
-                  reset-sys!
+                  system-init!
                   (core/->refs ig/ref "routes/table#" components)
                   (core/->refs identity "routes/daemon#" components))
+  nil)
+
+(defn -main [& components]
+  (duct/load-hierarchy)
+  (reset-system! components)
   (let [nrepl-port (Long/parseLong (or (System/getenv "NREPL_PORT") "7000"))
         server (nrepl/start-server :port nrepl-port)]
     (log/with-ctx :nREPL
@@ -75,35 +79,8 @@
   (second (colls/only! (ig/find-derived system k))))
 
 (comment
-  (do (alter-var-root #'system
-                      reset-sys!
-                      #{(ig/ref :routes/table#api)
-                        (ig/ref :routes/table#auth)
-                        (ig/ref :routes/table#jobs)
-                        (ig/ref :routes/table#ui)}
-                      #{:routes/daemon#api
-                        :routes/daemon#auth
-                        :routes/daemon#jobs
-                        :routes/daemon#ui})
-      nil)
-
-  (do (alter-var-root #'system
-                      reset-sys!
-                      #{(ig/ref :routes/table#api)}
-                      #{:routes/daemon#api})
-      nil)
-  (do (alter-var-root #'system
-                      reset-sys!
-                      #{(ig/ref :routes/table#auth)}
-                      #{:routes/daemon#auth})
-      nil)
-  (do (alter-var-root #'system
-                      reset-sys!
-                      #{(ig/ref :routes/table#jobs)}
-                      #{:routes/daemon#jobs})
-      nil)
-  (do (alter-var-root #'system
-                      reset-sys!
-                      #{(ig/ref :routes/table#ui)}
-                      #{:routes/daemon#ui})
-      nil))
+  (reset-system! #{"api" "auth" "jobs" "ui"})
+  (reset-system! #{"api"})
+  (reset-system! #{"auth"})
+  (reset-system! #{"jobs"})
+  (reset-system! #{"ui"}))

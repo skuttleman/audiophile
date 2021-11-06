@@ -14,7 +14,7 @@
 
 (deftest upload-artifact-test
   (testing "POST /api/artifacts"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -38,7 +38,7 @@
 
 (deftest fetch-all-files-test
   (testing "GET /api/projects/:project-id/files"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -97,7 +97,7 @@
 
 (deftest create-files-test
   (testing "POST /api/projects/:project-id/files"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -166,7 +166,7 @@
 
 (deftest create-file-versions-test
   (testing "POST /api/files/:file-id"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -250,7 +250,7 @@
               (is (http/client-error? response)))))))))
 
 (deftest artifact-test
-  (int/with-config [system [:api/handler]] {:db/enabled? true}
+  (int/with-config [system [:api/handler]]
     (let [edn (int/component system :serdes/edn)
           serde (reify
                   pserdes/ISerde

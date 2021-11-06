@@ -4,20 +4,18 @@
                       ^:promote #ig/ref :audiophile.test/transactor
 
                       [:duct/const :services/datasource]
-                      ^:promote #ig/ref :audiophile.test/datasource
+                      ^:promote #ig/ref :audiophile.test/datasource#pg
 
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
 
                       :audiophile.test/transactor
                       {:->executor #ig/ref :audiophile.repositories/->executor
-                       :datasource #ig/ref :services/datasource
-                       :migrator   #ig/ref :audiophile.migrations/migrator
-                       :seed-data  #ig/ref :test/seed-data}
+                       :datasource #ig/ref :services/datasource}
 
-                      :audiophile.test/datasource
-                      {:spec #ig/ref :config/db}
+                      :audiophile.test/datasource#pg
+                      {:seed-data #ig/ref :test/seed-data
+                       :spec      #ig/ref :config/db}
 
                       :audiophile.migrations/migrator
-                      {:datasource          #ig/ref :audiophile.test/datasource
-                       :migrations-res-path #ig/ref :resources/migration-path}}}]
+                      {:datasource #ig/ref :services/datasource}}}]

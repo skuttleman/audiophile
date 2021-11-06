@@ -10,7 +10,7 @@
 
 (deftest fetch-all-comments-test
   (testing "GET /api/files/:file-id/comments"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -50,7 +50,7 @@
 
 (deftest create-comments-test
   (testing "POST /api/comments"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))

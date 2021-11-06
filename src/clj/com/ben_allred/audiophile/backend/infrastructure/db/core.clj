@@ -9,10 +9,10 @@
   (:import
     (java.sql Timestamp)))
 
-(deftype QueryFormatter []
+(deftype QueryFormatter [opts]
   prepos/IFormatQuery
   (format [_ query]
-    (sql/format query)))
+    (sql/format query opts)))
 
 (deftype RawFormatter []
   prepos/IFormatQuery
@@ -52,8 +52,8 @@
 
 (defn query-formatter
   "Constructor for [[QueryFormatter]] to convert query maps into a prepared SQL statement."
-  [_]
-  (->QueryFormatter))
+  [{:keys [format-opts]}]
+  (->QueryFormatter format-opts))
 
 (defn raw-formatter
   "Constructor for [[RawFormatter]] used to query with raw SQL directly."

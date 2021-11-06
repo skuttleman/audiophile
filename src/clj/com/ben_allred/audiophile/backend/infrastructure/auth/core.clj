@@ -27,18 +27,18 @@
                           ["" {:max-age 0}])]
      (assoc response :cookies (ring/->cookie "auth-token" value cookie)))))
 
-(defn ^:private home-path [nav error-msg]
+(defn ^:private home-path [nav params]
   (nav/path-for nav
                 :ui/home
-                (when error-msg
-                  {:params {:error-msg error-msg}})))
+                (when params
+                  {:params params})))
 
 (defn ^:private ->redirect-url
   "Generates redirect url"
   ([nav base-url]
    (->redirect-url nav base-url nil))
-  ([nav base-url error-msg]
-   (str base-url (home-path nav error-msg))))
+  ([nav base-url params]
+   (str base-url (home-path nav params))))
 
 (defn ^:private redirect* [nav oauth jwt-serde base-url params]
   (let [claims (some->> params :login-token (serdes/deserialize jwt-serde))
@@ -46,9 +46,7 @@
     (-> (or (when token (->redirect-url nav base-url))
             (safely! "generating a redirect url to the auth provider"
               (papp/redirect-uri oauth params))
-            (nav/path-for nav
-                          :ui/home
-                          {:params {:error-msg :login-failed}}))
+            (home-path nav {:error-msg :login-failed}))
         ring/redirect
         (cond-> token (with-token token)))))
 
@@ -59,10 +57,6 @@
 (defn ^:private fetch-user [email interactor]
   (safely! "querying the user from the database"
     (int/query-one interactor {:user/email email})))
-
-(defn ^:private request->params [request]
-  (or (get-in request [:nav/route :params])
-      {}))
 
 (defn ^:private params->token [interactor oauth jwt-serde params]
   (when-let [email (-> params
@@ -75,20 +69,16 @@
 (deftype AuthInteractor [interactor oauth nav jwt-serde base-url]
   pint/IAuthInteractor
   (login [_ params]
-    (some->> params
-             request->params
-             (redirect* nav oauth jwt-serde base-url)))
-  (logout [_ _]
+    (redirect* nav oauth jwt-serde base-url params))
+  (logout [_ params]
     (-> nav
-        (->redirect-url base-url)
+        (->redirect-url base-url params)
         ring/redirect
         with-token))
   (callback [_ params]
-    (let [token (some->> params
-                         request->params
-                         (params->token interactor oauth jwt-serde))]
+    (let [token (params->token interactor oauth jwt-serde params)]
       (-> nav
-          (->redirect-url base-url (when-not token :login-failed))
+          (->redirect-url base-url (when-not token {:error-msg :login-failed}))
           ring/redirect
           (with-token token)))))
 

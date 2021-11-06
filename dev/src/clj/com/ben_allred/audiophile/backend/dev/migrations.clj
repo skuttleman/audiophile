@@ -26,6 +26,12 @@
   (create [_ name]
     (migratus/create cfg name)))
 
+(defn create-migrator [datasource]
+  (->Migrator {:store                :database
+               :migration-dir        "resources/db/migrations/"
+               :migration-table-name "db_migrations"
+               :db                   {:datasource datasource}}))
+
 (defn migrate! [migrator]
   (pdev/migrate migrator))
 
@@ -42,11 +48,8 @@
 (defn create! [migrator name]
   (pdev/create migrator name))
 
-(defmethod ig/init-key :audiophile.migrations/migrator [_ {:keys [datasource migrations-res-path]}]
-  (->Migrator {:store                :database
-               :migration-dir        (format "resources/%s/" migrations-res-path)
-               :migration-table-name "db_migrations"
-               :db                   {:datasource datasource}}))
+(defmethod ig/init-key :audiophile.migrations/migrator [_ {:keys [datasource]}]
+  (create-migrator datasource))
 
 (defmacro ^:private with-migrator [sys & body]
   `(let [system# (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev" ".env-migrations"]))]

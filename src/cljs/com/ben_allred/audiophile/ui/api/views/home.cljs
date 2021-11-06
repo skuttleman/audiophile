@@ -98,4 +98,4 @@
         [comp/with-resource [*profile {::comp/error-type ::profile}] root* cfg state]
 
         :else
-        (nav/navigate! nav :ui/login)))))
+        (nav/navigate! nav :ui/login (:nav/route state))))))

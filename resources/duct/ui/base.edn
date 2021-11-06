@@ -31,4 +31,5 @@
 
   :audiophile.services.http/with-unauthorized
   {:*banners #ig/ref :audiophile.core/banners
-   :nav      #ig/ref :services/nav}}]
+   :nav      #ig/ref :services/nav
+   :store    #ig/ref :services/store}}]

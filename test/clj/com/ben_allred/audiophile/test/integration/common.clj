@@ -30,7 +30,7 @@
 (defn ^:private mocked-cfg
   ([base]
    (mocked-cfg base nil))
-  ([base opts]
+  ([base _]
    (let [store (atom {})]
      (-> base
          (assoc [:duct/const :services/oauth]
@@ -46,16 +46,7 @@
                                 (get [_ k _]
                                   (get @store k))
                                 (put! [_ k v _]
-                                  (swap! store assoc-in [k :Body] v)))))
-         (cond->
-           (not (:db/enabled? opts))
-           (assoc [:duct/const :services/transactor]
-                  (stubs/create (reify
-                                  prepos/ITransact
-                                  (transact! [this f]
-                                    (f this))
-                                  prepos/IExecute
-                                  (execute! [_ _ _])))))))))
+                                  (swap! store assoc-in [k :Body] v)))))))))
 
 (defn setup-stub [config & args]
   (->> args
@@ -64,13 +55,11 @@
                  (setup-stub cfg k m f))
                config)))
 
-(defmacro with-config [[sym keys f & f-args] opts & body]
+(defmacro with-config [[sym keys f & f-args] & body]
   (let [keys (into keys #{:routes/daemon#api
                           :routes/daemon#auth
                           :routes/daemon#jobs})
-        [opts body] (if (map? opts)
-                      [opts body]
-                      [nil (cons opts body)])]
+         opts (meta sym)]
     `(let [cfg# (~mocked-cfg ~config-base ~opts)
            system# (-> cfg#
                        ((or ~f identity) ~@f-args)

@@ -58,7 +58,8 @@
 
  :audiophile.resources.custom/profile-fetcher
  {:http-client #ig/ref :services/http
-  :nav         #ig/ref :services/nav}
+  :nav         #ig/ref :services/nav
+  :store       #ig/ref :services/store}
 
  [:audiophile.resources/http-handler :users/search]
  {:http-client   #ig/ref :services/http

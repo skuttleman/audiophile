@@ -11,7 +11,7 @@
 
 (deftest fetch-all-teams-test
   (testing "GET /api/teams"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]
@@ -50,7 +50,7 @@
 
 (deftest fetch-team-test
   (testing "GET /api/teams/:team-id"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [team-id (:team/id (int/lookup-team system "Team Seed"))
             handler (-> system
                         (int/component :api/handler)
@@ -85,7 +85,7 @@
 
 (deftest create-teams-test
   (testing "POST /api/teams"
-    (int/with-config [system [:api/handler]] {:db/enabled? true}
+    (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde system :serdes/edn))]

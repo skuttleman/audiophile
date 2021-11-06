@@ -2,7 +2,8 @@
   (:require
     #?@(:clj  [[clj-http.cookies :as cook]]
         :cljs [[com.ben-allred.audiophile.ui.core.components.core :as comp]
-               [com.ben-allred.audiophile.ui.core.utils.dom :as dom]])
+               [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
+               [com.ben-allred.audiophile.ui.infrastructure.store.core :as store]])
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
     [clojure.set :as set]
@@ -78,7 +79,7 @@
     (fn [http-client]
       (->HttpBase http-client timeout))))
 
-(defn ^:private ->auth-handler [*banners nav]
+(defn ^:private ->auth-handler [store *banners nav]
   #?(:cljs    (let [banner {:level :error
                             :key   ::unauthenticated
                             :body  [:div
@@ -86,8 +87,9 @@
                                     [:a
                                      {:href     "#"
                                       :on-click (fn [e]
-                                                  (dom/stop-propagation e)
-                                                  (nav/goto! nav :auth/logout))}
+                                                  (let [path (get-in (store/get-state store) [:nav/route :path])]
+                                                    (dom/stop-propagation e)
+                                                    (nav/goto! nav :auth/logout {:params {:redirect-uri path}})))}
                                      "login"]
                                     "."]}]
                 (fn [err]
@@ -102,9 +104,9 @@
     (-> (pres/request! http-client request)
         (v/catch auth-handler))))
 
-(defn with-unauthorized [{:keys [*banners nav]}]
+(defn with-unauthorized [{:keys [*banners nav store]}]
   (fn [http-client]
-    (->HttpAuth http-client (->auth-handler *banners nav))))
+    (->HttpAuth http-client (->auth-handler store *banners nav))))
 
 (defn ^:private response-logger [this request level ks]
   (fn [result]

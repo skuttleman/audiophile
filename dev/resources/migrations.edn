@@ -5,8 +5,7 @@
    :com.ben-allred/audiophile.migrations
 
    :audiophile.migrations/migrator
-   {:datasource          #ig/ref :audiophile.repositories/datasource
-    :migrations-res-path #ig/ref :resources/migration-path}
+   {:datasource #ig/ref :services/datasource}
 
    :audiophile.repositories/->executor
    ^:promote {:query-formatter #ig/ref :audiophile.repositories/raw-formatter}
