@@ -13,7 +13,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with comments"
           (let [user (int/lookup-user system "joe@example.com")
                 file-id (:file/id (int/lookup-file system "File Seed"))
@@ -53,7 +53,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))
+                        (ihttp/with-serde system :serdes/transit))
             file-id (:file/id (int/lookup-file system "File Seed"))
             file-version-id (:file-version/id (int/lookup-file-version system "File Version Seed"))]
         (testing "when authenticated"

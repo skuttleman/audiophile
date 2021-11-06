@@ -12,7 +12,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with events"
           (let [result (-> {}
                            (ihttp/login system user)

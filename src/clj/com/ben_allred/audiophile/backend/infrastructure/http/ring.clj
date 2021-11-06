@@ -65,10 +65,14 @@
       :else (str color elapsed "ns\u001B[0m"))))
 
 (defn ^:private log-msg [request response elapsed]
-  (let [time (log-time elapsed)]
-    (format "%s %s [%s] - %d"
+  (let [time (log-time elapsed)
+        query (if-let [qs (:query-string request)]
+                (str "?" qs)
+                "")]
+    (format "%s %s%s [%s] - %d"
             (csk/->SCREAMING_SNAKE_CASE_STRING (:request-method request))
             (:uri request)
+            query
             time
             (:status response))))
 

@@ -1,19 +1,22 @@
 (ns com.ben-allred.audiophile.common.infrastructure.system.services.serdes
   (:require
-    [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [integrant.core :as ig]))
 
 (defmethod ig/init-key :audiophile.services.serdes/edn [_ cfg]
-  (serdes/edn cfg))
+  (serde/edn cfg))
 
 (defmethod ig/init-key :audiophile.services.serdes/transit [_ cfg]
-  (serdes/transit cfg))
+  (serde/transit cfg))
 
 (defmethod ig/init-key :audiophile.services.serdes/json [_ cfg]
-  (serdes/json cfg))
+  (serde/json cfg))
 
 (defmethod ig/init-key :audiophile.services.serdes/urlencode [_ cfg]
-  (serdes/urlencode cfg))
+  (serde/urlencode cfg))
 
 (defmethod ig/init-key :audiophile.services.serdes/jwt [_ cfg]
-  (serdes/jwt cfg))
+  (serde/jwt cfg))
+
+(defmethod ig/init-key :audiophile.services.serdes/base64 [_ cfg]
+  (serde/base64 cfg))

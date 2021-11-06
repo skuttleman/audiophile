@@ -3,6 +3,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ->model-fn [model]
@@ -10,8 +11,8 @@
     (let [k' (keyword (name k))
           cast-fn (if-let [cast (get-in model [:casts k'])]
                     (case cast
-                      :jsonb (partial serdes/deserialize (serdes/json {}))
-                      :numrange #(some->> % .getValue (serdes/deserialize (serdes/edn {})))
+                      :jsonb (partial serdes/deserialize (serde/json {}))
+                      :numrange #(some->> % .getValue (serdes/deserialize (serde/edn {})))
                       keyword)
                     identity)]
       [k (cast-fn v)])))

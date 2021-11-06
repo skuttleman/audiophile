@@ -1,7 +1,13 @@
 {[:duct/const :serdes/jwt]
  #ig/ref :audiophile.services.serdes/jwt
 
+ [:duct/const :serdes/base64]
+ #ig/ref :audiophile.services.serdes/base64
+
  :audiophile.services.serdes/jwt
  {:data-serde #ig/ref :serdes/transit
   :expiration #ig/ref :env.jwt/expiration
-  :secret     #ig/ref :env.jwt/secret}}
+  :secret     #ig/ref :env.jwt/secret}
+
+ :audiophile.services.serdes/base64
+ {}}

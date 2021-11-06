@@ -2,7 +2,7 @@
  #ig/ref :audiophile.services.pubsub/memory
 
  [:audiophile.ui.services/env :services.ui/env]
- {:edn #ig/ref :serdes/edn}
+ {:transit #ig/ref :serdes/transit}
 
  [:audiophile.ui.services/base-urls :services.ui/base-urls]
  {:env #ig/ref :services.ui/env}
@@ -12,7 +12,7 @@
   :nav          #ig/ref :services/nav
   :pubsub       #ig/ref :services/pubsub
   :reconnect-ms #ig/ref :env/ws-reconnect-ms
-  :serde        #ig/ref :serdes/edn
+  :serde        #ig/ref :serdes/transit
   :store        #ig/ref :services/store}
 
  :audiophile.services.pubsub/memory

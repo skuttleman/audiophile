@@ -14,7 +14,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with teams"
           (let [user (int/lookup-user system "joe@example.com")
                 team-id (:team/id (int/lookup-team system "Team Seed"))
@@ -54,7 +54,7 @@
       (let [team-id (:team/id (int/lookup-team system "Team Seed"))
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with teams"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
@@ -88,7 +88,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {:team/name "team name"

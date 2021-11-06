@@ -5,6 +5,7 @@
     [com.ben-allred.audiophile.backend.api.repositories.core :as repos]
     [com.ben-allred.audiophile.backend.infrastructure.db.models.sql :as sql]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -133,7 +134,7 @@
                                       cast (get casts k')
                                       pre-cast (when cast
                                                  (case cast
-                                                   (:jsonb :numrange) (partial serdes/serialize (serdes/json {}))
+                                                   (:jsonb :numrange) (partial serdes/serialize (serde/json {}))
                                                    name))]
                                   (when (valid-column? model k' (namespace k))
                                     [k' (cond-> v

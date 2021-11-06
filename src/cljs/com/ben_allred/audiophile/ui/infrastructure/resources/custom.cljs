@@ -8,7 +8,8 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.vow.core :as v :include-macros true]))
+    [com.ben-allred.vow.core :as v :include-macros true]
+    [com.ben-allred.audiophile.ui.infrastructure.store.core :as store]))
 
 (defn comments-fetcher [{:keys [http-client]}]
   (fn [opts]
@@ -60,4 +61,5 @@
     (-> http-client
         (http/get (nav/path-for nav :api/profile))
         (v/peek nil (fn [_]
-                      (nav/goto! nav :auth/logout))))))
+                      (let [path (get-in (store/get-state store) [:nav/route :path])]
+                        (nav/goto! nav :auth/logout {:params {:redirect-uri path}})))))))

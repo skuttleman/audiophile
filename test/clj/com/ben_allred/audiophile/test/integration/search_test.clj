@@ -12,7 +12,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when the handle is in use"
           (let [response (-> {}
                              (ihttp/login system {:user/id (uuids/random)} {:jwt/claims {:aud #{:token/signup}}})
@@ -50,7 +50,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when the mobile-number is in use"
           (let [response (-> {}
                              (ihttp/login system {:user/id (uuids/random)} {:jwt/claims {:aud #{:token/signup}}})

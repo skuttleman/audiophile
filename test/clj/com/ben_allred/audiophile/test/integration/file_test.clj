@@ -17,7 +17,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
@@ -41,7 +41,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with files"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -100,7 +100,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -169,7 +169,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -251,20 +251,20 @@
 
 (deftest artifact-test
   (int/with-config [system [:api/handler]]
-    (let [edn (int/component system :serdes/edn)
+    (let [transit (int/component system :serdes/transit)
           serde (reify
                   pserdes/ISerde
                   (serialize [_ val opts]
-                    (serdes/serialize edn val opts))
+                    (serdes/serialize transit val opts))
                   (deserialize [_ val _]
                     val)
 
                   pserdes/IMime
                   (mime-type [_]
-                    (serdes/mime-type edn)))
+                    (serdes/mime-type transit)))
           handler (-> system
                       (int/component :api/handler)
-                      (ihttp/with-serde edn))
+                      (ihttp/with-serde transit))
           artifact-handler (-> system
                                (int/component :api/handler)
                                (ihttp/with-serde serde))]

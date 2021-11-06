@@ -3,7 +3,6 @@
     [com.ben-allred.audiophile.backend.core :as core]
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
     [duct.core :as duct]

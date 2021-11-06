@@ -80,8 +80,8 @@
   :spec    :api.common/auth}
 
  [:audiophile.spec/with-spec :api.handler/search]
- {:handler    #ig/ref :audiophile.handlers/search
-  :spec       :api.common/search}
+ {:handler #ig/ref :audiophile.handlers/search
+  :spec    :api.common/search}
 
  [:audiophile.spec/with-spec :api.handler/team#get]
  {:handler #ig/ref :audiophile.handlers.teams/fetch
@@ -164,9 +164,9 @@
  {}
 
  :audiophile.middleware/with-serde
- {:edn     #ig/ref :serdes/edn
-  #_#_:transit #ig/ref :serdes/transit
-  #_#_:json    #ig/ref :serdes/json}
+ {:edn #ig/ref :serdes/edn
+  :transit #ig/ref :serdes/transit
+  #_#_:json #ig/ref :serdes/json}
 
  :audiophile.middleware/with-route
  {:nav #ig/ref :services/nav}
@@ -185,11 +185,12 @@
  {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.services.auth/provider
- {:base-url   #ig/ref :env/base-url#ui
-  :interactor #ig/ref :interactors/users
-  :jwt-serde  #ig/ref :serdes/jwt
-  :nav        #ig/ref :services/nav
-  :oauth      #ig/ref :services/oauth}
+ {:base-url     #ig/ref :env/base-url#ui
+  :base64-serde #ig/ref :serdes/base64
+  :interactor   #ig/ref :interactors/users
+  :jwt-serde    #ig/ref :serdes/jwt
+  :nav          #ig/ref :services/nav
+  :oauth        #ig/ref :services/oauth}
 
  :audiophile.handlers.users/profile
  {:interactor #ig/ref :interactors/users}

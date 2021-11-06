@@ -7,7 +7,8 @@
     [com.ben-allred.audiophile.ui.api.forms.submittable :as form.sub]
     [com.ben-allred.audiophile.ui.api.views.protocols :as vp]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.audiophile.common.core.resources.core :as res]))
+    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defmethod form.sub/internal->remote ::file
   [_ data]

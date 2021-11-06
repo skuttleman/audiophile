@@ -2,6 +2,7 @@
   (:require
     [clojure.java.io :as io]
     [clojure.java.shell :as sh]
+    [clojure.set :as set]
     [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
@@ -29,8 +30,10 @@
 
 (deftype DevOauthProvider [base-url nav]
   papp/IOAuthProvider
-  (redirect-uri [_ {:keys [email]}]
-    (str base-url (nav/path-for nav :auth/callback {:params {:mock-email email}})))
+  (redirect-uri [_ params]
+    (str base-url (nav/path-for nav
+                                :auth/callback
+                                {:params (set/rename-keys params {:email :mock-email})})))
   (profile [_ opts]
     {:email (:mock-email opts)}))
 

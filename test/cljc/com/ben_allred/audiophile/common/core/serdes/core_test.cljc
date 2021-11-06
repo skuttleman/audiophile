@@ -2,26 +2,28 @@
   (:require
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
-(deftest edn-test
-  (let [serde (serdes/edn {})]
-    (testing "serializes values to strings"
-      (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
+#?(:clj
+   (deftest edn-test
+     (let [serde (serde/edn {})]
+       (testing "serializes values to strings"
+         (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
 
-    (testing "equal after a round trip through serialization"
-      (is (= {:a 1 [:b :c] #{:d ()}}
-             (->> {:a 1 [:b :c] #{:d ()}}
-                  (serdes/serialize serde)
-                  (serdes/deserialize serde)))))
+       (testing "equal after a round trip through serialization"
+         (is (= {:a 1 [:b :c] #{:d ()}}
+                (->> {:a 1 [:b :c] #{:d ()}}
+                     (serdes/serialize serde)
+                     (serdes/deserialize serde)))))
 
-    (testing "has a mime-type"
-      (is (= "application/edn"
-             (serdes/mime-type serde))))))
+       (testing "has a mime-type"
+         (is (= "application/edn"
+                (serdes/mime-type serde)))))))
 
 (deftest transit-test
-  (let [serde (serdes/transit {})]
+  (let [serde (serde/transit {})]
     (testing "serializes values to strings"
       (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
 
@@ -36,7 +38,7 @@
              (serdes/mime-type serde))))))
 
 (deftest json-test
-  (let [serde (serdes/json {})]
+  (let [serde (serde/json {})]
     (testing "serializes values to strings"
       (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
 
@@ -51,7 +53,7 @@
              (serdes/mime-type serde))))))
 
 (deftest urlencode-test
-  (let [serde (serdes/urlencode {})]
+  (let [serde (serde/urlencode {})]
     (testing "serializes values to strings"
       (is (string? (serdes/serialize serde {:a 1 :b true :c false :d nil :e [1 2 3]}))))
 
@@ -67,9 +69,9 @@
 
 #?(:clj
    (deftest jwt-test
-     (let [serde (serdes/jwt {:data-serde (serdes/transit {})
-                              :expiration 30
-                              :secret     "secret"})]
+     (let [serde (serde/jwt {:data-serde (serde/transit {})
+                             :expiration 30
+                             :secret     "secret"})]
        (testing "serializes values to strings"
          (is (string? (serdes/serialize serde {:a 1 :b true :c false :d nil :e [1 2 3]}))))
 

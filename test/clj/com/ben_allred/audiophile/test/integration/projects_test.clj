@@ -14,7 +14,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -53,7 +53,7 @@
       (let [project-id (:project/id (int/lookup-project system "Project Seed"))
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
@@ -87,7 +87,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))
+                        (ihttp/with-serde system :serdes/transit))
             team-id (:team/id (int/lookup-team system "Team Seed"))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")

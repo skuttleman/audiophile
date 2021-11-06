@@ -2,7 +2,8 @@
   (:require
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]))
+    [com.ben-allred.audiophile.backend.api.validations.selectors :as selectors]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defn login
   "Handles a request to authenticate in the system."
@@ -12,7 +13,10 @@
 
 (defmethod selectors/select [:get :auth/login]
   [_ request]
-  (get-in request [:nav/route :params]))
+  (let [[state params] (maps/extract-keys (get-in request [:nav/route :params])
+                                          #{:redirect-uri})]
+    (cond-> params
+      (seq state) (assoc :state state))))
 
 (defn logout
   "Handles a request to revoke authentication in the system."

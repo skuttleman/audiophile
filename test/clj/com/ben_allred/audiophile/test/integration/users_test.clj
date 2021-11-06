@@ -13,7 +13,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when the profile is found"
           (let [response (-> {}
                              (ihttp/login system user)

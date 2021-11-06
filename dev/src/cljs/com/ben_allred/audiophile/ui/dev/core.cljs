@@ -45,8 +45,8 @@
                           [:re {:error/message "invalid email"} email-re]]]}))
 
 (defmethod ig/init-key :audiophile.dev/login-form [_ {:keys [login-resource]}]
-  (fn [_route]
-    (let [*form (sres/create login-resource (form/create nil login-validator))]
+  (fn [route]
+    (let [*form (sres/create login-resource (form/create route login-validator))]
       (fn [route]
         [comp/form {:*form       *form
                     :route       route
@@ -58,9 +58,9 @@
                                      [:email])]]))))
 
 (defmethod ig/init-key :audiophile.dev/login-fn [_ {:keys [nav]}]
-  (fn [{value :form/value :keys [route]}]
+  (fn [{value :form/value}]
     (let [params {:email        (:email value)
-                  :redirect-uri (get-in route [:params :redirect-uri] "/")}]
+                  :redirect-uri (get-in value [:params :redirect-uri] "/")}]
       (nav/goto! nav :auth/login {:params params})
       (v/resolve))))
 

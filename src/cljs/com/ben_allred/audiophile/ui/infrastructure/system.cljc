@@ -29,8 +29,8 @@
   (reduce merge ms))
 
 #?(:cljs
-   (defmethod ig/init-key :audiophile.ui.services/env [_ {:keys [edn]}]
-     (some->> dom/window .-ENV (serdes/deserialize edn))))
+   (defmethod ig/init-key :audiophile.ui.services/env [_ {:keys [transit]}]
+     (some->> dom/window .-ENV (serdes/deserialize transit))))
 
 (defmethod ig/init-key :audiophile.ui.services/base-urls [_ {:keys [env]}]
   {:api  (:api-base env)

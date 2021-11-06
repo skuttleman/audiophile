@@ -143,7 +143,7 @@
 (deftype HttpSerde [http-client serdes]
   pres/IResource
   (request! [_ request]
-    (let [serde (find-serde (:headers request) serdes "application/edn")
+    (let [serde (find-serde (:headers request) serdes "application/transit")
           mime-type (serdes/mime-type serde)
           body (:body request)
           blob? (= :blob (:response-type request))

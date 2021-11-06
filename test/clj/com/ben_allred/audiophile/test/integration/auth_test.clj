@@ -20,7 +20,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (stubs/set-stub! (int/component system :services/oauth)
                          :profile
                          (fn [opts]
@@ -80,7 +80,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))]
+                        (ihttp/with-serde system :serdes/transit))]
         (testing "when logging in with a login token"
           (let [jwt-serde (int/component system :serdes/jwt)
                 login-token (jwt/login-token jwt-serde user)
@@ -103,7 +103,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/edn))
+                        (ihttp/with-serde system :serdes/transit))
             signup {:user/id (uuids/random)
                     :user/email "new@user.com"
                     :user/mobile-number "9876543210"

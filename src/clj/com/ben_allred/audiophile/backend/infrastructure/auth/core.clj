@@ -8,7 +8,8 @@
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
 (defmacro ^:private safely! [ctx & body]
   `(log/with-ctx :OAUTH
@@ -40,12 +41,17 @@
   ([nav base-url params]
    (str base-url (home-path nav params))))
 
-(defn ^:private redirect* [nav oauth jwt-serde base-url params]
+(defn ^:private redirect* [nav oauth base-url jwt-serde base64-serde params]
   (let [claims (some->> params :login-token (serdes/deserialize jwt-serde))
-        token (when claims (jwt/auth-token jwt-serde (select-keys claims #{:user/id :user/email})))]
+        token (when claims
+                (jwt/auth-token jwt-serde (select-keys claims #{:user/id :user/email})))]
     (-> (or (when token (->redirect-url nav base-url))
             (safely! "generating a redirect url to the auth provider"
-              (papp/redirect-uri oauth params))
+              (papp/redirect-uri oauth
+                                 (maps/update-maybe params
+                                                    :state
+                                                    (partial serdes/serialize
+                                                             base64-serde))))
             (home-path nav {:error-msg :login-failed}))
         ring/redirect
         (cond-> token (with-token token)))))
@@ -66,23 +72,29 @@
         (jwt/signup-token jwt-serde {:user/id    (uuids/random)
                                      :user/email email}))))
 
-(deftype AuthInteractor [interactor oauth nav jwt-serde base-url]
+(deftype AuthInteractor [interactor oauth nav base-url jwt-serde base64-serde]
   pint/IAuthInteractor
   (login [_ params]
-    (redirect* nav oauth jwt-serde base-url params))
+    (redirect* nav oauth base-url jwt-serde base64-serde params))
   (logout [_ params]
     (-> nav
         (->redirect-url base-url params)
         ring/redirect
         with-token))
   (callback [_ params]
-    (let [token (params->token interactor oauth jwt-serde params)]
-      (-> nav
-          (->redirect-url base-url (when-not token {:error-msg :login-failed}))
+    (let [token (params->token interactor oauth jwt-serde params)
+          url (some->> params
+                       :state
+                       (serdes/deserialize base64-serde)
+                       :redirect-uri
+                       (str base-url))]
+      (-> (or url
+              (->redirect-url nav base-url (when-not token
+                                             {:error-msg :login-failed})))
           ring/redirect
           (with-token token)))))
 
 (defn interactor
   "Constructor for [[AuthInteractor]] used to provide authentication interaction flows."
-  [{:keys [base-url interactor jwt-serde nav oauth]}]
-  (->AuthInteractor interactor oauth nav jwt-serde base-url))
+  [{:keys [base-url base64-serde interactor jwt-serde nav oauth]}]
+  (->AuthInteractor interactor oauth nav base-url jwt-serde base64-serde))
