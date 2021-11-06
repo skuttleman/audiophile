@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.test.utils.selenium
+(ns com.ben-allred.audiophile.test.web.common.selenium
   (:require
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [clojure.string :as string])

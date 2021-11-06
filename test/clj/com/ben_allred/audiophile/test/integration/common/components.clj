@@ -110,12 +110,8 @@
   (.close datasource))
 
 (defmethod ig/init-key :audiophile.test/datasource#mem [_ {:keys [seed-data]}]
-  (doseq [query seed-data]
-    (jdbc/execute! *datasource* (mapv (fn [x]
-                                        (cond-> x
-                                          (inst? x) (-> .getTime Timestamp.)))
-                                      (sql/format query))))
-  *datasource*)
+  (doto *datasource*
+    (seed! seed-data)))
 
 (defmethod ig/halt-key! :audiophile.test/datasource#mem [_ ds]
   (doto ds

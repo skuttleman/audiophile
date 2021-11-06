@@ -5,7 +5,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.test.utils.selenium :as selenium]
+    [com.ben-allred.audiophile.test.web.common.selenium :as selenium]
     [immutant.web :as web*])
   (:import
     (org.apache.commons.io.output NullWriter)))

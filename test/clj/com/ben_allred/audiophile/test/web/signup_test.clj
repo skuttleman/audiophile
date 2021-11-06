@@ -4,29 +4,29 @@
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.fns :as fns]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.test.utils.selenium :as selenium]
-    [com.ben-allred.audiophile.test.web :as web]))
+    [com.ben-allred.audiophile.test.web.common.page :as pg]
+    [com.ben-allred.audiophile.test.web.common.selenium :as selenium]))
 
 (deftest signup-test
-  (web/with-driver [driver]
+  (pg/with-driver [driver]
     (testing "when logging in as a new user"
-      (web/visit! driver "/")
+      (pg/visit! driver "/")
       (-> driver
-          (web/wait-by-css! ".login-form .email")
+          (pg/wait-by-css! ".login-form .email")
           (selenium/input! "signup@user.com"))
       (-> driver
-          (web/wait-by-css! ".login-form .button.submit")
+          (pg/wait-by-css! ".login-form .button.submit")
           selenium/click!)
       (selenium/wait-for! driver
                           (fns/=> (selenium/find-by (selenium/by-css "body"))
                                   selenium/text
                                   (->> (re-find #"Sign up"))))
-      (web/fill-out-form! driver
-                          ".signup-form"
-                          {".handle"        "signup-handle"
-                           ".mobile-number" "9876543210"
-                           ".first-name"    "Signup"
-                           ".last-name"     "User"})
+      (pg/fill-out-form! driver
+                         ".signup-form"
+                         {".handle"        "signup-handle"
+                          ".mobile-number" "9876543210"
+                          ".first-name"    "Signup"
+                          ".last-name"     "User"})
       (-> driver
           (selenium/wait-for! (fns/=> (selenium/find-by (selenium/by-css ".signup-form .button.submit"))
                                       (->> (filter selenium/enabled?))

@@ -1,14 +1,12 @@
-(ns com.ben-allred.audiophile.test.web
+(ns com.ben-allred.audiophile.test.web.common.runner
   (:require
     [clojure.string :as string]
     [com.ben-allred.audiophile.backend.infrastructure.system.env :as env]
-    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
     [com.ben-allred.audiophile.test.integration.common.components :as tcomp]
-    [com.ben-allred.audiophile.test.utils.selenium :as selenium]
+    [com.ben-allred.audiophile.test.web.common.page :as pg]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
@@ -16,10 +14,7 @@
     com.ben-allred.audiophile.backend.dev.handler
     com.ben-allred.audiophile.backend.infrastructure.system.core)
   (:import
-    (java.net ServerSocket)
-    (org.apache.commons.io.output NullWriter)))
-
-(def ^:dynamic *system*)
+    (java.net ServerSocket)))
 
 (defn ^:private with-test-cfg [cfg]
   (let [port (with-open [server (ServerSocket. 0)]
@@ -54,46 +49,8 @@
                   :routes/daemon#jobs
                   :routes/daemon#ui]))))
 
-(defmacro with-driver [[sym] & body]
-  `(let [~sym (binding [*out* NullWriter/NULL_WRITER]
-                (selenium/create-driver nil))]
-     (try ~@body
-          (finally
-            (binding [*out* NullWriter/NULL_WRITER]
-              (u/silent!
-                (selenium/close! ~sym)))))))
-
-(defmacro with-web [test-id & body]
-  `(if (= ~test-id :web)
-     (binding [*system* (binding [*out* NullWriter/NULL_WRITER]
-                          (run-system!))]
-       (try ~@body
-            (finally
-              (binding [*out* NullWriter/NULL_WRITER]
-                (u/silent!
-                  (ig/halt! *system*))))))
-     (do ~@body)))
-
 (defn wrap-run [run]
-  (fn [testable plan]
-    (tcomp/with-db (:kaocha.testable/id testable)
-      (with-web (:kaocha.testable/id testable)
+  (fn [{:kaocha.testable/keys [id] :as testable} plan]
+    (tcomp/with-db id
+      (pg/with-web id run-system!
         (run testable plan)))))
-
-(defn visit! [driver path]
-  (selenium/visit! driver (str (get *system* [:duct/const :env/base-url#ui]) path)))
-
-(defn wait-by-css! [driver selector]
-  (selenium/wait-for! driver (fn [ctx]
-                               (first (selenium/find-by ctx (selenium/by-css selector))))))
-
-(defn fill-out-form!
-  ([driver m]
-   (fill-out-form! driver "body" m))
-  ([driver selector m]
-   (let [form (wait-by-css! driver selector)]
-     (doseq [[selector value] m]
-       (-> form
-           (selenium/find-by (selenium/by-css selector))
-           colls/only!
-           (selenium/input! value))))))
