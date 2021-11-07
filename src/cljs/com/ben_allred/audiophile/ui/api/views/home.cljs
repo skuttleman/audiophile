@@ -6,10 +6,6 @@
     [com.ben-allred.audiophile.ui.core.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.core.utils.reagent :as r]))
 
-(defmethod comp/resource-error ::profile
-  [_ _ opts]
-  [in/spinner {:size (:spinner/size opts)}])
-
 (defn ^:private logout [{:keys [nav text] :as attrs}]
   [:a (-> attrs
           (select-keys #{:class})
@@ -66,36 +62,24 @@
                [:div.buttons
                 [logout {:nav nav :text text}]]]]])]]))))
 
-(defn root* [_ {:keys [project-form *modals projects-tile team-form teams-tile]} state]
-  [:div
-   [:div.level.layout--space-below.layout--xxl.gutters
-    {:style {:align-items :flex-start}}
-    [projects-tile
-     state
-     [in/plain-button
-      {:class    ["is-primary"]
-       :on-click (comp/modal-opener *modals
-                                    "Create project"
-                                    project-form)}
-      "Create one"]]
-    [teams-tile
-     state
-     [in/plain-button
-      {:class    ["is-primary"]
-       :on-click (comp/modal-opener *modals
-                                    "Create team"
-                                    team-form)}
-      "Create one"]]]])
-
-(defn root [{:keys [*profile nav signup-form] :as cfg}]
+(defn root [{:keys [*modals project-form projects-tile team-form teams-tile]}]
   (fn [state]
-    (let [user (:auth/user state)]
-      (cond
-        (= (:token/type user) :token/signup)
-        [signup-form user]
-
-        user
-        [comp/with-resource [*profile {::comp/error-type ::profile}] root* cfg state]
-
-        :else
-        (nav/navigate! nav :ui/login (:nav/route state))))))
+    [:div
+     [:div.level.layout--space-below.layout--xxl.gutters
+      {:style {:align-items :flex-start}}
+      [projects-tile
+       state
+       [in/plain-button
+        {:class    ["is-primary"]
+         :on-click (comp/modal-opener *modals
+                                      "Create project"
+                                      project-form)}
+        "Create one"]]
+      [teams-tile
+       state
+       [in/plain-button
+        {:class    ["is-primary"]
+         :on-click (comp/modal-opener *modals
+                                      "Create team"
+                                      team-form)}
+        "Create one"]]]]))

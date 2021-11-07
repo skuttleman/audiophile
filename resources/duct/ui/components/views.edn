@@ -1,23 +1,23 @@
 {:audiophile.views/app
- {:banners          #ig/ref :audiophile.views.components/banners
+ {:*profile         #ig/ref [:audiophile.resources/base :users/profile]
+  :banners          #ig/ref :audiophile.views.components/banners
   :components-table #ig/ref :ui.components/table
   :header           #ig/ref :audiophile.views.home/header
   :modals           #ig/ref :audiophile.views.components/modals
+  :nav              #ig/ref :services/nav
   :toasts           #ig/ref :audiophile.views.components/toasts}
 
  [:duct/const :ui.components/table]
  {:ui/home    #ig/ref :audiophile.views.home/root
   :ui/login   #ig/ref :audiophile.views.login/root
   :ui/project #ig/ref :audiophile.views.projects/one
-  :ui/file    #ig/ref :audiophile.views.files/one}
+  :ui/file    #ig/ref :audiophile.views.files/one
+  :ui/signup  #ig/ref :audiophile.views.signup/root}
 
  :audiophile.views.home/root
  {:*modals       #ig/ref :audiophile.core/modals
-  :*profile      #ig/ref [:audiophile.resources/base :users/profile]
-  :nav           #ig/ref :services/nav
   :project-form  #ig/ref :audiophile.views.projects/create
   :projects-tile #ig/ref :tiles/projects#all
-  :signup-form   #ig/ref :audiophile.views.signup/root
   :team-form     #ig/ref :audiophile.views.teams/create
   :teams-tile    #ig/ref :tiles/teams#all}
 

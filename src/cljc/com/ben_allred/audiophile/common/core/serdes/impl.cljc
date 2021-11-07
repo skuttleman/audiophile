@@ -40,14 +40,15 @@
   ([value]
    (edn#deserialize value nil))
   ([value opts]
-   (u/silent!
-     (cond
-       (nil? value) nil
-       (string? value) (edn*/read-string opts value)
-       #?@(:clj [(or (instance? InputStream value)
-                     (instance? URL value))
-                 (some->> value io/reader PushbackReader. (edn*/read opts))])
-       :else (edn*/read opts value)))))
+   (let [opts (or opts {})]
+     (u/silent!
+       (cond
+         (nil? value) nil
+         (string? value) (edn*/read-string opts value)
+         #?@(:clj [(or (instance? InputStream value)
+                       (instance? URL value))
+                   (some->> value io/reader PushbackReader. (edn*/read opts))])
+         :else (edn*/read opts value))))))
 
 (defn edn [_]
   (reify

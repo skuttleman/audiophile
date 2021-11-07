@@ -1,15 +1,36 @@
 (ns com.ben-allred.audiophile.ui.api.views.core
   (:require
+    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.api.views.protocols :as vp]
-    [com.ben-allred.audiophile.ui.core.components.core :as comp]))
+    [com.ben-allred.audiophile.ui.core.components.core :as comp]
+    [com.ben-allred.audiophile.ui.core.components.input-fields :as in]))
 
-(defn ^:private root* [components-table state]
+(defmethod comp/resource-error ::profile
+  [_ _ opts]
+  [in/spinner {:size (:spinner/size opts)}])
+
+(defn ^:private root* [_ components-table state]
   (let [handle (get-in state [:nav/route :handle])
         component (get components-table handle comp/not-found)]
     [component state]))
 
-(defn root [{:keys [banners components-table header modals toasts]}]
+(defn ^:private with-auth [nav components-table state *profile]
+  (let [{user :auth/user route :nav/route} state]
+    (cond
+      (= (:token/type user) :token/signup)
+      [root* nil components-table (assoc-in state [:nav/route :handle] :ui/signup)]
+
+      (= :ui/login (:handle route))
+      [root* nil components-table state]
+
+      user
+      [comp/with-resource [*profile {::comp/error-type ::profile}] root* components-table state]
+
+      :else
+      (nav/navigate! nav :ui/login {:params {:redirect-uri (:path route)}}))))
+
+(defn root [{:keys [*profile banners components-table header modals nav toasts]}]
   (fn [state]
     [:div
      [banners (:banners state)]
@@ -17,7 +38,7 @@
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
       [:div.layout--inset
-       [root* components-table state]]]
+       [with-auth nav components-table state *profile]]]
      [modals (:modals state)]
      [toasts (:toasts state)]]))
 
