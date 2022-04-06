@@ -43,3 +43,9 @@
    (let [aliases (some->> aliases seq string/join (str " -A"))
          args (cond->> arg (not (string? arg)) (string/join " "))]
      (str "clj" aliases " -Sthreads 1 " args))))
+
+(defmacro with-println [[k -ing -ed] & body]
+  `(let [k# (name ~k)]
+     (println [~-ing k# "…"])
+     ~@body
+     (println ["…" k# ~-ed])))

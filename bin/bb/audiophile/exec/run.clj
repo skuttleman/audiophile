@@ -71,14 +71,12 @@
                                "-m com.ben-allred.audiophile.test.browser-runner")))
 
 (defmethod shared/main* :seed
-  [_ [file :as args]]
+  [_ [file]]
   (let [sql (or file (str (System/getenv "PWD") "/dev/resources/db/seed.sql"))]
-    (println ["seeding" "db" "…" args])
-    (shared/process! (str "psql audiophile -f " sql))
-    (println ["…" "db" "seeded"])))
+    (shared/with-println [:db "seeding" "seeded"]
+      (shared/process! (str "psql audiophile -f " sql)))))
 
 (defmethod shared/main* :migrate
   [_ _]
-  (println ["migrating" "db" "…"])
-  (shared/process! #{:dev} "-m com.ben-allred.audiophile.backend.dev.migrations migrate")
-  (println ["…" "db" "migrated"]))
+  (shared/with-println [:db "migrating" "migrated"]
+    (shared/process! #{:dev} "-m com.ben-allred.audiophile.backend.dev.migrations migrate")))

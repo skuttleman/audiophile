@@ -17,33 +17,31 @@
 
 (defmethod shared/build* :clj
   [_ _]
-  (println ["building" "uberjar" "…"])
-  (shared/process! "rm -rf classes")
-  (shared/process! "mkdir classes")
-  (shared/process! "rm -f target/audiophile.jar")
-  (shared/process! (shared/clj "-e (compile 'com.ben-allred.audiophile.backend.core)"))
-  (shared/process! (shared/clj #{:uberjar}
-                               ["-m"
-                                "uberdeps.uberjar"
-                                "--level"
-                                "warn"
-                                "--target"
-                                "target/audiophile.jar"
-                                "--main-class"
-                                "com.ben_allred.audiophile.backend.core"])
-                   {"LOG_LEVEL" "warn"})
-  (println ["…" "uberjar" "built"]))
+  (shared/with-println [:uberjar "building" "built"]
+    (shared/process! "rm -rf classes")
+    (shared/process! "mkdir classes")
+    (shared/process! "rm -f target/audiophile.jar")
+    (shared/process! (shared/clj "-e (compile 'com.ben-allred.audiophile.backend.core)"))
+    (shared/process! (shared/clj #{:uberjar}
+                                 ["-m"
+                                  "uberdeps.uberjar"
+                                  "--level"
+                                  "warn"
+                                  "--target"
+                                  "target/audiophile.jar"
+                                  "--main-class"
+                                  "com.ben_allred.audiophile.backend.core"])
+                     {"LOG_LEVEL" "warn"})))
 
 (defmethod shared/build* :cljs
   [_ _]
-  (println ["building" "ui" "…"])
-  (shared/process! "npm install")
-  (shared/process! "rm -rf resources/public/css")
-  (shared/process! "sass --style=compressed src/scss/main.scss resources/public/css/main.css")
-  (shared/process! "rm -rf resources/public/js")
-  (shared/process! (shared/clj #{:shadow-cljs}
-                               "-m shadow.cljs.devtools.cli compile ui"))
-  (println ["…" "ui" "built"]))
+  (shared/with-println [:ui "building" "built"]
+    (shared/process! "npm install")
+    (shared/process! "rm -rf resources/public/css")
+    (shared/process! "sass --style=compressed src/scss/main.scss resources/public/css/main.css")
+    (shared/process! "rm -rf resources/public/js")
+    (shared/process! (shared/clj #{:shadow-cljs}
+                                 "-m shadow.cljs.devtools.cli compile ui"))))
 
 (defmethod shared/main* :clean
   [_ [mode & args]]
@@ -54,21 +52,18 @@
 
 (defmethod shared/clean* :clj
   [_ _]
-  (println ["cleaning" "clj" "…"])
-  (shared/process! "rm -rf .cpcache classes target/audiophile.jar")
-  (println ["…" "clj" "clean"]))
+  (shared/with-println [:clj "cleaning" "cleaned"]
+    (shared/process! "rm -rf .cpcache classes target/audiophile.jar")))
 
 (defmethod shared/clean* :cljs
   [_ _]
-  (println ["cleaning" "cljs" "…"])
-  (shared/process! "rm -rf .shadow-cljs resources/public/css resources/public/js")
-  (println ["…" "cljs" "clean"]))
+  (shared/with-println [:cljs "cleaning" "cleaned"]
+    (shared/process! "rm -rf .shadow-cljs resources/public/css resources/public/js")))
 
 (defmethod shared/main* :deploy
   [_ _]
-  (println ["deploying" "…"])
-  (shared/process! "heroku deploy:jar target/audiophile.jar --app skuttleman-audiophile")
-  (println ["…" "deployed"]))
+  (shared/with-println [:app "deploying" "deployed"]
+    (shared/process! "heroku deploy:jar target/audiophile.jar --app skuttleman-audiophile")))
 
 (defn ^:private main* [[mode & args]]
   (shared/main* mode (remove string/blank? args)))
@@ -86,25 +81,22 @@
 (defmethod shared/main* :docker
   [_ _]
   (shared/main* :build nil)
-  (println ["building" "docker" ":latest" "…"])
-  (shared/process! "docker build -t audiophile -f Dockerfile .")
-  (shared/process! "docker tag audiophile skuttleman/audiophile:latest")
-  (shared/process! "docker push skuttleman/audiophile:latest")
-  (println ["…" "docker" ":latest" "built"])
+  (shared/with-println [:docker:latest "building" "built"]
+    (shared/process! "docker build -t audiophile -f Dockerfile .")
+    (shared/process! "docker tag audiophile skuttleman/audiophile:latest")
+    (shared/process! "docker push skuttleman/audiophile:latest"))
 
-  (println ["building" "docker" ":dev" "…"])
-  (shared/process! "docker build -t audiophile-dev -f Dockerfile-dev .")
-  (shared/process! "docker tag audiophile-dev skuttleman/audiophile:dev")
-  (shared/process! "docker push skuttleman/audiophile:dev")
-  (println ["…" "docker" ":dev" "built"]))
+  (shared/with-println [:docker:dev "building" "built"]
+    (shared/process! "docker build -t audiophile-dev -f Dockerfile-dev .")
+    (shared/process! "docker tag audiophile-dev skuttleman/audiophile:dev")
+    (shared/process! "docker push skuttleman/audiophile:dev")))
 
 (defmethod shared/main* :install
   [_ _]
-  (println ["installing" "repo" "…"])
-  (shared/process! "cp bin/pre-commit.sh .git/hooks/pre-commit")
-  (shared/process! "npm install")
-  (shared/process! "clj -X:deps prep")
-  (println ["…" "repo" "installed"]))
+  (shared/with-println [:repo "installing" "installed"]
+    (shared/process! "cp bin/pre-commit.sh .git/hooks/pre-commit")
+    (shared/process! "npm install")
+    (shared/process! "clj -X:deps prep")))
 
 (defmethod shared/main* :wipe
   [_ [mode & args]]
@@ -125,18 +117,17 @@
 
 (defn ^:private rabbit* [single plural ext]
   (let [url (str "http://guest:guest@localhost:15672/api/" plural)]
-    (println ["deleting" "rabbitmq" plural "…"])
-    (doseq [name (-> (curl/get url)
-                     :body
-                     (cheshire/parse-string true)
-                     (->> (map :name)))
-            :when (re-find (re-pattern (format "(audiophile%s)"
-                                               (or (some->> ext (str "\\."))
-                                                   "")))
-                           name)]
-      (println "deleting" name)
-      (shared/process! (format "rabbitmqadmin delete %s name=%s" single name)))
-    (println ["…" "rabbitmq" plural "deleted"])))
+    (shared/with-println [:rabbitmq "deleting" "deleted"]
+      (doseq [name (-> (curl/get url)
+                       :body
+                       (cheshire/parse-string true)
+                       (->> (map :name)))
+              :when (re-find (re-pattern (format "(audiophile%s)"
+                                                 (or (some->> ext (str "\\."))
+                                                     "")))
+                             name)]
+        (println "deleting" name)
+        (shared/process! (format "rabbitmqadmin delete %s name=%s" single name))))))
 
 (defmethod shared/rabbit* :exchanges
   [_ [ext]]
@@ -157,12 +148,10 @@
                             "TRUNCATE teams CASCADE"
                             "DELETE FROM artifacts"
                             "COMMIT"])]
-    (println ["deleting" "postgres" "data" "…"])
-    (shared/process! (format "psql %s -c \"%s\"" db query))
-    (println ["…" "postgres" "data" "deleted"])))
+    (shared/with-println [:postgres.data "deleting" "deleted"]
+      (shared/process! (format "psql %s -c \"%s\"" db query)))))
 
 (defmethod shared/wipe* :artifacts
   [_ _]
-  (println ["deleting" "artifacts" "…"])
-  (shared/process! "/bin/rm -f target/artifacts/*")
-  (println ["…" "artifacts" "deleted"]))
+  (shared/with-println [:artifacts "deleting" "deleted"]
+    (shared/process! "/bin/rm -f target/artifacts/*")))
