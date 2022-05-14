@@ -17,7 +17,4 @@
 (defn load-env
   "Loads edn files and builds a map of environment variables. Silently skips files that don't exist."
   [files]
-  (transduce (map file->env)
-             merge
-             {}
-             files))
+  (transduce (map file->env) merge {} files))

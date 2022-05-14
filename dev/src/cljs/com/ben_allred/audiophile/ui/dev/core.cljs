@@ -28,7 +28,7 @@
     (reset! sys (try (ig/init config)
                      (catch :default ex
                        (log/error ex "ERROR!!!")
-                       config)))
+                       nil)))
     (async/go
       (async/<! (async/timeout ms))
       (app/init @sys))))
