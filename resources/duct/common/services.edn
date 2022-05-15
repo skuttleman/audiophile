@@ -6,25 +6,4 @@
 
  :audiophile.services.nav/router
  {:base-urls {:api-base   #ig/ref :env/base-url#api
-              :auth-base  #ig/ref :env/base-url#auth}}
-
- [:duct/const :services/http]
- #ig/ref :audiophile.services.http/client
-
- :audiophile.services.http/client
- {:middlewares [#ig/ref :audiophile.services.http/base
-                #ig/ref :audiophile.services.http/with-logging
-                #ig/ref :audiophile.services.http/with-headers
-                #ig/ref :audiophile.services.http/with-serde]}
-
- :audiophile.services.http/with-serde
- {}
-
- :audiophile.services.http/with-headers
- {}
-
- :audiophile.services.http/base
- {}
-
- :audiophile.services.http/with-logging
- {}}
+              :auth-base  #ig/ref :env/base-url#auth}}}

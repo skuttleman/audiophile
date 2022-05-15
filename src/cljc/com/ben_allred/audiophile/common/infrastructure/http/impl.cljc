@@ -69,11 +69,6 @@
                   (async/<! (async/timeout timeout))
                   (reject {:body timeout-msg}))))))
 
-(defn base [{:keys [timeout]}]
-  (let [timeout (or timeout default-timeout)]
-    (fn [http-client]
-      (->HttpBase http-client timeout))))
-
 (defn ^:private response-logger [this request level ks]
   (fn [result]
     (log/with-ctx [this :HTTP#response]
@@ -89,9 +84,6 @@
               (response-logger this req :info #{:status})
               (response-logger this req :error #{:body :status})))))
 
-(defn with-logging [_]
-  ->HttpLogger)
-
 (deftype HttpHeaders [http-client]
   pres/IResource
   (request! [_ request]
@@ -102,9 +94,6 @@
           #?(:clj (assoc :cookie-store cs))
           (->> (pres/request! http-client))
           (v/then result-fn (comp v/reject result-fn))))))
-
-(defn with-headers [_]
-  ->HttpHeaders)
 
 (deftype HttpSerde [http-client serdes]
   pres/IResource
@@ -126,10 +115,6 @@
           (->> (pres/request! http-client))
           (v/then deserialize (comp v/reject deserialize))))))
 
-(defn with-serde [_]
-  (fn [http-client]
-    (->HttpSerde http-client serde/serdes)))
-
 (deftype HttpProgress [http-client]
   pres/IResource
   (request! [_ request]
@@ -148,19 +133,16 @@
                       (async/close! progress-ch)))))
       (pres/request! http-client request))))
 
-(defn with-progress [_]
-  ->HttpProgress)
-
-(defn create [respond-fn middlewares]
+(def client
   (reduce (fn [client middleware]
             (middleware client))
           (reify
             pres/IResource
             (request! [_ request]
-              (respond-fn request)))
-          middlewares))
-
-(defn client [{:keys [middlewares]}]
-  (create (comp client/request
-                #(set/rename-keys % {:params :query-params}))
-          middlewares))
+              (-> request
+                  (set/rename-keys {:params :query-params})
+                  client/request)))
+          [#(->HttpBase % default-timeout)
+           ->HttpLogger
+           ->HttpHeaders
+           #(->HttpSerde % serde/serdes)]))

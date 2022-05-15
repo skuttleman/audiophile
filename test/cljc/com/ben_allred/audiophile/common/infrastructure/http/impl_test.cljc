@@ -2,14 +2,13 @@
   (:require
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.api.pubsub.protocols :as ppubsub]
     [com.ben-allred.audiophile.common.core.resources.core :as res]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.http.impl :as client]
+    [com.ben-allred.audiophile.common.infrastructure.http.impl :as ihttp]
     [com.ben-allred.audiophile.test.utils :refer [async] :as tu]
     [com.ben-allred.audiophile.test.utils.spies :as spies]
     [com.ben-allred.audiophile.test.utils.stubs :as stubs]
@@ -48,7 +47,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((client/base {}) client)]
+            (let [resource (ihttp/->HttpBase client 0)]
               (testing "when the request succeeds"
                 (stubs/use! client :request!
                             (#?(:cljs async/go :default do)
@@ -91,7 +90,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((client/with-headers {}) client)]
+            (let [resource (ihttp/->HttpHeaders client)]
               (testing "when the request succeeds"
                 (stubs/use! client :request!
                             (cookie-responder v/resolve
@@ -163,7 +162,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource (client/->HttpSerde client serdes)]
+            (let [resource (ihttp/->HttpSerde client serdes)]
               (testing "when the request succeeds"
                 (testing "and when the request is serialized as application/foo"
                   (testing "and when the response is serialized as application/bar"
@@ -194,8 +193,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((client/with-progress {})
-                            client)]
+            (let [resource (ihttp/->HttpProgress client)]
               (testing "when the request succeeds"
                 (stubs/use! client :request!
                             (v/sleep (v/resolve :ok) 100))

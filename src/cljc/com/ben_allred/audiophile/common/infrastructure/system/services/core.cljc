@@ -3,7 +3,6 @@
     [com.ben-allred.audiophile.common.api.navigation.base :as bnav]
     [com.ben-allred.audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
     [integrant.core :as ig]
-    com.ben-allred.audiophile.common.infrastructure.system.services.http
     com.ben-allred.audiophile.common.infrastructure.system.services.serdes))
 
 (defmethod ig/init-key :audiophile.services.nav/router [_ cfg]
