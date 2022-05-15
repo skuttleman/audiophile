@@ -163,8 +163,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource ((client/with-serde {:serdes serdes})
-                            client)]
+            (let [resource (client/->HttpSerde client serdes)]
               (testing "when the request succeeds"
                 (testing "and when the request is serialized as application/foo"
                   (testing "and when the response is serialized as application/bar"

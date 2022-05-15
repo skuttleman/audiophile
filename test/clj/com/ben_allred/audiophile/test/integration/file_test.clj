@@ -3,6 +3,7 @@
     [clojure.java.io :as io]
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
@@ -17,7 +18,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
@@ -41,7 +42,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with files"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -100,7 +101,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -169,7 +170,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with a project"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -251,20 +252,19 @@
 
 (deftest artifact-test
   (int/with-config [system [:api/handler]]
-    (let [transit (int/component system :serdes/transit)
-          serde (reify
+    (let [serde (reify
                   pserdes/ISerde
                   (serialize [_ val opts]
-                    (serdes/serialize transit val opts))
+                    (serdes/serialize serde/transit val opts))
                   (deserialize [_ val _]
                     val)
 
                   pserdes/IMime
                   (mime-type [_]
-                    (serdes/mime-type transit)))
+                    (serdes/mime-type serde/transit)))
           handler (-> system
                       (int/component :api/handler)
-                      (ihttp/with-serde transit))
+                      (ihttp/with-serde serde/transit))
           artifact-handler (-> system
                                (int/component :api/handler)
                                (ihttp/with-serde serde))]

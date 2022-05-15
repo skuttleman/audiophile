@@ -164,9 +164,7 @@
  {}
 
  :audiophile.middleware/with-serde
- {:edn #ig/ref :serdes/edn
-  :transit #ig/ref :serdes/transit
-  #_#_:json #ig/ref :serdes/json}
+ {}
 
  :audiophile.middleware/with-route
  {:nav #ig/ref :services/nav}
@@ -186,7 +184,6 @@
 
  :audiophile.services.auth/provider
  {:base-url     #ig/ref :env/base-url#ui
-  :base64-serde #ig/ref :serdes/base64
   :interactor   #ig/ref :interactors/users
   :jwt-serde    #ig/ref :serdes/jwt
   :nav          #ig/ref :services/nav
@@ -248,5 +245,4 @@
 
  :audiophile.services.ws/handler
  {:heartbeat-int-ms #ig/ref :env.ws/heartbeat-int-ms
-  :pubsub           #ig/ref :services/pubsub
-  :serdes           #ig/ref :config/serdes}}
+  :pubsub           #ig/ref :services/pubsub}}

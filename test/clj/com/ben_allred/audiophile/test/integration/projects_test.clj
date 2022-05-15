@@ -1,10 +1,11 @@
 (ns ^:integration com.ben-allred.audiophile.test.integration.projects-test
   (:require
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.test.integration.common :as int]
     [com.ben-allred.audiophile.test.integration.common.http :as ihttp]
     [com.ben-allred.audiophile.test.utils.assertions :as assert]))
@@ -14,7 +15,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
@@ -53,7 +54,7 @@
       (let [project-id (:project/id (int/lookup-project system "Project Seed"))
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with projects"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
@@ -87,7 +88,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))
+                        (ihttp/with-serde serde/transit))
             team-id (:team/id (int/lookup-team system "Team Seed"))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")

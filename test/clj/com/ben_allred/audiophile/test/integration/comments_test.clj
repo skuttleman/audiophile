@@ -1,6 +1,7 @@
 (ns ^:integration com.ben-allred.audiophile.test.integration.comments-test
   (:require
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
@@ -13,7 +14,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with comments"
           (let [user (int/lookup-user system "joe@example.com")
                 file-id (:file/id (int/lookup-file system "File Seed"))
@@ -53,7 +54,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))
+                        (ihttp/with-serde serde/transit))
             file-id (:file/id (int/lookup-file system "File Seed"))
             file-version-id (:file-version/id (int/lookup-file-version system "File Version Seed"))]
         (testing "when authenticated"

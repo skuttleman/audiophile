@@ -11,7 +11,7 @@
     (some->> file
              io/file
              slurp
-             (serdes/deserialize (serde/edn {})))))
+             (serdes/deserialize serde/edn))))
 
 (defn load-env
   "Loads edn files and builds a map of environment variables. Silently skips files that don't exist."

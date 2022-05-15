@@ -3,9 +3,10 @@
     [clojure.core.async :as async]
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.test.integration.common :as int]
     [com.ben-allred.audiophile.test.integration.common.http :as ihttp]
     [com.ben-allred.audiophile.test.utils :as tu]))
@@ -13,7 +14,7 @@
 (deftest ws-connection-test
   (testing "GET /api/ws"
     (int/with-config [system [:api/handler]]
-      (let [mime-type (serdes/mime-type (int/component system :serdes/edn))
+      (let [mime-type (serdes/mime-type serde/edn)
             handler (int/component system :api/handler)]
         (testing "when the request is authenticated"
           (ihttp/with-ws [ch (-> {}

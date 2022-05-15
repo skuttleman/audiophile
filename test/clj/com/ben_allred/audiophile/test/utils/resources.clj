@@ -6,6 +6,6 @@
     [com.ben-allred.audiophile.common.infrastructure.duct :as uduct]))
 
 (defn edn [resource]
-  (serdes/deserialize (serde/edn {})
+  (serdes/deserialize serde/edn
                       (io/resource resource)
                       {:readers uduct/readers}))

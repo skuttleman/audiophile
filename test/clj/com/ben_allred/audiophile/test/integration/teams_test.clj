@@ -1,6 +1,7 @@
 (ns ^:integration com.ben-allred.audiophile.test.integration.teams-test
   (:require
     [clojure.test :refer [are deftest is testing]]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.colls :as colls]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
@@ -14,7 +15,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with teams"
           (let [user (int/lookup-user system "joe@example.com")
                 team-id (:team/id (int/lookup-team system "Team Seed"))
@@ -54,7 +55,7 @@
       (let [team-id (:team/id (int/lookup-team system "Team Seed"))
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated as a user with teams"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
@@ -88,7 +89,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when authenticated"
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {:team/name "team name"

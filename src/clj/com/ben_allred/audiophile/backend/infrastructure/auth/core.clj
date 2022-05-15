@@ -7,6 +7,7 @@
     [com.ben-allred.audiophile.backend.infrastructure.http.ring :as ring]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
@@ -96,5 +97,5 @@
 
 (defn interactor
   "Constructor for [[AuthInteractor]] used to provide authentication interaction flows."
-  [{:keys [base-url base64-serde interactor jwt-serde nav oauth]}]
-  (->AuthInteractor interactor oauth nav base-url jwt-serde base64-serde))
+  [{:keys [base-url interactor jwt-serde nav oauth]}]
+  (->AuthInteractor interactor oauth nav base-url jwt-serde serde/base64))

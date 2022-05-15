@@ -6,71 +6,65 @@
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
 
-#?(:clj
-   (deftest edn-test
-     (let [serde (serde/edn {})]
-       (testing "serializes values to strings"
-         (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
+(deftest edn-test
+  (testing "serializes values to strings"
+    (is (string? (serdes/serialize serde/edn {:a 1 [:b :c] #{:d ()}}))))
 
-       (testing "equal after a round trip through serialization"
-         (is (= {:a 1 [:b :c] #{:d ()}}
-                (->> {:a 1 [:b :c] #{:d ()}}
-                     (serdes/serialize serde)
-                     (serdes/deserialize serde)))))
+  (testing "equal after a round trip through serialization"
+    (is (= {:a 1 [:b :c] #{:d ()}}
+           (->> {:a 1 [:b :c] #{:d ()}}
+                (serdes/serialize serde/edn)
+                (serdes/deserialize serde/edn)))))
 
-       (testing "has a mime-type"
-         (is (= "application/edn"
-                (serdes/mime-type serde)))))))
+  (testing "has a mime-type"
+    (is (= "application/edn"
+           (serdes/mime-type serde/edn)))))
 
 (deftest transit-test
-  (let [serde (serde/transit {})]
-    (testing "serializes values to strings"
-      (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
+  (testing "serializes values to strings"
+    (is (string? (serdes/serialize serde/transit {:a 1 [:b :c] #{:d ()}}))))
 
-    (testing "equal after a round trip through serialization"
-      (is (= {:a 1 [:b :c] #{:d ()}}
-             (->> {:a 1 [:b :c] #{:d ()}}
-                  (serdes/serialize serde)
-                  (serdes/deserialize serde)))))
+  (testing "equal after a round trip through serialization"
+    (is (= {:a 1 [:b :c] #{:d ()}}
+           (->> {:a 1 [:b :c] #{:d ()}}
+                (serdes/serialize serde/transit)
+                (serdes/deserialize serde/transit)))))
 
-    (testing "has a mime-type"
-      (is (= "application/transit+json"
-             (serdes/mime-type serde))))))
+  (testing "has a mime-type"
+    (is (= "application/transit+json"
+           (serdes/mime-type serde/transit)))))
 
 (deftest json-test
-  (let [serde (serde/json {})]
-    (testing "serializes values to strings"
-      (is (string? (serdes/serialize serde {:a 1 [:b :c] #{:d ()}}))))
+  (testing "serializes values to strings"
+    (is (string? (serdes/serialize serde/json {:a 1 [:b :c] #{:d ()}}))))
 
-    (testing "equal after a round trip through serialization"
-      (is (= {:a 1 :b ["c" ()]}
-             (->> {:a 1 :b ["c" ()]}
-                  (serdes/serialize serde)
-                  (serdes/deserialize serde)))))
+  (testing "equal after a round trip through serialization"
+    (is (= {:a 1 :b ["c" ()]}
+           (->> {:a 1 :b ["c" ()]}
+                (serdes/serialize serde/json)
+                (serdes/deserialize serde/json)))))
 
-    (testing "has a mime-type"
-      (is (= "application/json"
-             (serdes/mime-type serde))))))
+  (testing "has a mime-type"
+    (is (= "application/json"
+           (serdes/mime-type serde/json)))))
 
 (deftest urlencode-test
-  (let [serde (serde/urlencode {})]
-    (testing "serializes values to strings"
-      (is (string? (serdes/serialize serde {:a 1 :b true :c false :d nil :e [1 2 3]}))))
+  (testing "serializes values to strings"
+    (is (string? (serdes/serialize serde/urlencode {:a 1 :b true :c false :d nil :e [1 2 3]}))))
 
-    (testing "equal after a round trip through serialization"
-      (is (= {:a "1" :b true :e ["1" "2" "3"]}
-             (->> {:a 1 :b true :c false :d nil :e [1 2 3]}
-                  (serdes/serialize serde)
-                  (serdes/deserialize serde)))))
+  (testing "equal after a round trip through serialization"
+    (is (= {:a "1" :b true :e ["1" "2" "3"]}
+           (->> {:a 1 :b true :c false :d nil :e [1 2 3]}
+                (serdes/serialize serde/urlencode)
+                (serdes/deserialize serde/urlencode)))))
 
-    (testing "has a mime-type"
-      (is (= "application/x-www-form-urlencoded"
-             (serdes/mime-type serde))))))
+  (testing "has a mime-type"
+    (is (= "application/x-www-form-urlencoded"
+           (serdes/mime-type serde/urlencode)))))
 
 #?(:clj
    (deftest jwt-test
-     (let [serde (serde/jwt {:data-serde (serde/transit {})
-                             :expiration 30
+     (let [serde (serde/jwt {:expiration 30
                              :secret     "secret"})]
        (testing "serializes values to strings"
          (is (string? (serdes/serialize serde {:a 1 :b true :c false :d nil :e [1 2 3]}))))

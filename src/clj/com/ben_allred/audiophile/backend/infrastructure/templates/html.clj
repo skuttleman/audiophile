@@ -9,7 +9,7 @@
 (defn render
   "Renders an html template with user-specific environment variables"
   [template env]
-  (let [env (serdes/serialize (serde/transit nil) env)]
+  (let [env (serdes/serialize serde/transit env)]
     (->> template
          (colls/postwalk (fn [form]
                            (let [tag (when (vector? form)

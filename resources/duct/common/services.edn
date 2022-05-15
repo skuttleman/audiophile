@@ -18,7 +18,7 @@
                 #ig/ref :audiophile.services.http/with-serde]}
 
  :audiophile.services.http/with-serde
- {:serdes #ig/ref :config/serdes}
+ {}
 
  :audiophile.services.http/with-headers
  {}

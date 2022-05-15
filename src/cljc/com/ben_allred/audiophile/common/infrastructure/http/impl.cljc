@@ -6,6 +6,7 @@
     [clojure.set :as set]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
@@ -125,9 +126,9 @@
           (->> (pres/request! http-client))
           (v/then deserialize (comp v/reject deserialize))))))
 
-(defn with-serde [{:keys [serdes]}]
+(defn with-serde [_]
   (fn [http-client]
-    (->HttpSerde http-client serdes)))
+    (->HttpSerde http-client serde/serdes)))
 
 (deftype HttpProgress [http-client]
   pres/IResource

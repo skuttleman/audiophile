@@ -134,7 +134,7 @@
                                       cast (get casts k')
                                       pre-cast (when cast
                                                  (case cast
-                                                   (:jsonb :numrange) (partial serdes/serialize (serde/json {}))
+                                                   (:jsonb :numrange) (partial serdes/serialize serde/json)
                                                    name))]
                                   (when (valid-column? model k' (namespace k))
                                     [k' (cond-> v

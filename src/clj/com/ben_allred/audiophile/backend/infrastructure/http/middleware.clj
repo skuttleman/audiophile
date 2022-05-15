@@ -5,10 +5,10 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids])
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http])
   (:import
     (java.io File InputStream)
     (org.projectodd.wunderboss.web.async Channel)))
@@ -64,27 +64,29 @@
 
 (defn with-serde
   "Ring middleware that serializes/deserializes http body in request/response."
-  [serdes]
-  (fn [handler]
-    (fn [request]
-      (let [request-serde (serdes/find-serde serdes
-                                             (get-in request [:headers :content-type]))
-            response (-> request
-                         (cond-> request-serde (maps/update-maybe :body (partial serdes/deserialize request-serde)))
-                         handler)
-            response-serde (serdes/find-serde serdes
-                                              (or (get-in response [:headers :content-type])
-                                                  (get-in request [:headers :accept])
-                                                  "unknown/mime-type")
-                                              request-serde)]
-        (cond-> response
-          (serializable? (:body response))
-          (-> (update :body (if response-serde
-                              (partial serdes/serialize response-serde)
-                              str))
-              (assoc-in [:headers :content-type] (if response-serde
-                                                   (serdes/mime-type response-serde)
-                                                   "text/plain"))))))))
+  [_]
+  (let [serdes {:edn     serde/edn
+                :transit serde/transit}]
+    (fn [handler]
+      (fn [request]
+        (let [request-serde (serdes/find-serde serdes
+                                               (get-in request [:headers :content-type]))
+              response (-> request
+                           (cond-> request-serde (maps/update-maybe :body (partial serdes/deserialize request-serde)))
+                           handler)
+              response-serde (serdes/find-serde serdes
+                                                (or (get-in response [:headers :content-type])
+                                                    (get-in request [:headers :accept])
+                                                    "unknown/mime-type")
+                                                request-serde)]
+          (cond-> response
+            (serializable? (:body response))
+            (-> (update :body (if response-serde
+                                (partial serdes/serialize response-serde)
+                                str))
+                (assoc-in [:headers :content-type] (if response-serde
+                                                     (serdes/mime-type response-serde)
+                                                     "text/plain")))))))))
 
 (defn with-route
   "Ring middleware that adds route info to the http request map."

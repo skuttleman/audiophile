@@ -4,6 +4,7 @@
     [clojure.test :refer [are deftest is testing use-fixtures]]
     [com.ben-allred.audiophile.backend.core.serdes.jwt :as jwt]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
@@ -20,7 +21,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (stubs/set-stub! (int/component system :services/oauth)
                          :profile
                          (fn [opts]
@@ -80,7 +81,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when logging in with a login token"
           (let [jwt-serde (int/component system :serdes/jwt)
                 login-token (jwt/login-token jwt-serde user)
@@ -103,7 +104,7 @@
     (int/with-config [system [:api/handler]]
       (let [handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))
+                        (ihttp/with-serde serde/transit))
             signup {:user/id (uuids/random)
                     :user/email "new@user.com"
                     :user/mobile-number "9876543210"

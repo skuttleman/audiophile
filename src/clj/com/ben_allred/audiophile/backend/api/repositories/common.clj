@@ -11,8 +11,8 @@
     (let [k' (keyword (name k))
           cast-fn (if-let [cast (get-in model [:casts k'])]
                     (case cast
-                      :jsonb (partial serdes/deserialize (serde/json {}))
-                      :numrange #(some->> % .getValue (serdes/deserialize (serde/edn {})))
+                      :jsonb (partial serdes/deserialize serde/json)
+                      :numrange #(some->> % .getValue (serdes/deserialize serde/edn))
                       keyword)
                     identity)]
       [k (cast-fn v)])))

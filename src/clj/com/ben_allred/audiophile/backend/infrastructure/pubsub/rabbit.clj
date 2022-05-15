@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.backend.api.pubsub.protocols :as pps]
     [com.ben-allred.audiophile.backend.domain.interactors.core :as int]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
@@ -75,7 +76,7 @@
     (le/declare ch exchange "fanout" (:opts cfg))
     (lq/declare ch queue-name ch-opts)
     (lq/bind ch queue-name exchange)
-    (->RabbitMQFanoutChannel ch exchange queue-name (:serde cfg) ch-opts)))
+    (->RabbitMQFanoutChannel ch exchange queue-name serde/edn ch-opts)))
 
 (deftype RabbitMQConnection [conn]
   pps/IMQConnection

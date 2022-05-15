@@ -50,7 +50,7 @@
                    (some->> value io/reader PushbackReader. (edn*/read opts))])
          :else (edn*/read opts value))))))
 
-(defn edn [_]
+(def edn
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -84,7 +84,7 @@
                  trans/reader
                  (trans/read value)))))
 
-(defn transit [_]
+(def transit
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -104,7 +104,7 @@
   #?(:clj (jsonista/read-value value object-mapper)
      :cljs (js->clj (js/JSON.parse value) :keywordize-keys true)))
 
-(defn json [_]
+(def json
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -116,7 +116,7 @@
     (mime-type [_]
       "application/json")))
 
-(defn urlencode [_]
+(def urlencode
   (reify
     pserdes/ISerde
     (serialize [_ value _]
@@ -128,11 +128,25 @@
     (mime-type [_]
       "application/x-www-form-urlencoded")))
 
+(def base64
+  (reify
+    pserdes/ISerde
+    (serialize [_ payload _]
+      #?(:clj (->> payload
+                   ^String edn#serialize
+                   .getBytes
+                   (.encodeToString ^Base64$Encoder (:encoder base64-mappers)))))
+    (deserialize [_ payload _]
+      #?(:clj (->> ^String payload
+                   (.decode ^Base64$Decoder (:decoder base64-mappers))
+                   String.
+                   edn#deserialize)))))
+
 #?(:clj
    (defn ^:private date->date-time [^Date date]
      (-> date .getTime DateTime.)))
 
-(defn jwt [{:keys [data-serde expiration secret]}]
+(defn jwt [{:keys [expiration secret]}]
   (reify
     pserdes/ISerde
     (serialize [_ payload opts]
@@ -145,7 +159,7 @@
                        ChronoUnit/DAYS)]
             (-> (:jwt/claims opts)
                 (assoc :iat (date->date-time now)
-                       :data (pserdes/serialize data-serde payload opts)
+                       :data (pserdes/serialize transit payload opts)
                        :exp (-> now
                                 .toInstant
                                 (.plus expiration unit)
@@ -160,18 +174,7 @@
                   (dissoc :data)
                   (maps/update-maybe :aud (partial into #{} (map keyword)))
                   (maps/qualify :jwt)
-                  (merge (pserdes/deserialize data-serde (:data value) opts)))))))))
+                  (merge (pserdes/deserialize transit (:data value) opts)))))))))
 
-(defn base64 [_]
-  (reify
-    pserdes/ISerde
-    (serialize [_ payload _]
-      #?(:clj (->> payload
-                   ^String edn#serialize
-                   .getBytes
-                   (.encodeToString ^Base64$Encoder (:encoder base64-mappers)))))
-    (deserialize [_ payload _]
-      #?(:clj (->> ^String payload
-                   (.decode ^Base64$Decoder (:decoder base64-mappers))
-                   String.
-                   edn#deserialize)))))
+(def serdes
+  (maps/->m [:default edn] edn json transit urlencode))

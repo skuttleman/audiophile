@@ -99,22 +99,19 @@
                 :tempfile     file
                 :size         (.length file)}))))
 
-(defn with-serde
-  ([handler system serde]
-   (with-serde handler (int/component system serde)))
-  ([handler serde]
-   (let [mime-type (serdes/mime-type serde)]
-     (fn [{:keys [websocket?] :as request}]
-       (-> request
-           (cond->
-             (not websocket?)
-             (-> (update :headers assoc :content-type mime-type :accept mime-type)
-                 (maps/update-maybe :body (partial serdes/serialize serde)))
+(defn with-serde [handler serde]
+  (let [mime-type (serdes/mime-type serde)]
+    (fn [{:keys [websocket?] :as request}]
+      (-> request
+          (cond->
+            (not websocket?)
+            (-> (update :headers assoc :content-type mime-type :accept mime-type)
+                (maps/update-maybe :body (partial serdes/serialize serde)))
 
-             websocket?
-             (assoc :query-string (uri/join-query {:content-type mime-type
-                                                   :accept       mime-type})))
-           handler
-           (cond->
-             (not (:websocket? request))
-             (maps/update-maybe :body (partial serdes/deserialize serde))))))))
+            websocket?
+            (assoc :query-string (uri/join-query {:content-type mime-type
+                                                  :accept       mime-type})))
+          handler
+          (cond->
+            (not (:websocket? request))
+            (maps/update-maybe :body (partial serdes/deserialize serde)))))))

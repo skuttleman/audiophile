@@ -8,6 +8,7 @@
     [com.ben-allred.audiophile.backend.domain.interactors.protocols :as pint]
     [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [immutant.web.async :as web.async])
@@ -85,9 +86,9 @@
         (catch Throwable ex
           (log/warn ex "web socket did not close successfully"))))))
 
-(defn handler [{:keys [heartbeat-int-ms pubsub serdes]}]
+(defn handler [{:keys [heartbeat-int-ms pubsub]}]
   (fn [request]
-    (let [serde (serdes/find-serde! serdes (:accept request))
+    (let [serde (serdes/find-serde! serde/serdes (:accept request))
           ctx (build-ctx request pubsub heartbeat-int-ms)]
       (web.async/as-channel request
                             {:on-open    (fn [ch]

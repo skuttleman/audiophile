@@ -1,6 +1,7 @@
 (ns ^:integration com.ben-allred.audiophile.test.integration.users-test
   (:require
     [clojure.test :refer [are deftest is testing use-fixtures]]
+    [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
@@ -13,7 +14,7 @@
       (let [user (int/lookup-user system "joe@example.com")
             handler (-> system
                         (int/component :api/handler)
-                        (ihttp/with-serde system :serdes/transit))]
+                        (ihttp/with-serde serde/transit))]
         (testing "when the profile is found"
           (let [response (-> {}
                              (ihttp/login system user)
