@@ -6,8 +6,7 @@
 
  :audiophile.services.nav/router
  {:base-urls {:api-base   #ig/ref :env/base-url#api
-              :auth-base  #ig/ref :env/base-url#auth}
-  :routes    #ig/ref :nav/routes}
+              :auth-base  #ig/ref :env/base-url#auth}}
 
  [:duct/const :services/http]
  #ig/ref :audiophile.services.http/client

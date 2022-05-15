@@ -4,6 +4,7 @@
     [clojure.set :as set]
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.api.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.api.navigation.routes :as routes]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.stubs.pushy :as pushy]
@@ -80,8 +81,8 @@
 
 (defn router
   "Constructor for creating [[Router]] used for controlling app navigation."
-  [{:keys [base-urls routes]}]
-  (->Router base-urls routes))
+  [{:keys [base-urls]}]
+  (->Router base-urls routes/all))
 
 (deftype LinkedNavigator [pushy router]
   pnav/IHistory
