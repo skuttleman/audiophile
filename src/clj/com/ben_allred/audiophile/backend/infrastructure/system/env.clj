@@ -4,8 +4,7 @@
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    com.ben-allred.audiophile.ui.infrastructure.system))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private file->env [file]
   (u/silent!

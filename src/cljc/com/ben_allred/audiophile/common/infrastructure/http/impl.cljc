@@ -1,19 +1,13 @@
 (ns com.ben-allred.audiophile.common.infrastructure.http.impl
   (:require
-    #?@(:clj  [[clj-http.cookies :as cook]]
-        :cljs [[com.ben-allred.audiophile.ui.core.components.core :as comp]
-               [com.ben-allred.audiophile.ui.core.utils.dom :as dom]
-               [com.ben-allred.audiophile.ui.infrastructure.store.core :as store]])
+    #?@(:clj [[clj-http.cookies :as cook]])
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
     [clojure.set :as set]
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.api.pubsub.core :as pubsub]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
@@ -79,35 +73,6 @@
     (fn [http-client]
       (->HttpBase http-client timeout))))
 
-(defn ^:private ->auth-handler [store *banners nav]
-  #?(:cljs    (let [banner {:level :error
-                            :key   ::unauthenticated
-                            :body  [:div
-                                    "Your session has expired. Please "
-                                    [:a
-                                     {:href     "#"
-                                      :on-click (fn [e]
-                                                  (let [path (get-in (store/get-state store) [:nav/route :path])]
-                                                    (dom/stop-propagation e)
-                                                    (nav/goto! nav :auth/logout {:params {:redirect-uri path}})))}
-                                     "login"]
-                                    "."]}]
-                (fn [err]
-                  (when (= ::http/unauthorized (-> err :status http/code->status))
-                    (comp/create! *banners banner))
-                  (v/reject err)))
-     :default v/reject))
-
-(deftype HttpAuth [http-client auth-handler]
-  pres/IResource
-  (request! [_ request]
-    (-> (pres/request! http-client request)
-        (v/catch auth-handler))))
-
-(defn with-unauthorized [{:keys [*banners nav store]}]
-  (fn [http-client]
-    (->HttpAuth http-client (->auth-handler store *banners nav))))
-
 (defn ^:private response-logger [this request level ks]
   (fn [result]
     (log/with-ctx [this :HTTP#response]
@@ -147,7 +112,7 @@
           mime-type (serdes/mime-type serde)
           body (:body request)
           blob? (= :blob (:response-type request))
-          deserde (comp :body (if blob? identity #(deserialize* % serde serdes)))]
+          deserialize (comp :body (if blob? identity #(deserialize* % serde serdes)))]
       (-> request
           (cond-> blob? (assoc-in [:headers :accept] "audio/mpeg"))
           (update :headers maps/assoc-defaults :accept mime-type)
@@ -158,32 +123,11 @@
             (and serde body)
             (update :body (partial serdes/serialize serde)))
           (->> (pres/request! http-client))
-          (v/then deserde (comp v/reject deserde))))))
+          (v/then deserialize (comp v/reject deserialize))))))
 
 (defn with-serde [{:keys [serdes]}]
   (fn [http-client]
     (->HttpSerde http-client serdes)))
-
-(deftype HttpNav [http-client nav route->event-type]
-  pres/IResource
-  (request! [_ {:nav/keys [route params] :as request}]
-    (-> request
-        (dissoc :nav/route :nav/params)
-        (update :async/event-types #(or % (route->event-type route)))
-        (cond-> route (assoc :url (nav/path-for nav route params)))
-        (->> (pres/request! http-client)))))
-
-(defn with-nav [{:keys [nav route->event-type]}]
-  (let [route->event-type (or route->event-type
-                              {:api/artifacts     #{:artifact/created}
-                               :api/comments      #{:comment/created}
-                               :api/file          #{:file-version/created}
-                               :api/project.files #{:file/created}
-                               :api/projects      #{:project/created}
-                               :api/teams         #{:team/created}
-                               :api/users         #{:user/created :team/created}})]
-    (fn [http-client]
-      (->HttpNav http-client nav route->event-type))))
 
 (deftype HttpProgress [http-client]
   pres/IResource
@@ -205,39 +149,6 @@
 
 (defn with-progress [_]
   ->HttpProgress)
-
-(defn ^:private with-async* [http-client pubsub ms {{request-id :x-request-id} :headers :as request}]
-  (let [pubsub-id (uuids/random)
-        sub-events (:async/event-types request)
-        results (atom {})]
-    (-> (v/create (fn [resolve reject]
-                    (letfn [(handler [_ {event-type :event/type :as event}]
-                              (if (= :command/failed event-type)
-                                (reject event)
-                                (let [results (swap! results assoc event-type event)]
-                                  (when (every? results sub-events)
-                                    (resolve {:data (transduce (map :data) into {} (vals results))})))))]
-                      (pubsub/subscribe! pubsub pubsub-id request-id handler)
-                      (-> http-client
-                          (pres/request! request)
-                          (v/catch reject))
-                      (v/and (v/sleep ms)
-                             (reject timeout-msg)))))
-        (v/peek (fn [_]
-                  (pubsub/unsubscribe! pubsub pubsub-id))))))
-
-(deftype HttpAsync [http-client pubsub timeout]
-  pres/IResource
-  (request! [_ request]
-    (let [request (assoc-in request [:headers :x-request-id] (uuids/random))]
-      (if (:http/async? request)
-        (with-async* http-client pubsub timeout request)
-        (pres/request! http-client request)))))
-
-(defn with-async [{:keys [pubsub timeout]}]
-  (let [timeout (or timeout default-timeout)]
-    (fn [http-client]
-      (->HttpAsync http-client pubsub timeout))))
 
 (defn create [respond-fn middlewares]
   (reduce (fn [client middleware]

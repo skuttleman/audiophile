@@ -1,6 +1,5 @@
 (ns com.ben-allred.audiophile.common.api.navigation.core
   (:require
-    #?(:cljs [com.ben-allred.audiophile.ui.core.utils.dom :as dom])
     [com.ben-allred.audiophile.common.api.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
@@ -30,14 +29,6 @@
    (replace! nav handle nil))
   ([nav handle params]
    (pnav/replace! nav (path* nav handle params))))
-
-#?(:cljs
-   (defn goto!
-     "send the browser to a location with a page rebuild"
-     ([nav handle]
-      (goto! nav handle nil))
-     ([nav handle params]
-      (dom/assign! (path* nav handle params)))))
 
 (defn match-route [nav path]
   (serdes/deserialize nav path))

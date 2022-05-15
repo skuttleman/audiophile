@@ -5,10 +5,12 @@
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
+(def ^:private routes
+  [""
+   [[["/test/" [uuids/regex :project/id] "/route"] :test/route]]])
+
 (deftest router-test
-  (let [routes ["" [[["/test/" [uuids/regex :project/id] "/route"] :test/route]]]
-        router (bnav/router {:base-urls {:test "test://base"}
-                             :routes    routes})
+  (let [router (bnav/->Router {:test "test://base"} routes)
         id (uuids/random)]
     (testing "#path-for"
       (testing "serializes params to url"
