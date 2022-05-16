@@ -21,7 +21,7 @@
     (shared/process! "rm -rf classes")
     (shared/process! "mkdir classes")
     (shared/process! "rm -f target/audiophile.jar")
-    (shared/process! (shared/clj "-e (compile 'com.ben-allred.audiophile.backend.core)"))
+    (shared/process! (shared/clj "-e \"(compile 'com.ben-allred.audiophile.backend.core)\""))
     (shared/process! (shared/clj #{:uberjar}
                                  ["-m"
                                   "uberdeps.uberjar"

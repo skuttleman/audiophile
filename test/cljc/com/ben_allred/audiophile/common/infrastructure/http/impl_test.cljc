@@ -47,7 +47,7 @@
       (async done
         (async/go
           (testing "#request!"
-            (let [resource (ihttp/->HttpBase client 0)]
+            (let [resource (ihttp/->HttpBase client 1000)]
               (testing "when the request succeeds"
                 (stubs/use! client :request!
                             (#?(:cljs async/go :default do)

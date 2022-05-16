@@ -42,14 +42,10 @@
         [status result]))))
 
 (defn ui
-  "Ring handler for dynamically generating html for authorized user."
+  "Ring handler for return index.html."
   [{:keys [api-base auth-base template]}]
-  (fn [{:auth/keys [user]}]
-    [::http/ok
-     (html/render template
-                  {:auth/user (some-> user
-                                      (maps/select (comp #{"user"} namespace))
-                                      (assoc :token/type (colls/only! (:jwt/aud user))))
-                   :api-base  api-base
-                   :auth-base auth-base})
-     {:content-type "text/html"}]))
+  (constantly [::http/ok
+               (html/render template
+                            {:api-base  api-base
+                             :auth-base auth-base})
+               {:content-type "text/html"}]))

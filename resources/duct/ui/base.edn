@@ -1,0 +1,5 @@
+#audiophile/merge
+[#duct/include "duct/common/base.edn"
+ #duct/include "duct/ui/services.edn"
+ {:audiophile.services.nav/router
+  ^:promote {:base-urls #ig/ref :services.ui/base-urls}}]
