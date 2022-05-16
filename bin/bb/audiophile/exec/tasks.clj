@@ -11,7 +11,7 @@
     (shared/build* mode args)
     (doseq [mode (->> (methods shared/build*)
                       keys
-                      (concat [:clj :cljs])
+                      (concat [:cljs :clj])
                       distinct)]
       (shared/build* mode nil)) ))
 
