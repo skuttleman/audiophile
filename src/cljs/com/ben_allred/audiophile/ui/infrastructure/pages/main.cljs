@@ -7,18 +7,19 @@
 
 (def other (mod/lazy-component com.ben-allred.audiophile.ui.infrastructure.pages.other/page))
 
-(defn root [_sys _profile]
+(defn root [_sys]
   (let [state (r/atom {:page :dashboard})]
-    (fn [sys profile]
-      [:div
-       "MAIN"
-       [:ul
-        [:li [:button.button {:on-click (fn [_]
-                                          (swap! state assoc :page :dashboard))}
-              "Dashboard"]]
-        [:li [:button.button {:on-click (fn [_]
-                                          (swap! state assoc :page :other))}
-              "Other"]]]
-       (case (:page @state)
-         :dashboard [@dashboard sys profile]
-         [@other sys profile])])))
+    (fn [sys]
+      (let [profile (:user/profile @(:store sys))]
+        [:div
+         "MAIN"
+         [:ul
+          [:li [:button.button {:on-click (fn [_]
+                                            (swap! state assoc :page :dashboard))}
+                "Dashboard"]]
+          [:li [:button.button {:on-click (fn [_]
+                                            (swap! state assoc :page :other))}
+                "Other"]]]
+         (case (:page @state)
+           :dashboard [@dashboard sys profile]
+           [@other sys profile])]))))

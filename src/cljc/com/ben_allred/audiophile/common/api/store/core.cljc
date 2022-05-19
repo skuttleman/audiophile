@@ -1,8 +1,19 @@
 (ns com.ben-allred.audiophile.common.api.store.core
   (:require
-    [com.ben-allred.audiophile.common.api.store.protocols :as pstore]))
+    [com.ben-allred.audiophile.common.api.store.protocols :as pstore]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.vow.core :as v]))
 
-(defn dispatch! [store action]
-  (if (fn? action)
-    (action store)
-    (pstore/dispatch! store action)))
+(defmulti async* (fn [[type] _]
+                   type))
+
+(defmethod async* :default
+  [action {:keys [store]}]
+  (pstore/reduce! store action))
+
+(defn init! [store system]
+  (pstore/init! store system))
+
+(defn dispatch! [store [type :as action]]
+  {:pre [(keyword? type) (namespace type)]}
+  (v/resolve (pstore/with-system store async* action)))

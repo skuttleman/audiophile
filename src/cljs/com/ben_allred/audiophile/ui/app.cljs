@@ -1,6 +1,7 @@
 (ns com.ben-allred.audiophile.ui.app
   (:require
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.api.store.core :as store]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
     [com.ben-allred.audiophile.ui.infrastructure.pages.login :as login]
@@ -8,26 +9,24 @@
     [com.ben-allred.audiophile.ui.infrastructure.system.core :as sys]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
-    [reagent.dom :as rdom]))
+    [reagent.dom :as rdom]
+    com.ben-allred.audiophile.ui.infrastructure.store.actions))
 
 (def ^:private config
   (sys/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
 
-(defn ^:private render [comp & args]
+(defn ^:private render [comp]
   (v/create (fn [resolve _]
-              (rdom/render (into [comp] args)
+              (rdom/render comp
                            (.getElementById js/document "root")
                            resolve))))
 
-(defn ^:private load-profile! [{:keys [http-client nav] :as sys}]
-  (-> (http/get http-client (nav/path-for nav :api/profile))
-      (v/then (fn [{profile :data}]
-                (assert profile)
-                (v/and (render main/root sys profile)
-                       (log/info [:app/initialized])))
-              (fn [e]
-                (v/and (render login/root sys)
-                       (log/error [:app/failed e]))))))
+(defn ^:private init* [{:keys [store] :as sys}]
+  (store/init! store sys)
+  (-> (store/dispatch! store [:user/load-profile!])
+      (v/and (render [main/root sys]))
+      (v/or (render [login/root sys]))
+      (v/always (log/info [:app/initialized]))))
 
 (defn find-component [system k]
   (some-> system (ig/find-derived-1 k) val))
@@ -39,5 +38,5 @@
    (init (ig/init config [:system.ui/components])))
   ([system]
    (if-let [sys (find-component system :system.ui/components)]
-     (load-profile! sys)
+     (init* sys)
      (throw (ex-info "bad system" {:system system})))))

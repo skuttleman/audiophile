@@ -1,16 +1,23 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.store.impl
   (:require
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.api.store.protocols :as pstore]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.ui.infrastructure.store.reducers :as reducers]
     [com.ben-allred.collaj.core :as collaj]
     [com.ben-allred.collaj.enhancers :as ecollaj]
     [reagent.core :as r]))
 
-(deftype Store [get-state dispatch]
+(deftype Store [get-state dispatch system]
   pstore/IStore
-  (dispatch! [_ action]
-    (dispatch action))
+  (reduce! [_ action]
+    (dispatch action)
+    nil)
+
+  pstore/IAsyncStore
+  (init! [_ sys]
+    (vreset! system sys))
+  (with-system [this f action]
+    (f action (or @system {:store this})))
 
   IDeref
   (-deref [_]
@@ -25,7 +32,7 @@
                            (ecollaj/with-log-middleware
                              #(log/info "Action dispatched:" %)
                              #(log/info "New state:" %)))]
-               (->Store (:get-state store) (:dispatch store))))))
+               (->Store (:get-state store) (:dispatch store) (volatile! nil))))))
 
 (defn create [_]
   (create* reducers/reducer))

@@ -2,4 +2,8 @@
 
 (defprotocol IStore
   "An interface for managing a reducing store"
-  (dispatch! [this action] "Dispatches an action to (potentially) update the store"))
+  (reduce! [this action] "Dispatches an action to (potentially) update the store"))
+
+(defprotocol IAsyncStore
+  (init! [this system])
+  (with-system [this f action]))

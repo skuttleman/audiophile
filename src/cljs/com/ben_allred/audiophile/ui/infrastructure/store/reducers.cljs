@@ -10,5 +10,13 @@
      :router/navigate! route
      state)))
 
+(defn user
+  ([] nil)
+  ([state [type profile]]
+   (case type
+     :user/profile profile
+     state)))
+
 (def reducer
-  (rcollaj/combine (maps/->m {:nav/route route})))
+  (rcollaj/combine {:nav/route    route
+                    :user/profile user}))
