@@ -4,6 +4,7 @@
     [#?(:clj clj-http.client :cljs cljs-http.client) :as client]
     [clojure.core.async :as async]
     [clojure.set :as set]
+    [clojure.string :as string]
     [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
@@ -29,12 +30,10 @@
   ([headers serdes]
    (find-serde headers serdes nil))
   ([{:keys [accept content-type]} serdes default-mime-type]
-   (serdes/find-serde serdes (or content-type accept default-mime-type ""))))
+   (serdes/find-serde serdes (or content-type accept default-mime-type))))
 
-(defn ^:private deserialize* [ch-response serde serdes]
-  (let [{:keys [headers] :as response} (update ch-response
-                                               :headers
-                                               (partial maps/map-keys keyword))
+(defn ^:private deserialize* [{:keys [headers] :as response} serde serdes]
+  (let [headers (maps/map-keys (comp keyword string/lower-case name) headers)
         serde (or (find-serde headers serdes) serde)]
     (-> response
         (update :status #(http/code->status % %))
@@ -50,6 +49,11 @@
      (-> result
          #?(:clj (assoc :cookies (cook/get-cookies cs)))
          (update :headers (partial maps/map-keys keyword))))))
+
+(defn ^:private response-logger [this request level ks]
+  (fn [result]
+    (log/with-ctx [this :HTTP#response]
+      (log/log level (-> result (select-keys ks) (merge request))))))
 
 (deftype HttpBase [http-client timeout]
   pres/IResource
@@ -68,11 +72,6 @@
                 (async/go
                   (async/<! (async/timeout timeout))
                   (reject {:body timeout-msg}))))))
-
-(defn ^:private response-logger [this request level ks]
-  (fn [result]
-    (log/with-ctx [this :HTTP#response]
-      (log/log level (-> result (select-keys ks) (merge request))))))
 
 (deftype HttpLogger [http-client]
   pres/IResource
@@ -133,7 +132,7 @@
                       (async/close! progress-ch)))))
       (pres/request! http-client request))))
 
-(def client
+(defn client [{:keys [timeout]}]
   (reduce (fn [client middleware]
             (middleware client))
           (reify
@@ -142,7 +141,7 @@
               (-> request
                   (set/rename-keys {:params :query-params})
                   client/request)))
-          [#(->HttpBase % default-timeout)
+          [#(->HttpBase % (or timeout default-timeout))
            ->HttpLogger
            ->HttpHeaders
            #(->HttpSerde % serde/serdes)]))

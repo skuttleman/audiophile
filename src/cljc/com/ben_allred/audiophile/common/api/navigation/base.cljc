@@ -5,6 +5,7 @@
     [clojure.string :as string]
     [com.ben-allred.audiophile.common.api.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.api.navigation.routes :as routes]
+    [com.ben-allred.audiophile.common.api.store.core :as store]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.stubs.pushy :as pushy]
@@ -61,12 +62,14 @@
               query-string (assoc :query-string query-string))
             params->internal)))
 
-(defn ^:private on-nav [nav tracker pushy route]
-  (when (get-in route [:params :error-msg])
-    (->> (update route :params dissoc :error-msg)
-         (serdes/serialize nav (:handle route))
-         (pushy/replace-token! pushy)))
-  (some-> tracker (pnav/on-change route)))
+(defn ^:private on-nav [nav store pushy route]
+  (let [err-msg (get-in route [:params :error-msg])]
+    #?(:cljs (store/dispatch! store [:router/navigate! route]))
+    (when err-msg
+      (->> (update route :params dissoc :error-msg)
+           (serdes/serialize nav (:handle route))
+           (pushy/replace-token! pushy))
+      #?(:cljs (store/dispatch! store [:banners/error-msg err-msg])))))
 
 (deftype Router [base-urls routes]
   pnav/IHistory
@@ -107,9 +110,9 @@
 
 (defn nav
   "Constructor for [[LinkedNavigator]] which links the [[Router]] to the browser history API."
-  [{:keys [router tracker]}]
+  [{:keys [router store]}]
   (let [pushy (volatile! nil)]
-    (vreset! pushy (pushy/pushy #(on-nav router tracker @pushy %)
+    (vreset! pushy (pushy/pushy #(on-nav router store @pushy %)
                                 #(serdes/deserialize router %)))
     (doto (->LinkedNavigator @pushy router)
       pnav/start!)))

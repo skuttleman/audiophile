@@ -56,15 +56,12 @@
    :api.ws/connect        specs/api-ws:connect
    :res.version/download  specs/res-version:download})
 
-(defrecord Validator [spec -opts]
-  IFn
-  (#?(:cljs -invoke :default invoke) [_ input]
-    (-> spec
-        (m/explain input)
-        (me/humanize -opts))))
-
 (defn validator [{:keys [spec]}]
-  (->Validator spec (humanize-opts (:missing-keys (meta spec)))))
+  (let [opts (humanize-opts (:missing-keys (meta spec)))]
+    (fn [input]
+      (-> spec
+          (m/explain input)
+          (me/humanize opts)))))
 
 (defn validate! [spec data]
   (if-let [result (m/explain (lookup spec) data)]

@@ -70,8 +70,9 @@
                        (fetch-profile oauth)
                        :email)]
     (or (some->> (fetch-user email interactor) (jwt/auth-token jwt-serde))
-        (jwt/signup-token jwt-serde {:user/id    (uuids/random)
-                                     :user/email email}))))
+        ;; disable signup flow
+        #_(jwt/signup-token jwt-serde {:user/id    (uuids/random)
+                                       :user/email email}))))
 
 (deftype AuthInteractor [interactor oauth nav base-url jwt-serde base64-serde]
   pint/IAuthInteractor
@@ -84,11 +85,12 @@
         with-token))
   (callback [_ params]
     (let [token (params->token interactor oauth jwt-serde params)
-          url (some->> params
-                       :state
-                       (serdes/deserialize base64-serde)
-                       :redirect-uri
-                       (str base-url))]
+          url (when token
+                (some->> params
+                         :state
+                         (serdes/deserialize base64-serde)
+                         :redirect-uri
+                         (str base-url)))]
       (-> (or url
               (->redirect-url nav base-url (when-not token
                                              {:error-msg :login-failed})))

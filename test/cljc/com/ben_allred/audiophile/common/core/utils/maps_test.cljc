@@ -72,11 +72,6 @@
     (is (= {2 :a 3 :b}
            (maps/map-keys inc {1 :a 2 :b})))))
 
-(deftest map-vals-test
-  (testing "maps `f` over the keys of m"
-    (is (= {:a 0 :b 1}
-           (maps/map-vals dec {:a 1 :b 2})))))
-
 (deftest ->m-test
   (testing "compiles a sequence of items into a map"
     (is (= {:a 1 :b :B :c 3}

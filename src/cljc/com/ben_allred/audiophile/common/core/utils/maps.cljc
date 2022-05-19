@@ -74,13 +74,12 @@
     (empty? ms) m
     :else (last ms)))
 
-(def ^{:arglists '([f coll])} map-keys
+(defn map-keys [f coll]
   "creates a new map where all the keys are the result of calling f"
-  medley/map-keys)
-
-(def ^{:arglists '([f coll] [f c1 & colls])} map-vals
-  "creates a new map where all the values are the result of calling f"
-  medley/map-vals)
+  (into (with-meta {} (meta coll))
+        (map (fn [[k v]]
+                  [(f k) v]))
+        coll))
 
 (defmacro ->m
   "Compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol.

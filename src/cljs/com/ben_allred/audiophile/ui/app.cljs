@@ -1,17 +1,14 @@
 (ns com.ben-allred.audiophile.ui.app
   (:require
-    [clojure.pprint :as pp]
     [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.common.infrastructure.http.impl :as ihttp]
     [com.ben-allred.audiophile.ui.infrastructure.pages.login :as login]
     [com.ben-allred.audiophile.ui.infrastructure.pages.main :as main]
     [com.ben-allred.audiophile.ui.infrastructure.system.core :as sys]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
-    [reagent.dom :as rdom]
-    react))
+    [reagent.dom :as rdom]))
 
 (def ^:private config
   (sys/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
@@ -22,7 +19,7 @@
                            (.getElementById js/document "root")
                            resolve))))
 
-(defn ^:private load-profile! [{:keys [http-client] :as sys} nav]
+(defn ^:private load-profile! [{:keys [http-client nav] :as sys}]
   (-> (http/get http-client (nav/path-for nav :api/profile))
       (v/then (fn [{profile :data}]
                 (assert profile)
@@ -39,12 +36,8 @@
   "runs when the browser page has loaded"
   ([]
    (set! log/*ctx* {:disabled? true})
-   (init (ig/init config)))
+   (init (ig/init config [:system.ui/components])))
   ([system]
-   (if-let [nav (find-component system :services/nav)]
-     (do (pp/pprint system)
-         (-> system
-             (find-component :system.ui/components)
-             (assoc :http-client ihttp/client)
-             (load-profile! nav)))
+   (if-let [sys (find-component system :system.ui/components)]
+     (load-profile! sys)
      (throw (ex-info "bad system" {:system system})))))

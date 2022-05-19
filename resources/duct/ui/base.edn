@@ -2,4 +2,10 @@
 [#duct/include "duct/common/base.edn"
  #duct/include "duct/ui/services.edn"
  {:audiophile.services.nav/router
-  ^:promote {:base-urls #ig/ref :services.ui/base-urls}}]
+  ^:promote {:base-urls #ig/ref :services.ui/base-urls}
+
+  [:duct/const :system.ui/components]
+  {:http-client #ig/ref :services/http
+   :nav         #ig/ref :services/nav
+   :login-form  #ig/ref :views/login-form
+   :store       #ig/ref :services/store}}]

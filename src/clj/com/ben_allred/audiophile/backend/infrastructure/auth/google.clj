@@ -5,7 +5,6 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.common.infrastructure.http.impl :as ihttp]
     [com.ben-allred.vow.core :as v]))
 
 (defn ^:private redirect-params [{:keys [client-id redirect-uri]}]
@@ -60,5 +59,5 @@
 
 (defn provider
   "Constructor for [[GoogleOAuthProvider]] used to provide asynchronous authentication flows."
-  [{:keys [cfg]}]
-  (->GoogleOAuthProvider ihttp/client cfg))
+  [{:keys [cfg http-client]}]
+  (->GoogleOAuthProvider http-client cfg))

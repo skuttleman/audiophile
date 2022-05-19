@@ -2,4 +2,8 @@
  #duct/include "duct/ui/base.edn"
 
  :duct.profile/dev
- {}}
+ {[:duct/const :system.ui/components]
+  ^:promote {:login-form #ig/ref :audiophile.dev.views/login-form}
+
+  :audiophile.dev.views/login-form
+  {:nav #ig/ref :services/nav}}}

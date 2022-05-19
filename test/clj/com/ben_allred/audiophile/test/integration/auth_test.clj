@@ -43,21 +43,22 @@
                           (-> jwt-serde
                               (serdes/deserialize (get-in cookies ["auth-token" :value])))))))
 
-        (testing "when the auth provider provides an unknown profile"
-          (let [response (-> {}
-                             (ihttp/get system :auth/callback {:params {:code "another-pin"}})
-                             handler)
-                base-url (int/component system :env/base-url#ui)
-                jwt-serde (int/component system :serdes/jwt)
-                cookies (tu/decode-cookies response)]
-            (testing "redirects with a signup token cookie"
-              (is (http/redirect? response))
-              (is (= (str base-url "/")
-                     (get-in response [:headers "Location"])))
-              (assert/is? {:jwt/aud #{:token/signup}
-                           :user/id uuid?
-                           :user/email "unknown@user.com"}
-                          (serdes/deserialize jwt-serde (get-in cookies ["auth-token" :value]))))))
+        ;; disable signup flow
+        #_(testing "when the auth provider provides an unknown profile"
+            (let [response (-> {}
+                               (ihttp/get system :auth/callback {:params {:code "another-pin"}})
+                               handler)
+                  base-url (int/component system :env/base-url#ui)
+                  jwt-serde (int/component system :serdes/jwt)
+                  cookies (tu/decode-cookies response)]
+              (testing "redirects with a signup token cookie"
+                (is (http/redirect? response))
+                (is (= (str base-url "/")
+                       (get-in response [:headers "Location"])))
+                (assert/is? {:jwt/aud    #{:token/signup}
+                             :user/id    uuid?
+                             :user/email "unknown@user.com"}
+                            (serdes/deserialize jwt-serde (get-in cookies ["auth-token" :value]))))))
 
         (testing "when the auth provider interactions fail"
           (-> system
@@ -105,12 +106,12 @@
       (let [handler (-> system
                         (int/component :api/handler)
                         (ihttp/with-serde serde/transit))
-            signup {:user/id (uuids/random)
-                    :user/email "new@user.com"
+            signup {:user/id            (uuids/random)
+                    :user/email         "new@user.com"
                     :user/mobile-number "9876543210"
-                    :user/first-name "Bluff"
-                    :user/last-name  "Tuffington"
-                    :user/handle     "thebluffster"}
+                    :user/first-name    "Bluff"
+                    :user/last-name     "Tuffington"
+                    :user/handle        "thebluffster"}
             jwt-serde (int/component system :serdes/jwt)]
         (testing "when logging in with a login token"
           (let [response (-> signup
@@ -128,12 +129,12 @@
                           claims))))
 
         (testing "when signing up fails"
-          (let [signup {:user/id (uuids/random)
-                        :user/email "new@user.com"
+          (let [signup {:user/id            (uuids/random)
+                        :user/email         "new@user.com"
                         :user/mobile-number "1234567890"
-                        :user/first-name "Bluff"
-                        :user/last-name  "Tuffington"
-                        :user/handle     "thebluffster"}
+                        :user/first-name    "Bluff"
+                        :user/last-name     "Tuffington"
+                        :user/handle        "thebluffster"}
                 response (-> signup
                              (dissoc :user/id :user/email)
                              ihttp/body-data

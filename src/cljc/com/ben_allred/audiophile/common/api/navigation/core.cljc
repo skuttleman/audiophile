@@ -32,3 +32,10 @@
 
 (defn match-route [nav path]
   (serdes/deserialize nav path))
+
+#?(:cljs
+   (defn goto!
+     ([nav handle]
+      (goto! nav handle nil))
+     ([nav handle params]
+      (.assign (.-location js/window) (path* nav handle params)))))

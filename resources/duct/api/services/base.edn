@@ -38,13 +38,14 @@
   {}
 
   :audiophile.services.auth.google/provider
-  {:cfg {:client-id     #ig/ref :env.goauth/client-id
-         :client-secret #ig/ref :env.goauth/client-secret
-         :scopes        #ig/ref :env.goauth/scopes
-         :auth-uri      #ig/ref :env.goauth/auth-uri
-         :redirect-uri  #ig/ref :audiophile.handlers.auth/callback-url
-         :token-uri     #ig/ref :env.goauth/token-uri
-         :profile-uri   #ig/ref :env.goauth/profile-uri}}
+  {:cfg         {:client-id     #ig/ref :env.goauth/client-id
+                 :client-secret #ig/ref :env.goauth/client-secret
+                 :scopes        #ig/ref :env.goauth/scopes
+                 :auth-uri      #ig/ref :env.goauth/auth-uri
+                 :redirect-uri  #ig/ref :audiophile.handlers.auth/callback-url
+                 :token-uri     #ig/ref :env.goauth/token-uri
+                 :profile-uri   #ig/ref :env.goauth/profile-uri}
+   :http-client #ig/ref :services/http}
 
   [:audiophile.services.s3/client :component/health]
   {:access-key #ig/ref :env.s3/access-key

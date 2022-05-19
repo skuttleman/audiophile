@@ -5,7 +5,9 @@
   (:require
     #?@(:clj  [[com.ben-allred.audiophile.common.infrastructure.duct :as uduct]
                [duct.core :as duct]]
-        :cljs [[com.ben-allred.audiophile.ui.infrastructure.env :as env]])
+        :cljs [[com.ben-allred.audiophile.ui.infrastructure.env :as env]
+               [com.ben-allred.audiophile.ui.infrastructure.pages.login :as login]
+               com.ben-allred.audiophile.ui.infrastructure.system.components])
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [integrant.core :as ig]
     com.ben-allred.audiophile.common.infrastructure.system.core))
@@ -25,7 +27,3 @@
 
 (defmethod ig/init-key :duct.core/environment [_ env]
   env)
-
-#?(:cljs
-   (defmethod ig/init-key :audiophile.ui.services/base-urls [_]
-     (select-keys env/env #{:api-base :auth-base})))
