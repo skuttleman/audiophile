@@ -5,12 +5,12 @@
     [clojure.core.async :as async]
     [clojure.set :as set]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.common.infrastructure.resources.protocols :as pres]
     [com.ben-allred.vow.core :as v #?@(:cljs [:include-macros true])]))
 
 #?(:cljs

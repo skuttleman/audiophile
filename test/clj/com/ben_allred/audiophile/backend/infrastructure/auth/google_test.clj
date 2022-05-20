@@ -4,10 +4,10 @@
     [clojure.test :refer [are deftest is testing]]
     [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.infrastructure.auth.google :as goog]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
-    [com.ben-allred.vow.core :as v]
-    [com.ben-allred.audiophile.test.utils.stubs :as stubs]))
+    [com.ben-allred.audiophile.common.infrastructure.resources.protocols :as pres]
+    [com.ben-allred.audiophile.test.utils.stubs :as stubs]
+    [com.ben-allred.vow.core :as v]))
 
 (deftest auth-provider-test
   (testing "GoogleOAuthProvider"

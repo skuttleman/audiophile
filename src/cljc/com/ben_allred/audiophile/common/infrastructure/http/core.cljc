@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [get])
   (:require
     [clojure.set :as set]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]))
+    [com.ben-allred.audiophile.common.infrastructure.resources.protocols :as pres]))
 
 (def status->code
   {::ok 200

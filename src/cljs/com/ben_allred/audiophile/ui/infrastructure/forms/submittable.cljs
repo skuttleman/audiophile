@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.forms.submittable
   (:require
-    [com.ben-allred.audiophile.common.core.resources.core :as res]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.resources.core :as res]
     [com.ben-allred.audiophile.ui.infrastructure.forms.core :as forms]
     [com.ben-allred.audiophile.ui.infrastructure.forms.protocols :as pforms]
-    [com.ben-allred.vow.core :as v]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.vow.core :as v]))
 
 (deftype SubmittableForm [*resource *form local->remote remote->local]
   pforms/IInit

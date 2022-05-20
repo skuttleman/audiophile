@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.core.resources.protocols)
+(ns com.ben-allred.audiophile.common.infrastructure.resources.protocols)
 
 (defprotocol IResource
   "A component for handling asynchronous activity"

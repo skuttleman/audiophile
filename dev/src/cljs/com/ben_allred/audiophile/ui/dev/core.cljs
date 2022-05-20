@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.ui.dev.core
   (:require
     [clojure.pprint :as pp]
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]
+    [com.ben-allred.audiophile.common.infrastructure.resources.protocols :as pres]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.domain.validations.core :as val]
     [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]

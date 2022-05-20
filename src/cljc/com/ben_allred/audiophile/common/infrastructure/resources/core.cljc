@@ -1,6 +1,6 @@
-(ns com.ben-allred.audiophile.common.core.resources.core
+(ns com.ben-allred.audiophile.common.infrastructure.resources.core
   (:require
-    [com.ben-allred.audiophile.common.core.resources.protocols :as pres]))
+    [com.ben-allred.audiophile.common.infrastructure.resources.protocols :as pres]))
 
 (defn request!
   ([resource]
