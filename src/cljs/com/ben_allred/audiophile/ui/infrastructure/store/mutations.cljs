@@ -1,16 +1,18 @@
-(ns com.ben-allred.audiophile.ui.infrastructure.store.mutations)
+(ns com.ben-allred.audiophile.ui.infrastructure.store.mutations
+  (:require [com.ben-allred.audiophile.common.infrastructure.store.core :as store]))
 
-(def ^:private banner-err-codes
-  {:login-failed "Authentication failed. Please try again."})
+(defmethod store/reduce* :banners/add!
+  [state [_ {:keys [id] :as banner}]]
+  (assoc-in state [:banners id] banner))
 
-(defn user-profile [profile]
-  [:user/profile profile])
+(defmethod store/reduce* :banners/remove!
+  [state [_ {:keys [id]}]]
+  (update state :banners dissoc id))
 
-(defn add-banner! [level code]
-  (let [id (.getTime (js/Date.))]
-    [:banners/add! {:id    id
-                    :level level
-                    :body  (banner-err-codes code)}]))
+(defmethod store/reduce* :router/update
+  [state [_ route]]
+  (assoc state :nav/route route))
 
-(defn remove-banner! [id]
-  [:banners/remove! {:id id}])
+(defmethod store/reduce* :user.profile/set!
+  [state [_ profile]]
+  (assoc state :user/profile profile))

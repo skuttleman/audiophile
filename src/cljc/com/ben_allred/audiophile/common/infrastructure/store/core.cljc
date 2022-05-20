@@ -11,6 +11,13 @@
   [action {:keys [store]}]
   (pstore/reduce! store action))
 
+(defmulti reduce* (fn [_ [type]]
+                      type))
+
+(defmethod reduce* :default
+  [state _]
+  state)
+
 (defn init! [store system]
   (pstore/init! store system))
 

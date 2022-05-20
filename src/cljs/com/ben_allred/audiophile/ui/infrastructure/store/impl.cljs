@@ -1,8 +1,8 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.store.impl
   (:require
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.store.core :as store]
     [com.ben-allred.audiophile.common.infrastructure.store.protocols :as pstore]
-    [com.ben-allred.audiophile.ui.infrastructure.store.reducers :as reducers]
     [com.ben-allred.collaj.core :as collaj]
     [com.ben-allred.collaj.enhancers :as ecollaj]
     [reagent.core :as r]))
@@ -28,11 +28,11 @@
              (let [store (collaj/create-custom-store
                            r/atom
                            reducer
-                           (reducer)
+                           {}
                            (ecollaj/with-log-middleware
                              #(log/info "Action dispatched:" %)
                              #(log/info "New state:" %)))]
                (->Store (:get-state store) (:dispatch store) (volatile! nil))))))
 
 (defn create [_]
-  (create* reducers/reducer))
+  (create* store/reduce*))

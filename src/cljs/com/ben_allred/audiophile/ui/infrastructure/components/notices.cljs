@@ -2,28 +2,23 @@
   (:require
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.store.core :as store]
-    [com.ben-allred.audiophile.ui.infrastructure.store.mutations :as mut]))
+    [com.ben-allred.audiophile.ui.infrastructure.store.actions :as act]))
 
 (defn ^:private banner-message [{:keys [store]} {:keys [banner]}]
-  (let [{banner-id :id :keys [body level]} banner
-        remove-banner! (fn []
-                         (store/dispatch! store (mut/remove-banner! banner-id))
-                         nil)]
-    (if-not body
-      (remove-banner!)
-      [:li.banner-message.message
-       {:class    [(case level
-                     :success "is-success"
-                     :error "is-danger"
-                     :warning "is-warning"
-                     "is-info")]
-        :on-click (fn [_]
-                    (remove-banner!))
-        :style    {:cursor :pointer}}
-       [:div.message-header
-        [:button.delete {:aria-label "delete"}]]
-       [:div.message-body
-        [:div.body-text body]]])))
+  (let [{banner-id :id :keys [body level]} banner]
+    [:li.banner-message.message
+     {:class    [(case level
+                   :success "is-success"
+                   :error "is-danger"
+                   :warning "is-warning"
+                   "is-info")]
+      :on-click (fn [_]
+                  (store/dispatch! store (act/banner:remove! banner-id)))
+      :style    {:cursor :pointer}}
+     [:div.message-header
+      [:button.delete {:aria-label "delete"}]]
+     [:div.message-body
+      [:div.body-text body]]]))
 
 (defn banners [sys {:keys [banners]}]
   [:div.banner-container

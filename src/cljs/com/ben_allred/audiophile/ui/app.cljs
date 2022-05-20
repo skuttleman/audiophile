@@ -4,11 +4,13 @@
     [com.ben-allred.audiophile.common.infrastructure.store.core :as store]
     [com.ben-allred.audiophile.ui.infrastructure.pages.login :as login]
     [com.ben-allred.audiophile.ui.infrastructure.pages.main :as main]
+    [com.ben-allred.audiophile.ui.infrastructure.store.actions :as act]
     [com.ben-allred.audiophile.ui.infrastructure.system.core :as sys]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
-    com.ben-allred.audiophile.ui.infrastructure.store.actions))
+    com.ben-allred.audiophile.ui.infrastructure.store.async
+    com.ben-allred.audiophile.ui.infrastructure.store.mutations))
 
 (def ^:private config
   (sys/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
@@ -21,7 +23,7 @@
 
 (defn ^:private init* [{:keys [store] :as sys}]
   (store/init! store sys)
-  (-> (store/dispatch! store [:user/load-profile!])
+  (-> (store/dispatch! store act/profile:load!)
       (v/and (render [main/root sys]))
       (v/or (render [login/root sys]))
       (v/always (log/info [:app/initialized]))))

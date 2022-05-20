@@ -1,12 +1,23 @@
-(ns com.ben-allred.audiophile.ui.infrastructure.store.actions
-  (:require
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
-    [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.infrastructure.store.core :as store]
-    [com.ben-allred.audiophile.ui.infrastructure.store.mutations :as mut]
-    [com.ben-allred.vow.core :as v]))
+(ns com.ben-allred.audiophile.ui.infrastructure.store.actions)
 
-(defmethod store/async* :user/load-profile! [_ {:keys [http-client nav store]}]
-  (-> (http/get http-client (nav/path-for nav :api/profile))
-      (v/then (fn [{profile :data}]
-                (store/dispatch! store (mut/user-profile profile))))))
+(def ^:private banner-err-codes
+  {:login-failed "Authentication failed. Please try again."})
+
+(defn banner:add! [level code]
+  (if-let [body (banner-err-codes code)]
+    [:banners/add! {:id    (.getTime (js/Date.))
+                    :level level
+                    :body  body}]
+    (throw (ex-info "banners must have a body" {:level level :cod code}))))
+
+(defn banner:remove! [id]
+  [:banners/remove! {:id id}])
+
+(def profile:load!
+  [:user.profile/load!])
+
+(defn profile:set! [profile]
+  [:user.profile/set! profile])
+
+(defn router:update [route]
+  [:router/update route])
