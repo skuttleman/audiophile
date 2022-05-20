@@ -1,9 +1,9 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.pages.login
   (:require
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
     [com.ben-allred.audiophile.ui.infrastructure.components.core :as comp]
-    [com.ben-allred.audiophile.ui.infrastructure.components.input-fields :as in]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.ui.infrastructure.components.input-fields :as in]))
 
 (defn ^:private root* [login-form state]
   [:div..gutters.layout--xl.layout--xxl.layout--inset

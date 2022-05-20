@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.api.navigation.routes
+(ns com.ben-allred.audiophile.common.infrastructure.navigation.routes
   (:require
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 

@@ -1,9 +1,7 @@
 (ns com.ben-allred.audiophile.ui.app
   (:require
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
-    [com.ben-allred.audiophile.common.api.store.core :as store]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.common.infrastructure.store.core :as store]
     [com.ben-allred.audiophile.ui.infrastructure.pages.login :as login]
     [com.ben-allred.audiophile.ui.infrastructure.pages.main :as main]
     [com.ben-allred.audiophile.ui.infrastructure.system.core :as sys]

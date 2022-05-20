@@ -1,11 +1,8 @@
-(ns com.ben-allred.audiophile.common.api.navigation.base
+(ns com.ben-allred.audiophile.common.infrastructure.navigation.base
   (:require
     [bidi.bidi :as bidi]
     [clojure.set :as set]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.api.navigation.protocols :as pnav]
-    [com.ben-allred.audiophile.common.api.navigation.routes :as routes]
-    [com.ben-allred.audiophile.common.api.store.core :as store]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.protocols :as pserdes]
     [com.ben-allred.audiophile.common.core.stubs.pushy :as pushy]
@@ -13,7 +10,10 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.core.utils.uri :as uri]
-    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
+    [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.protocols :as pnav]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.routes :as routes]
+    [com.ben-allred.audiophile.common.infrastructure.store.core :as store]))
 
 (defn ^:private params->internal [params]
   (update params :params (fns/=>

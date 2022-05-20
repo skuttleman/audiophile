@@ -1,4 +1,4 @@
-(ns com.ben-allred.audiophile.common.api.store.protocols)
+(ns com.ben-allred.audiophile.common.infrastructure.store.protocols)
 
 (defprotocol IStore
   "An interface for managing a reducing store"

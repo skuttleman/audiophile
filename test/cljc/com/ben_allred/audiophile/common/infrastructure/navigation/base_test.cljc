@@ -1,8 +1,8 @@
-(ns ^:unit com.ben-allred.audiophile.common.api.navigation.base-test
+(ns ^:unit com.ben-allred.audiophile.common.infrastructure.navigation.base-test
   (:require
     [clojure.test :refer [are deftest is testing]]
-    [com.ben-allred.audiophile.common.api.navigation.base :as bnav]
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.base :as bnav]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.uuids :as uuids]))
 
 (def ^:private routes

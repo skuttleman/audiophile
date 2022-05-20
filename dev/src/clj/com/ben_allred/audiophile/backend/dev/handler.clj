@@ -5,8 +5,8 @@
     [clojure.set :as set]
     [com.ben-allred.audiophile.backend.api.protocols :as papp]
     [com.ben-allred.audiophile.backend.api.repositories.protocols :as prepos]
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
     [integrant.core :as ig]))
 
 (deftype DevS3Client []

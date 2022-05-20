@@ -33,7 +33,7 @@
       (require 'com.ben-allred.audiophile.backend.api.repositories.teams.impl :reload)
       (require 'com.ben-allred.audiophile.backend.api.repositories.users.impl :reload)
       (require 'com.ben-allred.audiophile.backend.infrastructure.resources.s3 :reload)
-      (require 'com.ben-allred.audiophile.common.api.navigation.core :reload)
+      (require 'com.ben-allred.audiophile.common.infrastructure.navigation.core :reload)
       (require 'com.ben-allred.audiophile.common.core.serdes.core :reload)
       (require 'com.ben-allred.audiophile.common.infrastructure.pubsub.memory :reload)
       (require 'com.ben-allred.audiophile.backend.infrastructure.db.core :reload))))

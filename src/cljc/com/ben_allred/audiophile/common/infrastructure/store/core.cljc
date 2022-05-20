@@ -1,7 +1,7 @@
-(ns com.ben-allred.audiophile.common.api.store.core
+(ns com.ben-allred.audiophile.common.infrastructure.store.core
   (:require
-    [com.ben-allred.audiophile.common.api.store.protocols :as pstore]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.store.protocols :as pstore]
     [com.ben-allred.vow.core :as v]))
 
 (defmulti async* (fn [[type] _]

@@ -3,12 +3,12 @@
     [camel-snake-kebab.core :as csk]
     [clojure.core.match :as match]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.serdes.impl :as serde]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.core.utils.maps :as maps]
-    [com.ben-allred.audiophile.common.infrastructure.http.core :as http])
+    [com.ben-allred.audiophile.common.infrastructure.http.core :as http]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav])
   (:import
     (java.io File InputStream)
     (org.projectodd.wunderboss.web.async Channel)))

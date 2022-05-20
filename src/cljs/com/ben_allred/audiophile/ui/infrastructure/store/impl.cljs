@@ -1,7 +1,7 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.store.impl
   (:require
-    [com.ben-allred.audiophile.common.api.store.protocols :as pstore]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.store.protocols :as pstore]
     [com.ben-allred.audiophile.ui.infrastructure.store.reducers :as reducers]
     [com.ben-allred.collaj.core :as collaj]
     [com.ben-allred.collaj.enhancers :as ecollaj]

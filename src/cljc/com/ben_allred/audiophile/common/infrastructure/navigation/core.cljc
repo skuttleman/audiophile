@@ -1,8 +1,8 @@
-(ns com.ben-allred.audiophile.common.api.navigation.core
+(ns com.ben-allred.audiophile.common.infrastructure.navigation.core
   (:require
-    [com.ben-allred.audiophile.common.api.navigation.protocols :as pnav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.protocols :as pnav]))
 
 (defn ^:private path* [nav handle params]
   (if (keyword? handle)

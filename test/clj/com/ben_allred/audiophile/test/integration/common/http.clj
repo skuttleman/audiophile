@@ -4,7 +4,7 @@
     [clojure.core.async :as async]
     [clojure.java.io :as io]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.api.navigation.core :as nav]
+    [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.core :as u]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
