@@ -8,7 +8,7 @@
     ["/login" :auth/login]
     ["/logout" :auth/logout]
     ["/details" :auth/details]
-    [true :api/not-found]]])
+    [true :auth/not-found]]])
 
 (def api-routes
   ["/api"

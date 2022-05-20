@@ -10,8 +10,6 @@
            :module-loader true
            :modules       {:main      {:init-fn com.ben-allred.audiophile.ui.dev.core/init}
                            :dashboard {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.dashboard]
-                                       :depends-on #{:main}}
-                           :other     {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.other]
                                        :depends-on #{:main}}}}
 
           :ui
@@ -21,8 +19,6 @@
            :module-loader true
            :modules       {:main      {:init-fn com.ben-allred.audiophile.ui.app/init}
                            :dashboard {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.dashboard]
-                                       :depends-on #{:main}}
-                           :other     {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.other]
                                        :depends-on #{:main}}}}
 
           :web-test
@@ -32,8 +28,6 @@
            :module-loader true
            :modules       {:main      {:init-fn com.ben-allred.audiophile.ui.dev.core/init}
                            :dashboard {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.dashboard]
-                                       :depends-on #{:main}}
-                           :other     {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.other]
                                        :depends-on #{:main}}}}
 
           :test

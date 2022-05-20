@@ -5,6 +5,12 @@
     [com.ben-allred.audiophile.ui.infrastructure.forms.protocols :as pforms]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]))
 
+(defn not-found [_ _]
+  [:div {:style {:display         :flex
+                 :align-items     :center
+                 :justify-content :center}}
+   [:img {:src "https://i.imgur.com/HYpqZvg.jpg"}]])
+
 (defn icon
   ([icon-class]
    (icon {} icon-class))
