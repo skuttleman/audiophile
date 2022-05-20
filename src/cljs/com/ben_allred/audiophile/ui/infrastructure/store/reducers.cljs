@@ -17,6 +17,15 @@
      :user/profile profile
      state)))
 
+(defn banners
+  ([] {})
+  ([state [type {:keys [id] :as banner}]]
+   (case type
+     :banners/add! (assoc state id banner)
+     :banners/remove! (dissoc state id)
+     state)))
+
 (def reducer
-  (rcollaj/combine {:nav/route    route
-                    :user/profile user}))
+  (rcollaj/combine (maps/->m {:nav/route    route
+                              :user/profile user}
+                             banners)))

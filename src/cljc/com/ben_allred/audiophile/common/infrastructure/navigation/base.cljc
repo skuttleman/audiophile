@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.common.infrastructure.navigation.base
   (:require
+    #?(:cljs [com.ben-allred.audiophile.ui.infrastructure.store.mutations :as mut])
     [bidi.bidi :as bidi]
     [clojure.set :as set]
     [clojure.string :as string]
@@ -69,7 +70,7 @@
       (->> (update route :params dissoc :error-msg)
            (serdes/serialize nav (:handle route))
            (pushy/replace-token! pushy))
-      #?(:cljs (store/dispatch! store [:banners/error-msg err-msg])))))
+      #?(:cljs (store/dispatch! store (mut/add-banner! :error (keyword err-msg)))))))
 
 (deftype Router [base-urls routes]
   pnav/IHistory

@@ -1,11 +1,13 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.pages.login
   (:require
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
     [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
     [com.ben-allred.audiophile.ui.infrastructure.components.core :as comp]
-    [com.ben-allred.audiophile.ui.infrastructure.components.input-fields :as in]))
+    [com.ben-allred.audiophile.ui.infrastructure.components.input-fields :as in]
+    [com.ben-allred.audiophile.ui.infrastructure.components.notices :as not]))
 
-(defn ^:private root* [login-form state]
+(defn ^:private root* [{:keys [login-form state]}]
   [:div..gutters.layout--xl.layout--xxl.layout--inset
    [:div
     [:h1.title [comp/icon :headphones] " Audiophile"]
@@ -30,5 +32,11 @@
                    (nav/goto! nav :auth/login {:params {:redirect-uri (:path route)}}))}
       "Login"]]))
 
-(defn root [{:keys [login-form store]}]
-  [root* login-form @store])
+(defn root [{:keys [login-form store] :as sys}]
+  (let [state @store]
+    [:div
+     [not/banners sys state]
+     [:div.main.layout--inset
+      {:class ["page-login"]}
+      [:div.layout--inset
+       [root* (maps/->m login-form state)]]]]))

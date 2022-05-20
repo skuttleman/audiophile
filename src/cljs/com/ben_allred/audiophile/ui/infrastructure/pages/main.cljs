@@ -1,10 +1,10 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.pages.main
   (:require
-    [com.ben-allred.audiophile.ui.infrastructure.components.core :as comp]
-    [com.ben-allred.audiophile.ui.infrastructure.modulizer :as mod]
-    [reagent.core :as r]
     [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
-    [cljs.pprint :as pp]))
+    [com.ben-allred.audiophile.ui.infrastructure.components.core :as comp]
+    [com.ben-allred.audiophile.ui.infrastructure.components.notices :as not]
+    [com.ben-allred.audiophile.ui.infrastructure.modulizer :as mod]
+    [reagent.core :as r]))
 
 (def dashboard (mod/lazy-component com.ben-allred.audiophile.ui.infrastructure.pages.dashboard/page))
 
@@ -71,7 +71,7 @@
 (defn root [{:keys [store] :as sys}]
   (let [state @store]
     [:div
-     #_[banners (:banners state)]
+     [not/banners sys state]
      [header sys state]
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
