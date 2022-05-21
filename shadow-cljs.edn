@@ -5,11 +5,11 @@
            :output-dir    "resources/public/js"
            :compiler      {:optimizations :none}
            :devtools      {:watch-dir   "resources/public"
-                           :before-load com.ben-allred.audiophile.ui.dev.core/halt
-                           :after-load  com.ben-allred.audiophile.ui.dev.core/init}
+                           :before-load audiophile.ui.dev.core/halt
+                           :after-load  audiophile.ui.dev.core/init}
            :module-loader true
-           :modules       {:main      {:init-fn com.ben-allred.audiophile.ui.dev.core/init}
-                           :dashboard {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.dashboard]
+           :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
+                           :dashboard {:entries    [audiophile.ui.pages.dashboard]
                                        :depends-on #{:main}}}}
 
           :ui
@@ -17,8 +17,8 @@
            :output-dir    "resources/public/js"
            :compiler      {:optimizations :advanced}
            :module-loader true
-           :modules       {:main      {:init-fn com.ben-allred.audiophile.ui.app/init}
-                           :dashboard {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.dashboard]
+           :modules       {:main      {:init-fn audiophile.ui.app/init}
+                           :dashboard {:entries    [audiophile.ui.pages.dashboard]
                                        :depends-on #{:main}}}}
 
           :web-test
@@ -26,8 +26,8 @@
            :output-dir    "resources/public/js"
            :compiler      {:optimizations :advanced}
            :module-loader true
-           :modules       {:main      {:init-fn com.ben-allred.audiophile.ui.dev.core/init}
-                           :dashboard {:entries    [com.ben-allred.audiophile.ui.infrastructure.pages.dashboard]
+           :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
+                           :dashboard {:entries    [audiophile.ui.pages.dashboard]
                                        :depends-on #{:main}}}}
 
           :test

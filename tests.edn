@@ -18,4 +18,4 @@
                                      :kaocha.filter/skip-meta [:unit :integration]}]
             :reporter              [kaocha.report/documentation]
             :plugins               [:hooks]
-            :kaocha.hooks/wrap-run [com.ben-allred.audiophile.test.web.common.runner/wrap-run]}
+            :kaocha.hooks/wrap-run [audiophile.test.web.common.runner/wrap-run]}
