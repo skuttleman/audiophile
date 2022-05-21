@@ -8,11 +8,12 @@
   ^:promote #ig/ref :audiophile.ui.services/http
 
   [:duct/const :system.ui/components]
-  {:http-client #ig/ref :services/http
-   :nav         #ig/ref :services/nav
+  {:env         #ig/ref :services.ui/base-urls
+   :http-client #ig/ref :services/http
    :login-form  #ig/ref :views/login-form
-   :store       #ig/ref :services/store
-   :_           #{#ig/ref :audiophile.ui.services/ws}}
+   :nav         #ig/ref :services/nav
+   :pubsub      #ig/ref :services/pubsub
+   :store       #ig/ref :services/store}
 
   :audiophile.ui.services/http
   {:http-client #ig/ref :audiophile.services.http/client

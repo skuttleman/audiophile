@@ -40,7 +40,7 @@
                           total (min (/ current total) 0.99)
                           current 0)]
        [:div.progress-bar
-        {:style {:height        height}}
+        {:style {:height height}}
         [:div.progress-amount
          {:class [(cond
                     (zero? percent) "unstarted"
@@ -176,65 +176,65 @@
     (with-id
       (fn [{:keys [multi? on-change progress] :as attrs}]
         (r/with-let [file-input (volatile! nil)]
-                    [form-field
-                     (cond-> attrs
-                       (not (:attempted? attrs)) (dissoc :errors))
-                     [:div
-                      [:input {:ref       #(some->> % (vreset! file-input))
-                               :type      :file
-                               :accept    ".mp3,.wav,.ogg"
-                               :multiple  multi?
-                               :style     {:display :none}
-                               :on-change (comp on-change
-                                                (fn [e]
-                                                  (let [files (into #{} (some-> e .-target .-files))]
-                                                    (doto (.-target e)
-                                                      (aset "files" nil)
-                                                      (aset "value" nil))
-                                                    files)))}]
-                      [plain-button (-> attrs
-                                        (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
-                                        (assoc :on-click (comp (fn [_]
-                                                                 (dom/click! @file-input))
-                                                               dom/prevent-default!)))
-                       (:display attrs "Select file…")
-                       (when (:disabled attrs)
-                         [:div {:style {:margin-left "8px"}} [spinner]])]
-                      (when progress
-                        [progress-bar progress])]])))))
+          [form-field
+           (cond-> attrs
+             (not (:attempted? attrs)) (dissoc :errors))
+           [:div
+            [:input {:ref       #(some->> % (vreset! file-input))
+                     :type      :file
+                     :accept    ".mp3,.wav,.ogg"
+                     :multiple  multi?
+                     :style     {:display :none}
+                     :on-change (comp on-change
+                                      (fn [e]
+                                        (let [files (into #{} (some-> e .-target .-files))]
+                                          (doto (.-target e)
+                                            (aset "files" nil)
+                                            (aset "value" nil))
+                                          files)))}]
+            [plain-button (-> attrs
+                              (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
+                              (assoc :on-click (comp (fn [_]
+                                                       (dom/click! @file-input))
+                                                     dom/prevent-default!)))
+             (:display attrs "Select file…")
+             (when (:disabled attrs)
+               [:div {:style {:margin-left "8px"}} [spinner]])]
+            (when progress
+              [progress-bar progress])]])))))
 
 (defn openable [component & args]
-  #_(r/with-let [open? (r/atom false)
+  (r/with-let [open? (r/atom false)
                ref (volatile! nil)
-               listeners [(dom/add-listener dom/window :click (fn [e]
+               listeners [(dom/add-listener js/window :click (fn [e]
                                                                 (if (->> (.-target e)
                                                                          (iterate #(some-> % .-parentNode))
                                                                          (take-while some?)
                                                                          (filter (partial = @ref))
                                                                          (empty?))
                                                                   (do (reset! open? false)
-                                                                      (some-> @ref dom/blur))
-                                                                  (some-> @ref dom/focus))))
-                          (dom/add-listener dom/window
+                                                                      (some-> @ref dom/blur!))
+                                                                  (some-> @ref dom/focus!))))
+                          (dom/add-listener js/window
                                             :keydown
                                             #(when (#{:key-codes/tab :key-codes/esc} (dom/event->key %))
                                                (reset! open? false))
                                             true)]]
-              (let [attrs (-> {:on-toggle (fn [_]
-                                            (swap! open? not))
-                               :open?     @open?}
-                              (update :ref (fn [ref-fn]
-                                             (fn [node]
-                                               (when node
-                                                 (vreset! ref node))
-                                               (when ref-fn
-                                                 (ref-fn node)))))
-                              (update :on-blur (fn [on-blur]
-                                                 (fn [e]
-                                                   (when-let [node @ref]
-                                                     (if @open?
-                                                       (some-> node dom/focus)
-                                                       (when on-blur
-                                                         (on-blur e))))))))]
-                (into [component attrs] args))
-              (finally (run! dom/remove-listener listeners))))
+    (let [attrs (-> {:on-toggle (fn [_]
+                                  (swap! open? not))
+                     :open?     @open?}
+                    (update :ref (fn [ref-fn]
+                                   (fn [node]
+                                     (when node
+                                       (vreset! ref node))
+                                     (when ref-fn
+                                       (ref-fn node)))))
+                    (update :on-blur (fn [on-blur]
+                                       (fn [e]
+                                         (when-let [node @ref]
+                                           (if @open?
+                                             (some-> node dom/focus!)
+                                             (when on-blur
+                                               (on-blur e))))))))]
+      (into [component attrs] args))
+    (finally (run! dom/remove-listener listeners))))

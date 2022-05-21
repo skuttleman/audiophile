@@ -31,6 +31,14 @@
   (some-> node .click)
   node)
 
+(defn blur! [node]
+  (some-> node .blur)
+  node)
+
+(defn focus! [node]
+  (some-> node .focus)
+  node)
+
 (defn event->key [e]
   (some-> e .-keyCode code->key))
 

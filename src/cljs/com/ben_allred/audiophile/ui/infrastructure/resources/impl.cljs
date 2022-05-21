@@ -24,14 +24,13 @@
         value))))
 
 (defn base [opts->vow]
-  (->Resource (r/atom nil) opts->vow))
+  (->Resource (r/atom {:status :init}) opts->vow))
 
 (defn http
   ([http-client opts->req]
    (http http-client opts->req identity))
   ([http-client opts->req handler]
-   (->Resource (r/atom nil)
-               (fn [opts]
-                 (-> (res/request! http-client (opts->req opts))
-                     (v/then :data (comp v/reject :errors))
-                     handler)))))
+   (base (fn [opts]
+           (-> (res/request! http-client (opts->req opts))
+               (v/then :data (comp v/reject :errors))
+               handler)))))

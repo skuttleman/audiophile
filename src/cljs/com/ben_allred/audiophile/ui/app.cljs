@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.common.infrastructure.store.core :as store]
     [com.ben-allred.audiophile.ui.infrastructure.pages.login :as login]
     [com.ben-allred.audiophile.ui.infrastructure.pages.main :as main]
+    [com.ben-allred.audiophile.ui.infrastructure.services.ws :as ws]
     [com.ben-allred.audiophile.ui.infrastructure.store.actions :as act]
     [com.ben-allred.audiophile.ui.infrastructure.system.core :as sys]
     [com.ben-allred.vow.core :as v :include-macros true]
@@ -24,7 +25,7 @@
 (defn ^:private init* [{:keys [store] :as sys}]
   (store/init! store sys)
   (-> (store/dispatch! store act/profile:load!)
-      (v/and (render [main/root sys]))
+      (v/and (ws/init! sys) (render [main/root sys]))
       (v/or (render [login/root sys]))
       (v/always (log/info [:app/initialized]))))
 

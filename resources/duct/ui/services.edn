@@ -19,11 +19,5 @@
  :audiophile.ui.services/store
  {}
 
- :audiophile.ui.services/ws
- {:env    #ig/ref :services.ui/base-urls
-  :nav    #ig/ref :services/nav
-  :pubsub #ig/ref :services/pubsub
-  :store  #ig/ref :services/store}
-
  :audiophile.services.pubsub/memory
  {}}

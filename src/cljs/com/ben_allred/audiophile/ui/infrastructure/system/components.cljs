@@ -19,9 +19,3 @@
 
 (defmethod ig/init-key :audiophile.ui.services/store [_ cfg]
   (istore/create cfg))
-
-(defmethod ig/init-key :audiophile.ui.services/ws [_ cfg]
-  (ws/client cfg))
-
-(defmethod ig/halt-key! :audiophile.ui.services/ws [_ ws]
-  (ws/client#close ws))

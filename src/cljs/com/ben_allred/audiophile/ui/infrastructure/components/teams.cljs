@@ -10,7 +10,8 @@
     [com.ben-allred.audiophile.ui.infrastructure.services.teams :as steams]
     [com.ben-allred.audiophile.ui.infrastructure.store.actions :as act]
     [com.ben-allred.vow.core :as v]
-    [com.ben-allred.audiophile.common.infrastructure.resources.core :as res]))
+    [com.ben-allred.audiophile.common.infrastructure.resources.core :as res]
+    [reagent.core :as r]))
 
 (def ^:private team-type->icon
   {:PERSONAL      ["Personal Team" :user]
@@ -26,13 +27,12 @@
 
 (defmethod modals/body ::create
   [_ sys attrs]
-  (let [*form (steams/form:new sys (fn [vow]
-                                     (-> vow
-                                         (v/peek (:close! attrs))
-                                         (v/peek (fn [_]
-                                                   (some-> attrs :*res res/request!))))))]
-    (fn [_ _sys attrs]
-      [create* *form attrs])))
+  (r/with-let [*form (steams/form:new sys (fn [vow]
+                                            (-> vow
+                                                (v/peek (:close! attrs))
+                                                (v/peek (fn [_]
+                                                          (some-> attrs :*res res/request!))))))]
+    [create* *form attrs]))
 
 (defn list [teams]
   [:div
@@ -50,14 +50,13 @@
          name])]
      [:p "You don't have any teams. Why not create one?"])])
 
-(defn tile [{:keys [store] :as sys}]
-  (let [*res (steams/res:list sys)]
-    (fn [_sys]
-      [comp/tile
-       [:h2.subtitle "Teams"]
-       [comp/with-resource [*res {:spinner/size :small}] list]
-       [in/plain-button
-        {:class    ["is-primary"]
-         :on-click (fn [_]
-                     (store/dispatch! store (act/modal:add! [:h1.subtitle "Create a team"] [::create {:*res *res}])))}
-        "Create one"]])))
+(defn tile [{:keys [store]} *res]
+  [comp/tile
+   [:h2.subtitle "Teams"]
+   [comp/with-resource [*res {:spinner/size :small}] list]
+   [in/plain-button
+    {:class    ["is-primary"]
+     :on-click (fn [_]
+                 (store/dispatch! store (act/modal:add! [:h1.subtitle "Create a team"]
+                                                        [::create {:*res *res}])))}
+    "Create one"]])

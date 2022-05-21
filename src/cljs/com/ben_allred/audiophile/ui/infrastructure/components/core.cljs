@@ -8,11 +8,20 @@
     [com.ben-allred.audiophile.ui.infrastructure.forms.core :as forms]
     [com.ben-allred.audiophile.ui.infrastructure.forms.protocols :as pforms]))
 
+(def ^:private level->class
+  {:error "is-danger"})
+
 (defn not-found [_ _]
   [:div {:style {:display         :flex
                  :align-items     :center
                  :justify-content :center}}
    [:img {:src "https://i.imgur.com/HYpqZvg.jpg"}]])
+
+(defn alert [level body]
+  [:div.message
+   {:class [(level->class level)]}
+   [:div.message-body
+    body]])
 
 (defn icon
   ([icon-class]
@@ -68,7 +77,8 @@
 
 (defn with-resource [*resource & _]
   (let [[*resource opts] (colls/force-sequential *resource)]
-    (res/request! *resource opts)
+    (when-not (res/requested? *resource)
+      (res/request! *resource opts))
     (fn [_ comp & args]
       (let [status (res/status *resource)]
         (case status
