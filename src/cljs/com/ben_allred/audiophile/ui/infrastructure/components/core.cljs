@@ -1,9 +1,11 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.components.core
   (:require
+    [com.ben-allred.audiophile.common.core.utils.colls :as colls]
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
+    [com.ben-allred.audiophile.common.infrastructure.resources.core :as res]
     [com.ben-allred.audiophile.ui.infrastructure.components.input-fields :as in]
     [com.ben-allred.audiophile.ui.infrastructure.forms.core :as forms]
-    [com.ben-allred.audiophile.ui.infrastructure.forms.protocols :as pforms]
-    [com.ben-allred.audiophile.common.core.utils.logger :as log]))
+    [com.ben-allred.audiophile.ui.infrastructure.forms.protocols :as pforms]))
 
 (defn not-found [_ _]
   [:div {:style {:display         :flex
@@ -47,3 +49,28 @@
 
                 buttons
                 (into buttons))))))
+
+(defn tile [heading body & tabs]
+  [:div.tile
+   [:div.panel {:style {:min-width        "400px"
+                        :background-color "#fcfcfc"}}
+    (when heading
+      [:div.panel-heading
+       heading])
+    (when (seq tabs)
+      (into [:div.panel-tabs
+             {:style {:padding         "8px"
+                      :justify-content :flex-start}}]
+            tabs))
+    [:div.panel-block
+     body]]])
+
+(defn with-resource [*resource & _]
+  (let [[*resource opts] (colls/force-sequential *resource)]
+    (res/request! *resource opts)
+    (fn [_ comp & args]
+      (let [status (res/status *resource)]
+        (case status
+          :success (into [comp @*resource] args)
+          :error [:div.error "an error occurred"]
+          [in/spinner {:size (:spinner/size opts)}])))))
