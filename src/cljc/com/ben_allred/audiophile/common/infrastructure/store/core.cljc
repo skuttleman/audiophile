@@ -11,10 +11,10 @@
   [action {:keys [store]}]
   (pstore/reduce! store action))
 
-(defmulti reduce* (fn [_ [type]]
+(defmulti mutate* (fn [_ [type]]
                       type))
 
-(defmethod reduce* :default
+(defmethod mutate* :default
   [state _]
   state)
 
@@ -23,4 +23,6 @@
 
 (defn dispatch! [store [type :as action]]
   {:pre [(keyword? type) (namespace type)]}
-  (v/resolve (pstore/with-system store async* action)))
+  (-> (pstore/with-system store async* action)
+      v/resolve
+      (v/then (constantly nil))))

@@ -4,6 +4,7 @@
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.resources.core :as res]
     [com.ben-allred.audiophile.ui.infrastructure.components.input-fields :as in]
+    [com.ben-allred.audiophile.ui.infrastructure.dom :as dom]
     [com.ben-allred.audiophile.ui.infrastructure.forms.core :as forms]
     [com.ben-allred.audiophile.ui.infrastructure.forms.protocols :as pforms]))
 
@@ -32,7 +33,7 @@
                                    (forms/attempted? *form)))))]
     (-> [:form.form.layout--stack-between
          (merge {:on-submit (fn [e]
-                              (.preventDefault e)
+                              (dom/prevent-default! e)
                               (when submittable?
                                 (cond-> (forms/attempt! *form)
                                   on-submitted on-submitted)))}

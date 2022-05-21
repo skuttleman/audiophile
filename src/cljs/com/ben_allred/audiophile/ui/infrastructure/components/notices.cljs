@@ -20,7 +20,7 @@
      [:div.message-body
       [:div.body-text body]]]))
 
-(defn banners [sys {:keys [banners]}]
+(defn banners [sys banners]
   [:div.banner-container
    [:ul.banner-messages
     (for [[banner-id banner] (take 2 (sort-by key banners))]

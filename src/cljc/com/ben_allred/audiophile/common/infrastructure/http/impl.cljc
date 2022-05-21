@@ -24,7 +24,7 @@
             :http/timeout? true}
           [{:message "upload timed out"}]})
 
-(def ^:private ^:const default-timeout 60000)
+(def ^:const default-timeout 60000)
 
 (defn ^:private find-serde
   ([headers serdes]

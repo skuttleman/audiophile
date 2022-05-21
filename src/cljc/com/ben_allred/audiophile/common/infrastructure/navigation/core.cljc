@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.common.infrastructure.navigation.core
   (:require
+    #?(:cljs [com.ben-allred.audiophile.ui.infrastructure.dom :as dom])
     [com.ben-allred.audiophile.common.core.serdes.core :as serdes]
     [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.navigation.protocols :as pnav]))
@@ -38,4 +39,4 @@
      ([nav handle]
       (goto! nav handle nil))
      ([nav handle params]
-      (.assign (.-location js/window) (path* nav handle params)))))
+      (dom/assign! (path* nav handle params)))))

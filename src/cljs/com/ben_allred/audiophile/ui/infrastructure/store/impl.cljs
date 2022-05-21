@@ -35,4 +35,4 @@
                (->Store (:get-state store) (:dispatch store) (volatile! nil))))))
 
 (defn create [_]
-  (create* store/reduce*))
+  (create* store/mutate*))

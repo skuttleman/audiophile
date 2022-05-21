@@ -2,10 +2,8 @@
   (:require
     [reagent.core :as r]
     [clojure.string :as string]
-    [com.ben-allred.audiophile.common.core.utils.maps :as maps]))
-
-(defn ^:private target-value [e]
-  (some-> e .-target .-value))
+    [com.ben-allred.audiophile.common.core.utils.maps :as maps]
+    [com.ben-allred.audiophile.ui.infrastructure.dom :as dom]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
   (let [errors (seq (remove nil? errors))
@@ -103,7 +101,7 @@
                  :disabled  disabled
                  :on-change (comp on-change
                                   (into {} (map (juxt str identity) option-values))
-                                  target-value)}
+                                  dom/target-value)}
                 (merge (select-keys attrs #{:class :id :on-blur :ref})))
             (for [[option label attrs] (cond->> options
                                                 (= ::empty value) (cons [::empty
@@ -124,7 +122,7 @@
            [:textarea.textarea
             (-> {:value     value
                  :disabled  disabled
-                 :on-change (comp on-change target-value)}
+                 :on-change (comp on-change dom/target-value)}
                 (merge (select-keys attrs #{:class :id :on-blur :ref})))]])))))
 
 (def ^{:arglists '([attrs])} input
@@ -137,7 +135,7 @@
            [:input.input
             (-> {:type      (or type :text)
                  :disabled  disabled
-                 :on-change (comp on-change target-value)}
+                 :on-change (comp on-change dom/target-value)}
                 (merge (select-keys attrs #{:class :id :on-blur :ref :value :on-focus :auto-focus})))]])))))
 
 (def ^{:arglists '([attrs])} checkbox
@@ -197,8 +195,8 @@
                       [plain-button (-> attrs
                                         (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
                                         (assoc :on-click (comp (fn [_]
-                                                                 (some-> @file-input .click))
-                                                               #(doto % .preventDefault))))
+                                                                 (dom/click! @file-input))
+                                                               dom/prevent-default!)))
                        (:display attrs "Select file…")
                        (when (:disabled attrs)
                          [:div {:style {:margin-left "8px"}} [spinner]])]

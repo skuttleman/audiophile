@@ -1,9 +1,6 @@
 {[:duct/const :services/rabbitmq#conn]
  #ig/ref :audiophile.services.rabbitmq/conn
 
- [:duct/const :services/pubsub]
- #ig/ref :audiophile.services.pubsub/memory
-
  [:audiophile.services.rabbitmq/channel :rabbitmq.chan/commands]
  {:conn      #ig/ref :services/rabbitmq#conn
   :queue-cfg #ig/ref :mq.channel/commands}

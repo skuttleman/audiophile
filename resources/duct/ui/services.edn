@@ -5,7 +5,7 @@
  #ig/ref :audiophile.ui.views/login-form
 
  [:duct/const :services/store]
- #ig/ref :audiophile.services.store/store
+ #ig/ref :audiophile.ui.services/store
 
  :audiophile.ui.services/base-urls
  {}
@@ -16,5 +16,14 @@
  :audiophile.services.nav/nav
  ^:promote {:store #ig/ref :services/store}
 
- :audiophile.services.store/store
+ :audiophile.ui.services/store
+ {}
+
+ :audiophile.ui.services/ws
+ {:env    #ig/ref :services.ui/base-urls
+  :nav    #ig/ref :services/nav
+  :pubsub #ig/ref :services/pubsub
+  :store  #ig/ref :services/store}
+
+ :audiophile.services.pubsub/memory
  {}}

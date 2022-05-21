@@ -17,8 +17,7 @@
    nil))
 
 (defn attempt! [*form]
-  (pforms/attempt! *form)
-  nil)
+  (pforms/attempt! *form))
 
 (defn attempted? [*form]
   (pforms/attempted? *form))

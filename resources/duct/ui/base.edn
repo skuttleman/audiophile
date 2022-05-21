@@ -4,8 +4,16 @@
  {:audiophile.services.nav/router
   ^:promote {:base-urls #ig/ref :services.ui/base-urls}
 
+  [:duct/const :services/http]
+  ^:promote #ig/ref :audiophile.ui.services/http
+
   [:duct/const :system.ui/components]
   {:http-client #ig/ref :services/http
    :nav         #ig/ref :services/nav
    :login-form  #ig/ref :views/login-form
-   :store       #ig/ref :services/store}}]
+   :store       #ig/ref :services/store
+   :_           #{#ig/ref :audiophile.ui.services/ws}}
+
+  :audiophile.ui.services/http
+  {:http-client #ig/ref :audiophile.services.http/client
+   :pubsub      #ig/ref :services/pubsub}}]

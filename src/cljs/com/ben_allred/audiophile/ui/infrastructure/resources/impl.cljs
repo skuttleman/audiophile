@@ -1,5 +1,6 @@
 (ns com.ben-allred.audiophile.ui.infrastructure.resources.impl
   (:require
+    [com.ben-allred.audiophile.common.core.utils.logger :as log]
     [com.ben-allred.audiophile.common.infrastructure.resources.core :as res]
     [com.ben-allred.audiophile.common.infrastructure.resources.protocols :as pres]
     [com.ben-allred.vow.core :as v]
@@ -25,8 +26,12 @@
 (defn base [opts->vow]
   (->Resource (r/atom nil) opts->vow))
 
-(defn http [http-client opts->req]
-  (->Resource (r/atom nil)
-              (fn [opts]
-                (-> (res/request! http-client (opts->req opts))
-                    (v/then :data (comp v/reject :errors))))))
+(defn http
+  ([http-client opts->req]
+   (http http-client opts->req identity))
+  ([http-client opts->req handler]
+   (->Resource (r/atom nil)
+               (fn [opts]
+                 (-> (res/request! http-client (opts->req opts))
+                     (v/then :data (comp v/reject :errors))
+                     handler)))))

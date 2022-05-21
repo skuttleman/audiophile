@@ -2,6 +2,7 @@
   (:require
     [com.ben-allred.audiophile.common.infrastructure.navigation.core :as nav]
     [com.ben-allred.audiophile.ui.infrastructure.components.core :as comp]
+    [com.ben-allred.audiophile.ui.infrastructure.components.modals :as modals]
     [com.ben-allred.audiophile.ui.infrastructure.components.notices :as not]
     [com.ben-allred.audiophile.ui.infrastructure.modulizer :as mod]
     [reagent.core :as r]))
@@ -71,11 +72,11 @@
 (defn root [{:keys [store] :as sys}]
   (let [state @store]
     [:div
-     [not/banners sys state]
+     [not/banners sys (:banners state)]
      [header sys state]
      [:div.main.layout--inset
       {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
       [:div.layout--inset
        [root* sys state]]]
-     #_[modals (:modals state)]
+     [modals/root sys (:modals state)]
      #_[toasts (:toasts state)]]))
