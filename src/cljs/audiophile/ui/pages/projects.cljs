@@ -75,7 +75,7 @@
      [in/plain-button
       {:class    ["is-primary"]
        :on-click (fn [_]
-                   (store/dispatch! store (act/modal:add! [:h1.subtitle "Create a project"]
+                   (store/dispatch! store (act/modal#add! [:h1.subtitle "Create a project"]
                                                           [::create {:*res   *res
                                                                      :*teams *teams}])))}
       "Create one"]]))

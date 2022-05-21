@@ -17,7 +17,7 @@
     [:li.banner-message.message
      {:class    [(level->class level)]
       :on-click (fn [_]
-                  (store/dispatch! store (act/banner:remove! banner-id)))
+                  (store/dispatch! store (act/banner:clear banner-id)))
       :style    {:cursor :pointer}}
      [:div.message-header
       [:button.delete {:aria-label "delete"}]]
@@ -41,7 +41,7 @@
          (and removing? @height) (update :style assoc :margin-top (str "-" @height "px")))
        [:div.message-body
         {:on-click (fn [_]
-                     (store/dispatch! store (act/toast:remove! toast-id)))
+                     (store/dispatch! store (act/toast#remove! toast-id)))
          :style    {:cursor :pointer}}
         [:div.body-text @body]]])))
 

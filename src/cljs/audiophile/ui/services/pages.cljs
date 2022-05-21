@@ -9,12 +9,27 @@
     [audiophile.ui.store.actions :as act]
     [com.ben-allred.vow.core :as v]))
 
+(defn ^:private with-handlers [vow {:keys [on-success on-error]}]
+  (v/peek vow on-success on-error))
+
+(defn ^:private with-toast [vow {:keys [store]}]
+  (v/peek vow
+          (fn [_]
+            (store/dispatch! store (act/toast#add! :success "Success")))
+          (fn [_]
+            (store/dispatch! store (act/toast#add! :error "Something went wrong")))))
+
+(defn ^:private with-resource [vow {:keys [*res]}]
+  (v/peek vow
+          (fn [_]
+            (some-> *res res/request!))))
+
 (defn res:fetch-all [{:keys [http-client nav]} handle]
   (ires/http http-client
              (constantly {:method :get
                           :url    (nav/path-for nav handle)})))
 
-(defn form:new [{:keys [http-client nav store]} {:keys [on-success on-error *res]} *form handle]
+(defn form:new [{:keys [http-client nav] :as sys} attrs *form handle]
   (form.submit/create *form
                       (ires/http http-client
                                  (fn [body]
@@ -24,10 +39,6 @@
                                     :http/async? true})
                                  (fn [vow]
                                    (-> vow
-                                       (v/peek on-success on-error)
-                                       (v/peek (fn [_]
-                                                 (store/dispatch! store (act/toast:add! :success "Success")))
-                                               (fn [_]
-                                                 (store/dispatch! store (act/toast:add! :error "Something went wrong"))))
-                                       (v/peek (fn [_]
-                                                 (some-> *res res/request!))))))))
+                                       (with-handlers attrs)
+                                       (with-toast sys)
+                                       (with-resource attrs))))))

@@ -24,7 +24,7 @@
 
 (defn ^:private init* [{:keys [store] :as sys}]
   (store/init! store sys)
-  (-> (store/dispatch! store act/profile:load!)
+  (-> (store/dispatch! store act/profile#load!)
       (v/and (ws/init! sys) (render [main/root sys]))
       (v/or (render [login/root sys]))
       (v/always (log/info [:app/initialized]))))

@@ -65,12 +65,12 @@
 
 (defn ^:private on-nav [nav store pushy route]
   (let [err-msg (get-in route [:params :error-msg])]
-    #?(:cljs (store/dispatch! store [:router/update route]))
+    #?(:cljs (store/dispatch! store (act/router:update route)))
     (when err-msg
       (->> (update route :params dissoc :error-msg)
            (serdes/serialize nav (:handle route))
            (pushy/replace-token! pushy))
-      #?(:cljs (store/dispatch! store (act/banner:add! :error (keyword err-msg)))))))
+      #?(:cljs (store/dispatch! store (act/banner:create :error (keyword err-msg)))))))
 
 (deftype Router [base-urls routes]
   pnav/IHistory

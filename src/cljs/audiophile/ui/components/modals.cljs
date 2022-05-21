@@ -13,7 +13,7 @@
 
 (defn modal* [{:keys [store] :as sys} _idx id _frame]
   (letfn [(close! [_]
-            (store/dispatch! store (act/modal:remove! id)))]
+            (store/dispatch! store (act/modal#remove! id)))]
 
     (let [stop-and-close! (comp close! dom/stop-propagation!)
           listener (dom/add-listener js/window
@@ -55,7 +55,7 @@
        {:class    [(when active? "is-active")]
         :on-click (when active?
                     (fn [_]
-                      (store/dispatch! store act/modal:remove-all!)))}
+                      (store/dispatch! store act/modal#remove-all!)))}
        [:div.modal-stack
         [:ul.modal-list
          (for [[idx [id frame]] (map-indexed vector (sort-by key modals))]
