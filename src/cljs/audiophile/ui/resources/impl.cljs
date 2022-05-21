@@ -32,5 +32,5 @@
   ([http-client opts->req handler]
    (base (fn [opts]
            (-> (res/request! http-client (opts->req opts))
-               (v/then :data (comp v/reject :errors))
+               (v/then :data (comp v/reject :error))
                handler)))))

@@ -6,9 +6,8 @@
   {:login-failed "Authentication failed. Please try again."})
 
 (defn banner:add! [level code]
-  (if-let [body (banner-err-codes code)]
-    [:banners/add! (maps/->m {:id (.getTime (js/Date.))} level body)]
-    (throw (ex-info "banners must have a body" {:level level :cod code}))))
+  (let [body (banner-err-codes code "An error occurred. Please try again.")]
+    [:banners/add! (maps/->m {:id (.getTime (js/Date.))} level body)]))
 
 (defn banner:remove! [id]
   [:banners/remove! {:id id}])
@@ -30,8 +29,9 @@
 (def profile:load!
   [::user:load-profile!])
 
-(defn profile:set! [profile]
-  [:user.profile/set! profile])
+(defn toast:add! [level body]
+  (let [id (.getTime (js/Date.))]
+    [::toast:add! (maps/->m id body level)]))
 
-(defn router:update [route]
-  [:router/update route])
+(defn toast:remove! [id]
+  [::toast:remove! {:id id}])

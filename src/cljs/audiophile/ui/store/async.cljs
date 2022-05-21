@@ -24,7 +24,23 @@
   (v/and (v/sleep 500)
          (store/dispatch! store [:modals/remove-all!])))
 
+(defmethod store/async* ::act/toast:add!
+  [[_ {:keys [id body] :as toast}] {:keys [store]}]
+  (let [body (delay
+               (v/and (v/resolve (store/dispatch! store [:toasts/display! {:id id}]))
+                      (v/sleep 6000)
+                      (store/dispatch! store (act/toast:remove! id)))
+               body)]
+    (store/dispatch! store [:toasts/add! (assoc toast :body body)])))
+
+(defmethod store/async* ::act/toast:remove!
+  [[_ {:keys [id]}] {:keys [store]}]
+  (v/and (v/resolve (store/dispatch! store [:toasts/hide! {:id id}]))
+         (v/sleep 6000)
+         (store/dispatch! store [:toasts/remove! {:id id}])))
+
 (defmethod store/async* ::act/user:load-profile!
   [_ {:keys [http-client nav store]}]
   (-> (http/get http-client (nav/path-for nav :api/profile))
-      (v/then-> :data act/profile:set! (->> (store/dispatch! store)))))
+      (v/then (fn [{profile :data}]
+                (store/dispatch! store [:user.profile/set! profile])))))

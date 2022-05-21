@@ -35,7 +35,7 @@
 (defn root [{:keys [login-form store] :as sys}]
   (let [state @store]
     [:div
-     [not/banners sys state]
+     [not/banners sys (:banners state)]
      [:div.main.layout--inset
       {:class ["page-login"]}
       [:div.layout--inset

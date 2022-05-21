@@ -79,4 +79,4 @@
       [:div.layout--inset
        [root* sys state]]]
      [modals/root sys (:modals state)]
-     #_[toasts (:toasts state)]]))
+     [not/toasts sys (:toasts state)]]))

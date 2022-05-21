@@ -65,7 +65,7 @@
 
 (defn ^:private on-nav [nav store pushy route]
   (let [err-msg (get-in route [:params :error-msg])]
-    #?(:cljs (store/dispatch! store (act/router:update route)))
+    #?(:cljs (store/dispatch! store [:router/update route]))
     (when err-msg
       (->> (update route :params dissoc :error-msg)
            (serdes/serialize nav (:handle route))
