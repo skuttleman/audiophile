@@ -14,11 +14,13 @@
   pforms/IAttempt
   (attempt! [this]
     (forms/attempt! *form)
-    (-> @this
-        local->remote
-        (->> (res/request! *resource))
-        (v/then remote->local)
-        (v/peek (partial forms/init! this) nil)))
+    (if-let [errors (forms/errors this)]
+      (v/reject errors)
+      (-> @this
+          local->remote
+          (->> (res/request! *resource))
+          (v/then remote->local)
+          (v/peek (partial forms/init! this) nil))))
   (attempted? [_]
     (forms/attempted? *form))
   (attempting? [_]
