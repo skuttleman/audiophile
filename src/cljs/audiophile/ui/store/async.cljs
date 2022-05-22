@@ -1,5 +1,6 @@
 (ns audiophile.ui.store.async
   (:require
+    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.http.core :as http]
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.common.infrastructure.store.core :as store]

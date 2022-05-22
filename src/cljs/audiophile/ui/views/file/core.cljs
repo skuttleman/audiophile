@@ -17,7 +17,7 @@
 
 (defn ^:private page* [sys file initial-version-id]
   (r/with-let [versions (map (juxt :file-version/id identity) (:file/versions file))
-               *form (serv/versions#form:selector initial-version-id)
+               *form (serv/versions#form:selector sys initial-version-id)
                versions-by-id (into {} versions)]
     (let [{:keys [file-version-id]} @*form
           version (get versions-by-id file-version-id)

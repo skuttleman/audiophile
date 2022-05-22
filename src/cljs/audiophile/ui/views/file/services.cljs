@@ -1,11 +1,12 @@
 (ns audiophile.ui.views.file.services
   (:require
+    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.domain.validations.core :as val]
     [audiophile.common.domain.validations.specs :as specs]
     [audiophile.common.infrastructure.http.core :as http]
     [audiophile.common.infrastructure.navigation.core :as nav]
-    [audiophile.ui.forms.core :as forms]
     [audiophile.ui.forms.standard :as form.std]
+    [audiophile.ui.forms.watchable :as form.watch]
     [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.services.pages :as pages]
     [audiophile.ui.views.file.player :as player]
@@ -36,8 +37,11 @@
 (defn files#res:fetch-one [sys file-id]
   (pages/res:fetch sys :api/file {:params {:file/id file-id}}))
 
-(defn versions#form:selector [version-id]
-  (form.std/create {:file-version-id version-id}))
+(defn versions#form:selector [{:keys [nav store]} version-id]
+  (doto (form.watch/create {:file-version-id version-id})
+    (add-watch ::qp (fn [_ _ _ val]
+                      (let [{:keys [handle params]} (:nav/route @store)]
+                        (nav/replace! nav handle {:params (merge params val)}))))))
 
 (defn player#create [*artifact]
   (player/->ArtifactPlayer (name (gensym)) (r/atom nil) *artifact))
