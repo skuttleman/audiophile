@@ -7,7 +7,9 @@
 (def ^:private key->code
   {:key-codes/tab   9
    :key-codes/esc   27
-   :key-codes/enter 13})
+   :key-codes/enter 13
+   :key-codes/up    38
+   :key-codes/down  40})
 
 (def ^:private code->key
   (set/map-invert key->code))

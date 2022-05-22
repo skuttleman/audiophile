@@ -1,27 +1,29 @@
 (ns audiophile.ui.components.input-fields.dropdown
   (:require
-    [clojure.set :as set]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
-    [audiophile.ui.utils.dom :as dom]))
+    [audiophile.ui.utils.dom :as dom]
+    [clojure.set :as set]
+    [audiophile.common.core.utils.colls :as colls]
+    [reagent.core :as r]))
 
-(defn option-list [{:keys [value options]}]
-  (let [options (concat (filter (comp (partial contains? value) first) options)
-                        (remove (comp (partial contains? value) first) options))]
-    (fn [{:keys [item-control on-change value]}]
-      [:ul.dropdown-items.lazy-list
-       (for [[id display] options
-             :let [selected? (contains? value id)]]
-         ^{:key id}
-         [:li.dropdown-item.pointer
-          {:class    [(when selected? "is-active")]
-           :on-click (comp (fn [_]
-                             (-> (if (contains? value id)
-                                   (disj value id)
-                                   ((fnil conj #{}) value id))
-                                 on-change))
-                           dom/stop-propagation!)}
-          [item-control display]])])))
+(defn option-list [{:keys [item-control on-change options value]}]
+  (r/with-let [[selected unselected] (colls/split-on (comp (partial contains? value) first)
+                                                     options)
+               options (concat selected unselected)]
+    [:ul.dropdown-items.lazy-list
+     (for [[id display] options
+           :let [selected? (contains? value id)]]
+       ^{:key id}
+       [:li.dropdown-item.pointer
+        {:class    [(when selected? "is-active")]
+         :on-click (comp (fn [_]
+                           (-> (if (contains? value id)
+                                 (disj value id)
+                                 ((fnil conj #{}) value id))
+                               on-change))
+                         dom/stop-propagation!)}
+        [item-control display]])]))
 
 (defn button [{:keys [attrs->content selected] :as attrs}]
   (let [selected-count (count selected)
@@ -31,17 +33,16 @@
                     0 "Select…"
                     1 "1 Item Selected"
                     (str selected-count " Items Selected")))]
-    [in/plain-button
+    [comp/plain-button
      (select-keys attrs #{:class :disabled :on-blur :on-click :ref})
      content
      [:span
       {:style {:margin-left "10px"}}
       [comp/icon (if (:open? attrs) :chevron-up :chevron-down)]]]))
 
-(defn ^:private dropdown* [attrs' attrs'']
+(defn ^:private dropdown* [attrs]
   (let [{:keys [button-control loading? list-control on-search on-toggle open? options options-by-id value]
-         :or   {list-control option-list button-control button}
-         :as   attrs} (merge attrs' attrs'')
+         :or   {list-control option-list button-control button}} attrs
         attrs (update attrs :on-change (fn [on-change]
                                          (fn [value]
                                            (when (:force-value? attrs)
@@ -66,7 +67,7 @@
          [:div.dropdown-body
           (cond
             loading?
-            [in/spinner]
+            [comp/spinner]
 
             (seq options)
             [list-control attrs]
@@ -74,11 +75,14 @@
             :else
             [comp/alert :info "No results"])]]])]))
 
+(defn ^:private openable-dropdown [attrs attrs']
+  [dropdown* (merge attrs attrs')])
+
 (defn dropdown [{:keys [options] :as attrs}]
   (let [options-by-id (or (:options-by-id attrs) (into {} options))]
-    [in/form-field
+    [comp/form-field
      attrs
-     [in/openable dropdown* (assoc attrs :options-by-id options-by-id)]]))
+     [in/openable openable-dropdown (assoc attrs :options-by-id options-by-id)]]))
 
 (defn singleable [{:keys [force-value? value] :as attrs}]
   (let [value (if (nil? value) #{} #{value})]

@@ -51,7 +51,7 @@
   [comp/tile
    [:h2.subtitle "Teams"]
    [comp/with-resource [*res {:spinner/size :small}] list]
-   [in/plain-button
+   [comp/plain-button
     {:class    ["is-primary"]
      :on-click (fn [_]
                  (store/dispatch! store

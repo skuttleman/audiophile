@@ -10,8 +10,8 @@
     [audiophile.ui.components.input-fields.dropdown :as dd]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.views.dashboard.services :as serv]
     [audiophile.ui.store.actions :as act]
+    [audiophile.ui.views.dashboard.services :as serv]
     [clojure.set :as set]
     [reagent.core :as r]))
 
@@ -70,7 +70,7 @@
     [comp/tile
      [:h2.subtitle "Projects"]
      [comp/with-resource [*res {:spinner/size :small}] list sys]
-     [in/plain-button
+     [comp/plain-button
       {:class    ["is-primary"]
        :on-click (fn [_]
                    (store/dispatch! store (act/modal#add! [:h1.subtitle "Create a project"]

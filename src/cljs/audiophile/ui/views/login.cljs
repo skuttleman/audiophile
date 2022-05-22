@@ -4,7 +4,6 @@
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.components.core :as comp]
-    [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.notices :as not]))
 
 (defn ^:private root* [{:keys [login-form state]}]
@@ -26,7 +25,7 @@
 (defn form [{:keys [nav]}]
   (fn [route]
     [:div.buttons
-     [in/plain-button
+     [comp/plain-button
       {:class    ["is-primary"]
        :on-click (fn [_]
                    (nav/goto! nav :auth/login {:params {:redirect-uri (:path route)}}))}

@@ -2,36 +2,11 @@
   (:require
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.infrastructure.resources.core :as res]
+    [audiophile.ui.components.core :as comp]
     [audiophile.ui.utils.dom :as dom]
     [clojure.string :as string]
     [com.ben-allred.vow.core :as v]
     [reagent.core :as r]))
-
-(defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
-  (let [errors (seq (remove nil? errors))
-        show-errors? (and errors attempted?)]
-    [:div.form-field
-     {:class (into [(when show-errors? "errors")] form-field-class)}
-     [:<>
-      (when label
-        [:label.label
-         (cond-> {:html-for id}
-           label-small? (assoc :style {:font-weight :normal
-                                       :font-size   "0.8em"}))
-         label])
-      (into [:div.form-field-control] body)]
-     (when show-errors?
-       [:ul.error-list
-        (for [error errors]
-          [:li.error
-           {:key error}
-           error])])]))
-
-(defn spinner
-  ([]
-   (spinner nil))
-  ([{:keys [size]}]
-   [(keyword (str "div.loader." (name (or size :small))))]))
 
 (defn progress-bar [{:keys [current height status total]}]
   (let [height (str (or height 6) "px")
@@ -96,7 +71,7 @@
               value (if (contains? option-values value)
                       value
                       ::empty)]
-          [form-field
+          [comp/form-field
            attrs
            [:select.select
             (-> {:value     (str value)
@@ -119,7 +94,7 @@
     (with-id
       (with-trim-blur
         (fn [{:keys [disabled on-change value] :as attrs}]
-          [form-field
+          [comp/form-field
            attrs
            [:textarea.textarea
             (-> {:value     value
@@ -132,7 +107,7 @@
     (with-id
       (with-trim-blur
         (fn [{:keys [disabled on-change type] :as attrs}]
-          [form-field
+          [comp/form-field
            attrs
            [:input.input
             (-> {:type      (or type :text)
@@ -144,7 +119,7 @@
   (with-auto-focus
     (with-id
       (fn [{:keys [disabled on-change value] :as attrs}]
-        [form-field
+        [comp/form-field
          attrs
          [:input.checkbox
           (-> {:checked   (boolean value)
@@ -165,9 +140,9 @@
   (with-auto-focus
     (with-id
       (fn [{:keys [on-change value] :as attrs} true-display false-display]
-        [form-field
+        [comp/form-field
          attrs
-         [plain-button
+         [comp/plain-button
           (-> attrs
               (select-keys #{:class :id :on-blur :ref})
               (assoc :on-click #(on-change (not value))))
@@ -178,7 +153,7 @@
     (with-id
       (fn [{:keys [multi? on-change progress] :as attrs}]
         (r/with-let [file-input (volatile! nil)]
-          [form-field
+          [comp/form-field
            (cond-> attrs
              (not (:attempted? attrs)) (dissoc :errors))
            [:div
@@ -194,14 +169,15 @@
                                             (aset "files" nil)
                                             (aset "value" nil))
                                           files)))}]
-            [plain-button (-> attrs
-                              (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
-                              (assoc :on-click (comp (fn [_]
-                                                       (dom/click! @file-input))
-                                                     dom/prevent-default!)))
+            [comp/plain-button
+             (-> attrs
+                 (select-keys #{:class :id :disabled :style :on-blur :ref :auto-focus})
+                 (assoc :on-click (comp (fn [_]
+                                          (dom/click! @file-input))
+                                        dom/prevent-default!)))
              (:display attrs "Select file…")
              (when (:disabled attrs)
-               [:div {:style {:margin-left "8px"}} [spinner]])]
+               [:div {:style {:margin-left "8px"}} [comp/spinner]])]
             (when progress
               [progress-bar progress])]])))))
 
@@ -224,30 +200,33 @@
                                       (v/then on-change))))
               (update :disabled #(or % (res/requesting? *resource))))]))
 
+(defn ^:private opener-click [ref open?]
+  (fn [e]
+    (if (comp/within-ref? (.-target e) @ref)
+      (some-> @ref dom/focus!)
+      (do (reset! open? false)
+          (some-> @ref dom/blur!)))))
+
+(defn ^:private opener-keydown [open?]
+  (fn [e]
+    (case (dom/event->key e)
+      (:key-codes/tab :key-codes/esc) (reset! open? false)
+      nil)))
+
 (defn openable [component & args]
   (r/with-let [open? (r/atom false)
                ref (volatile! nil)
                listeners [(dom/add-listener js/window
                                             :click
-                                            (fn [e]
-                                              (if (->> (.-target e)
-                                                       (iterate #(some-> % .-parentNode))
-                                                       (take-while some?)
-                                                       (filter #{@ref})
-                                                       (empty?))
-                                                (do (reset! open? false)
-                                                    (some-> @ref dom/blur!))
-                                                (some-> @ref dom/focus!))))
+                                            (opener-click ref open?))
                           (dom/add-listener js/window
                                             :keydown
-                                            #(when (#{:key-codes/tab :key-codes/esc} (dom/event->key %))
-                                               (reset! open? false))
+                                            (opener-keydown open?)
                                             true)]
                on-toggle (fn [_]
                            (swap! open? not))
                ref-fn (fn [node]
-                        (when node
-                          (vreset! ref node)))
+                        (some->> node (vreset! ref)))
                on-blur (fn [_]
                          (when-let [node @ref]
                            (when @open?

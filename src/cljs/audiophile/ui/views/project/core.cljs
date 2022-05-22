@@ -67,10 +67,10 @@
 (defn track-list [files {:keys [store]} *files *project project-id]
   (let [status (res/status *project)]
     (if-not (= :success status)
-      [in/spinner]
+      [comp/spinner]
       [:div
        [:div.buttons
-        [in/plain-button
+        [comp/plain-button
          {:class    ["is-primary"]
           :on-click (fn [_]
                       (store/dispatch! store (act/modal#add! [:h1.subtitle "Add a track"]
@@ -89,7 +89,7 @@
                [:a.link {:href (nav/path-for :ui/file {:params {:file/id (:file/id file)}})}
                 [:span [:strong (:file/name file)] " - " (:version/name file)]]]
               [:td
-               [in/plain-button
+               [comp/plain-button
                 {:class    ["is-outlined" "is-info"]
                  :on-click (fn [_]
                              (store/dispatch! store (act/modal#add! [:h1.subtitle "Upload a new version"]

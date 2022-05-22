@@ -2,15 +2,56 @@
   (:require
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.infrastructure.resources.core :as res]
-    [audiophile.ui.components.input-fields :as in]
-    [audiophile.ui.utils.dom :as dom]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.forms.protocols :as pforms]
-    [reagent.core :as r]))
+    [audiophile.ui.utils.dom :as dom]))
 
 (def ^:private level->class
   {:error "is-danger"})
+
+(defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
+  (let [errors (seq (remove nil? errors))
+        show-errors? (and errors attempted?)]
+    [:div.form-field
+     {:class (into [(when show-errors? "errors")] form-field-class)}
+     [:<>
+      (when label
+        [:label.label
+         (cond-> {:html-for id}
+           label-small? (assoc :style {:font-weight :normal
+                                       :font-size   "0.8em"}))
+         label])
+      (into [:div.form-field-control] body)]
+     (when show-errors?
+       [:ul.error-list
+        (for [error errors]
+          [:li.error
+           {:key error}
+           error])])]))
+
+(defn plain-button [{:keys [disabled] :as attrs} & content]
+  (-> attrs
+      (maps/assoc-defaults :type :button)
+      (assoc :disabled disabled)
+      (cond-> disabled (update :class (fnil conj []) "is-disabled"))
+      (->> (conj [:button.button]))
+      (into content)))
+
+(defn spinner
+  ([]
+   (spinner nil))
+  ([{:keys [size]}]
+   [(keyword (str "div.loader." (name (or size :small))))]))
+
+(defn within-ref? [target node]
+  (->> target
+       (iterate #(some-> % .-parentNode))
+       (take-while some?)
+       (filter #{node})
+       seq
+       boolean))
 
 (defn not-found [_ _]
   [:div {:style {:display         :flex
@@ -49,13 +90,13 @@
                 (select-keys attrs #{:class :style}))]
         (into fields)
         (conj (cond-> [:div.buttons
-                       [in/plain-button
+                       [plain-button
                         {:class    ["is-primary" "submit"]
                          :type     :submit
                          :disabled disabled}
                         (:submit/text attrs "Submit")]]
                 (not ready?)
-                (conj [:div {:style {:margin-bottom "8px"}} [in/spinner]])
+                (conj [:div {:style {:margin-bottom "8px"}} [spinner]])
 
                 buttons
                 (into buttons))))))
@@ -84,4 +125,4 @@
         (case status
           :success (into [comp @*resource] args)
           :error [:div.error "an error occurred"]
-          [in/spinner {:size (:spinner/size opts)}])))))
+          [spinner {:size (:spinner/size opts)}])))))

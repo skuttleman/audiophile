@@ -14,8 +14,7 @@
 
 (defn ^:private with-toast [vow {:keys [store]}]
   (v/peek vow
-          (fn [_]
-            (store/dispatch! store (act/toast#add! :success "Success")))
+          nil
           (fn [_]
             (store/dispatch! store (act/toast#add! :error "Something went wrong")))))
 

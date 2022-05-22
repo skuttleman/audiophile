@@ -3,9 +3,8 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.components.core :as comp]
-    [audiophile.ui.components.input-fields :as in]
-    [audiophile.ui.utils.dom :as dom]
     [audiophile.ui.store.actions :as act]
+    [audiophile.ui.utils.dom :as dom]
     [reagent.core :as r]))
 
 (defmulti body (fn [k _ _]
@@ -39,7 +38,7 @@
               [comp/tile
                [:div.layout--space-between
                 [:div (:header frame)]
-                [in/plain-button
+                [comp/plain-button
                  {:class    ["is-white" "is-light"]
                   :on-click stop-and-close!}
                  [comp/icon :times]]]
