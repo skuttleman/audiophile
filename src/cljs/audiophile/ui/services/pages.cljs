@@ -28,8 +28,9 @@
    (res:fetch sys handle nil))
   ([{:keys [http-client nav]} handle params]
    (ires/http http-client
-              (constantly {:method :get
-                           :url    (nav/path-for nav handle params)}))))
+              (fn [opts]
+                {:method :get
+                 :url    (nav/path-for nav handle (update params :params merge opts))}))))
 
 (defn form:new
   ([sys attrs *form handle]

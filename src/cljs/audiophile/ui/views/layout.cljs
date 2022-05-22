@@ -9,6 +9,8 @@
 
 (def dashboard (mod/lazy-component audiophile.ui.views.dashboard.core/root))
 
+(def file (mod/lazy-component audiophile.ui.views.file.core/root))
+
 (def project (mod/lazy-component audiophile.ui.views.project.core/root))
 
 (defn ^:private logout [{:keys [nav text] :as attrs}]
@@ -68,6 +70,7 @@
   (let [handle (get-in state [:nav/route :handle])
         comp (case handle
                :ui/home @dashboard
+               :ui/file @file
                :ui/project @project
                comp/not-found)]
     [comp sys state]))

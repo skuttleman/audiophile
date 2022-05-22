@@ -13,6 +13,8 @@
                                        :depends-on #{:main}}
                            :dashboard {:entries    [audiophile.ui.views.dashboard.core]
                                        :depends-on #{:layout}}
+                           :file      {:entries    [audiophile.ui.views.file.core]
+                                       :depends-on #{:layout}}
                            :project   {:entries    [audiophile.ui.views.project.core]
                                        :depends-on #{:layout}}}}
 
@@ -26,6 +28,8 @@
                                        :depends-on #{:main}}
                            :dashboard {:entries    [audiophile.ui.views.dashboard.core]
                                        :depends-on #{:layout}}
+                           :file      {:entries    [audiophile.ui.views.file.core]
+                                       :depends-on #{:layout}}
                            :project   {:entries    [audiophile.ui.views.project.core]
                                        :depends-on #{:layout}}}}
 
@@ -38,6 +42,8 @@
                            :layout    {:entries    [audiophile.ui.views.layout]
                                        :depends-on #{:main}}
                            :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
+                           :file      {:entries    [audiophile.ui.views.file.core]
                                        :depends-on #{:layout}}
                            :project   {:entries    [audiophile.ui.views.project.core]
                                        :depends-on #{:layout}}}}

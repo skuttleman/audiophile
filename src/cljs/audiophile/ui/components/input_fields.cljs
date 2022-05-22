@@ -128,14 +128,6 @@
                :on-change #(on-change (not value))}
               (merge (select-keys attrs #{:class :id :on-blur :ref})))]]))))
 
-(defn plain-button [{:keys [disabled] :as attrs} & content]
-  (-> attrs
-      (maps/assoc-defaults :type :button)
-      (assoc :disabled disabled)
-      (cond-> disabled (update :class (fnil conj []) "is-disabled"))
-      (->> (conj [:button.button]))
-      (into content)))
-
 (def ^{:arglists '([attrs true-display false-display])} button
   (with-auto-focus
     (with-id

@@ -1,8 +1,8 @@
 (ns audiophile.common.domain.validations.specs
   (:require
+    [audiophile.common.core.utils.logger :as log]
     [clojure.set :as set]
     [clojure.string :as string]
-    [audiophile.common.core.utils.logger :as log]
     [malli.util :as mu])
   #?(:clj
      (:import

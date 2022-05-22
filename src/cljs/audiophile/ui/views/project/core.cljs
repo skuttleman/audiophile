@@ -64,7 +64,7 @@
      [:div {:style {:width "16px"}}]
      [comp/with-resource *team team-view]]))
 
-(defn track-list [files {:keys [store]} *files *project project-id]
+(defn track-list [files {:keys [nav store]} *files *project project-id]
   (let [status (res/status *project)]
     (if-not (= :success status)
       [comp/spinner]
@@ -86,7 +86,9 @@
               [:td {:style {:white-space :nowrap}}
                [:em (strings/format "%02d" (inc idx))]]
               [:td {:style {:width "99%"}}
-               [:a.link {:href (nav/path-for :ui/file {:params {:file/id (:file/id file)}})}
+               [:a.link {:href (nav/path-for nav
+                                             :ui/file
+                                             {:params {:file/id (:file/id file)}})}
                 [:span [:strong (:file/name file)] " - " (:version/name file)]]]
               [:td
                [comp/plain-button
