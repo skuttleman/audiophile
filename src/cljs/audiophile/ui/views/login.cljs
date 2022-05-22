@@ -1,4 +1,4 @@
-(ns audiophile.ui.pages.login
+(ns audiophile.ui.views.login
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]

@@ -2,11 +2,11 @@
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.store.core :as store]
-    [audiophile.ui.pages.login :as login]
-    [audiophile.ui.pages.main :as main]
     [audiophile.ui.services.ws :as ws]
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
+    [audiophile.ui.views.login :as login]
+    [audiophile.ui.views.main :as main]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
     [reagent.dom :as rdom]

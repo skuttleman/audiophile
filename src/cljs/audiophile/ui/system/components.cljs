@@ -1,7 +1,7 @@
 (ns audiophile.ui.system.components
   (:require
     [audiophile.ui.utils.env :as env]
-    [audiophile.ui.pages.login :as login]
+    [audiophile.ui.views.login :as login]
     [audiophile.ui.services.ws :as ws]
     [audiophile.ui.store.impl :as istore]
     [audiophile.ui.http.client :as client]

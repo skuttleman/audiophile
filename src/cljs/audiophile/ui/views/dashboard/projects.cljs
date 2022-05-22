@@ -1,7 +1,6 @@
-(ns audiophile.ui.pages.projects
+(ns audiophile.ui.views.dashboard.projects
   (:refer-clojure :exclude [list])
   (:require
-    [clojure.set :as set]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.navigation.core :as nav]
@@ -11,8 +10,9 @@
     [audiophile.ui.components.input-fields.dropdown :as dd]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.services.projects :as sproj]
+    [audiophile.ui.views.dashboard.services :as serv]
     [audiophile.ui.store.actions :as act]
+    [clojure.set :as set]
     [reagent.core :as r]))
 
 (def ^:private personal?
@@ -32,9 +32,7 @@
                             (apply concat)
                             (map (juxt :team/id identity)))
                options-by-id (into {} options)
-               *form (sproj/form:new sys
-                                     (set/rename-keys attrs {:close! :on-success})
-                                     (ffirst options))]
+               *form (serv/projects#form:new sys attrs (ffirst options))]
     [:div
      [comp/form {:*form *form}
       (when (>= (count options-by-id) 2)
@@ -53,7 +51,7 @@
 
 (defmethod modals/body ::create
   [_ sys attrs]
-  [comp/with-resource (:*teams attrs) create* sys attrs])
+  [comp/with-resource (:*teams attrs) create* sys (set/rename-keys attrs {:close! :on-success})])
 
 (defn list [projects {:keys [nav]}]
   [:div
@@ -68,7 +66,7 @@
      [:p "You don't have any projects. Why not create one?"])])
 
 (defn tile [{:keys [store] :as sys} *teams]
-  (r/with-let [*res (sproj/res:fetch-all sys)]
+  (r/with-let [*res (serv/projects#res:fetch-all sys)]
     [comp/tile
      [:h2.subtitle "Projects"]
      [comp/with-resource [*res {:spinner/size :small}] list sys]

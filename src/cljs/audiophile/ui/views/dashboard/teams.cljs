@@ -1,15 +1,15 @@
-(ns audiophile.ui.pages.teams
+(ns audiophile.ui.views.dashboard.teams
   (:refer-clojure :exclude [list])
   (:require
-    [clojure.set :as set]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.services.teams :as steams]
+    [audiophile.ui.views.dashboard.services :as serv]
     [audiophile.ui.store.actions :as act]
+    [clojure.set :as set]
     [reagent.core :as r]))
 
 (def ^:private team-type->icon
@@ -26,7 +26,9 @@
 
 (defmethod modals/body ::create
   [_ sys attrs]
-  (r/with-let [*form (steams/form:new sys (set/rename-keys attrs {:close! :on-success}))]
+  (r/with-let [*form (serv/teams#form:new sys
+                                          (set/rename-keys attrs
+                                                           {:close! :on-success}))]
     [create* *form attrs]))
 
 (defn list [teams]
@@ -52,6 +54,7 @@
    [in/plain-button
     {:class    ["is-primary"]
      :on-click (fn [_]
-                 (store/dispatch! store (act/modal#add! [:h1.subtitle "Create a team"]
-                                                        [::create {:*res *res}])))}
+                 (store/dispatch! store
+                                  (act/modal#add! [:h1.subtitle "Create a team"]
+                                                  [::create {:*res *res}])))}
     "Create one"]])

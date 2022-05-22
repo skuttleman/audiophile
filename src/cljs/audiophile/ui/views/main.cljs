@@ -1,4 +1,4 @@
-(ns audiophile.ui.pages.main
+(ns audiophile.ui.views.main
   (:require
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.components.core :as comp]
@@ -7,7 +7,9 @@
     [audiophile.ui.utils.modulizer :as mod]
     [reagent.core :as r]))
 
-(def dashboard (mod/lazy-component audiophile.ui.pages.dashboard/page))
+(def dashboard (mod/lazy-component audiophile.ui.views.dashboard.core/root))
+
+(def project (mod/lazy-component audiophile.ui.views.project.core/root))
 
 (defn ^:private logout [{:keys [nav text] :as attrs}]
   [:a (-> attrs
@@ -66,6 +68,7 @@
   (let [handle (get-in state [:nav/route :handle])
         comp (case handle
                :ui/home @dashboard
+               :ui/project @project
                comp/not-found)]
     [comp sys state]))
 

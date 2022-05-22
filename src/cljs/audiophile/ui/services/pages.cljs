@@ -24,21 +24,29 @@
           (fn [_]
             (some-> *res res/request!))))
 
-(defn res:fetch-all [{:keys [http-client nav]} handle]
-  (ires/http http-client
-             (constantly {:method :get
-                          :url    (nav/path-for nav handle)})))
+(defn res:fetch
+  ([sys handle]
+   (res:fetch sys handle nil))
+  ([{:keys [http-client nav]} handle params]
+   (ires/http http-client
+              (constantly {:method :get
+                           :url    (nav/path-for nav handle params)}))))
 
-(defn form:new [{:keys [http-client nav] :as sys} attrs *form handle]
-  (form.submit/create *form
-                      (ires/http http-client
-                                 (fn [body]
-                                   {:method      :post
-                                    :url         (nav/path-for nav handle)
-                                    :body        {:data body}
-                                    :http/async? true})
-                                 (fn [vow]
-                                   (-> vow
-                                       (with-handlers attrs)
-                                       (with-toast sys)
-                                       (with-resource attrs))))))
+(defn form:new
+  ([sys attrs *form handle]
+   (form:new sys attrs *form handle nil))
+  ([{:keys [http-client nav] :as sys} attrs *form handle params]
+   (form.submit/create *form
+                       (ires/http http-client
+                                  (fn [body]
+                                    {:method      :post
+                                     :url         (nav/path-for nav handle params)
+                                     :body        {:data body}
+                                     :http/async? true})
+                                  (fn [vow]
+                                    (-> vow
+                                        (with-handlers attrs)
+                                        (with-toast sys)
+                                        (with-resource attrs))))
+                       (or (:local->remote attrs) identity)
+                       (or (:remote->local attrs) identity))))

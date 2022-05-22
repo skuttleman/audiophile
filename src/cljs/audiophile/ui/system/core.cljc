@@ -6,7 +6,7 @@
     #?@(:clj  [[audiophile.common.infrastructure.duct :as uduct]
                [duct.core :as duct]]
         :cljs [[audiophile.ui.utils.env :as env]
-               [audiophile.ui.pages.login :as login]
+               [audiophile.ui.views.login :as login]
                audiophile.ui.system.components])
     [audiophile.common.core.utils.logger :as log]
     [integrant.core :as ig]

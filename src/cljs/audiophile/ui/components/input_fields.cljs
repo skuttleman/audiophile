@@ -1,9 +1,11 @@
 (ns audiophile.ui.components.input-fields
   (:require
-    [reagent.core :as r]
-    [clojure.string :as string]
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.ui.utils.dom :as dom]))
+    [audiophile.common.infrastructure.resources.core :as res]
+    [audiophile.ui.utils.dom :as dom]
+    [clojure.string :as string]
+    [com.ben-allred.vow.core :as v]
+    [reagent.core :as r]))
 
 (defn form-field [{:keys [attempted? errors form-field-class id label label-small?]} & body]
   (let [errors (seq (remove nil? errors))
@@ -203,38 +205,56 @@
             (when progress
               [progress-bar progress])]])))))
 
+(defn ^:private on-progress [progress {:progress/keys [current total status]}]
+  (let [result (maps/->m current status total)]
+    (swap! progress (fn [{:keys [status] :as data}]
+                      (if status data result)))))
+
+(defn uploader [{:keys [multi? on-change *resource] :or {on-change identity} :as attrs}]
+  (r/with-let [progress (r/atom nil)
+               on-progress (partial on-progress progress)]
+    [file (-> attrs
+              (assoc :progress @progress
+                     :on-change (fn [file-set]
+                                  (reset! progress {:current 0 :total nil})
+                                  (-> *resource
+                                      (res/request! {:files       file-set
+                                                     :multi?      multi?
+                                                     :on-progress on-progress})
+                                      (v/then on-change))))
+              (update :disabled #(or % (res/requesting? *resource))))]))
+
 (defn openable [component & args]
   (r/with-let [open? (r/atom false)
                ref (volatile! nil)
-               listeners [(dom/add-listener js/window :click (fn [e]
-                                                                (if (->> (.-target e)
-                                                                         (iterate #(some-> % .-parentNode))
-                                                                         (take-while some?)
-                                                                         (filter (partial = @ref))
-                                                                         (empty?))
-                                                                  (do (reset! open? false)
-                                                                      (some-> @ref dom/blur!))
-                                                                  (some-> @ref dom/focus!))))
+               listeners [(dom/add-listener js/window
+                                            :click
+                                            (fn [e]
+                                              (if (->> (.-target e)
+                                                       (iterate #(some-> % .-parentNode))
+                                                       (take-while some?)
+                                                       (filter #{@ref})
+                                                       (empty?))
+                                                (do (reset! open? false)
+                                                    (some-> @ref dom/blur!))
+                                                (some-> @ref dom/focus!))))
                           (dom/add-listener js/window
                                             :keydown
                                             #(when (#{:key-codes/tab :key-codes/esc} (dom/event->key %))
                                                (reset! open? false))
-                                            true)]]
-    (let [attrs (-> {:on-toggle (fn [_]
-                                  (swap! open? not))
-                     :open?     @open?}
-                    (update :ref (fn [ref-fn]
-                                   (fn [node]
-                                     (when node
-                                       (vreset! ref node))
-                                     (when ref-fn
-                                       (ref-fn node)))))
-                    (update :on-blur (fn [on-blur]
-                                       (fn [e]
-                                         (when-let [node @ref]
-                                           (if @open?
-                                             (some-> node dom/focus!)
-                                             (when on-blur
-                                               (on-blur e))))))))]
-      (into [component attrs] args))
+                                            true)]
+               on-toggle (fn [_]
+                           (swap! open? not))
+               ref-fn (fn [node]
+                        (when node
+                          (vreset! ref node)))
+               on-blur (fn [_]
+                         (when-let [node @ref]
+                           (when @open?
+                             (some-> node dom/focus!))))]
+    (into [component {:open?     @open?
+                      :on-toggle on-toggle
+                      :ref       ref-fn
+                      :on-blur   on-blur}]
+          args)
     (finally (run! dom/remove-listener listeners))))

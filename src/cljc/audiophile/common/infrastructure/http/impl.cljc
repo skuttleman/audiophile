@@ -144,4 +144,5 @@
           [#(->HttpBase % (or timeout default-timeout))
            ->HttpLogger
            ->HttpHeaders
-           #(->HttpSerde % serde/serdes)]))
+           #(->HttpSerde % serde/serdes)
+           ->HttpProgress]))

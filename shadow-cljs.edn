@@ -9,7 +9,9 @@
                            :after-load  audiophile.ui.dev.core/init}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
-                           :dashboard {:entries    [audiophile.ui.pages.dashboard]
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:main}}
+                           :project   {:entries    [audiophile.ui.views.project.core]
                                        :depends-on #{:main}}}}
 
           :ui
@@ -18,7 +20,9 @@
            :compiler      {:optimizations :advanced}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.app/init}
-                           :dashboard {:entries    [audiophile.ui.pages.dashboard]
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:main}}
+                           :project   {:entries    [audiophile.ui.views.project.core]
                                        :depends-on #{:main}}}}
 
           :web-test
@@ -27,7 +31,9 @@
            :compiler      {:optimizations :advanced}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
-                           :dashboard {:entries    [audiophile.ui.pages.dashboard]
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:main}}
+                           :project   {:entries    [audiophile.ui.views.project.core]
                                        :depends-on #{:main}}}}
 
           :test

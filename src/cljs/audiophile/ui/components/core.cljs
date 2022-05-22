@@ -6,7 +6,8 @@
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.utils.dom :as dom]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.forms.protocols :as pforms]))
+    [audiophile.ui.forms.protocols :as pforms]
+    [reagent.core :as r]))
 
 (def ^:private level->class
   {:error "is-danger"})
@@ -29,7 +30,7 @@
   ([attrs icon-class]
    [:i.fas (update attrs :class conj (str "fa-" (name icon-class)))]))
 
-(defn form [{:keys [buttons disabled *form on-submitted] :as attrs} & fields]
+(defn form [{:keys [buttons disabled *form] :as attrs} & fields]
   (let [submittable? (satisfies? pforms/IAttempt *form)
         ready? (if submittable?
                  (not (forms/attempting? *form))
@@ -44,8 +45,7 @@
          (merge {:on-submit (fn [e]
                               (dom/prevent-default! e)
                               (when submittable?
-                                (cond-> (forms/attempt! *form)
-                                  on-submitted on-submitted)))}
+                                (forms/attempt! *form)))}
                 (select-keys attrs #{:class :style}))]
         (into fields)
         (conj (cond-> [:div.buttons

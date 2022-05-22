@@ -1,17 +1,19 @@
 (ns audiophile.ui.dev.core
   (:require
-    [clojure.pprint :as pp]
-    [audiophile.common.infrastructure.resources.protocols :as pres]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.domain.validations.core :as val]
     [audiophile.common.infrastructure.navigation.core :as nav]
+    [audiophile.common.infrastructure.resources.protocols :as pres]
+    [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.app :as app]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.forms.submittable :as form.submit]
+    [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
+    [clojure.pprint :as pp]
     [com.ben-allred.vow.core :as v]
     [integrant.core :as ig]))
 
@@ -31,6 +33,8 @@
     app/init))
 
 (defn ^:export halt []
+  (when-let [store (app/find-component @sys :services/store)]
+    (store/dispatch! store act/modal#remove-all!))
   (some-> sys deref ig/halt!))
 
 (def ^:private email-re
