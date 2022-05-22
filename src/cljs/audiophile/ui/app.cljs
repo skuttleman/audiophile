@@ -5,13 +5,15 @@
     [audiophile.ui.services.ws :as ws]
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
+    [audiophile.ui.utils.modulizer :as mod]
     [audiophile.ui.views.login :as login]
-    [audiophile.ui.views.main :as main]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
     audiophile.ui.store.async
     audiophile.ui.store.mutations))
+
+(def layout (mod/lazy-component audiophile.ui.views.layout/root))
 
 (def ^:private config
   (sys/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
@@ -25,7 +27,7 @@
 (defn ^:private init* [{:keys [store] :as sys}]
   (store/init! store sys)
   (-> (store/dispatch! store act/profile#load!)
-      (v/and (ws/init! sys) (render [main/root sys]))
+      (v/and (ws/init! sys) (render [@layout sys]))
       (v/or (render [login/root sys]))
       (v/always (log/info [:app/initialized]))))
 

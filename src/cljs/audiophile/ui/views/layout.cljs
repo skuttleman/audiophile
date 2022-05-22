@@ -1,4 +1,4 @@
-(ns audiophile.ui.views.main
+(ns audiophile.ui.views.layout
   (:require
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.components.core :as comp]

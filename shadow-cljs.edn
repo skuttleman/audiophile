@@ -9,10 +9,12 @@
                            :after-load  audiophile.ui.dev.core/init}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
-                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                           :layout    {:entries    [audiophile.ui.views.layout]
                                        :depends-on #{:main}}
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
                            :project   {:entries    [audiophile.ui.views.project.core]
-                                       :depends-on #{:main}}}}
+                                       :depends-on #{:layout}}}}
 
           :ui
           {:target        :browser
@@ -20,10 +22,12 @@
            :compiler      {:optimizations :advanced}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.app/init}
-                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                           :layout    {:entries    [audiophile.ui.views.layout]
                                        :depends-on #{:main}}
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
                            :project   {:entries    [audiophile.ui.views.project.core]
-                                       :depends-on #{:main}}}}
+                                       :depends-on #{:layout}}}}
 
           :web-test
           {:target        :browser
@@ -31,10 +35,12 @@
            :compiler      {:optimizations :advanced}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
-                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                           :layout    {:entries    [audiophile.ui.views.layout]
                                        :depends-on #{:main}}
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
                            :project   {:entries    [audiophile.ui.views.project.core]
-                                       :depends-on #{:main}}}}
+                                       :depends-on #{:layout}}}}
 
           :test
           {:target    :browser-test
