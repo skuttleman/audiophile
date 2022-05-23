@@ -62,5 +62,5 @@
     command-id))
 
 (defn command-failed! [ch model-id opts]
-  (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason})]
+  (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason :error/details})]
     (emit-event! ch model-id :command/failed data ctx)))

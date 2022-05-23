@@ -70,9 +70,8 @@
                        (fetch-profile oauth)
                        :email)]
     (or (some->> (fetch-user email interactor) (jwt/auth-token jwt-serde))
-        ;; disable signup flow
-        #_(jwt/signup-token jwt-serde {:user/id    (uuids/random)
-                                       :user/email email}))))
+        (jwt/signup-token jwt-serde {:user/id    (uuids/random)
+                                     :user/email email}))))
 
 (deftype AuthInteractor [interactor oauth nav base-url jwt-serde base64-serde]
   pint/IAuthInteractor

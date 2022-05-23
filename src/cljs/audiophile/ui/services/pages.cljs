@@ -7,21 +7,35 @@
     [audiophile.ui.forms.submittable :as form.submit]
     [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.store.actions :as act]
+    [clojure.string :as string]
     [com.ben-allred.vow.core :as v]))
+
+(defn ^:private err-msg [path]
+  (str (string/join "." (map name path)) " is in use"))
 
 (defn ^:private with-handlers [vow {:keys [on-success on-error]}]
   (v/peek vow on-success on-error))
 
 (defn ^:private with-toast [vow {:keys [store]}]
-  (v/peek vow
-          nil
-          (fn [_]
-            (store/dispatch! store (act/toast#add! :error "Something went wrong")))))
+  (cond-> vow
+    store (v/peek nil
+                  (fn [_]
+                    (let [action (act/toast#add! :error
+                                                 "Something went wrong")]
+                      (store/dispatch! store action))))))
 
 (defn ^:private with-resource [vow {:keys [*res]}]
   (v/peek vow
           (fn [_]
             (some-> *res res/request!))))
+
+(defn conflict-validator [validator *conflicts]
+  (fn [data]
+    (reduce (fn [errors [path value]]
+              (cond-> errors
+                (= value (get-in data path)) (update-in path conj (err-msg path))))
+            (validator data)
+            @*conflicts)))
 
 (defn res:fetch
   ([sys handle]

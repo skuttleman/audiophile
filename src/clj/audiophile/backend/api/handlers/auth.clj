@@ -1,8 +1,8 @@
 (ns audiophile.backend.api.handlers.auth
   (:require
+    [audiophile.backend.api.validations.selectors :as selectors]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.common.core.utils.logger :as log]
-    [audiophile.backend.api.validations.selectors :as selectors]
     [audiophile.common.core.utils.maps :as maps]))
 
 (defn login

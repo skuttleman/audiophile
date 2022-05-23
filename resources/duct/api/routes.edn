@@ -69,7 +69,7 @@
 
  [:audiophile.spec/with-spec :api.handler/user#get]
  {:handler #ig/ref :audiophile.handlers.users/profile
-  :spec    :api.common/auth}
+  :spec    :api.profile/fetch}
 
  [:audiophile.spec/with-spec :api.handler/project#get]
  {:handler #ig/ref :audiophile.handlers.projects/fetch

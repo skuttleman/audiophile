@@ -41,6 +41,7 @@
 
 (def ^:private lookup
   {:api.common/auth       specs/auth
+   :api.profile/fetch     specs/profile
    :api.common/file-id    specs/file-id
    :api.common/project-id specs/project-id
    :api.common/search     specs/search

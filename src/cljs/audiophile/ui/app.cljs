@@ -6,7 +6,7 @@
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
     [audiophile.ui.utils.modulizer :as mod]
-    [audiophile.ui.views.login :as login]
+    [audiophile.ui.views.login.core :as login]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
@@ -27,9 +27,22 @@
 (defn ^:private init* [{:keys [store] :as sys}]
   (store/init! store sys)
   (-> (store/dispatch! store act/profile#load!)
-      (v/and (ws/init! sys) (render [@layout sys]))
-      (v/or (render [login/root sys]))
-      (v/always (log/info [:app/initialized]))))
+      (v/peek (fn [[status]]
+                (let [profile (:user/profile @store)
+                      view (cond
+                             (= :error status)
+                             login/root
+
+                             (contains? (:jwt/aud profile) :token/signup)
+                             (do
+                               (ws/init! sys)
+                               login/signup)
+
+                             :else
+                             (do
+                               (ws/init! sys)
+                               @layout))]
+                  (v/always (render [view sys]) (log/info [:app/initialized])))))))
 
 (defn find-component [system k]
   (some-> system (ig/find-derived-1 k) val))

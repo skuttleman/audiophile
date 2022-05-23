@@ -15,7 +15,8 @@
     [audiophile.ui.system.core :as sys]
     [clojure.pprint :as pp]
     [com.ben-allred.vow.core :as v]
-    [integrant.core :as ig]))
+    [integrant.core :as ig]
+    [reagent.core :as r]))
 
 (defonce ^:private sys
   (atom nil))
@@ -56,13 +57,12 @@
 
 (defmethod ig/init-key :audiophile.dev.views/login-form [_ {:keys [nav]}]
   (fn [route]
-    (let [*resource (->LoginResource nav route)
-          *form (form.submit/create (form.std/create nil login-validator) *resource)]
-      (fn [_route]
-        [comp/form {:class       ["login-form"]
-                    :submit/text "Login"
-                    :*form       *form}
-         [in/input (forms/with-attrs {:label       "email"
-                                      :auto-focus? true}
-                                     *form
-                                     [:email])]]))))
+    (r/with-let [*resource (->LoginResource nav route)
+                 *form (form.submit/create (form.std/create nil login-validator) *resource)]
+      [comp/form {:class       ["login-form"]
+                  :submit/text "Login"
+                  :*form       *form}
+       [in/input (forms/with-attrs {:label       "email"
+                                    :auto-focus? true}
+                                   *form
+                                   [:email])]])))

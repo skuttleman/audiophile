@@ -23,8 +23,10 @@
 (deftype UserAccessor [repo ch]
   pint/IUserAccessor
   pint/IAccessor
-  (query-one [_ opts]
-    (repos/transact! repo find-by opts))
+  (query-one [_ {aud :token/aud user :auth/user :as opts}]
+    (if (contains? aud :token/signup)
+      user
+      (repos/transact! repo find-by opts)))
   (create! [_ data opts]
     (ps/emit-command! ch :user/create! data opts)))
 

@@ -18,6 +18,9 @@
          #?(:cljs    false
             :default (instance? File f)))])
 
+(def email?
+  [:re #"^[a-z\-\+_0-9\.]+@[a-z\-\+_0-9]+\.[a-z\-\+_0-9\.]+$"])
+
 (def auth
   [:map
    [:user/id uuid?]
@@ -26,6 +29,12 @@
 (def signup
   [:map
    [:token/aud [:fn (partial set/subset? #{:token/signup})]]])
+
+(def profile
+  [:map
+   [:user/id uuid?]
+   [:user/email {:optional true} email?]
+   [:token/aud [:fn (partial some #{:token/auth :token/signup})]]])
 
 (def file-id
   (mu/merge auth [:map [:file/id uuid?]]))
@@ -102,9 +111,7 @@
 (def api-ws:connect
   (mu/merge auth
             [:map
-             [:token/aud [:fn (fn [s]
-                                (or (contains? s :token/auth)
-                                    (contains? s :token/signup)))]]
+             [:token/aud [:fn (partial some #{:token/auth :token/signup})]]
              [:accept trimmed-string?]
              [:content-type trimmed-string?]
              [:websocket? [:fn #{true}]]]))
@@ -134,7 +141,7 @@
   (-> signup
       (mu/merge [:map
                  [:request/id {:optional true} uuid?]
-                 [:user/email [:re #"^[a-z\-\+_0-9\.]+@[a-z\-\+_0-9]+\.[a-z\-\+_0-9\.]+$"]]])
+                 [:user/email email?]])
       (mu/merge user:create)))
 
 (def res-version:download

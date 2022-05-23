@@ -29,5 +29,7 @@
 
 (defmethod selectors/select [:get :api/profile]
   [_ {user :auth/user}]
-  {:user/id   (:user/id user)
-   :token/aud (:jwt/aud user)})
+  (-> user
+      (select-keys #{:user/id :user/email})
+      (assoc :token/aud (:jwt/aud user)
+             :auth/user user)))
