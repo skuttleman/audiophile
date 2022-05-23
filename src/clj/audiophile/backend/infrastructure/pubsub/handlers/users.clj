@@ -11,19 +11,17 @@
     [clojure.set :as set]))
 
 (defn ^:private query-signup-conflicts [executor user opts]
-  (loop [[[field f] :as fields] [[:user/email rusers/find-by-email]
-                                 [:user/handle search/find-by-handle]
-                                 [:user/mobile-number search/find-by-mobile-number]]
-         conflicts {}]
-    (let [val (get user field)]
-      (if (empty? fields)
-        conflicts
-        (recur (rest fields) (cond-> conflicts
-                               (and val (some? (f executor val opts)))
-                               (assoc [field] val)))))))
+  (for [[field f] [[:user/email rusers/find-by-email]
+                   [:user/handle search/find-by-handle]
+                   [:user/mobile-number search/find-by-mobile-number]]
+        :let [val (get user field)]
+        :when (and val (f executor val opts))]
+    [[field] val]))
 
 (defn ^:private create* [executor user opts]
-  (when-let [fields (not-empty (query-signup-conflicts executor user opts))]
+  (when-let [fields (some->> (query-signup-conflicts executor user opts)
+                             seq
+                             (into {}))]
     (throw (ex-info "one or more unique fields are present" {:conflicts fields})))
   {:user/id (rusers/insert-user! executor user opts)})
 
