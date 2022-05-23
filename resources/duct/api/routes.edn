@@ -7,7 +7,6 @@
   [:get :api/project.files]  #ig/ref :api.handler/project.files#get
   [:get :api/project]        #ig/ref :api.handler/project#get
   [:get :api/projects]       #ig/ref :api.handler/projects#get
-  [:get :api/search]         #ig/ref :api.handler/search
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :resources/health]   #ig/ref :res.handler/health
@@ -78,10 +77,6 @@
  [:audiophile.spec/with-spec :api.handler/projects#get]
  {:handler #ig/ref :audiophile.handlers.projects/fetch-all
   :spec    :api.common/auth}
-
- [:audiophile.spec/with-spec :api.handler/search]
- {:handler #ig/ref :audiophile.handlers/search
-  :spec    :api.common/search}
 
  [:audiophile.spec/with-spec :api.handler/team#get]
  {:handler #ig/ref :audiophile.handlers.teams/fetch
@@ -227,9 +222,6 @@
 
  :audiophile.handlers.files/fetch-all
  {:interactor #ig/ref :interactors/files}
-
- :audiophile.handlers/search
- {:interactor #ig/ref :interactors/search}
 
  :audiophile.handlers.files/fetch
  {:interactor #ig/ref :interactors/files}

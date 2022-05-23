@@ -29,11 +29,6 @@
 (defprotocol IProjectAccessor
   "Abstraction for saving and querying projects")
 
-(defprotocol ISearchAccessor
-  "Abstraction for searching for fields in use"
-  (exists? [this opts]
-    "Does the entity exist"))
-
 (defprotocol ITeamAccessor
   "Abstraction for saving and querying teams and user/team relationships")
 

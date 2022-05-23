@@ -6,7 +6,6 @@
     [audiophile.backend.api.handlers.events :as events]
     [audiophile.backend.api.handlers.files :as files]
     [audiophile.backend.api.handlers.projects :as projects]
-    [audiophile.backend.api.handlers.search :as search]
     [audiophile.backend.api.handlers.teams :as teams]
     [audiophile.backend.api.handlers.users :as users]
     [integrant.core :as ig]))
@@ -43,9 +42,6 @@
 
 (defmethod ig/init-key :audiophile.handlers.files/fetch-all [_ cfg]
   (files/fetch-all cfg))
-
-(defmethod ig/init-key :audiophile.handlers/search [_ cfg]
-  (search/search cfg))
 
 (defmethod ig/init-key :audiophile.handlers.files/fetch [_ cfg]
   (files/fetch cfg))

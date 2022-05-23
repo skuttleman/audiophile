@@ -5,7 +5,6 @@
     [audiophile.backend.api.repositories.events.impl :as events]
     [audiophile.backend.api.repositories.files.impl :as files]
     [audiophile.backend.api.repositories.projects.impl :as projects]
-    [audiophile.backend.api.repositories.search.impl :as search]
     [audiophile.backend.api.repositories.teams.impl :as teams]
     [audiophile.backend.api.repositories.users.impl :as rusers]
     [audiophile.backend.infrastructure.db.comments :as db.comments]
@@ -69,9 +68,6 @@
 
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
   (files/accessor cfg))
-
-(defmethod ig/init-key :audiophile.repositories.search/accessor [_ cfg]
-  (search/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/artifact-store [_ cfg]
   (stores/artifact-store cfg))

@@ -33,8 +33,6 @@
     ["/teams"
      [["" :api/teams]
       [["/" [uuids/regex :team/id]] :api/team]]]
-    ["/search"
-     [[["/" :field/entity "/" :field/name "/" :field/value] :api/search]]]
     ["/users"
      [["/profile" :api/profile]
       ["" :api/users]]]
