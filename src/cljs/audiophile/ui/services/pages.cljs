@@ -2,7 +2,6 @@
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.navigation.core :as nav]
-    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.forms.submittable :as form.submit]
     [audiophile.ui.resources.impl :as ires]
@@ -18,16 +17,12 @@
 
 (defn ^:private with-toast [vow {:keys [store]}]
   (cond-> vow
-    store (v/peek nil
+    store (v/peek (fn [_]
+                    (let [action (act/toast#add! :success "Success")]
+                      (store/dispatch! store action)))
                   (fn [_]
-                    (let [action (act/toast#add! :error
-                                                 "Something went wrong")]
+                    (let [action (act/toast#add! :error "Something went wrong")]
                       (store/dispatch! store action))))))
-
-(defn ^:private with-resource [vow {:keys [*res]}]
-  (v/peek vow
-          (fn [_]
-            (some-> *res res/request!))))
 
 (defn conflict-validator [validator *conflicts]
   (fn [data]
@@ -60,7 +55,6 @@
                                   (fn [vow]
                                     (-> vow
                                         (with-handlers attrs)
-                                        (with-toast sys)
-                                        (with-resource attrs))))
+                                        (with-toast sys))))
                        (or (:local->remote attrs) identity)
                        (or (:remote->local attrs) identity))))

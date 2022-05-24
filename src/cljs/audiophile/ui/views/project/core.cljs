@@ -46,12 +46,20 @@
                                    [:version/name])]])))
 
 (defmethod modals/body ::create
-  [_ sys attrs]
-  [create* sys (set/rename-keys attrs {:close! :on-success})])
+  [_ sys {:keys [*res close!] :as attrs}]
+  (let [attrs (assoc attrs :on-success (fn [result]
+                                         (when close!
+                                           (close! result))
+                                         (some-> *res res/request!)))]
+    [create* sys attrs]))
 
 (defmethod modals/body ::version
-  [_ sys attrs]
-  [version* sys (set/rename-keys attrs {:close! :on-success})])
+  [_ sys {:keys [*res close!] :as attrs}]
+  (let [attrs (assoc attrs :on-success (fn [result]
+                                         (when close!
+                                           (close! result))
+                                         (some-> *res res/request!)))]
+    [version* sys attrs]))
 
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])

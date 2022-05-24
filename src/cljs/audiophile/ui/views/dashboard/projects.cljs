@@ -4,6 +4,7 @@
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.navigation.core :as nav]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
@@ -12,7 +13,6 @@
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.views.dashboard.services :as serv]
-    [clojure.set :as set]
     [reagent.core :as r]))
 
 (def ^:private personal?
@@ -50,8 +50,12 @@
                                   [:project/name])]]]))
 
 (defmethod modals/body ::create
-  [_ sys attrs]
-  [comp/with-resource (:*teams attrs) create* sys (set/rename-keys attrs {:close! :on-success})])
+  [_ sys {:keys [*res close!] :as attrs}]
+  (let [attrs (assoc attrs :on-success (fn [result]
+                                         (when close!
+                                           (close! result))
+                                         (some-> *res res/request!)))]
+    [comp/with-resource (:*teams attrs) create* sys attrs]))
 
 (defn list [projects {:keys [nav]}]
   [:div

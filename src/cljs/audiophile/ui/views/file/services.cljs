@@ -5,6 +5,7 @@
     [audiophile.common.domain.validations.specs :as specs]
     [audiophile.common.infrastructure.http.core :as http]
     [audiophile.common.infrastructure.navigation.core :as nav]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.forms.watchable :as form.watch]
     [audiophile.ui.resources.impl :as ires]
@@ -26,7 +27,8 @@
   (let [init-val {:comment/file-version-id version-id}
         *form (form.std/create init-val comments#validator:new)]
     (pages/form:new sys
-                    {:*res          *comments
+                    {:on-success    (fn [_]
+                                      (res/request! *comments))
                      :remote->local (constantly init-val)}
                     *form
                     :api/comments)))

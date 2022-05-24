@@ -18,13 +18,15 @@
                      [msg-type event-id data ctx] {:id   event-id
                                                    :data data
                                                    :ctx  ctx}
-                     _ nil)]
+                     _ nil)
+        event-type (get-in event [:data :event/type])
+        event-data (get-in event [:data :event/data])]
     (when-let [request-id (-> event :ctx :request/id)]
-      (let [event (case (get-in event [:data :event/type])
-                    :command/failed {:error [(get-in event [:data :event/data])]}
-                    {:data (get-in event [:data :event/data])})]
-        (log/trace "[WS msg]" request-id event (:ctx event))
-        (pubsub/publish! pubsub request-id event)))))
+      (let [event* (case event-type
+                     :command/failed {:error [event-data]}
+                     {:data event-data})]
+        (log/info [event-type (:ctx event)])
+        (pubsub/publish! pubsub request-id event*)))))
 
 (defn ws-uri [nav base-url]
   (let [mime-type (serdes/mime-type serde/transit)

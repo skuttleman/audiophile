@@ -2,14 +2,14 @@
   (:refer-clojure :exclude [list])
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.views.dashboard.services :as serv]
     [audiophile.ui.store.actions :as act]
-    [clojure.set :as set]
+    [audiophile.ui.views.dashboard.services :as serv]
     [reagent.core :as r]))
 
 (def ^:private team-type->icon
@@ -25,10 +25,12 @@
                                 [:team/name])]]])
 
 (defmethod modals/body ::create
-  [_ sys attrs]
-  (r/with-let [*form (serv/teams#form:new sys
-                                          (set/rename-keys attrs
-                                                           {:close! :on-success}))]
+  [_ sys {:keys [*res close!] :as attrs}]
+  (r/with-let [attrs (assoc attrs :on-success (fn [result]
+                                                (when close!
+                                                  (close! result))
+                                                (some-> *res res/request!)))
+               *form (serv/teams#form:new sys attrs)]
     [create* *form attrs]))
 
 (defn list [teams]
