@@ -65,15 +65,16 @@
   (safely! "querying the user from the database"
     (int/query-one interactor {:user/email email})))
 
-(defn ^:private params->token [interactor oauth jwt-serde params]
+(defn ^:private params->token [interactor oauth jwt-serde params signup?]
   (when-let [email (-> params
                        (fetch-profile oauth)
                        :email)]
     (or (some->> (fetch-user email interactor) (jwt/auth-token jwt-serde))
-        (jwt/signup-token jwt-serde {:user/id    (uuids/random)
-                                     :user/email email}))))
+        (when signup?
+          (jwt/signup-token jwt-serde {:user/id    (uuids/random)
+                                       :user/email email})))))
 
-(deftype AuthInteractor [interactor oauth nav base-url jwt-serde base64-serde]
+(deftype AuthInteractor [interactor oauth nav base-url jwt-serde base64-serde signup?]
   pint/IAuthInteractor
   (login [_ params]
     (redirect* nav oauth base-url jwt-serde base64-serde params))
@@ -83,7 +84,7 @@
         ring/redirect
         with-token))
   (callback [_ params]
-    (let [token (params->token interactor oauth jwt-serde params)
+    (let [token (params->token interactor oauth jwt-serde params signup?)
           url (when token
                 (some->> params
                          :state
@@ -98,5 +99,5 @@
 
 (defn interactor
   "Constructor for [[AuthInteractor]] used to provide authentication interaction flows."
-  [{:keys [base-url interactor jwt-serde nav oauth]}]
-  (->AuthInteractor interactor oauth nav base-url jwt-serde serde/base64))
+  [{:keys [base-url interactor jwt-serde nav oauth signup?]}]
+  (->AuthInteractor interactor oauth nav base-url jwt-serde serde/base64 signup?))

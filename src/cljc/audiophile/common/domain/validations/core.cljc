@@ -3,6 +3,7 @@
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.domain.validations.specs :as specs]
+    [clojure.string :as string]
     [malli.core :as m]
     [malli.error :as me]
     [malli.transform :as mt])
@@ -25,7 +26,10 @@
 (defn ^:private error-fn [missing-keys]
   (fn [{:keys [path]} _]
     (or (get-in missing-keys path)
-        (str (name (peek path)) " is required"))))
+        (-> (peek path)
+            name
+            (string/replace #"-" " ")
+            (str " is required")))))
 
 (defn ^:private humanize-opts [missing-keys]
   (let [f (error-fn missing-keys)]

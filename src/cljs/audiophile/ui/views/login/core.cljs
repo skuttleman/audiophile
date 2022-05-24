@@ -31,7 +31,8 @@
      [:div.column.has-background-info
       [:div.has-text-centered {:style {:color :white}} "Assign follow up tasks to get changes made"]]]]
    [:div.gutters.layout--xxl
-    [:div.layout--space-above.layout--space-below msg]
+    [:div.layout--space-above.layout--space-below
+     [:h3.subtitle.is-5 msg]]
     [login/form login-key sys (:nav/route state)]]])
 
 (defn root [{:keys [store] :as sys} attrs]

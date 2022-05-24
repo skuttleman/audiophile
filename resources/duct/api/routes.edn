@@ -178,11 +178,12 @@
  {:auth #ig/ref :audiophile.services.auth/provider}
 
  :audiophile.services.auth/provider
- {:base-url     #ig/ref :env/base-url#ui
-  :interactor   #ig/ref :interactors/users
-  :jwt-serde    #ig/ref :serdes/jwt
-  :nav          #ig/ref :services/nav
-  :oauth        #ig/ref :services/oauth}
+ {:base-url   #ig/ref :env/base-url#ui
+  :interactor #ig/ref :interactors/users
+  :jwt-serde  #ig/ref :serdes/jwt
+  :nav        #ig/ref :services/nav
+  :oauth      #ig/ref :services/oauth
+  :signup?    #ig/ref :env.ff/signup?}
 
  :audiophile.handlers.users/profile
  {:interactor #ig/ref :interactors/users}
