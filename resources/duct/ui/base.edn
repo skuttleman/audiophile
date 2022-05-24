@@ -10,7 +10,6 @@
   [:duct/const :system.ui/components]
   {:env         #ig/ref :services.ui/base-urls
    :http-client #ig/ref :services/http
-   :login-form  #ig/ref :views/login-form
    :nav         #ig/ref :services/nav
    :pubsub      #ig/ref :services/pubsub
    :store       #ig/ref :services/store}

@@ -6,7 +6,6 @@
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
     [audiophile.ui.utils.modulizer :as mod]
-    [audiophile.ui.views.login.core :as login]
     [com.ben-allred.vow.core :as v :include-macros true]
     [integrant.core :as ig]
     [reagent.dom :as rdom]
@@ -14,6 +13,8 @@
     audiophile.ui.store.mutations))
 
 (def layout (mod/lazy-component audiophile.ui.views.layout/root))
+
+(def login (mod/lazy-component audiophile.ui.views.login.core/root))
 
 (def ^:private config
   (sys/load-config "ui.edn" [:duct.profile/base :duct.profile/prod]))
@@ -24,25 +25,25 @@
                            (.getElementById js/document "root")
                            resolve))))
 
-(defn ^:private init* [{:keys [store] :as sys}]
+(defn ^:private init* [{:keys [login-key store] :as sys}]
   (store/init! store sys)
   (-> (store/dispatch! store act/profile#load!)
       (v/peek (fn [[status]]
                 (let [profile (:user/profile @store)
                       view (cond
                              (= :error status)
-                             login/root
+                             [@login sys {:msg "Login to get started" :login-key login-key}]
 
                              (contains? (:jwt/aud profile) :token/signup)
                              (do
                                (ws/init! sys)
-                               login/signup)
+                               [@login sys {:msg "Sign up to get started" :login-key :signup}])
 
                              :else
                              (do
                                (ws/init! sys)
-                               @layout))]
-                  (v/always (render [view sys]) (log/info [:app/initialized])))))))
+                               [@layout sys]))]
+                  (v/always (render view) (log/info [:app/initialized])))))))
 
 (defn find-component [system k]
   (some-> system (ig/find-derived-1 k) val))

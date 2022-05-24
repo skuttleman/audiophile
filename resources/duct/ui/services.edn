@@ -1,17 +1,11 @@
 {[:duct/const :services.ui/base-urls]
  #ig/ref :audiophile.ui.services/base-urls
 
- [:duct/const :views/login-form]
- #ig/ref :audiophile.ui.views/login-form
-
  [:duct/const :services/store]
  #ig/ref :audiophile.ui.services/store
 
  :audiophile.ui.services/base-urls
  {}
-
- :audiophile.ui.views/login-form
- {:nav #ig/ref :services/nav}
 
  :audiophile.services.nav/nav
  ^:promote {:store #ig/ref :services/store}

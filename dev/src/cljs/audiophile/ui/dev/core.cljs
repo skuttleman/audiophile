@@ -13,6 +13,7 @@
     [audiophile.ui.forms.submittable :as form.submit]
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
+    [audiophile.ui.views.login.multi :as mlogin]
     [clojure.pprint :as pp]
     [com.ben-allred.vow.core :as v]
     [integrant.core :as ig]
@@ -55,14 +56,14 @@
   (status [_]
     :init))
 
-(defmethod ig/init-key :audiophile.dev.views/login-form [_ {:keys [nav]}]
-  (fn [route]
-    (r/with-let [*resource (->LoginResource nav route)
-                 *form (form.submit/create (form.std/create nil login-validator) *resource)]
-      [comp/form {:class       ["login-form"]
-                  :submit/text "Login"
-                  :*form       *form}
-       [in/input (forms/with-attrs {:label       "email"
-                                    :auto-focus? true}
-                                   *form
-                                   [:email])]])))
+(defmethod mlogin/form :dev
+  [_ {:keys [nav]} route]
+  (r/with-let [*resource (->LoginResource nav route)
+               *form (form.submit/create (form.std/create nil login-validator) *resource)]
+    [comp/form {:class       ["login-form"]
+                :submit/text "Login"
+                :*form       *form}
+     [in/input (forms/with-attrs {:label       "email"
+                                  :auto-focus? true}
+                                 *form
+                                 [:email])]]))
