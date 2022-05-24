@@ -1,25 +1,58 @@
 {:deps   true
  :nrepl  {:port #shadow/env ["CLJS_NREPL_PORT" :as :int :default 7400]}
  :builds {:dev
-          {:target     :browser
-           :output-dir "resources/public/js"
-           :compiler   {:optimizations :none}
-           :devtools   {:watch-dir   "resources/public"
-                        :before-load com.ben-allred.audiophile.ui.dev.core/halt
-                        :after-load  com.ben-allred.audiophile.ui.dev.core/init}
-           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
+          {:target        :browser
+           :output-dir    "resources/public/js"
+           :compiler      {:optimizations :none}
+           :devtools      {:watch-dir   "resources/public"
+                           :before-load audiophile.ui.dev.core/halt
+                           :after-load  audiophile.ui.dev.core/init}
+           :module-loader true
+           :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
+                           :layout    {:entries    [audiophile.ui.views.layout.core]
+                                       :depends-on #{:main}}
+                           :login     {:entries    [audiophile.ui.views.login.core]
+                                       :depends-on #{:main}}
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
+                           :file      {:entries    [audiophile.ui.views.file.core]
+                                       :depends-on #{:layout}}
+                           :project   {:entries    [audiophile.ui.views.project.core]
+                                       :depends-on #{:layout}}}}
 
           :ui
-          {:target     :browser
-           :output-dir "resources/public/js"
-           :compiler   {:optimizations :advanced}
-           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.app/init}}}
+          {:target        :browser
+           :output-dir    "resources/public/js"
+           :compiler      {:optimizations :advanced}
+           :module-loader true
+           :modules       {:main      {:init-fn audiophile.ui.app/init}
+                           :layout    {:entries    [audiophile.ui.views.layout.core]
+                                       :depends-on #{:main}}
+                           :login     {:entries    [audiophile.ui.views.login.core]
+                                       :depends-on #{:main}}
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
+                           :file      {:entries    [audiophile.ui.views.file.core]
+                                       :depends-on #{:layout}}
+                           :project   {:entries    [audiophile.ui.views.project.core]
+                                       :depends-on #{:layout}}}}
 
           :web-test
-          {:target     :browser
-           :output-dir "resources/public/js"
-           :compiler   {:optimizations :advanced}
-           :modules    {:main {:init-fn com.ben-allred.audiophile.ui.dev.core/init}}}
+          {:target        :browser
+           :output-dir    "resources/public/js"
+           :compiler      {:optimizations :advanced}
+           :module-loader true
+           :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
+                           :layout    {:entries    [audiophile.ui.views.layout.core]
+                                       :depends-on #{:main}}
+                           :login     {:entries    [audiophile.ui.views.login.core]
+                                       :depends-on #{:main}}
+                           :dashboard {:entries    [audiophile.ui.views.dashboard.core]
+                                       :depends-on #{:layout}}
+                           :file      {:entries    [audiophile.ui.views.file.core]
+                                       :depends-on #{:layout}}
+                           :project   {:entries    [audiophile.ui.views.project.core]
+                                       :depends-on #{:layout}}}}
 
           :test
           {:target    :browser-test

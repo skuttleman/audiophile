@@ -1,19 +1,17 @@
-{[:duct/const :services/pubsub]
- #ig/ref :audiophile.services.pubsub/memory
+{[:duct/const :services.ui/base-urls]
+ #ig/ref :audiophile.ui.services/base-urls
 
- [:audiophile.ui.services/env :services.ui/env]
- {:transit #ig/ref :serdes/transit}
+ [:duct/const :services/store]
+ #ig/ref :audiophile.ui.services/store
 
- [:audiophile.ui.services/base-urls :services.ui/base-urls]
- {:env #ig/ref :services.ui/env}
+ :audiophile.ui.services/base-urls
+ {}
 
- :audiophile.services.ws/client
- {:env          #ig/ref :services.ui/env
-  :nav          #ig/ref :services/nav
-  :pubsub       #ig/ref :services/pubsub
-  :reconnect-ms #ig/ref :env/ws-reconnect-ms
-  :serde        #ig/ref :serdes/transit
-  :store        #ig/ref :services/store}
+ :audiophile.services.nav/nav
+ ^:promote {:store #ig/ref :services/store}
+
+ :audiophile.ui.services/store
+ {}
 
  :audiophile.services.pubsub/memory
  {}}

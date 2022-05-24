@@ -5,8 +5,7 @@
   :global?  #ig/ref :env.rabbitmq/global
   :opts     {:durable     true
              :exclusive   false
-             :arguments   {"x-message-ttl" 604800000}}
-  :serde    #ig/ref :serdes/edn}
+             :arguments   {"x-message-ttl" 604800000}}}
 
  [:duct/const :mq.channel/commands]
  {:name     #ig/ref :rabbitmq.exchange/commands
@@ -15,8 +14,7 @@
   :global?  #ig/ref :env.rabbitmq/global
   :opts     {:durable     true
              :exclusive   false
-             :arguments   {"x-message-ttl" 604800000}}
-  :serde    #ig/ref :serdes/edn}
+             :arguments   {"x-message-ttl" 604800000}}}
 
  [:audiophile.rabbitmq.exchange/name :rabbitmq.exchange/events]
  {:namespace #ig/ref :env.rabbitmq/namespace

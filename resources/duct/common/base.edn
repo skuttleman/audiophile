@@ -1,6 +1,4 @@
 #audiophile/merge
-[#duct/include "duct/common/routes.edn"
- #duct/include "duct/common/serdes.edn"
- #duct/include "duct/common/services.edn"
+[#duct/include "duct/common/services.edn"
  {:duct.core/project-ns
   :com.ben-allred/audiophile}]

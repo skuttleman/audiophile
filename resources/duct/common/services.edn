@@ -1,35 +1,18 @@
 {[:duct/const :services/nav]
  #ig/ref :audiophile.services.nav/nav
 
+ [:duct/const :services/http]
+ #ig/ref :audiophile.services.http/client
+
+ [:duct/const :services/pubsub]
+ #ig/ref :audiophile.services.pubsub/memory
+
  :audiophile.services.nav/nav
  {:router #ig/ref :audiophile.services.nav/router}
 
  :audiophile.services.nav/router
  {:base-urls {:api-base   #ig/ref :env/base-url#api
-              :auth-base  #ig/ref :env/base-url#auth}
-  :routes    #ig/ref :nav/routes}
-
- [:duct/const :services/http]
- #ig/ref :audiophile.services.http/client
+              :auth-base  #ig/ref :env/base-url#auth}}
 
  :audiophile.services.http/client
- {:middlewares [#ig/ref :audiophile.services.http/base
-                #ig/ref :audiophile.services.http/with-logging
-                #ig/ref :audiophile.services.http/with-unauthorized
-                #ig/ref :audiophile.services.http/with-headers
-                #ig/ref :audiophile.services.http/with-serde]}
-
- :audiophile.services.http/with-serde
- {:serdes #ig/ref :config/serdes}
-
- :audiophile.services.http/with-headers
- {}
-
- :audiophile.services.http/base
- {}
-
- :audiophile.services.http/with-logging
- {}
-
- :audiophile.services.http/with-unauthorized
  {}}

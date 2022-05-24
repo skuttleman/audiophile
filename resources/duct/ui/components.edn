@@ -1,6 +1,0 @@
-#audiophile/merge
-[#duct/include "duct/ui/components/files.edn"
- #duct/include "duct/ui/components/projects.edn"
- #duct/include "duct/ui/components/shared.edn"
- #duct/include "duct/ui/components/teams.edn"
- #duct/include "duct/ui/components/views.edn"]

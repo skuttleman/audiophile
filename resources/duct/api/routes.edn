@@ -7,7 +7,6 @@
   [:get :api/project.files]  #ig/ref :api.handler/project.files#get
   [:get :api/project]        #ig/ref :api.handler/project#get
   [:get :api/projects]       #ig/ref :api.handler/projects#get
-  [:get :api/search]         #ig/ref :api.handler/search
   [:get :api/team]           #ig/ref :api.handler/team#get
   [:get :api/teams]          #ig/ref :api.handler/teams#get
   [:get :resources/health]   #ig/ref :res.handler/health
@@ -69,7 +68,7 @@
 
  [:audiophile.spec/with-spec :api.handler/user#get]
  {:handler #ig/ref :audiophile.handlers.users/profile
-  :spec    :api.common/auth}
+  :spec    :api.profile/fetch}
 
  [:audiophile.spec/with-spec :api.handler/project#get]
  {:handler #ig/ref :audiophile.handlers.projects/fetch
@@ -78,10 +77,6 @@
  [:audiophile.spec/with-spec :api.handler/projects#get]
  {:handler #ig/ref :audiophile.handlers.projects/fetch-all
   :spec    :api.common/auth}
-
- [:audiophile.spec/with-spec :api.handler/search]
- {:handler #ig/ref :audiophile.handlers/search
-  :spec    :api.common/search}
 
  [:audiophile.spec/with-spec :api.handler/team#get]
  {:handler #ig/ref :audiophile.handlers.teams/fetch
@@ -164,9 +159,7 @@
  {}
 
  :audiophile.middleware/with-serde
- {:edn #ig/ref :serdes/edn
-  :transit #ig/ref :serdes/transit
-  #_#_:json #ig/ref :serdes/json}
+ {}
 
  :audiophile.middleware/with-route
  {:nav #ig/ref :services/nav}
@@ -186,7 +179,6 @@
 
  :audiophile.services.auth/provider
  {:base-url     #ig/ref :env/base-url#ui
-  :base64-serde #ig/ref :serdes/base64
   :interactor   #ig/ref :interactors/users
   :jwt-serde    #ig/ref :serdes/jwt
   :nav          #ig/ref :services/nav
@@ -231,9 +223,6 @@
  :audiophile.handlers.files/fetch-all
  {:interactor #ig/ref :interactors/files}
 
- :audiophile.handlers/search
- {:interactor #ig/ref :interactors/search}
-
  :audiophile.handlers.files/fetch
  {:interactor #ig/ref :interactors/files}
 
@@ -248,5 +237,4 @@
 
  :audiophile.services.ws/handler
  {:heartbeat-int-ms #ig/ref :env.ws/heartbeat-int-ms
-  :pubsub           #ig/ref :services/pubsub
-  :serdes           #ig/ref :config/serdes}}
+  :pubsub           #ig/ref :services/pubsub}}

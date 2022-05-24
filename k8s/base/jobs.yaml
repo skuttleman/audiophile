@@ -15,7 +15,7 @@ spec:
             name: env-vars
         - secretRef:
             name: env-secrets
-        command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "com.ben-allred.audiophile.backend.dev.migrations", "migrate" ]
+        command: [ "clj", "-A:dev", "-Sthreads", "1", "-m", "audiophile.backend.dev.migrations", "migrate" ]
       imagePullSecrets:
       - name: regcred
       initContainers:

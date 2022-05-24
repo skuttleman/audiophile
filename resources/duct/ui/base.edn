@@ -1,35 +1,19 @@
 #audiophile/merge
 [#duct/include "duct/common/base.edn"
- #duct/include "duct/ui/env.edn"
  #duct/include "duct/ui/services.edn"
- #duct/include "duct/ui/components.edn"
- {:audiophile.services.http/client
-  ^:promote {:middlewares [#ig/ref :audiophile.services.http/with-async
-                           #ig/ref :audiophile.services.http/with-nav
-                           #ig/ref :audiophile.services.http/with-progress]}
-
-  :audiophile.services.http/with-nav
-  {:env #ig/ref :services.ui/env
-   :nav #ig/ref :services/nav}
-
-  :audiophile.services.http/with-async
-  {:pubsub #ig/ref :services/pubsub}
-
-  :audiophile.services.http/with-progress
-  {}
-
-  :audiophile.services.nav/router
+ {:audiophile.services.nav/router
   ^:promote {:base-urls #ig/ref :services.ui/base-urls}
 
-  :audiophile.services.nav/nav
-  ^:promote {:tracker #ig/ref :audiophile.services.nav/tracker}
+  [:duct/const :services/http]
+  ^:promote #ig/ref :audiophile.ui.services/http
 
-  :audiophile.services.nav/tracker
-  {:*banners #ig/ref :audiophile.core/banners
-   :nav      #ig/ref :nav/routes
-   :store    #ig/ref :services/store}
+  [:duct/const :system.ui/components]
+  {:env         #ig/ref :services.ui/base-urls
+   :http-client #ig/ref :services/http
+   :nav         #ig/ref :services/nav
+   :pubsub      #ig/ref :services/pubsub
+   :store       #ig/ref :services/store}
 
-  :audiophile.services.http/with-unauthorized
-  {:*banners #ig/ref :audiophile.core/banners
-   :nav      #ig/ref :services/nav
-   :store    #ig/ref :services/store}}]
+  :audiophile.ui.services/http
+  {:http-client #ig/ref :audiophile.services.http/client
+   :pubsub      #ig/ref :services/pubsub}}]

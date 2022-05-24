@@ -68,7 +68,7 @@
   (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
                                "-m shadow.cljs.devtools.cli compile test"))
   (shared/process! (shared/clj #{:dev :test}
-                               "-m com.ben-allred.audiophile.test.browser-runner")))
+                               "-m audiophile.test.browser-runner")))
 
 (defmethod shared/main* :seed
   [_ [file]]
@@ -79,4 +79,4 @@
 (defmethod shared/main* :migrate
   [_ _]
   (shared/with-println [:db "migrating" "migrated"]
-    (shared/process! #{:dev} "-m com.ben-allred.audiophile.backend.dev.migrations migrate")))
+    (shared/process! #{:dev} "-m audiophile.backend.dev.migrations migrate")))

@@ -11,7 +11,7 @@
     (shared/build* mode args)
     (doseq [mode (->> (methods shared/build*)
                       keys
-                      (concat [:clj :cljs])
+                      (concat [:cljs :clj])
                       distinct)]
       (shared/build* mode nil)) ))
 
@@ -21,7 +21,7 @@
     (shared/process! "rm -rf classes")
     (shared/process! "mkdir classes")
     (shared/process! "rm -f target/audiophile.jar")
-    (shared/process! (shared/clj "-e (compile 'com.ben-allred.audiophile.backend.core)"))
+    (shared/process! (shared/clj "-e \"(compile 'audiophile.backend.core)\""))
     (shared/process! (shared/clj #{:uberjar}
                                  ["-m"
                                   "uberdeps.uberjar"
@@ -30,7 +30,7 @@
                                   "--target"
                                   "target/audiophile.jar"
                                   "--main-class"
-                                  "com.ben_allred.audiophile.backend.core"])
+                                  "audiophile.backend.core"])
                      {"LOG_LEVEL" "warn"})))
 
 (defmethod shared/build* :cljs
