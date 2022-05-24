@@ -1,23 +1,22 @@
 (ns audiophile.ui.views.login.core
   (:require
     [audiophile.common.core.utils.logger :as log]
-    [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.notices :as not]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.views.login.multi :as mlogin]
+    [audiophile.ui.services.login :as login]
     [audiophile.ui.views.login.services :as serv]
     [reagent.core :as r]))
 
-(defmethod mlogin/form :default
-  [_ {:keys [nav]} route]
-  [:div.buttons
-   [comp/plain-button
-    {:class    ["is-primary"]
-     :on-click (fn [_]
-                 (nav/goto! nav :auth/login {:params {:redirect-uri (:path route)}}))}
-    "Login"]])
+(defmethod login/form :default
+  [_ sys {:keys [path]}]
+  (r/with-let [click (serv/users#nav:login! sys path)]
+    [:div.buttons
+     [comp/plain-button
+      {:class ["is-primary"]
+       :on-click click}
+      "Login"]]))
 
 (defn ^:private layout [sys {:keys [login-key msg state]}]
   [:div..gutters.layout--xl.layout--xxl.layout--inset
@@ -33,7 +32,7 @@
       [:div.has-text-centered {:style {:color :white}} "Assign follow up tasks to get changes made"]]]]
    [:div.gutters.layout--xxl
     [:div.layout--space-above.layout--space-below msg]
-    [mlogin/form login-key sys (:nav/route state)]]])
+    [login/form login-key sys (:nav/route state)]]])
 
 (defn root [{:keys [store] :as sys} attrs]
   (let [state @store]
@@ -44,7 +43,7 @@
       [:div.layout--inset
        [layout sys (assoc attrs :state state)]]]]))
 
-(defmethod mlogin/form :signup
+(defmethod login/form :signup
   [_ sys route]
   (r/with-let [*form (serv/users#form:signup sys route)]
     [comp/form {:class       ["signup-form"]

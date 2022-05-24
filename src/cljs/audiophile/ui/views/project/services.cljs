@@ -50,6 +50,15 @@
         attrs (assoc attrs :local->remote files#local->remove)]
     (pages/form:new sys attrs *form :api/file {:params {:file/id file-id}})))
 
+(defn files#modal:create [sys body]
+  (pages/modal:open sys [:h1.subtitle "Add a track"] body))
+
+(defn files#modal:version [sys body]
+  (pages/modal:open sys [:h1.subtitle "Upload a new version"] body))
+
+(defn files#nav:one [{:keys [nav]} file-id]
+  (nav/path-for nav :ui/file {:params {:file/id file-id}}))
+
 (defn files#res:fetch-all [sys project-id]
   (pages/res:fetch sys :api/project.files {:params {:project/id project-id}}))
 

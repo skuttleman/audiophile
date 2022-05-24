@@ -1,7 +1,6 @@
 (ns audiophile.ui.views.file.core
   (:require
     [audiophile.common.core.utils.logger :as log]
-    [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields.dropdown :as dd]
     [audiophile.ui.forms.core :as forms]
@@ -41,11 +40,10 @@
          ^{:key artifact-id} [audio/player sys attrs]]
         [comp/alert :error "File version could not be found"]))))
 
-(defn ^:private init [file {:keys [nav store] :as sys}]
-  (let [{:keys [handle] :as route} (:nav/route @store)
+(defn ^:private init [file {:keys [store] :as sys}]
+  (let [route (:nav/route @store)
         version-id (or (-> route :params :file-version-id)
-                       (doto (-> file :file/versions first :file-version/id)
-                         (->> (assoc-in route [:params :file-version-id]) (nav/replace! nav handle))))]
+                       (serv/files#nav:add-version! sys route file))]
     [page* sys file version-id]))
 
 (defn ^:private page [sys state]

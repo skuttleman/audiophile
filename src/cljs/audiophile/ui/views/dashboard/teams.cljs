@@ -3,12 +3,10 @@
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.resources.core :as res]
-    [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.store.actions :as act]
     [audiophile.ui.views.dashboard.services :as serv]
     [reagent.core :as r]))
 
@@ -49,14 +47,12 @@
          name])]
      [:p "You don't have any teams. Why not create one?"])])
 
-(defn tile [{:keys [store]} *res]
-  [comp/tile
-   [:h2.subtitle "Teams"]
-   [comp/with-resource [*res {:spinner/size :small}] list]
-   [comp/plain-button
-    {:class    ["is-primary"]
-     :on-click (fn [_]
-                 (store/dispatch! store
-                                  (act/modal#add! [:h1.subtitle "Create a team"]
-                                                  [::create {:*res *res}])))}
-    "Create one"]])
+(defn tile [sys *res]
+  (r/with-let [click (serv/teams#modal:create sys [::create {:*res *res}])]
+    [comp/tile
+     [:h2.subtitle "Teams"]
+     [comp/with-resource [*res {:spinner/size :small}] list]
+     [comp/plain-button
+      {:class    ["is-primary"]
+       :on-click click}
+      "Create one"]]))

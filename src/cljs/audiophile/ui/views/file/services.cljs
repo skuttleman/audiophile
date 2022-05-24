@@ -36,6 +36,10 @@
 (defn comments#res:fetch-all [sys file-id]
   (pages/res:fetch sys :api/file.comments {:params {:file/id file-id}}))
 
+(defn files#nav:add-version! [{:keys [nav]} {:keys [handle] :as route} file]
+  (doto (-> file :file/versions first :file-version/id)
+    (->> (assoc-in route [:params :file-version-id]) (nav/replace! nav handle))))
+
 (defn files#res:fetch-one [sys file-id]
   (pages/res:fetch sys :api/file {:params {:file/id file-id}}))
 

@@ -1,4 +1,4 @@
-(ns audiophile.ui.views.login.multi)
+(ns audiophile.ui.services.login)
 
 (defmulti form (fn [type _ _]
                  type))

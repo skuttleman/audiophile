@@ -9,7 +9,7 @@
                            :after-load  audiophile.ui.dev.core/init}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
-                           :layout    {:entries    [audiophile.ui.views.layout]
+                           :layout    {:entries    [audiophile.ui.views.layout.core]
                                        :depends-on #{:main}}
                            :login     {:entries    [audiophile.ui.views.login.core]
                                        :depends-on #{:main}}
@@ -26,7 +26,7 @@
            :compiler      {:optimizations :advanced}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.app/init}
-                           :layout    {:entries    [audiophile.ui.views.layout]
+                           :layout    {:entries    [audiophile.ui.views.layout.core]
                                        :depends-on #{:main}}
                            :login     {:entries    [audiophile.ui.views.login.core]
                                        :depends-on #{:main}}
@@ -43,7 +43,7 @@
            :compiler      {:optimizations :advanced}
            :module-loader true
            :modules       {:main      {:init-fn audiophile.ui.dev.core/init}
-                           :layout    {:entries    [audiophile.ui.views.layout]
+                           :layout    {:entries    [audiophile.ui.views.layout.core]
                                        :depends-on #{:main}}
                            :login     {:entries    [audiophile.ui.views.login.core]
                                        :depends-on #{:main}}

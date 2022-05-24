@@ -58,3 +58,7 @@
                                         (with-toast sys))))
                        (or (:local->remote attrs) identity)
                        (or (:remote->local attrs) identity))))
+
+(defn modal:open [{:keys [store]} header body]
+  (fn [_]
+    (store/dispatch! store (act/modal#add! header body))))

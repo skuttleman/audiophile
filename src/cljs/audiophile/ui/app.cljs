@@ -12,7 +12,7 @@
     audiophile.ui.store.async
     audiophile.ui.store.mutations))
 
-(def layout (mod/lazy-component audiophile.ui.views.layout/root))
+(def layout (mod/lazy-component audiophile.ui.views.layout.core/root))
 
 (def login (mod/lazy-component audiophile.ui.views.login.core/root))
 

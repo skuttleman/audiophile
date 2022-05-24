@@ -25,3 +25,7 @@
                                   (into {} (mapcat (comp :conflicts :error/details)))
                                   (reset! *conflicts)))}]
     (pages/form:new sys attrs *form :api/users)))
+
+(defn users#nav:login! [{:keys [nav]} path]
+  (fn [_]
+    (nav/goto! nav :auth/login {:params {:redirect-uri path}})))

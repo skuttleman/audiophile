@@ -1,10 +1,10 @@
-(ns audiophile.ui.views.layout
+(ns audiophile.ui.views.layout.core
   (:require
-    [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.components.notices :as not]
     [audiophile.ui.utils.modulizer :as mod]
+    [audiophile.ui.views.layout.services :as serv]
     [reagent.core :as r]))
 
 (def dashboard (mod/lazy-component audiophile.ui.views.dashboard.core/root))
@@ -13,23 +13,23 @@
 
 (def project (mod/lazy-component audiophile.ui.views.project.core/root))
 
-(defn ^:private logout [{:keys [nav text] :as attrs}]
-  [:a (-> attrs
-          (select-keys #{:class})
-          (assoc :href "#"
-                 :on-click (fn [_]
-                             (nav/goto! nav :auth/logout)))
-          (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
-   (or text "Logout")])
+(defn ^:private logout [{:keys [text] :as attrs}]
+  (r/with-let [logout (serv/nav#logout! attrs)]
+    [:a (-> attrs
+            (select-keys #{:class})
+            (assoc :href "#"
+                   :on-click logout)
+            (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
+     (or text "Logout")]))
 
-(defn ^:private header [{:keys [nav]} state]
+(defn ^:private header [{:keys [nav] :as sys} state]
   (r/with-let [shown? (r/atom false)]
     (let [handle (get-in state [:nav/route :handle])
           user (:user/profile state)
           text (if (= (:token/type user) :token/signup)
                  "Start over"
                  "Logout")
-          home (nav/path-for nav :ui/home)]
+          home (serv/nav#home sys)]
       [:header.header
        [:nav.navbar
         {:role "navigation" :aria-label "main navigation"}

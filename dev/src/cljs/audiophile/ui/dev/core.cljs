@@ -11,9 +11,9 @@
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.forms.submittable :as form.submit]
+    [audiophile.ui.services.login :as login]
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.system.core :as sys]
-    [audiophile.ui.views.login.multi :as mlogin]
     [clojure.pprint :as pp]
     [com.ben-allred.vow.core :as v]
     [integrant.core :as ig]
@@ -56,7 +56,7 @@
   (status [_]
     :init))
 
-(defmethod mlogin/form :dev
+(defmethod login/form :dev
   [_ {:keys [nav]} route]
   (r/with-let [*resource (->LoginResource nav route)
                *form (form.submit/create (form.std/create nil login-validator) *resource)]
