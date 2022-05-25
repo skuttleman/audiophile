@@ -79,12 +79,11 @@
             (stubs/init! ch)
             (stubs/use! tx :execute!
                         (ex-info "Executor" {}))
-            (is (thrown? Throwable
-                         (int/handle! handler
-                                      {:command/type :artifact/create!
-                                       :command/data {}
-                                       :command/ctx  {:user/id    user-id
-                                                      :request/id request-id}})))
+            (int/handle! handler
+                         {:command/type :artifact/create!
+                          :command/data {}
+                          :command/ctx  {:user/id    user-id
+                                         :request/id request-id}})
 
             (testing "does not emit a successful event"
               (empty? (stubs/calls ch :publish!)))
@@ -111,12 +110,11 @@
             (stubs/init! ch)
             (stubs/use! ch :send!
                         (ex-info "Channel" {}))
-            (is (thrown? Throwable
-                         (int/handle! handler
-                                      {:command/type :artifact/create!
-                                       :command/data {}
-                                       :command/ctx  {:user/id    user-id
-                                                      :request/id request-id}})))
+            (int/handle! handler
+                         {:command/type :artifact/create!
+                          :command/data {}
+                          :command/ctx  {:user/id    user-id
+                                         :request/id request-id}})
 
             (testing "emits a command-failed event"
               (let [{event-id :event/id :as event} (-> ch
@@ -248,12 +246,11 @@
               (stubs/init! ch)
               (stubs/use! tx :execute!
                           (ex-info "Executor" {}))
-              (is (thrown? Throwable
-                           (int/handle! handler
-                                        {:command/type :file/create!
-                                         :command/data {}
-                                         :command/ctx  {:user/id    user-id
-                                                        :request/id request-id}})))
+              (int/handle! handler
+                           {:command/type :file/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "does not emit a successful event"
                 (empty? (stubs/calls ch :send!)))
@@ -283,12 +280,11 @@
                           [file])
               (stubs/use! ch :send!
                           (ex-info "Channel" {}))
-              (is (thrown? Throwable
-                           (int/handle! handler
-                                        {:command/type :file/create!
-                                         :command/data {}
-                                         :command/ctx  {:user/id    user-id
-                                                        :request/id request-id}})))
+              (int/handle! handler
+                           {:command/type :file/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "emits a command-failed event"
                 (let [{event-id :event/id :as event} (-> ch
@@ -388,12 +384,11 @@
               (stubs/init! ch)
               (stubs/use! tx :execute!
                           (ex-info "Executor" {}))
-              (is (thrown? Throwable
-                           (int/handle! handler
-                                        {:command/type :file-version/create!
-                                         :command/data {}
-                                         :command/ctx  {:user/id    user-id
-                                                        :request/id request-id}})))
+              (int/handle! handler
+                           {:command/type :file-version/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "does not emit a successful event"
                 (empty? (stubs/calls ch :send!)))
@@ -422,12 +417,11 @@
                           [{:id "file-version-id"}])
               (stubs/use! ch :send!
                           (ex-info "Channel" {}))
-              (is (thrown? Throwable
-                           (int/handle! handler
-                                        {:command/type :file-version/create!
-                                         :command/data {}
-                                         :command/ctx  {:user/id    user-id
-                                                        :request/id request-id}})))
+              (int/handle! handler
+                           {:command/type :file-version/create!
+                            :command/data {}
+                            :command/ctx  {:user/id    user-id
+                                           :request/id request-id}})
 
               (testing "emits a command-failed event"
                 (let [{event-id :event/id :as event} (-> ch

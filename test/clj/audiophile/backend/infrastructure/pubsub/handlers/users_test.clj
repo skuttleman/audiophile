@@ -72,12 +72,11 @@
           (stubs/init! events)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (is (thrown? Throwable
-                       (int/handle! handler
-                                    {:command/type :user/create!
-                                     :command/data {}
-                                     :command/ctx  {:user/id    user-id
-                                                    :request/id request-id}})))
+          (int/handle! handler
+                       {:command/type :user/create!
+                        :command/data {}
+                        :command/ctx  {:user/id    user-id
+                                       :request/id request-id}})
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> events
@@ -103,12 +102,11 @@
                       [{:id user-id}])
           (stubs/use! events :send!
                       (ex-info "Channel" {}))
-          (is (thrown? Throwable
-                       (int/handle! handler
-                                    {:command/type :user/create!
-                                     :command/data {}
-                                     :command/ctx  {:user/id    signup-id
-                                                    :request/id request-id}})))
+          (int/handle! handler
+                       {:command/type :user/create!
+                        :command/data {}
+                        :command/ctx  {:user/id    signup-id
+                                       :request/id request-id}})
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> events
@@ -122,8 +120,7 @@
                       :event/type       :command/failed
                       :event/data       {:error/command :user/create!
                                          :error/reason  "Channel"}
-                      :event/emitted-by user-id
+                      :event/emitted-by nil
                       :event/ctx        {:request/id request-id
-                                         :signup/id  signup-id
-                                         :user/id    user-id}}
+                                         :signup/id  signup-id}}
                      event)))))))))

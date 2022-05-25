@@ -1,11 +1,11 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.files
   (:require
+    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.api.repositories.files.core :as rfiles]
     [audiophile.backend.domain.interactors.protocols :as pint]
-    [audiophile.backend.api.pubsub.core :as ps]
-    [audiophile.common.core.utils.logger :as log]
-    [audiophile.common.core.utils.uuids :as uuids]))
+    [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
+    [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
   (if (rfiles/insert-artifact-access? executor artifact opts)
@@ -36,18 +36,10 @@
             :file/create! ["file" :file/id create-file*]
             :file-version/create! ["file-version" :file-version/id create-file-version*])]
       (log/with-ctx [this :CP]
-        (try
+        (hc/with-command-failed! [ch type ctx]
           (log/info "saving" data-type "to db" command-id)
           (let [payload (repos/transact! repo create* data ctx)]
-            (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx))
-          (catch Throwable ex
-            (ps/command-failed! ch
-                                (or (:request/id ctx)
-                                    (uuids/random))
-                                (assoc ctx
-                                       :error/command type
-                                       :error/reason (.getMessage ex)))
-            (throw ex)))))))
+            (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx)))))))
 
 (defn msg-handler [{:keys [ch repo]}]
   (->FileCommandHandler repo ch))

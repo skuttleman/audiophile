@@ -91,10 +91,9 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (is (thrown? Throwable
-                       (int/handle! handler
-                                    {:command/type :comment/create!
-                                     :command/ctx  {:user/id user-id :request/id request-id}})))
+          (int/handle! handler
+                       {:command/type :comment/create!
+                        :command/ctx  {:user/id user-id :request/id request-id}})
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> ch
@@ -122,11 +121,10 @@
                       [comment])
           (stubs/use! ch :send!
                       (ex-info "Channel" {}))
-          (is (thrown? Throwable
-                       (int/handle! handler
-                                    {:command/type :comment/create!
-                                     :command/ctx  {:user/id    user-id
-                                                    :request/id request-id}})))
+          (int/handle! handler
+                       {:command/type :comment/create!
+                        :command/ctx  {:user/id    user-id
+                                       :request/id request-id}})
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> ch

@@ -51,14 +51,14 @@
 (defmethod ig/init-key :audiophile.repositories/datasource [_ cfg]
   (db/datasource cfg))
 
+(defmethod ig/halt-key! :audiophile.repositories/datasource [_ cfg]
+  (db/datasource#close cfg))
+
 (defmethod ig/init-key :audiophile.repositories.comments/accessor [_ cfg]
   (comments/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.comments/->executor [_ cfg]
   (db.comments/->comment-executor cfg))
-
-(defmethod ig/init-key :audiophile.repositories/datasource#close [_ cfg]
-  (db/datasource#close cfg))
 
 (defmethod ig/init-key :audiophile.repositories.events/accessor [_ cfg]
   (events/accessor cfg))

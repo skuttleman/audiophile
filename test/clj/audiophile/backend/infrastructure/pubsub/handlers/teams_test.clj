@@ -74,12 +74,11 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (is (thrown? Throwable
-                       (int/handle! handler
-                                    {:command/type :team/create!
-                                     :command/data {}
-                                     :command/ctx  {:user/id    user-id
-                                                    :request/id request-id}})))
+          (int/handle! handler
+                       {:command/type :team/create!
+                        :command/data {}
+                        :command/ctx  {:user/id    user-id
+                                       :request/id request-id}})
 
           (testing "does not emit a successful event"
             (empty? (stubs/calls ch :send!)))
@@ -108,12 +107,11 @@
                       [{:id "team-id"}])
           (stubs/use! ch :send!
                       (ex-info "Channel" {}))
-          (is (thrown? Throwable
-                       (int/handle! handler
-                                    {:command/type :team/create!
-                                     :command/data {}
-                                     :command/ctx  {:user/id    user-id
-                                                    :request/id request-id}})))
+          (int/handle! handler
+                       {:command/type :team/create!
+                        :command/data {}
+                        :command/ctx  {:user/id    user-id
+                                       :request/id request-id}})
 
           (testing "emits a command-failed event"
             (let [{event-id :event/id :as event} (-> ch

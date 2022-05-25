@@ -22,7 +22,9 @@
                                                                   :login-token  token}}))
                :on-error   (fn [result]
                              (->> result
-                                  (into {} (mapcat (comp :conflicts :error/details)))
+                                  (into {} (comp (map :error/details)
+                                                 (mapcat :conflicts)
+                                                 (map (fn [[k v]] [[k] v]))))
                                   (reset! *conflicts)))}]
     (pages/form:new sys attrs *form :api/users)))
 
