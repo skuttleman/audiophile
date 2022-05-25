@@ -11,7 +11,7 @@
   (fn [request]
     (pint/login auth request)))
 
-(defmethod selectors/select [:get :auth/login]
+(defmethod selectors/select [:get :routes.auth/login]
   [_ request]
   (let [[state params] (maps/extract-keys (get-in request [:nav/route :params])
                                           #{:redirect-uri})]
@@ -24,7 +24,7 @@
   (fn [request]
     (pint/logout auth request)))
 
-(defmethod selectors/select [:get :auth/logout]
+(defmethod selectors/select [:get :routes.auth/logout]
   [_ request]
   (get-in request [:nav/route :params]))
 
@@ -39,6 +39,6 @@
   (fn [request]
     (pint/callback auth request)))
 
-(defmethod selectors/select [:get :auth/callback]
+(defmethod selectors/select [:get :routes.auth/callback]
   [_ request]
   (get-in request [:nav/route :params]))

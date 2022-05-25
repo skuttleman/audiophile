@@ -32,7 +32,7 @@
   papp/IOAuthProvider
   (redirect-uri [_ params]
     (str base-url (nav/path-for nav
-                                :auth/callback
+                                :routes.auth/callback
                                 {:params (set/rename-keys params {:email :mock-email})})))
   (profile [_ opts]
     {:email (:mock-email opts)}))

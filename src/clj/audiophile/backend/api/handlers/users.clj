@@ -13,7 +13,7 @@
     (let [[opts data] (maps/extract-keys data #{:request/id :user/id})]
       (int/create! interactor data opts))))
 
-(defmethod selectors/select [:post :api/users]
+(defmethod selectors/select [:post :routes.api/users]
   [_ {user :auth/user :as request}]
   (-> request
       (get-in [:body :data])
@@ -27,7 +27,7 @@
   (fn [data]
     (int/query-one interactor data)))
 
-(defmethod selectors/select [:get :api/profile]
+(defmethod selectors/select [:get :routes.api/users.profile]
   [_ {user :auth/user}]
   (-> user
       (select-keys #{:user/id :user/email})

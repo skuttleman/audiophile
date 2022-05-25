@@ -11,7 +11,7 @@
   (fn [data]
     (int/query-many interactor data)))
 
-(defmethod selectors/select [:get :api/file.comments]
+(defmethod selectors/select [:get :routes.api/files:id.comments]
   [_ request]
   {:user/id   (get-in request [:auth/user :user/id])
    :token/aud (get-in request [:auth/user :jwt/aud])
@@ -24,7 +24,7 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create! interactor data opts))))
 
-(defmethod selectors/select [:post :api/comments]
+(defmethod selectors/select [:post :routes.api/comments]
   [_ request]
   (-> request
       (get-in [:body :data])

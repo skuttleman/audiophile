@@ -4,58 +4,53 @@
 
 (def auth-routes
   ["/auth"
-   [["/callback" :auth/callback]
-    ["/login" :auth/login]
-    ["/logout" :auth/logout]
-    ["/details" :auth/details]
-    [true :auth/not-found]]])
+   [["/callback" :routes.auth/callback]
+    ["/login" :routes.auth/login]
+    ["/logout" :routes.auth/logout]
+    [true :routes.auth/not-found]]])
 
 (def api-routes
   ["/api"
-   [["/ws" :ws/connection]
+   [["/ws" :routes.ws/connection]
     ["/artifacts"
-     [["" :api/artifacts]
-      [["/" [uuids/regex :artifact/id]] :api/artifact]]]
+     [["" :routes.api/artifact]
+      [["/" [uuids/regex :artifact/id]] :routes.api/artifacts:id]]]
     ["/comments"
-     [["" :api/comments]]]
+     [["" :routes.api/comments]]]
     ["/events"
-     [["" :api/events]]]
+     [["" :routes.api/events]]]
     ["/files"
      [[["/" [uuids/regex :file/id]]
-       [["" :api/file]
-        ["/comments" :api/file.comments]]]]]
+       [["" :routes.api/files:id]
+        ["/comments" :routes.api/files:id.comments]]]]]
     ["/projects"
-     [["" :api/projects]
+     [["" :routes.api/projects]
       [["/" [uuids/regex :project/id]]
-       [["" :api/project]
+       [["" :routes.api/projects:id]
         ["/files"
-         [["" :api/project.files]]]]]]]
+         [["" :routes.api/projects:id.files]]]]]]]
     ["/teams"
-     [["" :api/teams]
-      [["/" [uuids/regex :team/id]] :api/team]]]
+     [["" :routes.api/teams]
+      [["/" [uuids/regex :team/id]] :routes.api/teams:id]]]
     ["/users"
-     [["/profile" :api/profile]
-      ["" :api/users]]]
-    [true :api/not-found]]])
+     [["" :routes.api/users]
+      ["/profile" :routes.api/users.profile]]]
+    [true :routes.api/not-found]]])
 
 (def ui-routes
   [""
-   [["/" :ui/home]
+   [["/" :routes.ui/home]
     ["/files"
-     [[["/" [uuids/regex :file/id]] :ui/file]]]
-    ["/login" :ui/login]
+     [[["/" [uuids/regex :file/id]] :routes.ui/files:id]]]
+    ["/login" :routes.ui/login]
     ["/projects"
-     [["" :ui/projects]
-      [["/" [uuids/regex :project/id]] :ui/project]]]
-    ["/teams"
-     [["" :ui/teams]
-      [["/" [uuids/regex :team/id]] :ui/team]]]]])
+     [[["/" [uuids/regex :project/id]] :routes.ui/projects:id]]]]])
 
 (def resource-routes
   [""
-   [["/health" :resources/health]
-    ["/js" [[true :resources/js]]]
-    ["/css" [[true :resources/css]]]]])
+   [["/health" :routes.resources/health]
+    ["/js" [[true :routes.resources/js]]]
+    ["/css" [[true :routes.resources/css]]]]])
 
 (def all
   [""
@@ -63,4 +58,4 @@
     api-routes
     ui-routes
     resource-routes
-    [true :route/not-found]]])
+    [true :routes/not-found]]])

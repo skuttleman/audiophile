@@ -50,8 +50,8 @@
 (deftype LoginResource [nav route]
   pres/IResource
   (request! [_ {:keys [email]}]
-    (nav/goto! nav :auth/login {:params {:redirect-uri (:path route)
-                                         :email        email}})
+    (nav/goto! nav :routes.auth/login {:params {:redirect-uri (:path route)
+                                                :email        email}})
     (v/resolve))
   (status [_]
     :init))

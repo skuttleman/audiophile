@@ -59,7 +59,7 @@
 
 (defn as-async [request system handler]
   (with-ws [ch (-> request
-                   (get system :ws/connection)
+                   (get system :routes.ws/connection)
                    as-ws
                    handler)]
     (let [ws (async/pipe ch (async/chan 10 (remove #{[:conn/ping] [:conn/pong]})))

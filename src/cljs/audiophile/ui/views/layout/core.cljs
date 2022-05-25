@@ -59,7 +59,7 @@
                      :class    ["navbar-item"]}]]]
           [:ul.navbar-start.oversize.tabs
            [:li
-            {:class [(when (= :ui/home handle) "is-active")]}
+            {:class [(when (= :routes.ui/home handle) "is-active")]}
             [:a.navbar-item {:href home} "Home"]]]]]
         [:div.navbar-end.oversize
          [:div.navbar-item
@@ -69,9 +69,9 @@
 (defn ^:private root* [sys state]
   (let [handle (get-in state [:nav/route :handle])
         comp (case handle
-               :ui/home @dashboard
-               :ui/file @file
-               :ui/project @project
+               :routes.ui/home @dashboard
+               :routes.ui/files:id @file
+               :routes.ui/projects:id @project
                comp/not-found)]
     [comp sys state]))
 

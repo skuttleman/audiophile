@@ -14,24 +14,24 @@
   (val/validator {:spec specs/team:create}))
 
 (defn projects#res:fetch-all [sys]
-  (pages/res:fetch sys :api/projects))
+  (pages/res:fetch sys :routes.api/projects))
 
 (defn projects#form:new [sys attrs team-id]
   (let [*form (form.std/create {:project/team-id team-id} projects#validator:new)]
-    (pages/form:new sys attrs *form :api/projects)))
+    (pages/form:new sys attrs *form :routes.api/projects)))
 
 (defn projects#modal:create [sys body]
   (pages/modal:open sys [:h1.subtitle "Create a project"] body))
 
 (defn projects#nav:ui [{:keys [nav]} project-id]
-  (nav/path-for nav :ui/project {:params {:project/id project-id}}))
+  (nav/path-for nav :routes.ui/projects:id {:params {:project/id project-id}}))
 
 (defn teams#res:fetch-all [sys]
-  (pages/res:fetch sys :api/teams))
+  (pages/res:fetch sys :routes.api/teams))
 
 (defn teams#form:new [sys attrs]
   (let [*form (form.std/create {:team/type :COLLABORATIVE} teams#validator:new)]
-    (pages/form:new sys attrs *form :api/teams)))
+    (pages/form:new sys attrs *form :routes.api/teams)))
 
 (defn teams#modal:create [sys body]
   (pages/modal:open sys [:h1.subtitle "Create a project"] body))

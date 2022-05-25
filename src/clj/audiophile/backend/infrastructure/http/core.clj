@@ -30,11 +30,11 @@
   [_]
   (ring/error ::http/internal-server-error "internal server error"))
 
-(defn ^:private route-dispatch [route-table request]
+(defn ^:private route-dispatch [route-table {:keys [request-method] :as request}]
   (let [route (get-in request [:nav/route :handle])]
-    (->> [[(:request-method request) route]
+    (->> [[request-method route]
           [:any route]
-          [(:request-method request) :ui/home]]
+          [request-method :routes.ui/home]]
          (filter route-table)
          first)))
 

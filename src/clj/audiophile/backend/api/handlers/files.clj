@@ -14,7 +14,7 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create-artifact! interactor data opts))))
 
-(defmethod selectors/select [:post :api/artifacts]
+(defmethod selectors/select [:post :routes.api/artifact]
   [_ {:keys [headers] :as request}]
   (-> request
       (get-in [:params "files[]"])
@@ -30,7 +30,7 @@
   (fn [data]
     (int/query-many interactor data)))
 
-(defmethod selectors/select [:get :api/project.files]
+(defmethod selectors/select [:get :routes.api/projects:id.files]
   [_ request]
   {:user/id    (get-in request [:auth/user :user/id])
    :token/aud  (get-in request [:auth/user :jwt/aud])
@@ -42,7 +42,7 @@
   (fn [data]
     (int/query-one interactor data)))
 
-(defmethod selectors/select [:get :api/file]
+(defmethod selectors/select [:get :routes.api/files:id]
   [_ request]
   {:user/id   (get-in request [:auth/user :user/id])
    :token/aud (get-in request [:auth/user :jwt/aud])
@@ -55,7 +55,7 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id :project/id})]
       (int/create-file! interactor data opts))))
 
-(defmethod selectors/select [:post :api/project.files]
+(defmethod selectors/select [:post :routes.api/projects:id.files]
   [_ request]
   (-> request
       (get-in [:body :data])
@@ -71,7 +71,7 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id :file/id})]
       (int/create-file-version! interactor data opts))))
 
-(defmethod selectors/select [:post :api/file]
+(defmethod selectors/select [:post :routes.api/files:id]
   [_ request]
   (-> request
       (get-in [:body :data])
@@ -86,7 +86,7 @@
   (fn [data]
     (int/get-artifact interactor data)))
 
-(defmethod selectors/select [:get :api/artifact]
+(defmethod selectors/select [:get :routes.api/artifacts:id]
   [_ request]
   {:user/id     (get-in request [:auth/user :user/id])
    :token/aud   (get-in request [:auth/user :jwt/aud])

@@ -31,7 +31,7 @@
 
 (defn ^:private home-path [nav params]
   (nav/path-for nav
-                :ui/home
+                :routes.ui/home
                 (when params
                   {:params params})))
 

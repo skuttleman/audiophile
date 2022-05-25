@@ -20,7 +20,7 @@
           (ihttp/with-ws [ch (-> {}
                                  (ihttp/login system {:user/id (uuids/random)})
                                  (ihttp/get system
-                                            :ws/connection
+                                            :routes.ws/connection
                                             {:params {:content-type mime-type
                                                       :accept       mime-type}})
                                  ihttp/as-ws
@@ -33,7 +33,7 @@
         (testing "when the request is not authenticated"
           (let [response (-> {}
                              (ihttp/get system
-                                        :ws/connection
+                                        :routes.ws/connection
                                         {:params {:content-type mime-type
                                                   :accept       mime-type}})
                              ihttp/as-ws

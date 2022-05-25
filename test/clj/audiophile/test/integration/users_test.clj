@@ -18,7 +18,7 @@
         (testing "when the profile is found"
           (let [response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/profile)
+                             (ihttp/get system :routes.api/users.profile)
                              handler)]
             (testing "returns the profile"
               (is (http/success? response))
@@ -30,7 +30,7 @@
         (testing "when the auth provider interactions fail"
           (let [response (-> {}
                              (ihttp/login system {:user/id (uuids/random)})
-                             (ihttp/get system :api/profile)
+                             (ihttp/get system :routes.api/users.profile)
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))

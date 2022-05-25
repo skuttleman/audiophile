@@ -30,7 +30,7 @@
                              "another-pin" {:email "unknown@user.com"})))
         (testing "when the auth provider interactions succeed"
           (let [response (-> {}
-                             (ihttp/get system :auth/callback {:params {:code "secret-pin-12345"}})
+                             (ihttp/get system :routes.auth/callback {:params {:code "secret-pin-12345"}})
                              handler)
                 base-url (int/component system :env/base-url#ui)
                 jwt-serde (int/component system :serdes/jwt)
@@ -46,7 +46,7 @@
         ;; disable signup flow
         #_(testing "when the auth provider provides an unknown profile"
             (let [response (-> {}
-                               (ihttp/get system :auth/callback {:params {:code "another-pin"}})
+                               (ihttp/get system :routes.auth/callback {:params {:code "another-pin"}})
                                handler)
                   base-url (int/component system :env/base-url#ui)
                   jwt-serde (int/component system :serdes/jwt)
@@ -66,7 +66,7 @@
               (stubs/set-stub! :-token nil))
           (testing "redirects and removes token cookie"
             (let [response (-> {}
-                               (ihttp/get system :auth/callback {:params {:code "bad-pin"}})
+                               (ihttp/get system :routes.auth/callback {:params {:code "bad-pin"}})
                                handler)
                   base-url (int/component system :env/base-url#ui)
                   cookies (tu/decode-cookies response)
@@ -87,7 +87,7 @@
           (let [jwt-serde (int/component system :serdes/jwt)
                 login-token (jwt/login-token jwt-serde user)
                 response (-> {}
-                             (ihttp/get system :auth/login {:params {:login-token login-token}})
+                             (ihttp/get system :routes.auth/login {:params {:login-token login-token}})
                              handler)
                 base-url (int/component system :env/base-url#ui)
                 cookies (tu/decode-cookies response)]
@@ -118,7 +118,7 @@
                              (dissoc :user/id :user/email)
                              ihttp/body-data
                              (ihttp/login system signup {:jwt/claims {:aud #{:token/signup}}})
-                             (ihttp/post system :api/users)
+                             (ihttp/post system :routes.api/users)
                              (ihttp/as-async system handler))
                 token (get-in response [:body :data :login/token])
                 claims (serdes/deserialize jwt-serde token)]
@@ -139,7 +139,7 @@
                              (dissoc :user/id :user/email)
                              ihttp/body-data
                              (ihttp/login system signup {:jwt/claims {:aud #{:token/signup}}})
-                             (ihttp/post system :api/users)
+                             (ihttp/post system :routes.api/users)
                              (ihttp/as-async system handler))]
             (testing "returns an error"
               (is (http/client-error? response))

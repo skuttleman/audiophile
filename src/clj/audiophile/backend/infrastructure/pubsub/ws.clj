@@ -102,7 +102,7 @@
                              :on-close   (fn [ch _]
                                            (on-close! ctx ch))}))))
 
-(defmethod selectors/select [:get :ws/connection]
+(defmethod selectors/select [:get :routes.ws/connection]
   [_ request]
   (-> request
       (assoc :user/id (get-in request [:auth/user :user/id])

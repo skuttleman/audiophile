@@ -20,7 +20,7 @@
 (defn artifacts#res:fetch-one [{:keys [http-client nav]}]
   (ires/base (fn [{artifact-id :artifact/id}]
                (http/get http-client
-                         (nav/path-for nav :api/artifact {:params {:artifact/id artifact-id}})
+                         (nav/path-for nav :routes.api/artifacts:id {:params {:artifact/id artifact-id}})
                          {:response-type :blob}))))
 
 (defn comments#form:new [sys *comments version-id]
@@ -31,17 +31,17 @@
                                       (res/request! *comments))
                      :remote->local (constantly init-val)}
                     *form
-                    :api/comments)))
+                    :routes.api/comments)))
 
 (defn comments#res:fetch-all [sys file-id]
-  (pages/res:fetch sys :api/file.comments {:params {:file/id file-id}}))
+  (pages/res:fetch sys :routes.api/files:id.comments {:params {:file/id file-id}}))
 
 (defn files#nav:add-version! [{:keys [nav]} {:keys [handle] :as route} file]
   (doto (-> file :file/versions first :file-version/id)
     (->> (assoc-in route [:params :file-version-id]) (nav/replace! nav handle))))
 
 (defn files#res:fetch-one [sys file-id]
-  (pages/res:fetch sys :api/file {:params {:file/id file-id}}))
+  (pages/res:fetch sys :routes.api/files:id {:params {:file/id file-id}}))
 
 (defn versions#form:selector [{:keys [nav store]} version-id]
   (doto (form.watch/create {:file-version-id version-id})

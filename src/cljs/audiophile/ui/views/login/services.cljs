@@ -18,16 +18,16 @@
         *form (form.std/create (assoc profile :user/handle handle)
                                (pages/conflict-validator users#validator:signup *conflicts))
         attrs {:on-success (fn [{:login/keys [token]}]
-                             (nav/goto! nav :auth/login {:params {:redirect-uri (:path route)
-                                                                  :login-token  token}}))
+                             (nav/goto! nav :routes.auth/login {:params {:redirect-uri (:path route)
+                                                                         :login-token  token}}))
                :on-error   (fn [result]
                              (->> result
                                   (into {} (comp (map :error/details)
                                                  (mapcat :conflicts)
                                                  (map (fn [[k v]] [[k] v]))))
                                   (reset! *conflicts)))}]
-    (pages/form:new sys attrs *form :api/users)))
+    (pages/form:new sys attrs *form :routes.api/users)))
 
 (defn users#nav:login! [{:keys [nav]} path]
   (fn [_]
-    (nav/goto! nav :auth/login {:params {:redirect-uri path}})))
+    (nav/goto! nav :routes.auth/login {:params {:redirect-uri path}})))

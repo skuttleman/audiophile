@@ -11,7 +11,7 @@
   (fn [data]
     (int/query-many interactor data)))
 
-(defmethod selectors/select [:get :api/events]
+(defmethod selectors/select [:get :routes.api/events]
   [_ request]
   (-> {:user/id   (get-in request [:auth/user :user/id])
        :token/aud (get-in request [:auth/user :jwt/aud])}

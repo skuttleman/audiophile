@@ -21,7 +21,7 @@
                 project-id (:project/id (int/lookup-project system "Project Seed"))
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/projects)
+                             (ihttp/get system :routes.api/projects)
                              handler)]
             (testing "returns projects"
               (is (http/success? response))
@@ -35,7 +35,7 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/projects)
+                             (ihttp/get system :routes.api/projects)
                              handler)]
             (testing "returns no projects"
               (is (http/success? response))
@@ -43,7 +43,7 @@
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/projects)
+                             (ihttp/get system :routes.api/projects)
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -59,7 +59,7 @@
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/project {:params {:project/id project-id}})
+                             (ihttp/get system :routes.api/projects:id {:params {:project/id project-id}})
                              handler)]
             (testing "returns projects"
               (is (http/success? response))
@@ -71,14 +71,14 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/project {:params {:project/id project-id}})
+                             (ihttp/get system :routes.api/projects:id {:params {:project/id project-id}})
                              handler)]
             (testing "returns no projects"
               (is (http/client-error? response)))))
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/project {:params {:project/id project-id}})
+                             (ihttp/get system :routes.api/projects:id {:params {:project/id project-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -96,7 +96,7 @@
                               :project/team-id team-id}
                              ihttp/body-data
                              (ihttp/login system user)
-                             (ihttp/post system :api/projects)
+                             (ihttp/post system :routes.api/projects)
                              (ihttp/as-async system handler))]
             (testing "creates the project"
               (is (http/success? response))
@@ -108,7 +108,7 @@
             (testing "and when querying for projects"
               (let [response (-> {}
                                  (ihttp/login system user)
-                                 (ihttp/get system :api/projects)
+                                 (ihttp/get system :routes.api/projects)
                                  handler)]
                 (testing "includes the new project"
                   (assert/has? {:project/team-id team-id
@@ -122,7 +122,7 @@
                               :project/team-id team-id}
                              ihttp/body-data
                              (ihttp/login system user)
-                             (ihttp/post system :api/projects)
+                             (ihttp/post system :routes.api/projects)
                              (ihttp/as-async system handler))]
             (testing "fails"
               (is (http/client-error? response)))))
@@ -131,7 +131,7 @@
           (let [response (-> {:project/name    "project name"
                               :project/team-id team-id}
                              ihttp/body-data
-                             (ihttp/post system :api/projects)
+                             (ihttp/post system :routes.api/projects)
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))

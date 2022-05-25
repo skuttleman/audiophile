@@ -34,7 +34,7 @@
   (ires/http http-client
              (fn [{:keys [files] :as opts}]
                (-> {:method           :post
-                    :url              (nav/path-for nav :api/artifacts)
+                    :url              (nav/path-for nav :routes.api/artifact)
                     :http/async?      true
                     :multipart-params (for [file files]
                                         ["files[]" file])}
@@ -43,12 +43,12 @@
 (defn files#form:new [sys attrs project-id]
   (let [*form (form.std/create nil files#validator:new)
         attrs (assoc attrs :local->remote files#local->remove)]
-    (pages/form:new sys attrs *form :api/project.files {:params {:project/id project-id}})))
+    (pages/form:new sys attrs *form :routes.api/projects:id.files {:params {:project/id project-id}})))
 
 (defn files#form:version [sys attrs file-id]
   (let [*form (form.std/create nil files#validator:version)
         attrs (assoc attrs :local->remote files#local->remove)]
-    (pages/form:new sys attrs *form :api/file {:params {:file/id file-id}})))
+    (pages/form:new sys attrs *form :routes.api/files:id {:params {:file/id file-id}})))
 
 (defn files#modal:create [sys body]
   (pages/modal:open sys [:h1.subtitle "Add a track"] body))
@@ -57,13 +57,13 @@
   (pages/modal:open sys [:h1.subtitle "Upload a new version"] body))
 
 (defn files#nav:one [{:keys [nav]} file-id]
-  (nav/path-for nav :ui/file {:params {:file/id file-id}}))
+  (nav/path-for nav :routes.ui/files:id {:params {:file/id file-id}}))
 
 (defn files#res:fetch-all [sys project-id]
-  (pages/res:fetch sys :api/project.files {:params {:project/id project-id}}))
+  (pages/res:fetch sys :routes.api/projects:id.files {:params {:project/id project-id}}))
 
 (defn projects#res:fetch-one [sys project-id]
-  (pages/res:fetch sys :api/project {:params {:project/id project-id}}))
+  (pages/res:fetch sys :routes.api/projects:id {:params {:project/id project-id}}))
 
 (defn teams#res:fetch-one [sys team-id]
-  (pages/res:fetch sys :api/team {:params {:team/id team-id}}))
+  (pages/res:fetch sys :routes.api/teams:id {:params {:team/id team-id}}))

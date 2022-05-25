@@ -21,7 +21,7 @@
                 team-id (:team/id (int/lookup-team system "Team Seed"))
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/teams)
+                             (ihttp/get system :routes.api/teams)
                              handler)]
             (testing "returns teams"
               (is (http/success? response))
@@ -36,7 +36,7 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/teams)
+                             (ihttp/get system :routes.api/teams)
                              handler)]
             (testing "returns no teams"
               (is (http/success? response))
@@ -44,7 +44,7 @@
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/teams)
+                             (ihttp/get system :routes.api/teams)
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -60,7 +60,7 @@
           (let [user (int/lookup-user system "joe@example.com")
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/team {:params {:team/id team-id}})
+                             (ihttp/get system :routes.api/teams:id {:params {:team/id team-id}})
                              handler)]
             (testing "returns teams"
               (is (http/success? response))
@@ -72,14 +72,14 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/team {:params {:team/id team-id}})
+                             (ihttp/get system :routes.api/teams:id {:params {:team/id team-id}})
                              handler)]
             (testing "returns no teams"
               (is (http/client-error? response)))))
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/team {:params {:team/id team-id}})
+                             (ihttp/get system :routes.api/teams:id {:params {:team/id team-id}})
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
@@ -96,7 +96,7 @@
                               :team/type :COLLABORATIVE}
                              ihttp/body-data
                              (ihttp/login system user)
-                             (ihttp/post system :api/teams)
+                             (ihttp/post system :routes.api/teams)
                              (ihttp/as-async system handler))]
             (testing "creates the team"
               (is (http/success? response))
@@ -107,7 +107,7 @@
             (testing "and when querying for teams"
               (let [response (-> {}
                                  (ihttp/login system user)
-                                 (ihttp/get system :api/teams)
+                                 (ihttp/get system :routes.api/teams)
                                  handler)]
                 (testing "includes the new team"
                   (assert/has? {:team/name "team name"
@@ -118,7 +118,7 @@
           (let [user {:user/id (uuids/random)}
                 response (-> {}
                              (ihttp/login system user)
-                             (ihttp/get system :api/teams)
+                             (ihttp/get system :routes.api/teams)
                              handler)]
             (testing "returns no teams"
               (is (http/success? response))
@@ -126,7 +126,7 @@
 
         (testing "when not authenticated"
           (let [response (-> {}
-                             (ihttp/get system :api/teams)
+                             (ihttp/get system :routes.api/teams)
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))

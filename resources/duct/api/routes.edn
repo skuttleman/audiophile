@@ -1,35 +1,35 @@
 {[:duct/const :routes/table#api]
- {[:get :api/artifact]       #ig/ref :res.handler/file-version#get
-  [:get :api/events]         #ig/ref :api.handler/events#get
-  [:get :api/file.comments]  #ig/ref :api.handler/comments#get
-  [:get :api/file]           #ig/ref :api.handler/file#get
-  [:get :api/profile]        #ig/ref :api.handler/user#get
-  [:get :api/project.files]  #ig/ref :api.handler/project.files#get
-  [:get :api/project]        #ig/ref :api.handler/project#get
-  [:get :api/projects]       #ig/ref :api.handler/projects#get
-  [:get :api/team]           #ig/ref :api.handler/team#get
-  [:get :api/teams]          #ig/ref :api.handler/teams#get
-  [:get :resources/health]   #ig/ref :res.handler/health
-  [:get :ws/connection]      #ig/ref :api.handler/ws#connect
-  [:post :api/artifacts]     #ig/ref :api.handler/artifacts#post
-  [:post :api/comments]      #ig/ref :api.handler/comments#post
-  [:post :api/file]          #ig/ref :api.handler/file#post
-  [:post :api/project.files] #ig/ref :api.handler/project.files#post
-  [:post :api/projects]      #ig/ref :api.handler/projects#post
-  [:post :api/teams]         #ig/ref :api.handler/teams#post
-  [:post :api/users]         #ig/ref :api.handler/users#post}
+ {[:get :routes.api/artifacts:id]       #ig/ref :res.handler/file-version#get
+  [:get :routes.api/events]             #ig/ref :api.handler/events#get
+  [:get :routes.api/files:id.comments]  #ig/ref :api.handler/comments#get
+  [:get :routes.api/files:id]           #ig/ref :api.handler/file#get
+  [:get :routes.api/users.profile]      #ig/ref :api.handler/user#get
+  [:get :routes.api/projects:id.files]  #ig/ref :api.handler/project.files#get
+  [:get :routes.api/projects:id]        #ig/ref :api.handler/project#get
+  [:get :routes.api/projects]           #ig/ref :api.handler/projects#get
+  [:get :routes.api/teams:id]           #ig/ref :api.handler/team#get
+  [:get :routes.api/teams]              #ig/ref :api.handler/teams#get
+  [:get :routes.resources/health]       #ig/ref :res.handler/health
+  [:get :routes.ws/connection]          #ig/ref :api.handler/ws#connect
+  [:post :routes.api/artifact]          #ig/ref :api.handler/artifacts#post
+  [:post :routes.api/comments]          #ig/ref :api.handler/comments#post
+  [:post :routes.api/files:id]          #ig/ref :api.handler/file#post
+  [:post :routes.api/projects:id.files] #ig/ref :api.handler/project.files#post
+  [:post :routes.api/projects]          #ig/ref :api.handler/projects#post
+  [:post :routes.api/teams]             #ig/ref :api.handler/teams#post
+  [:post :routes.api/users]             #ig/ref :api.handler/users#post}
 
  [:duct/const :routes/daemon#api]
  #{#ig/ref :rabbitmq.sub/events#ws}
 
  [:duct/const :routes/table#auth]
- {[:get :auth/callback]    #ig/ref :audiophile.handlers.auth/callback
-  [:get :auth/login]       #ig/ref :audiophile.handlers.auth/login
-  [:get :auth/logout]      #ig/ref :audiophile.handlers.auth/logout
-  [:get :resources/health] #ig/ref :res.handler/health}
+ {[:get :routes.auth/callback]    #ig/ref :audiophile.handlers.auth/callback
+  [:get :routes.auth/login]       #ig/ref :audiophile.handlers.auth/login
+  [:get :routes.auth/logout]      #ig/ref :audiophile.handlers.auth/logout
+  [:get :routes.resources/health] #ig/ref :res.handler/health}
 
  [:duct/const :routes/table#jobs]
- {[:get :resources/health] #ig/ref :res.handler/health}
+ {[:get :routes.resources/health] #ig/ref :res.handler/health}
 
  [:duct/const :routes/daemon#jobs]
  #{#ig/ref :rabbitmq.sub/commands#comments
@@ -40,10 +40,10 @@
    #ig/ref :rabbitmq.sub/events#persist}
 
  [:duct/const :routes/table#ui]
- {[:get :resources/css]    #ig/ref :audiophile.routes/assets
-  [:get :resources/js]     #ig/ref :audiophile.routes/assets
-  [:get :resources/health] #ig/ref :res.handler/health
-  [:get :ui/home]          #ig/ref :audiophile.routes/ui}
+ {[:get :routes.resources/css]    #ig/ref :audiophile.routes/assets
+  [:get :routes.resources/js]     #ig/ref :audiophile.routes/assets
+  [:get :routes.resources/health] #ig/ref :res.handler/health
+  [:get :routes.ui/home]          #ig/ref :audiophile.routes/ui}
 
  [:audiophile.spec/with-spec :api.handler/comments#get]
  {:handler #ig/ref :audiophile.handlers.comments/fetch-all

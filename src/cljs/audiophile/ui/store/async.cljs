@@ -42,6 +42,6 @@
 
 (defmethod store/async* ::act/profile#load!
   [_ {:keys [http-client nav store]}]
-  (-> (http/get http-client (nav/path-for nav :api/profile))
+  (-> (http/get http-client (nav/path-for nav :routes.api/users.profile))
       (v/then (fn [{profile :data}]
                 (store/dispatch! store (act/profile:set profile))))))

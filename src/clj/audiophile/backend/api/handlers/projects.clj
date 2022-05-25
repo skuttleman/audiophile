@@ -12,7 +12,7 @@
   (fn [data]
     (int/query-many interactor data)))
 
-(defmethod selectors/select [:get :api/projects]
+(defmethod selectors/select [:get :routes.api/projects]
   [_ request]
   {:user/id   (get-in request [:auth/user :user/id])
    :token/aud (get-in request [:auth/user :jwt/aud])})
@@ -23,7 +23,7 @@
   (fn [data]
     (int/query-one interactor data)))
 
-(defmethod selectors/select [:get :api/project]
+(defmethod selectors/select [:get :routes.api/projects:id]
   [_ request]
   {:user/id    (get-in request [:auth/user :user/id])
    :token/aud  (get-in request [:auth/user :jwt/aud])
@@ -36,7 +36,7 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create! interactor data opts))))
 
-(defmethod selectors/select [:post :api/projects]
+(defmethod selectors/select [:post :routes.api/projects]
   [_ request]
   (-> request
       (get-in [:body :data])

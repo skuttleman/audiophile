@@ -38,7 +38,7 @@
         (assoc :path nil :query nil :fragment nil)
         (update :scheme {"https" "wss"} "ws")
         uri/stringify
-        (str (nav/path-for nav :ws/connection params)))))
+        (str (nav/path-for nav :routes.ws/connection params)))))
 
 (defn init! [{:keys [env nav pubsub]}]
   (let [url (ws-uri nav (:api-base env))]

@@ -17,7 +17,7 @@
         (testing "when authenticated as a user with events"
           (let [result (-> {}
                            (ihttp/login system user)
-                           (ihttp/get system :api/events)
+                           (ihttp/get system :routes.api/events)
                            handler)]
             (testing "fetches all events"
               (is (http/success? result))
@@ -27,7 +27,7 @@
                 (let [since (-> result :body :data second :event/id)
                       result (-> {}
                                  (ihttp/login system user)
-                                 (ihttp/get system :api/events {:params {:since since}})
+                                 (ihttp/get system :routes.api/events {:params {:since since}})
                                  handler)]
                   (is (http/success? result))
                   (is (= 1 (count (get-in result [:body :data])))))))))
@@ -35,7 +35,7 @@
         (testing "when authenticated as a user with no events"
           (let [result (-> {}
                            (ihttp/login system {:user/id (uuids/random)})
-                           (ihttp/get system :api/events)
+                           (ihttp/get system :routes.api/events)
                            handler)]
             (testing "fetches no events"
               (is (http/success? result))
@@ -43,7 +43,7 @@
 
         (testing "when not authenticated"
           (let [result (-> {}
-                           (ihttp/get system :api/events)
+                           (ihttp/get system :routes.api/events)
                            handler)]
             (testing "fetches no events"
               (is (http/client-error? result)))))))))
