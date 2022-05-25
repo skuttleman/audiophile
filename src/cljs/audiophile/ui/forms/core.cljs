@@ -1,9 +1,10 @@
 (ns audiophile.ui.forms.core
   (:require
     [audiophile.common.core.utils.fns :as fns]
+    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.ui.forms.protocols :as pforms]
-    [audiophile.common.core.utils.logger :as log]))
+    [clojure.string :as string]))
 
 (defn ^:private derefable? [x]
   (satisfies? IDeref x))
@@ -66,9 +67,11 @@
                   (get-in (errors *form) path))
          [attempted? attempting?] (when (satisfies? pforms/IAttempt *form)
                                     [(attempted? *form)
-                                     (attempting? *form)])]
+                                     (attempting? *form)])
+         class (string/join "-" (map name path))]
      (-> attrs
          (assoc :visited? visited? :attempted? attempted? :errors errors)
+         (update :class (fnil conj []) class)
          (maps/assoc-defaults :disabled attempting?
                               :on-blur (constantly nil))
 

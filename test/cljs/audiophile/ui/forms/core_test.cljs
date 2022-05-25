@@ -42,7 +42,8 @@
                   :disabled   ::disabled
                   :value      ::value
                   :errors     ::errors
-                  :attempted? ::attempted}
+                  :attempted? ::attempted
+                  :class      ["some-path"]}
                  attrs))
           (on-blur :value)
           (is (= [::touch! [:some :path]] @touch!))
