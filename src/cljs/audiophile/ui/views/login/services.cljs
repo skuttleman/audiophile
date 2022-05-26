@@ -11,14 +11,14 @@
 (def ^:private users#validator:signup
   (val/validator {:spec specs/user:create}))
 
-(defn users#form:signup [{:keys [nav store] :as sys} route]
+(defn users#form:signup [{:keys [nav store] :as sys} path]
   (let [{:user/keys [email handle] :as profile} (:user/profile @store)
         handle (or handle (second (re-find #"^([^@]+).*" email)))
         *conflicts (r/atom nil)
         *form (form.std/create (assoc profile :user/handle handle)
                                (pages/conflict-validator users#validator:signup *conflicts))
         attrs {:on-success (fn [{:login/keys [token]}]
-                             (nav/goto! nav :routes.auth/login {:params {:redirect-uri (:path route)
+                             (nav/goto! nav :routes.auth/login {:params {:redirect-uri path
                                                                          :login-token  token}}))
                :on-error   (fn [result]
                              (->> result

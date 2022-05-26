@@ -34,7 +34,7 @@
     (let [vnode (volatile! nil)
           ref (fn [node] (some->> node (vreset! vnode)))]
       (r/create-class
-        {:component-did-update
+        {:component-did-mount
          (fn [this _]
            (when-let [node @vnode]
              (when (and auto-focus? (not (:disabled (second (r/argv this)))))

@@ -45,8 +45,8 @@
        [layout sys (assoc attrs :state state)]]]]))
 
 (defmethod login/form :signup
-  [_ sys route]
-  (r/with-let [*form (serv/users#form:signup sys route)]
+  [_ sys {:keys [path]}]
+  (r/with-let [*form (serv/users#form:signup sys path)]
     [comp/form {:class       ["signup-form"]
                 :submit/text "Signup"
                 :*form       *form}

@@ -42,18 +42,24 @@
   ([nav base-url params]
    (str base-url (home-path nav params))))
 
-(defn ^:private redirect* [nav oauth base-url jwt-serde base64-serde params]
-  (let [claims (some->> params :login-token (serdes/deserialize jwt-serde))
-        token (when claims
-                (jwt/auth-token jwt-serde (select-keys claims #{:user/id :user/email})))]
-    (-> (or (when token (->redirect-url nav base-url))
+(defn ^:private redirect* [nav oauth base-url jwt-serde base64-serde {:keys [state] :as params}]
+  (let [token (when-let [claims (some->> params
+                                         :login-token
+                                         (serdes/deserialize jwt-serde))]
+                (jwt/auth-token jwt-serde (select-keys claims #{:user/id :user/email})))
+        redirect-uri (:redirect-uri state)
+        base-url (if redirect-uri
+                   (str base-url redirect-uri)
+                   (->redirect-url nav base-url))]
+    (-> (or (when token base-url)
             (safely! "generating a redirect url to the auth provider"
               (papp/redirect-uri oauth
                                  (maps/update-maybe params
                                                     :state
                                                     (partial serdes/serialize
                                                              base64-serde))))
-            (home-path nav {:error-msg :login-failed}))
+            (home-path nav (maps/assoc-maybe {:error-msg :login-failed}
+                                             :redirect-uri redirect-uri)))
         ring/redirect
         (cond-> token (with-token token)))))
 
