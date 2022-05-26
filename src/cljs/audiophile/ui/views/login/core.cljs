@@ -66,4 +66,6 @@
                                  [:user/last-name])]
      [in/input (forms/with-attrs {:label "mobile number"}
                                  *form
-                                 [:user/mobile-number])]]))
+                                 [:user/mobile-number])]]
+    (finally
+      (forms/destroy! *form))))

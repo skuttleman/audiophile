@@ -47,6 +47,18 @@
   [state [_ route]]
   (assoc state :nav/route route))
 
+(defmethod store/mutate* :form/cleanup
+  [state [_ {:keys [id]}]]
+  (update state :forms dissoc id))
+
+(defmethod store/mutate* :form/merge
+  [state [_ {:keys [id data]}]]
+  (update-in state [:forms id] merge data))
+
+(defmethod store/mutate* :form/update
+  [state [_ {:keys [id f]}]]
+  (update-in state [:forms id] f))
+
 (defmethod store/mutate* :toast/create
   [state [_ {:keys [id] :as toast}]]
   (assoc-in state [:toasts id] (assoc toast :state :init)))

@@ -43,7 +43,9 @@
       [in/input (forms/with-attrs {:label       "Name"
                                    :auto-focus? true}
                                   *form
-                                  [:project/name])]]]))
+                                  [:project/name])]]]
+    (finally
+      (forms/destroy! *form))))
 
 (defmethod modals/body ::create
   [_ sys {:keys [*res close!] :as attrs}]

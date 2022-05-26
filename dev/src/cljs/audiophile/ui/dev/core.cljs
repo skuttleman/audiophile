@@ -57,13 +57,15 @@
     :init))
 
 (defmethod login/form :dev
-  [_ {:keys [nav]} route]
+  [_ {:keys [nav store]} route]
   (r/with-let [*resource (->LoginResource nav route)
-               *form (form.submit/create (form.std/create nil login-validator) *resource)]
+               *form (form.submit/create (form.std/create store nil login-validator) *resource)]
     [comp/form {:class       ["login-form"]
                 :submit/text "Login"
                 :*form       *form}
      [in/input (forms/with-attrs {:label       "email"
                                   :auto-focus? true}
                                  *form
-                                 [:email])]]))
+                                 [:email])]]
+    (finally
+      (forms/destroy! *form))))

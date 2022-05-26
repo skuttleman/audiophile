@@ -40,13 +40,13 @@
                                         ["files[]" file])}
                    (merge (select-keys opts #{:multi? :on-progress}))))))
 
-(defn files#form:new [sys attrs project-id]
-  (let [*form (form.std/create nil files#validator:new)
+(defn files#form:new [{:keys [store] :as sys} attrs project-id]
+  (let [*form (form.std/create store nil files#validator:new)
         attrs (assoc attrs :local->remote files#local->remove)]
     (pages/form:new sys attrs *form :routes.api/projects:id.files {:params {:project/id project-id}})))
 
-(defn files#form:version [sys attrs file-id]
-  (let [*form (form.std/create nil files#validator:version)
+(defn files#form:version [{:keys [store] :as sys} attrs file-id]
+  (let [*form (form.std/create store nil files#validator:version)
         attrs (assoc attrs :local->remote files#local->remove)]
     (pages/form:new sys attrs *form :routes.api/files:id {:params {:file/id file-id}})))
 

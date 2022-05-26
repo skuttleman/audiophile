@@ -40,7 +40,9 @@
                                (forms/with-attrs *form [:file-version-id])
                                dd/singleable)])]]]
          ^{:key artifact-id} [audio/player sys attrs]]
-        [comp/alert :error "File version could not be found"]))))
+        [comp/alert :error "File version could not be found"]))
+    (finally
+      (forms/destroy! *form))))
 
 (defn ^:private init [file {:keys [store] :as sys}]
   (let [route (:nav/route @store)

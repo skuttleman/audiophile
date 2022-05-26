@@ -5,7 +5,10 @@
   (init! [this] [this value]
          "When no value is supplied, resets itself back to its internal initial state.
           When a value is supplied, resets itself such that the supplied value is
-          the new initial state."))
+          the new initial state.")
+  (destroy! [this]
+           "Destroys any internal resources.
+            Call this when the object is no longer needed."))
 
 (defprotocol IAttempt
   "Tracks whether the form has been attempted"

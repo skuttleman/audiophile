@@ -16,8 +16,8 @@
 (defn projects#res:fetch-all [sys]
   (pages/res:fetch sys :routes.api/projects))
 
-(defn projects#form:new [sys attrs team-id]
-  (let [*form (form.std/create {:project/team-id team-id} projects#validator:new)]
+(defn projects#form:new [{:keys [store] :as sys} attrs team-id]
+  (let [*form (form.std/create store {:project/team-id team-id} projects#validator:new)]
     (pages/form:new sys attrs *form :routes.api/projects)))
 
 (defn projects#modal:create [sys body]
@@ -29,9 +29,9 @@
 (defn teams#res:fetch-all [sys]
   (pages/res:fetch sys :routes.api/teams))
 
-(defn teams#form:new [sys attrs]
-  (let [*form (form.std/create {:team/type :COLLABORATIVE} teams#validator:new)]
+(defn teams#form:new [{:keys [store] :as sys} attrs]
+  (let [*form (form.std/create store {:team/type :COLLABORATIVE} teams#validator:new)]
     (pages/form:new sys attrs *form :routes.api/teams)))
 
 (defn teams#modal:create [sys body]
-  (pages/modal:open sys [:h1.subtitle "Create a project"] body))
+  (pages/modal:open sys [:h1.subtitle "Create a team"] body))

@@ -1,50 +1,57 @@
 (ns audiophile.ui.forms.standard
   (:require
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.ui.forms.protocols :as pforms]
-    [reagent.core :as r]))
+    [audiophile.common.core.utils.uuids :as uuids]
+    [audiophile.common.infrastructure.store.core :as store]
+    [audiophile.ui.forms.protocols :as pforms]))
 
-(deftype StandardForm [state errors-fn]
+(deftype StandardForm [id store errors-fn]
   pforms/IInit
   (init! [_ value]
     (let [rep (maps/flatten value)]
-      (swap! state assoc
-             :init rep
-             :current rep
-             :form/attempted false
-             :touched #{}
-             :form/touched false)))
+      (store/dispatch! store [:form/merge {:id   id
+                                           :data {:init           rep
+                                                  :current        rep
+                                                  :form/attempted false
+                                                  :touched        #{}
+                                                  :form/touched   false}}])))
+  (destroy! [_]
+    (store/dispatch! store [:form/cleanup {:id id}]))
 
   pforms/IAttempt
   (attempt! [_]
-    (swap! state assoc :form/attempted true))
+    (store/dispatch! store [:form/merge {:id   id
+                                         :data {:form/attempted true}}]))
   (attempted? [_]
-    (:form/attempted @state))
+    (get-in @store [:forms id :form/attempted]))
   (attempting? [_]
     false)
 
   pforms/IChange
   (change! [_ path value]
-    (let [f (if (some? value) #(assoc % path value) #(dissoc % path))]
-      (swap! state update :current f)))
+    (let [f (if (some? value)
+              #(assoc-in % [:current path] value)
+              #(update % :current dissoc path))]
+      (store/dispatch! store [:form/update {:id id :f f}])))
   (changed? [_]
-    (let [{:keys [current init]} @state]
+    (let [{:keys [current init]} (get-in @store [:forms id])]
       (= current init)))
   (changed? [_ path]
-    (let [{:keys [current init]} @state]
+    (let [{:keys [current init]} (get-in @store [:forms id])]
       (= (get current path) (get init path))))
 
   pforms/ITrack
   (touch! [_]
-    (swap! state assoc :form/touched true))
+    (store/dispatch! store [:form/merge {:id   id
+                                         :data {:form/touched true}}]))
   (touch! [_ path]
-    (swap! state update :touched conj path))
+    (store/dispatch! store [:form/update {:id id :f #(update % :touched conj path)}]))
   (touched? [_]
-    (let [val @state]
+    (let [val (get-in @store [:forms id])]
       (or (:form/touched val)
           (boolean (seq (:touched val))))))
   (touched? [_ path]
-    (let [val @state]
+    (let [val (get-in @store [:forms id])]
       (or (:form/touched val)
           (contains? (:touched val) path))))
 
@@ -54,7 +61,7 @@
 
   IDeref
   (-deref [_]
-    (maps/nest (:current @state))))
+    (maps/nest (get-in @store [:forms id :current]))))
 
 (defn create
   "Creates a validated local form with the initial value set to `init-value` which
@@ -69,12 +76,13 @@
    ;; => {:my {:nested {:data [\"should be foo\" \"should be baz\"]}}}
    ;; => {:my {:nested {:is [\"not so awesome\"]}}
    ```"
-  ([]
-   (create nil))
-  ([init-value]
-   (create init-value (constantly nil)))
-  ([init-value errors-fn]
+  ([store]
+   (create store nil))
+  ([store init-value]
+   (create store init-value (constantly nil)))
+  ([store init-value errors-fn]
+   (create (uuids/random) store init-value errors-fn))
+  ([id store init-value errors-fn]
    {:pre [(or (nil? init-value) (map? init-value))]}
-   (let [state (r/atom nil)]
-     (doto (->StandardForm state errors-fn)
-       (pforms/init! init-value)))))
+   (doto (->StandardForm id store errors-fn)
+     (pforms/init! init-value))))

@@ -23,9 +23,9 @@
                          (nav/path-for nav :routes.api/artifacts:id {:params {:artifact/id artifact-id}})
                          {:response-type :blob}))))
 
-(defn comments#form:new [sys *comments version-id]
+(defn comments#form:new [{:keys [store] :as sys} *comments version-id]
   (let [init-val {:comment/file-version-id version-id}
-        *form (form.std/create init-val comments#validator:new)]
+        *form (form.std/create store init-val comments#validator:new)]
     (pages/form:new sys
                     {:on-success    (fn [_]
                                       (res/request! *comments))
@@ -44,7 +44,7 @@
   (pages/res:fetch sys :routes.api/files:id {:params {:file/id file-id}}))
 
 (defn versions#form:selector [{:keys [nav store]} version-id]
-  (doto (form.watch/create {:file-version-id version-id})
+  (doto (form.watch/create store {:file-version-id version-id})
     (add-watch ::qp (fn [_ _ _ val]
                       (let [{:keys [handle params]} (:nav/route @store)]
                         (nav/replace! nav handle {:params (merge params val)}))))))

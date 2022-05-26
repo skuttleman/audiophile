@@ -17,6 +17,10 @@
    (pforms/init! *form value)
    nil))
 
+(defn destroy! [*form]
+  (pforms/destroy! *form)
+  nil)
+
 (defn attempt! [*form]
   (pforms/attempt! *form))
 

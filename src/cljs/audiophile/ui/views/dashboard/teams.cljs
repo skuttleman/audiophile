@@ -28,7 +28,9 @@
                                                   (close! result))
                                                 (some-> *res res/request!)))
                *form (serv/teams#form:new sys attrs)]
-    [create* *form attrs]))
+    [create* *form attrs]
+    (finally
+      (forms/destroy! *form))))
 
 (defn team-list [teams]
   [:div

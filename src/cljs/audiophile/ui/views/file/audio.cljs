@@ -60,7 +60,8 @@
              "clear region"])
           (when-not ready?
             [comp/spinner])])])
-    (finally (serv/destroy! *player))))
+    (finally
+      (serv/destroy! *player))))
 
 (defn player [sys {:keys [artifact-id file-id file-version-id]}]
   (r/with-let [*comments (serv/comments#res:fetch-all sys file-id)
@@ -76,4 +77,6 @@
                                       :auto-focus? true}
                                      *form
                                      [:comment/body])]]
-     [comp/with-resource *comments comment-viewer]]))
+     [comp/with-resource *comments comment-viewer]]
+    (finally
+      (forms/destroy! *form))))

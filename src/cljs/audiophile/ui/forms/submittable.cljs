@@ -10,6 +10,8 @@
   pforms/IInit
   (init! [_ value]
     (forms/init! *form value))
+  (destroy! [_]
+    (pforms/destroy! *form))
 
   pforms/IAttempt
   (attempt! [this]

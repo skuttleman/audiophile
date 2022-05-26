@@ -15,7 +15,8 @@
   (let [{:user/keys [email handle] :as profile} (:user/profile @store)
         handle (or handle (second (re-find #"^([^@]+).*" email)))
         *conflicts (r/atom nil)
-        *form (form.std/create (assoc profile :user/handle handle)
+        *form (form.std/create store
+                               (assoc profile :user/handle handle)
                                (pages/conflict-validator users#validator:signup *conflicts))
         attrs {:on-success (fn [{:login/keys [token]}]
                              (nav/goto! nav :routes.auth/login {:params {:redirect-uri path

@@ -25,7 +25,9 @@
                                    [:file/name])]
        [in/input (forms/with-attrs {:label "Version name"}
                                    *form
-                                   [:version/name])]])))
+                                   [:version/name])]])
+    (finally
+      (forms/destroy! *form))))
 
 (defn ^:private version* [sys {:keys [file] :as attrs}]
   (r/with-let [*artifacts (serv/artifacts#res:new sys)
@@ -39,7 +41,9 @@
                         (forms/with-attrs *form [:artifact/details]))]
        [in/input (forms/with-attrs {:label "Version name"}
                                    *form
-                                   [:version/name])]])))
+                                   [:version/name])]])
+    (finally
+      (forms/destroy! *form))))
 
 (defmethod modals/body ::create
   [_ sys {:keys [*res close!] :as attrs}]
