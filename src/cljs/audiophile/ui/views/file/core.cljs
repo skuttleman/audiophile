@@ -30,13 +30,15 @@
           [:div.layout--align-center
            [:span (:file/name file)]
            [:div.layout--inset
-            [dd/dropdown (-> {:attrs->content attrs->content
-                              :force-value?   true
-                              :item-control   version-name
-                              :options        versions
-                              :options-by-id  versions-by-id}
-                             (forms/with-attrs *form [:file-version-id])
-                             dd/singleable)]]]]
+            (if (empty? (rest versions))
+              [:small "version: " [version-name version]]
+              [dd/dropdown (-> {:attrs->content attrs->content
+                                :force-value?   true
+                                :item-control   version-name
+                                :options        versions
+                                :options-by-id  versions-by-id}
+                               (forms/with-attrs *form [:file-version-id])
+                               dd/singleable)])]]]
          ^{:key artifact-id} [audio/player sys attrs]]
         [comp/alert :error "File version could not be found"]))))
 

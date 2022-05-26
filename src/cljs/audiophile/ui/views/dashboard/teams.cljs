@@ -1,5 +1,4 @@
 (ns audiophile.ui.views.dashboard.teams
-  (:refer-clojure :exclude [list])
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.resources.core :as res]
@@ -31,7 +30,7 @@
                *form (serv/teams#form:new sys attrs)]
     [create* *form attrs]))
 
-(defn list [teams]
+(defn team-list [teams]
   [:div
    [:p [:strong "Your teams"]]
    (if (seq teams)
@@ -51,7 +50,7 @@
   (r/with-let [click (serv/teams#modal:create sys [::create {:*res *res}])]
     [comp/tile
      [:h2.subtitle "Teams"]
-     [comp/with-resource [*res {:spinner/size :small}] list]
+     [comp/with-resource [*res {:spinner/size :small}] team-list]
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}

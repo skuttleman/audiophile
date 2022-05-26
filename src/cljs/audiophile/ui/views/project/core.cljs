@@ -86,9 +86,8 @@
 (defn track-list [files sys *files *project project-id]
   (r/with-let [click (serv/files#modal:create sys [::create {:*res       *files
                                                              :project-id project-id}])]
-    (let [status (res/status *project)]
-      (if-not (= :success status)
-        [comp/spinner]
+    (when-not (res/error? *project)
+      (if (res/success? *project)
         [:div
          [:div.buttons
           [comp/plain-button
@@ -101,7 +100,8 @@
              (for [[idx file] (map-indexed vector files)]
                ^{:key (:file/id file)}
                [track-row sys *files idx file])]]
-           [:div "This projects doesn't have any tracks. You should upload one."])]))))
+           [:div "This projects doesn't have any tracks. You should upload one."])]
+        [comp/spinner]))))
 
 (defn ^:private page [sys state]
   (r/with-let [project-id (get-in state [:nav/route :params :project/id])

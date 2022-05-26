@@ -1,5 +1,4 @@
 (ns audiophile.ui.views.dashboard.projects
-  (:refer-clojure :exclude [list])
   (:require
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
@@ -54,7 +53,7 @@
                                          (some-> *res res/request!)))]
     [comp/with-resource (:*teams attrs) create* sys attrs]))
 
-(defn list [projects sys]
+(defn project-list [projects sys]
   [:div
    [:p [:strong "Your projects"]]
    (if (seq projects)
@@ -72,7 +71,7 @@
                                                                 :*teams *teams}])]
     [comp/tile
      [:h2.subtitle "Projects"]
-     [comp/with-resource [*res {:spinner/size :small}] list sys]
+     [comp/with-resource [*res {:spinner/size :small}] project-list sys]
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}

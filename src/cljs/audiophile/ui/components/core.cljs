@@ -124,5 +124,5 @@
       (let [status (res/status *resource)]
         (case status
           :success (into [comp @*resource] args)
-          :error [:div.error "an error occurred"]
+          :error [:div.error [alert :error "An error occurred."]]
           [spinner {:size (:spinner/size opts)}])))))
