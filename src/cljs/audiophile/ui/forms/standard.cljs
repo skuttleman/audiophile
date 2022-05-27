@@ -3,25 +3,24 @@
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.store.core :as store]
-    [audiophile.ui.forms.protocols :as pforms]))
+    [audiophile.ui.forms.protocols :as pforms]
+    [audiophile.ui.store.actions :as act]))
 
 (deftype StandardForm [id store errors-fn]
-  pforms/IInit
+  pforms/ILifeCycle
   (init! [_ value]
     (let [rep (maps/flatten value)]
-      (store/dispatch! store [:form/merge {:id   id
-                                           :data {:init           rep
-                                                  :current        rep
-                                                  :form/attempted false
-                                                  :touched        #{}
-                                                  :form/touched   false}}])))
+      (store/dispatch! store (act/form:merge id {:init           rep
+                                                 :current        rep
+                                                 :form/attempted false
+                                                 :touched        #{}
+                                                 :form/touched   false}))))
   (destroy! [_]
-    (store/dispatch! store [:form/cleanup {:id id}]))
+    (store/dispatch! store (act/form:cleanup id)))
 
   pforms/IAttempt
   (attempt! [_]
-    (store/dispatch! store [:form/merge {:id   id
-                                         :data {:form/attempted true}}]))
+    (store/dispatch! store (act/form:merge id {:form/attempted true})))
   (attempted? [_]
     (get-in @store [:forms id :form/attempted]))
   (attempting? [_]
@@ -29,10 +28,10 @@
 
   pforms/IChange
   (change! [_ path value]
-    (let [f (if (some? value)
-              #(assoc-in % [:current path] value)
-              #(update % :current dissoc path))]
-      (store/dispatch! store [:form/update {:id id :f f}])))
+    (let [[f args] (if (some? value)
+                     [assoc-in [[:current path] value]]
+                     [update [:current dissoc path]])]
+      (store/dispatch! store (apply act/form:update id f args))))
   (changed? [_]
     (let [{:keys [current init]} (get-in @store [:forms id])]
       (= current init)))
@@ -42,10 +41,9 @@
 
   pforms/ITrack
   (touch! [_]
-    (store/dispatch! store [:form/merge {:id   id
-                                         :data {:form/touched true}}]))
+    (store/dispatch! store (act/form:merge id {:form/touched true})))
   (touch! [_ path]
-    (store/dispatch! store [:form/update {:id id :f #(update % :touched conj path)}]))
+    (store/dispatch! store (act/form:update id update :touched conj path)))
   (touched? [_]
     (let [val (get-in @store [:forms id])]
       (or (:form/touched val)

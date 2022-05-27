@@ -9,13 +9,9 @@
 (defn ^:private derefable? [x]
   (satisfies? IDeref x))
 
-(defn init!
-  ([*form]
-   (pforms/init! *form)
-   nil)
-  ([*form value]
-   (pforms/init! *form value)
-   nil))
+(defn init! [*form value]
+  (pforms/init! *form value)
+  nil)
 
 (defn destroy! [*form]
   (pforms/destroy! *form)

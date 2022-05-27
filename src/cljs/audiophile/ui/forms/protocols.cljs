@@ -1,11 +1,9 @@
 (ns audiophile.ui.forms.protocols)
 
-(defprotocol IInit
+(defprotocol ILifeCycle
   "Can initialize or re-initialize itself to an internally defined immutable value."
-  (init! [this] [this value]
-         "When no value is supplied, resets itself back to its internal initial state.
-          When a value is supplied, resets itself such that the supplied value is
-          the new initial state.")
+  (init! [this value]
+         "Initializes itself with the given initial value.")
   (destroy! [this]
            "Destroys any internal resources.
             Call this when the object is no longer needed."))

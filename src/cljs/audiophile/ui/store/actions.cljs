@@ -12,6 +12,15 @@
 (defn banner:clear [id]
   [:banner/clear {:id id}])
 
+(defn form:cleanup [id]
+  [:form/cleanup {:id id}])
+
+(defn form:merge [id data]
+  [:form/merge (maps/->m id data)])
+
+(defn form:update [id f & f-args]
+  [:form/update {:id id :f #(apply f % f-args)}])
+
 (defn modal#add!
   ([body]
    (modal#add! nil body))

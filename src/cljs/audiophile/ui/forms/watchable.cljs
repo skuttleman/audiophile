@@ -5,6 +5,7 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.forms.protocols :as pforms]
+    [audiophile.ui.store.actions :as act]
     [reagent.core :as r]))
 
 (defn ^:private notify! [*form watchers old new]
@@ -12,21 +13,20 @@
     (f k *form old new)))
 
 (deftype WatchableForm [id store watchers]
-  pforms/IInit
+  pforms/ILifeCycle
   (init! [_ value]
     (let [rep (maps/flatten value)]
-      (store/dispatch! store [:form/merge {:id   id
-                                           :data {:current rep}}])))
+      (store/dispatch! store (act/form:merge id {:current rep}))))
   (destroy! [_]
-    (store/dispatch! store [:form/cleanup {:id id}]))
+    (store/dispatch! store (act/form:cleanup id)))
 
   pforms/IChange
   (change! [this path value]
     (let [old @this
-          f (if (some? value)
-              #(assoc-in % [:current path] value)
-              #(update % :current dissoc path))]
-      (store/dispatch! store [:form/update {:id id :f f}])
+          [f args] (if (some? value)
+                     [assoc-in [[:current path] value]]
+                     [update [:current dissoc path]])]
+      (store/dispatch! store (apply act/form:update id f args))
       (-notify-watches this old @this)))
   (changed? [_]
     (let [{:keys [current init]} (get-in @store [:forms id])]

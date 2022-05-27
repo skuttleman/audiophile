@@ -7,7 +7,7 @@
     [com.ben-allred.vow.core :as v]))
 
 (deftype SubmittableForm [*resource *form local->remote remote->local]
-  pforms/IInit
+  pforms/ILifeCycle
   (init! [_ value]
     (forms/init! *form value))
   (destroy! [_]
