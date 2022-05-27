@@ -9,9 +9,6 @@
 (defn modal:state [store]
   (:modals @store))
 
-(defn nav:route [store]
-  (:nav/route @store))
-
 (defn res:state [store id]
   (get-in @store [:resources id]))
 

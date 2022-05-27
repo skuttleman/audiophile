@@ -25,7 +25,7 @@
 
 (defn ^:private header [{:keys [nav store] :as sys}]
   (r/with-let [shown? (r/atom false)]
-    (let [handle (:handle (q/nav:route store))
+    (let [handle (:handle @nav)
           user (q/user:profile store)
           text (if (= (:token/type user) :token/signup)
                  "Start over"
@@ -67,8 +67,8 @@
           [:div.buttons
            [logout {:nav nav :text text}]]]]]])))
 
-(defn ^:private root* [{:keys [store] :as sys}]
-  (let [handle (:handle (q/nav:route store))
+(defn ^:private root* [{:keys [nav] :as sys}]
+  (let [handle (:handle @nav)
         comp (case handle
                :routes.ui/home @dashboard
                :routes.ui/files:id @file
@@ -76,12 +76,12 @@
                comp/not-found)]
     [comp sys]))
 
-(defn root [{:keys [store] :as sys}]
+(defn root [{:keys [nav store] :as sys}]
   [:div
    [not/banners sys (q/banner:state store)]
    [header sys]
    [:div.main.layout--inset
-    {:class [(str "page-" (some-> (q/nav:route store) :handle name))]}
+    {:class [(str "page-" (some-> @nav :handle name))]}
     [:div.layout--inset
      [root* sys]]]
    [modals/root sys (q/modal:state store)]

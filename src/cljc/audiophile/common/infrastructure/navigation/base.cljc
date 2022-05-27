@@ -14,7 +14,8 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.navigation.protocols :as pnav]
     [audiophile.common.infrastructure.navigation.routes :as routes]
-    [audiophile.common.infrastructure.store.core :as store]))
+    [audiophile.common.infrastructure.store.core :as store]
+    [reagent.core :as r]))
 
 (defn ^:private params->internal [params]
   (update params :params (fns/=>
@@ -64,13 +65,13 @@
             params->internal)))
 
 (defn ^:private on-nav [nav store pushy route]
-  (let [err-msg (get-in route [:params :error-msg])]
-    #?(:cljs (store/dispatch! store (act/router:update route)))
-    (when err-msg
-      (->> (update route :params dissoc :error-msg)
-           (serdes/serialize nav (:handle route))
-           (pushy/replace-token! pushy))
-      #?(:cljs (store/dispatch! store (act/banner:create :error (keyword err-msg)))))))
+  #?(:cljs
+     (let [err-msg (get-in route [:params :error-msg])]
+       (when err-msg
+         (->> (update route :params dissoc :error-msg)
+              (serdes/serialize nav (:handle route))
+              (pushy/replace-token! pushy))
+         (store/dispatch! store (act/banner:create :error (keyword err-msg)))))))
 
 (deftype Router [base-urls routes]
   pnav/IHistory
@@ -88,7 +89,7 @@
   [{:keys [base-urls]}]
   (->Router base-urls routes/all))
 
-(deftype LinkedNavigator [pushy router]
+(deftype LinkedNavigator [state pushy router]
   pnav/IHistory
   (start! [_]
     (pushy/start! pushy)
@@ -107,15 +108,20 @@
   (serialize [_ handle opts]
     (pserdes/serialize router handle opts))
   (deserialize [_ path opts]
-    (pserdes/deserialize router path opts)))
+    (pserdes/deserialize router path opts))
+
+  #?@(:cljs [IDeref
+             (-deref [_]
+               @state)]))
 
 (defn nav
   "Constructor for [[LinkedNavigator]] which links the [[Router]] to the browser history API."
   [{:keys [router store]}]
-  (let [pushy (volatile! nil)]
-    (vreset! pushy (pushy/pushy #(on-nav router store @pushy %)
+  (let [state #?(:cljs (r/atom nil) :default nil)
+        pushy (volatile! nil)]
+    (vreset! pushy (pushy/pushy #(on-nav router store @pushy (swap! state (constantly %)))
                                 #(serdes/deserialize router %)))
-    (doto (->LinkedNavigator @pushy router)
+    (doto (->LinkedNavigator state @pushy router)
       pnav/start!)))
 
 (defn nav#stop

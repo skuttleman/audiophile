@@ -43,10 +43,6 @@
   [state [_ profile]]
   (assoc state :user/profile profile))
 
-(defmethod store/mutate* :router/update
-  [state [_ route]]
-  (assoc state :nav/route route))
-
 (defmethod store/mutate* :form/cleanup
   [state [_ {:keys [id]}]]
   (update state :forms dissoc id))

@@ -49,7 +49,7 @@
 (defn versions#form:selector [{:keys [nav store]} version-id]
   (doto (form.watch/create store {:file-version-id version-id})
     (add-watch ::qp (fn [_ _ _ val]
-                      (let [{:keys [handle params]} (q/nav:route store)]
+                      (let [{:keys [handle params]} @nav]
                         (nav/replace! nav handle {:params (merge params val)}))))))
 
 (defn player#create [*artifact opts]

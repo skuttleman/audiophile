@@ -19,7 +19,7 @@
        :on-click click}
       "Login"]]))
 
-(defn ^:private layout [{:keys [store] :as sys} {:keys [login-key msg]}]
+(defn ^:private layout [{:keys [nav] :as sys} {:keys [login-key msg]}]
   [:div..gutters.layout--xl.layout--xxl.layout--inset
    [:div
     [:h1.title [comp/icon :headphones] " Audiophile"]
@@ -34,7 +34,7 @@
    [:div.gutters.layout--xxl
     [:div.layout--space-above.layout--space-below
      [:h3.subtitle.is-5 msg]]
-    [login/form login-key sys (q/nav:route store)]]])
+    [login/form login-key sys @nav]]])
 
 (defn root [{:keys [store] :as sys} attrs]
   [:div

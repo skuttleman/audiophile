@@ -46,14 +46,14 @@
     (finally
       (forms/destroy! *form))))
 
-(defn ^:private init [file {:keys [store] :as sys}]
-  (let [route (q/nav:route store)
+(defn ^:private init [file {:keys [nav] :as sys}]
+  (let [route @nav
         version-id (or (-> route :params :file-version-id)
                        (serv/files#nav:add-version! sys route file))]
     [page* sys file version-id]))
 
-(defn ^:private page [{:keys [store] :as sys}]
-  (r/with-let [file-id (-> (q/nav:route store) :params :file/id)
+(defn ^:private page [{:keys [nav] :as sys}]
+  (r/with-let [file-id (-> @nav :params :file/id)
                *file (serv/files#res:fetch-one sys file-id)]
     [comp/with-resource *file init sys]
     (finally

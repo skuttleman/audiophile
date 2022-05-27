@@ -112,8 +112,8 @@
            [:div "This projects doesn't have any tracks. You should upload one."])]
         [comp/spinner]))))
 
-(defn ^:private page [{:keys [store] :as sys}]
-  (r/with-let [project-id (-> (q/nav:route store) :params :project/id)
+(defn ^:private page [{:keys [nav] :as sys}]
+  (r/with-let [project-id (-> @nav :params :project/id)
                *files (serv/files#res:fetch-all sys project-id)
                *project (serv/projects#res:fetch-one sys project-id)]
     [:div

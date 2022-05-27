@@ -68,9 +68,6 @@
 (defn resource:set [id data]
   [:resource/set (maps/->m id data)])
 
-(defn router:update [route]
-  [:router/update route])
-
 (defn toast#add! [level body]
   (let [id (.getTime (js/Date.))]
     [::toast#add! (maps/->m id body level)]))
