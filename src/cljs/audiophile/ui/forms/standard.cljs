@@ -2,25 +2,32 @@
   (:require
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.forms.protocols :as pforms]
     [audiophile.ui.store.actions :as act]))
 
 (deftype StandardForm [id store errors-fn]
-  pforms/ILifeCycle
+  pcom/IIdentify
+  (id [_]
+    id)
+
+  pforms/IInit
   (init! [_ value]
     (let [rep (maps/flatten value)]
-      (store/dispatch! store (act/form:merge id {:init           rep
-                                                 :current        rep
-                                                 :form/attempted false
-                                                 :touched        #{}
-                                                 :form/touched   false}))))
+      (store/dispatch! store (act/form:init id {:init           rep
+                                                :current        rep
+                                                :form/attempted false
+                                                :touched        #{}
+                                                :form/touched   false}))))
+
+  pcom/IDestroy
   (destroy! [_]
     (store/dispatch! store (act/form:cleanup id)))
 
   pforms/IAttempt
   (attempt! [_]
-    (store/dispatch! store (act/form:merge id {:form/attempted true})))
+    (store/dispatch! store (act/form:update id merge {:form/attempted true})))
   (attempted? [_]
     (get-in @store [:forms id :form/attempted]))
   (attempting? [_]
@@ -41,7 +48,7 @@
 
   pforms/ITrack
   (touch! [_]
-    (store/dispatch! store (act/form:merge id {:form/touched true})))
+    (store/dispatch! store (act/form:update id merge {:form/touched true})))
   (touch! [_ path]
     (store/dispatch! store (act/form:update id update :touched conj path)))
   (touched? [_]

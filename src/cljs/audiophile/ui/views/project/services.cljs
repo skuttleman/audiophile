@@ -30,8 +30,9 @@
       (select-keys #{:file/name :version/name})
       (assoc :artifact/id (-> data :artifact/details :artifact/id))))
 
-(defn artifacts#res:new [{:keys [http-client nav]}]
-  (ires/http http-client
+(defn artifacts#res:new [{:keys [http-client nav store]}]
+  (ires/http store
+             http-client
              (fn [{:keys [files] :as opts}]
                (-> {:method           :post
                     :url              (nav/path-for nav :routes.api/artifact)

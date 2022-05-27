@@ -27,7 +27,8 @@
                                    *form
                                    [:version/name])]])
     (finally
-      (forms/destroy! *form))))
+      (forms/destroy! *form)
+      (forms/destroy! *artifacts))))
 
 (defn ^:private version* [sys {:keys [file] :as attrs}]
   (r/with-let [*artifacts (serv/artifacts#res:new sys)
@@ -43,7 +44,8 @@
                                    *form
                                    [:version/name])]])
     (finally
-      (forms/destroy! *form))))
+      (forms/destroy! *form)
+      (res/destroy! *artifacts))))
 
 (defmethod modals/body ::create
   [_ sys {:keys [*res close!] :as attrs}]
@@ -70,7 +72,9 @@
     [:div {:style {:display :flex}}
      [:h2.subtitle (:project/name project)]
      [:div {:style {:width "16px"}}]
-     [comp/with-resource *team team-view]]))
+     [comp/with-resource *team team-view]]
+    (finally
+      (res/destroy! *team))))
 
 (defn ^:private track-row [{:keys [nav] :as sys} *files idx file]
   (r/with-let [click (serv/files#modal:version sys [::version {:*res *files
@@ -113,7 +117,9 @@
                *project (serv/projects#res:fetch-one sys project-id)]
     [:div
      [comp/with-resource *project project-details sys]
-     [comp/with-resource *files track-list sys *files *project project-id]]))
+     [comp/with-resource *files track-list sys *files *project project-id]]
+    (finally
+      (run! res/destroy! [*project *files]))))
 
 (defn root [sys state]
   [page sys state])

@@ -77,4 +77,6 @@
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}
-      "Create one"]]))
+      "Create one"]]
+    (finally
+      (res/destroy! *res))))

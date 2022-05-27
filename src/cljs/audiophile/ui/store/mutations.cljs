@@ -51,13 +51,25 @@
   [state [_ {:keys [id]}]]
   (update state :forms dissoc id))
 
-(defmethod store/mutate* :form/merge
+(defmethod store/mutate* :form/init
   [state [_ {:keys [id data]}]]
-  (update-in state [:forms id] merge data))
+  (assoc-in state [:forms id] data))
 
 (defmethod store/mutate* :form/update
   [state [_ {:keys [id f]}]]
-  (update-in state [:forms id] f))
+  (maps/update-in-maybe state [:forms id] f))
+
+(defmethod store/mutate* :resource/init
+  [state [_ {:keys [id data]}]]
+  (assoc-in state [:resources id] data))
+
+(defmethod store/mutate* :resource/remove
+  [state [_ {:keys [id]}]]
+  (update state :resources dissoc id))
+
+(defmethod store/mutate* :resource/set
+  [state [_ {:keys [id data]}]]
+  (maps/update-in-maybe state [:resources id] (constantly data)))
 
 (defmethod store/mutate* :toast/create
   [state [_ {:keys [id] :as toast}]]

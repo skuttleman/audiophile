@@ -1,6 +1,7 @@
 (ns audiophile.ui.views.file.core
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields.dropdown :as dd]
     [audiophile.ui.forms.core :as forms]
@@ -53,7 +54,9 @@
 (defn ^:private page [sys state]
   (r/with-let [file-id (-> state :nav/route :params :file/id)
                *file (serv/files#res:fetch-one sys file-id)]
-    [comp/with-resource *file init sys]))
+    [comp/with-resource *file init sys]
+    (finally
+      (res/destroy! *file))))
 
 (defn root [sys state]
   [page sys state])

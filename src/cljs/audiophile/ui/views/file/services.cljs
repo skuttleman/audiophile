@@ -6,6 +6,7 @@
     [audiophile.common.infrastructure.http.core :as http]
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.common.infrastructure.resources.core :as res]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.forms.watchable :as form.watch]
     [audiophile.ui.resources.impl :as ires]
@@ -17,8 +18,9 @@
 (def ^:private comments#validator:new
   (val/validator {:spec specs/comment:create}))
 
-(defn artifacts#res:fetch-one [{:keys [http-client nav]}]
-  (ires/base (fn [{artifact-id :artifact/id}]
+(defn artifacts#res:fetch-one [{:keys [http-client nav store]}]
+  (ires/base store
+             (fn [{artifact-id :artifact/id}]
                (http/get http-client
                          (nav/path-for nav :routes.api/artifacts:id {:params {:artifact/id artifact-id}})
                          {:response-type :blob}))))
@@ -49,11 +51,12 @@
                       (let [{:keys [handle params]} (:nav/route @store)]
                         (nav/replace! nav handle {:params (merge params val)}))))))
 
-(defn player#create [*artifact]
-  (player/->ArtifactPlayer (name (gensym)) (r/atom nil) *artifact))
+(defn player#create [*artifact opts]
+  (doto (player/->ArtifactPlayer (name (gensym)) (r/atom nil) *artifact)
+    (proto/load! opts)))
 
 (defn id [player]
-  (proto/id player))
+  (pcom/id player))
 
 (defn set-region!
   ([player]
@@ -77,7 +80,7 @@
   (proto/error? player))
 
 (defn destroy! [player]
-  (proto/destroy! player))
+  (pcom/destroy! player))
 
 (defn play-pause! [player]
   (proto/play-pause! player))

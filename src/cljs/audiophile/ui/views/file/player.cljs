@@ -1,6 +1,7 @@
 (ns audiophile.ui.views.file.player
   (:require
     [audiophile.common.infrastructure.resources.core :as res]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.ui.views.file.protocols :as proto]
     [com.ben-allred.vow.core :as v]))
 
@@ -33,9 +34,15 @@
         (.on "pause" update-position)))))
 
 (deftype ArtifactPlayer [id state *artifact]
-  proto/IIdentify
+  pcom/IIdentify
   (id [_]
     id)
+
+  pcom/IDestroy
+  (destroy! [_]
+    (when-let [^js/WaveSurfer surfer (:surfer @state)]
+      (.destroy surfer)
+      (swap! state dissoc :surfer :position)))
 
   proto/ISelectRegion
   (set-region! [this opts]
@@ -68,10 +75,6 @@
     (:ready? @state))
   (error? [_]
     (:error? @state))
-  (destroy! [_]
-    (when-let [^js/WaveSurfer surfer (:surfer @state)]
-      (.destroy surfer)
-      (swap! state dissoc :surfer :position)))
 
   proto/IPlayer
   (play-pause! [this]

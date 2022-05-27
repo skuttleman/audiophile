@@ -2,10 +2,12 @@
   (:require
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.strings :as strings]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.views.file.services :as serv]
+    [clojure.core.async :as async]
     [reagent.core :as r]))
 
 (defn ^:private ->time [sec]
@@ -14,10 +16,9 @@
     (strings/format "%d:%02d" min sec)))
 
 (defn ^:private ->selection [{:keys [position region]}]
-  (cond
-    region region
-    position [position position]
-    :else [0 0]))
+  (or region
+      (when position [position position])
+      [0 0]))
 
 (defn ^:private ->selection-label [start end]
   (cond-> (str "@" (->time start))
@@ -39,8 +40,7 @@
 
 (defn audio [sys attrs]
   (r/with-let [*artifact (serv/artifacts#res:fetch-one sys)
-               *player (doto (serv/player#create *artifact)
-                         (serv/load! attrs))]
+               *player (serv/player#create *artifact attrs)]
     (let [ready? (serv/ready? *player)
           error? (serv/error? *player)]
       [:div {:style {:width "100%"}}
@@ -61,16 +61,16 @@
           (when-not ready?
             [comp/spinner])])])
     (finally
-      (serv/destroy! *player))))
+      (serv/destroy! *player)
+      (res/destroy! *artifact))))
 
 (defn player [sys {:keys [artifact-id file-id file-version-id]}]
   (r/with-let [*comments (serv/comments#res:fetch-all sys file-id)
                *form (serv/comments#form:new sys *comments file-version-id)]
     [:div.panel-block.layout--stack-between
-     [audio sys
-      (-> {:artifact-id artifact-id}
-          (forms/with-attrs *form [:comment/selection])
-          (update :on-change comp ->selection))]
+     [audio sys (-> {:artifact-id artifact-id}
+                    (forms/with-attrs *form [:comment/selection])
+                    (update :on-change comp ->selection))]
      [comp/form {:*form *form
                  :style {:min-width "300px"}}
       [in/textarea (forms/with-attrs {:label       [comment-label *form]
@@ -79,4 +79,5 @@
                                      [:comment/body])]]
      [comp/with-resource *comments comment-viewer]]
     (finally
-      (forms/destroy! *form))))
+      (forms/destroy! *form)
+      (res/destroy! *comments))))

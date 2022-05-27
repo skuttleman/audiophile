@@ -228,4 +228,5 @@
                       :ref       ref-fn
                       :on-blur   on-blur}]
           args)
-    (finally (run! dom/remove-listener listeners))))
+    (finally
+      (run! dom/remove-listener listeners))))

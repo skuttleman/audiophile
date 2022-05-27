@@ -1,8 +1,10 @@
 (ns audiophile.ui.dev.core
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.domain.validations.core :as val]
     [audiophile.common.infrastructure.navigation.core :as nav]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.resources.protocols :as pres]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.app :as app]
@@ -50,16 +52,21 @@
 (deftype LoginResource [nav route]
   pres/IResource
   (request! [_ {:keys [email]}]
-    (nav/goto! nav :routes.auth/login {:params {:redirect-uri (:path route)
-                                                :email        email}})
-    (v/resolve))
+    (let [opts {:params {:redirect-uri (:path route)
+                         :email        email}}]
+      (v/resolve (nav/goto! nav :routes.auth/login opts))))
   (status [_]
-    :init))
+    :init)
+
+  pcom/IDestroy
+  (destroy! [_]))
 
 (defmethod login/form :dev
   [_ {:keys [nav store]} route]
-  (r/with-let [*resource (->LoginResource nav route)
-               *form (form.submit/create (form.std/create store nil login-validator) *resource)]
+  (r/with-let [id (uuids/random)
+               *form (form.submit/create id
+                                         (form.std/create id store nil login-validator)
+                                         (->LoginResource nav route))]
     [comp/form {:class       ["login-form"]
                 :submit/text "Login"
                 :*form       *form}
@@ -69,3 +76,9 @@
                                  [:email])]]
     (finally
       (forms/destroy! *form))))
+
+(defn print-store-state
+  ([]
+   (pp/pprint @(app/find-component @sys :services/store)))
+  ([ks]
+   (pp/pprint (select-keys @(app/find-component @sys :services/store) (map keyword ks)))))

@@ -3,6 +3,7 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.common.infrastructure.store.core :as store]
+    [audiophile.ui.forms.core :as forms]
     [audiophile.ui.forms.submittable :as form.submit]
     [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.store.actions :as act]
@@ -35,8 +36,9 @@
 (defn res:fetch
   ([sys handle]
    (res:fetch sys handle nil))
-  ([{:keys [http-client nav]} handle params]
-   (ires/http http-client
+  ([{:keys [http-client nav store]} handle params]
+   (ires/http store
+              http-client
               (fn [opts]
                 {:method :get
                  :url    (nav/path-for nav handle (update params :params merge opts))}))))
@@ -44,20 +46,24 @@
 (defn form:new
   ([sys attrs *form handle]
    (form:new sys attrs *form handle nil))
-  ([{:keys [http-client nav] :as sys} attrs *form handle params]
-   (form.submit/create *form
-                       (ires/http http-client
-                                  (fn [body]
-                                    {:method      :post
-                                     :url         (nav/path-for nav handle params)
-                                     :body        {:data body}
-                                     :http/async? true})
-                                  (fn [vow]
-                                    (-> vow
-                                        (with-handlers attrs)
-                                        (with-toast sys))))
-                       (or (:local->remote attrs) identity)
-                       (or (:remote->local attrs) identity))))
+  ([{:keys [http-client nav store] :as sys} attrs *form handle params]
+   (let [id (forms/id *form)]
+     (form.submit/create id
+                         *form
+                         (ires/http id
+                                    store
+                                    http-client
+                                    (fn [body]
+                                      {:method      :post
+                                       :url         (nav/path-for nav handle params)
+                                       :body        {:data body}
+                                       :http/async? true})
+                                    (fn [vow]
+                                      (-> vow
+                                          (with-handlers attrs)
+                                          (with-toast sys))))
+                         (or (:local->remote attrs) identity)
+                         (or (:remote->local attrs) identity)))))
 
 (defn modal:open [{:keys [store]} header body]
   (fn [_]

@@ -31,7 +31,7 @@
                            {}
                            (ecollaj/with-log-middleware
                              #(log/info "Action dispatched:" %)
-                             #(log/info "New state:" %)))]
+                             (constantly nil)))]
                (->Store (:get-state store) (:dispatch store) (volatile! nil))))))
 
 (defn create [_]

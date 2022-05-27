@@ -1,12 +1,9 @@
 (ns audiophile.ui.forms.protocols)
 
-(defprotocol ILifeCycle
+(defprotocol IInit
   "Can initialize or re-initialize itself to an internally defined immutable value."
   (init! [this value]
-         "Initializes itself with the given initial value.")
-  (destroy! [this]
-           "Destroys any internal resources.
-            Call this when the object is no longer needed."))
+         "Initializes itself with the given initial value."))
 
 (defprotocol IAttempt
   "Tracks whether the form has been attempted"

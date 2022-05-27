@@ -4,6 +4,7 @@
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.store.core :as store]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.ui.forms.protocols :as pforms]
     [audiophile.ui.store.actions :as act]
     [reagent.core :as r]))
@@ -13,10 +14,16 @@
     (f k *form old new)))
 
 (deftype WatchableForm [id store watchers]
-  pforms/ILifeCycle
+  pcom/IIdentify
+  (id [_]
+    id)
+
+  pforms/IInit
   (init! [_ value]
     (let [rep (maps/flatten value)]
-      (store/dispatch! store (act/form:merge id {:current rep}))))
+      (store/dispatch! store (act/form:init id {:current rep}))))
+
+  pcom/IDestroy
   (destroy! [_]
     (store/dispatch! store (act/form:cleanup id)))
 

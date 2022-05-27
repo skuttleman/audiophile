@@ -1,17 +1,25 @@
 (ns audiophile.ui.forms.submittable
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.forms.protocols :as pforms]
     [com.ben-allred.vow.core :as v]))
 
-(deftype SubmittableForm [*resource *form local->remote remote->local]
-  pforms/ILifeCycle
+(deftype SubmittableForm [id *resource *form local->remote remote->local]
+  pcom/IIdentify
+  (id [_]
+    id)
+
+  pforms/IInit
   (init! [_ value]
     (forms/init! *form value))
+
+  pcom/IDestroy
   (destroy! [_]
-    (pforms/destroy! *form))
+    (pcom/destroy! *resource)
+    (pcom/destroy! *form))
 
   pforms/IAttempt
   (attempt! [this]
@@ -55,7 +63,7 @@
     @*form))
 
 (defn create
-  ([*form *resource]
-   (create *form *resource identity identity))
-  ([*form *resource local->remote remote->local]
-   (->SubmittableForm *resource *form local->remote remote->local)))
+  ([id *form *resource]
+   (create id *form *resource identity identity))
+  ([id *form *resource local->remote remote->local]
+   (->SubmittableForm id *resource *form local->remote remote->local)))

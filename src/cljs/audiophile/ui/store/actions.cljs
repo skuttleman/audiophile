@@ -15,8 +15,8 @@
 (defn form:cleanup [id]
   [:form/cleanup {:id id}])
 
-(defn form:merge [id data]
-  [:form/merge (maps/->m id data)])
+(defn form:init [id data]
+  [:form/init {:id id :data data}])
 
 (defn form:update [id f & f-args]
   [:form/update {:id id :f #(apply f % f-args)}])
@@ -58,6 +58,15 @@
 
 (defn profile:set [profile]
   [:profile/set profile])
+
+(defn resource:init [id]
+  [:resource/init {:id id :data {:status :init}}])
+
+(defn resource:remove [id]
+  [:resource/remove {:id id}])
+
+(defn resource:set [id data]
+  [:resource/set (maps/->m id data)])
 
 (defn router:update [route]
   [:router/update route])

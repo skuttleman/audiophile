@@ -3,18 +3,22 @@
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.ui.forms.protocols :as pforms]
     [clojure.string :as string]))
 
 (defn ^:private derefable? [x]
   (satisfies? IDeref x))
 
+(defn id [*form]
+  (pcom/id *form))
+
 (defn init! [*form value]
   (pforms/init! *form value)
   nil)
 
 (defn destroy! [*form]
-  (pforms/destroy! *form)
+  (pcom/destroy! *form)
   nil)
 
 (defn attempt! [*form]

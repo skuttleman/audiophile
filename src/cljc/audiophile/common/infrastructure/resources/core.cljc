@@ -1,6 +1,10 @@
 (ns audiophile.common.infrastructure.resources.core
   (:require
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.resources.protocols :as pres]))
+
+(defn id [resource]
+  (pcom/id resource))
 
 (defn request!
   ([resource]
@@ -10,6 +14,10 @@
 
 (defn status [resource]
   (pres/status resource))
+
+(defn destroy! [resource]
+  (pcom/destroy! resource)
+  nil)
 
 (defn requested? [resource]
   (not= :init (status resource)))
