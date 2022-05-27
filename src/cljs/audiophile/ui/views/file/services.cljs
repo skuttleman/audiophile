@@ -11,7 +11,6 @@
     [audiophile.ui.forms.watchable :as form.watch]
     [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.services.pages :as pages]
-    [audiophile.ui.store.queries :as q]
     [audiophile.ui.views.file.player :as player]
     [audiophile.ui.views.file.protocols :as proto]
     [reagent.core :as r]))
@@ -39,6 +38,9 @@
 (defn comments#res:fetch-all [sys file-id]
   (pages/res:fetch sys :routes.api/files:id.comments {:params {:file/id file-id}}))
 
+(defn files#modal:version [sys body]
+  (pages/modal:open sys [:h1.subtitle "Upload a new version"] body))
+
 (defn files#nav:add-version! [{:keys [nav]} {:keys [handle] :as route} file]
   (doto (-> file :file/versions first :file-version/id)
     (->> (assoc-in route [:params :file-version-id]) (nav/replace! nav handle))))
@@ -46,15 +48,23 @@
 (defn files#res:fetch-one [sys file-id]
   (pages/res:fetch sys :routes.api/files:id {:params {:file/id file-id}}))
 
-(defn versions#form:selector [{:keys [nav store]} version-id]
-  (doto (form.watch/create store {:file-version-id version-id})
-    (add-watch ::qp (fn [_ _ _ val]
-                      (let [{:keys [handle params]} @nav]
-                        (nav/replace! nav handle {:params (merge params val)}))))))
-
 (defn player#create [*artifact opts]
   (doto (player/->ArtifactPlayer (name (gensym)) (r/atom nil) *artifact)
     (proto/load! opts)))
+
+(defn projects#nav:ui [{:keys [nav]} project-id]
+  (nav/path-for nav :routes.ui/projects:id {:params {:project/id project-id}}))
+
+(defn versions#nav:qp [{:keys [nav]}]
+  (fn [version-id]
+    (let [{:keys [handle params]} @nav]
+      (nav/replace! nav handle {:params (assoc params :file-version-id version-id)}))))
+
+(defn versions#form:selector [{:keys [store] :as sys} version-id]
+  (let [handler (versions#nav:qp sys)]
+    (doto (form.watch/create store {:file-version-id version-id})
+      (add-watch ::qp (fn [_ _ _ val]
+                        (handler (:file-version-id val)))))))
 
 (defn id [player]
   (pcom/id player))

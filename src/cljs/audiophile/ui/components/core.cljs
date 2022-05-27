@@ -113,7 +113,7 @@
              {:style {:padding         "8px"
                       :justify-content :flex-start}}]
             tabs))
-    [:div.panel-block
+    [:div.panel-block.block
      body]]])
 
 (defn with-resource [*resource & _]

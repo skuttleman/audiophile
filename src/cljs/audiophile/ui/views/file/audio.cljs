@@ -31,7 +31,7 @@
   (let [[start end] (:comment/selection @*form)]
     [:div.layout--space-between
      {:style {:align-items :center}}
-     [:span "comment"]
+     [:span "Comment"]
      [:div {:style {:margin-right "-10px"}}
       [in/checkbox (forms/with-attrs {:label            (->selection-label start end)
                                       :form-field-class ["inline"]}

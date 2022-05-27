@@ -7,17 +7,20 @@
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
-    [audiophile.ui.store.queries :as q]
+    [audiophile.ui.views.common.core :as views]
     [audiophile.ui.views.project.services :as serv]
-    [reagent.core :as r]))
+    [reagent.core :as r]
+    [audiophile.ui.views.common.services :as cserv]))
 
 (defn ^:private create* [sys attrs]
-  (r/with-let [*artifacts (serv/artifacts#res:new sys)
+  (r/with-let [*artifacts (cserv/artifacts#res:new sys)
                *form (serv/files#form:new sys attrs (:project-id attrs))]
     (let [filename (get-in @*form [:artifact/details :artifact/filename])]
       [comp/form {:*form    *form
                   :disabled (res/requesting? *artifacts)}
-       [in/uploader (-> {:label     "File"
+       [in/uploader (-> {:style     {:width           "100%"
+                                     :justify-content :flex-start}
+                         :label     "File"
                          :*resource *artifacts
                          :display   (or filename "Select file…")}
                         (forms/with-attrs *form [:artifact/details]))]
@@ -31,23 +34,6 @@
       (forms/destroy! *form)
       (forms/destroy! *artifacts))))
 
-(defn ^:private version* [sys {:keys [file] :as attrs}]
-  (r/with-let [*artifacts (serv/artifacts#res:new sys)
-               *form (serv/files#form:version sys attrs (:file/id file))]
-    (let [filename (get-in @*form [:artifact/details :artifact/filename])]
-      [comp/form {:*form    *form
-                  :disabled (res/requesting? *artifacts)}
-       [in/uploader (-> {:label     "File"
-                         :*resource *artifacts
-                         :display   (or filename "Select file…")}
-                        (forms/with-attrs *form [:artifact/details]))]
-       [in/input (forms/with-attrs {:label "Version name"}
-                                   *form
-                                   [:version/name])]])
-    (finally
-      (forms/destroy! *form)
-      (res/destroy! *artifacts))))
-
 (defmethod modals/body ::create
   [_ sys {:keys [*res close!] :as attrs}]
   (let [attrs (assoc attrs :on-success (fn [result]
@@ -55,14 +41,6 @@
                                            (close! result))
                                          (some-> *res res/request!)))]
     [create* sys attrs]))
-
-(defmethod modals/body ::version
-  [_ sys {:keys [*res close!] :as attrs}]
-  (let [attrs (assoc attrs :on-success (fn [result]
-                                         (when close!
-                                           (close! result))
-                                         (some-> *res res/request!)))]
-    [version* sys attrs]))
 
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
@@ -77,9 +55,9 @@
     (finally
       (res/destroy! *team))))
 
-(defn ^:private track-row [{:keys [nav] :as sys} *files idx file]
-  (r/with-let [click (serv/files#modal:version sys [::version {:*res *files
-                                                               :file file}])]
+(defn ^:private track-row [sys *files idx file]
+  (r/with-let [click (serv/files#modal:version sys [::views/version {:*res *files
+                                                                     :file file}])]
     [:tr
      [:td {:style {:white-space :nowrap}}
       [:em (strings/format "%02d" (inc idx))]]
@@ -116,9 +94,10 @@
   (r/with-let [project-id (-> @nav :params :project/id)
                *files (serv/files#res:fetch-all sys project-id)
                *project (serv/projects#res:fetch-one sys project-id)]
-    [:div
-     [comp/with-resource *project project-details sys]
-     [comp/with-resource *files track-list sys *files *project project-id]]
+    [:div.layout--space-below.layout--xxl.gutters
+     [:div {:style {:width "100%"}}
+      [comp/with-resource *project project-details sys]
+      [comp/with-resource *files track-list sys *files *project project-id]]]
     (finally
       (run! res/destroy! [*project *files]))))
 

@@ -1,4 +1,12 @@
 .dropdown {
+    &, & button, & .dropdown-trigger {
+        width: 100%
+    }
+
+    .dropdown-trigger button {
+        justify-content: space-between;
+    }
+
     .dropdown-item {
         &.is-active {
             background-color: #3273dc;
