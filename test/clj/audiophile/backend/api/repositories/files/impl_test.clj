@@ -11,8 +11,7 @@
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]
-    [honeysql.core :as sql*]))
+    [audiophile.test.utils.stubs :as stubs]))
 
 (deftest create-artifact-test
   (testing "create-artifact"
@@ -84,7 +83,7 @@
                            (update-in [1 :where 2] tu/op-set)
                            (update-in [1 :where] tu/op-set)))))
               (is (= [[{:select   #{:file-versions.file-id
-                                    [(sql*/call :max :file-versions.created-at) :created-at]}
+                                    [[:max :file-versions.created-at] :created-at]}
                         :from     [:file-versions]
                         :group-by [:file-versions.file-id]}
                        :version]

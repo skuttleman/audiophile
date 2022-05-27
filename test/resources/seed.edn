@@ -6,7 +6,7 @@
                  :mobile-number "1234567890"}]}
  {:insert-into :teams
   :values      [{:name "Team Seed"
-                 :type #audiophile/sql-call [:cast "PERSONAL" :team_type]}]}
+                 :type [:cast "PERSONAL" :team_type]}]}
  {:insert-into :user-teams
   :values      [{:user-id #audiophile/fk [:users :email "joe@example.com"]
                  :team-id #audiophile/fk [:teams :name "Team Seed"]}]}
@@ -42,7 +42,7 @@
                  :emitted-at #inst "2020-04-17T09:38:47.599Z"}]}
  {:insert-into :comments
   :values      [{:file-version-id #audiophile/fk [:file-versions :name "File Version Seed"]
-                 :selection #audiophile/sql-call [:cast "[0.123,3.21]" :numrange]
+                 :selection [:cast "[0.123,3.21]" :numrange]
                  :body "Comment Seed 1"}
                 {:file-version-id #audiophile/fk [:file-versions :name "File Version Seed"]
                  :body "Comment Seed 2"

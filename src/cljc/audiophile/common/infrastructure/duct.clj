@@ -19,8 +19,7 @@
                                :from   [:event-types]
                                :where  [:and
                                         [:= :category category]
-                                        [:= :name name]]}))
-   'audiophile/sql-call   sql/call})
+                                        [:= :name name]]}))})
 
 (defmethod env*/coerce 'Edn [s _]
   (edn*/read-string s))
