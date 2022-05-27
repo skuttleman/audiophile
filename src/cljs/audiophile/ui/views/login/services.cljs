@@ -6,13 +6,14 @@
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.services.pages :as pages]
+    [audiophile.ui.store.queries :as q]
     [reagent.core :as r]))
 
 (def ^:private users#validator:signup
   (val/validator {:spec specs/user:create}))
 
 (defn users#form:signup [{:keys [nav store] :as sys} path]
-  (let [{:user/keys [email handle] :as profile} (:user/profile @store)
+  (let [{:user/keys [email handle] :as profile} (q/user:profile store)
         handle (or handle (second (re-find #"^([^@]+).*" email)))
         *conflicts (r/atom nil)
         *form (form.std/create store

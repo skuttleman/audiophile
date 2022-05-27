@@ -7,6 +7,7 @@
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.views.project.services :as serv]
     [reagent.core :as r]))
 
@@ -111,8 +112,8 @@
            [:div "This projects doesn't have any tracks. You should upload one."])]
         [comp/spinner]))))
 
-(defn ^:private page [sys state]
-  (r/with-let [project-id (get-in state [:nav/route :params :project/id])
+(defn ^:private page [{:keys [store] :as sys}]
+  (r/with-let [project-id (-> (q/nav:route store) :params :project/id)
                *files (serv/files#res:fetch-all sys project-id)
                *project (serv/projects#res:fetch-one sys project-id)]
     [:div
@@ -121,5 +122,5 @@
     (finally
       (run! res/destroy! [*project *files]))))
 
-(defn root [sys state]
-  [page sys state])
+(defn root [sys]
+  [page sys])

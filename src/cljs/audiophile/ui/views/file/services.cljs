@@ -5,12 +5,13 @@
     [audiophile.common.domain.validations.specs :as specs]
     [audiophile.common.infrastructure.http.core :as http]
     [audiophile.common.infrastructure.navigation.core :as nav]
-    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.common.infrastructure.protocols :as pcom]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.forms.watchable :as form.watch]
     [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.services.pages :as pages]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.views.file.player :as player]
     [audiophile.ui.views.file.protocols :as proto]
     [reagent.core :as r]))
@@ -48,7 +49,7 @@
 (defn versions#form:selector [{:keys [nav store]} version-id]
   (doto (form.watch/create store {:file-version-id version-id})
     (add-watch ::qp (fn [_ _ _ val]
-                      (let [{:keys [handle params]} (:nav/route @store)]
+                      (let [{:keys [handle params]} (q/nav:route store)]
                         (nav/replace! nav handle {:params (merge params val)}))))))
 
 (defn player#create [*artifact opts]

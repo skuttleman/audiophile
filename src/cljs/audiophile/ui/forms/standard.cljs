@@ -5,7 +5,8 @@
     [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.forms.protocols :as pforms]
-    [audiophile.ui.store.actions :as act]))
+    [audiophile.ui.store.actions :as act]
+    [audiophile.ui.store.queries :as q]))
 
 (deftype StandardForm [id store errors-fn]
   pcom/IIdentify
@@ -29,7 +30,7 @@
   (attempt! [_]
     (store/dispatch! store (act/form:update id merge {:form/attempted true})))
   (attempted? [_]
-    (get-in @store [:forms id :form/attempted]))
+    (:form/attempted (q/form:state store id)))
   (attempting? [_]
     false)
 
@@ -40,10 +41,10 @@
                      [update [:current dissoc path]])]
       (store/dispatch! store (apply act/form:update id f args))))
   (changed? [_]
-    (let [{:keys [current init]} (get-in @store [:forms id])]
+    (let [{:keys [current init]} (q/form:state store id)]
       (= current init)))
   (changed? [_ path]
-    (let [{:keys [current init]} (get-in @store [:forms id])]
+    (let [{:keys [current init]} (q/form:state store id)]
       (= (get current path) (get init path))))
 
   pforms/ITrack
@@ -52,11 +53,11 @@
   (touch! [_ path]
     (store/dispatch! store (act/form:update id update :touched conj path)))
   (touched? [_]
-    (let [val (get-in @store [:forms id])]
+    (let [val (q/form:state store id)]
       (or (:form/touched val)
           (boolean (seq (:touched val))))))
   (touched? [_ path]
-    (let [val (get-in @store [:forms id])]
+    (let [val (q/form:state store id)]
       (or (:form/touched val)
           (contains? (:touched val) path))))
 
@@ -66,7 +67,10 @@
 
   IDeref
   (-deref [_]
-    (maps/nest (get-in @store [:forms id :current]))))
+    (-> store
+        (q/form:state id)
+        :current
+        maps/nest)))
 
 (defn create
   "Creates a validated local form with the initial value set to `init-value` which

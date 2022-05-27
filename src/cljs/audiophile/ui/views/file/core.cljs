@@ -5,6 +5,7 @@
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields.dropdown :as dd]
     [audiophile.ui.forms.core :as forms]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.views.file.audio :as audio]
     [audiophile.ui.views.file.services :as serv]
     [reagent.core :as r]))
@@ -46,17 +47,17 @@
       (forms/destroy! *form))))
 
 (defn ^:private init [file {:keys [store] :as sys}]
-  (let [route (:nav/route @store)
+  (let [route (q/nav:route store)
         version-id (or (-> route :params :file-version-id)
                        (serv/files#nav:add-version! sys route file))]
     [page* sys file version-id]))
 
-(defn ^:private page [sys state]
-  (r/with-let [file-id (-> state :nav/route :params :file/id)
+(defn ^:private page [{:keys [store] :as sys}]
+  (r/with-let [file-id (-> (q/nav:route store) :params :file/id)
                *file (serv/files#res:fetch-one sys file-id)]
     [comp/with-resource *file init sys]
     (finally
       (res/destroy! *file))))
 
-(defn root [sys state]
-  [page sys state])
+(defn root [sys]
+  [page sys])

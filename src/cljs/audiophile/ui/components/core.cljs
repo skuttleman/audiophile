@@ -53,7 +53,7 @@
        seq
        boolean))
 
-(defn not-found [_ _]
+(defn not-found [_]
   [:div {:style {:display         :flex
                  :align-items     :center
                  :justify-content :center}}

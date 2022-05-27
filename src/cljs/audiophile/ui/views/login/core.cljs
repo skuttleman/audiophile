@@ -6,6 +6,7 @@
     [audiophile.ui.components.notices :as not]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.services.login :as login]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.views.login.services :as serv]
     [reagent.core :as r]))
 
@@ -18,7 +19,7 @@
        :on-click click}
       "Login"]]))
 
-(defn ^:private layout [sys {:keys [login-key msg state]}]
+(defn ^:private layout [{:keys [store] :as sys} {:keys [login-key msg]}]
   [:div..gutters.layout--xl.layout--xxl.layout--inset
    [:div
     [:h1.title [comp/icon :headphones] " Audiophile"]
@@ -33,16 +34,14 @@
    [:div.gutters.layout--xxl
     [:div.layout--space-above.layout--space-below
      [:h3.subtitle.is-5 msg]]
-    [login/form login-key sys (:nav/route state)]]])
+    [login/form login-key sys (q/nav:route store)]]])
 
 (defn root [{:keys [store] :as sys} attrs]
-  (let [state @store]
-    [:div
-     [not/banners sys (:banners state)]
-     [:div.main.layout--inset
-      {:class ["page-login"]}
-      [:div.layout--inset
-       [layout sys (assoc attrs :state state)]]]]))
+  [:div
+   [not/banners sys (q/banner:state store)]
+   [:div.main.layout--inset.page-login
+    [:div.layout--inset
+     [layout sys attrs]]]])
 
 (defmethod login/form :signup
   [_ sys {:keys [path]}]

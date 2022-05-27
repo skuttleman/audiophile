@@ -3,10 +3,11 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
-    [audiophile.common.infrastructure.store.core :as store]
     [audiophile.common.infrastructure.protocols :as pcom]
+    [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.forms.protocols :as pforms]
     [audiophile.ui.store.actions :as act]
+    [audiophile.ui.store.queries :as q]
     [reagent.core :as r]))
 
 (defn ^:private notify! [*form watchers old new]
@@ -36,15 +37,18 @@
       (store/dispatch! store (apply act/form:update id f args))
       (-notify-watches this old @this)))
   (changed? [_]
-    (let [{:keys [current init]} (get-in @store [:forms id])]
+    (let [{:keys [current init]} (q/form:state store id)]
       (= current init)))
   (changed? [_ path]
-    (let [{:keys [current init]} (get-in @store [:forms id])]
+    (let [{:keys [current init]} (q/form:state store id)]
       (= (get current path) (get init path))))
 
   IDeref
   (-deref [_]
-    (maps/nest (get-in @store [:forms id :current])))
+    (-> store
+        (q/form:state id)
+        :current
+        maps/nest))
 
   IWatchable
   (-notify-watches [this old-val new-val]

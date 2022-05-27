@@ -1,14 +1,15 @@
 (ns audiophile.ui.resources.impl
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.common.infrastructure.resources.protocols :as pres]
     [audiophile.common.infrastructure.store.core :as store]
-    [com.ben-allred.vow.core :as v]
-    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.ui.store.actions :as act]
-    [audiophile.common.core.utils.maps :as maps]))
+    [audiophile.ui.store.queries :as q]
+    [com.ben-allred.vow.core :as v]))
 
 (deftype ReactiveResource [id store opts->vow]
   pcom/IIdentify
@@ -23,7 +24,7 @@
                   (let [action (act/resource:set id (maps/->m status result))]
                     (store/dispatch! store action))))))
   (status [_]
-    (get-in @store [:resources id :status]))
+    (:status (q/res:state store id)))
 
   pcom/IDestroy
   (destroy! [_]
@@ -31,7 +32,7 @@
 
   IDeref
   (-deref [_]
-    (get-in @store [:resources id :result])))
+    (:result (q/res:state store id))))
 
 (defn base
   ([store opts-vow]

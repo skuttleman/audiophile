@@ -4,6 +4,7 @@
     [audiophile.common.infrastructure.store.core :as store]
     [audiophile.ui.services.ws :as ws]
     [audiophile.ui.store.actions :as act]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.system.core :as sys]
     [audiophile.ui.utils.modulizer :as mod]
     [com.ben-allred.vow.core :as v :include-macros true]
@@ -29,7 +30,7 @@
   (store/init! store sys)
   (-> (store/dispatch! store act/profile#load!)
       (v/peek (fn [[status]]
-                (let [profile (:user/profile @store)
+                (let [profile (q/user:profile store)
                       view (cond
                              (= :error status)
                              [@login sys {:msg "Login to get started" :login-key login-key}]

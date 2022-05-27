@@ -3,6 +3,7 @@
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.components.notices :as not]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.utils.modulizer :as mod]
     [audiophile.ui.views.layout.services :as serv]
     [reagent.core :as r]))
@@ -22,10 +23,10 @@
             (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
      (or text "Logout")]))
 
-(defn ^:private header [{:keys [nav] :as sys} state]
+(defn ^:private header [{:keys [nav store] :as sys}]
   (r/with-let [shown? (r/atom false)]
-    (let [handle (get-in state [:nav/route :handle])
-          user (:user/profile state)
+    (let [handle (:handle (q/nav:route store))
+          user (q/user:profile store)
           text (if (= (:token/type user) :token/signup)
                  "Start over"
                  "Logout")
@@ -66,23 +67,22 @@
           [:div.buttons
            [logout {:nav nav :text text}]]]]]])))
 
-(defn ^:private root* [sys state]
-  (let [handle (get-in state [:nav/route :handle])
+(defn ^:private root* [{:keys [store] :as sys}]
+  (let [handle (:handle (q/nav:route store))
         comp (case handle
                :routes.ui/home @dashboard
                :routes.ui/files:id @file
                :routes.ui/projects:id @project
                comp/not-found)]
-    [comp sys state]))
+    [comp sys]))
 
 (defn root [{:keys [store] :as sys}]
-  (let [state @store]
-    [:div
-     [not/banners sys (:banners state)]
-     [header sys state]
-     [:div.main.layout--inset
-      {:class [(str "page-" (some-> state (get-in [:nav/route :handle]) name))]}
-      [:div.layout--inset
-       [root* sys state]]]
-     [modals/root sys (:modals state)]
-     [not/toasts sys (:toasts state)]]))
+  [:div
+   [not/banners sys (q/banner:state store)]
+   [header sys]
+   [:div.main.layout--inset
+    {:class [(str "page-" (some-> (q/nav:route store) :handle name))]}
+    [:div.layout--inset
+     [root* sys]]]
+   [modals/root sys (q/modal:state store)]
+   [not/toasts sys (q/toast:state store)]])
