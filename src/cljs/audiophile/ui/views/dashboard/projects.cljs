@@ -22,7 +22,7 @@
     (get-in options-by-id [team-id :team/name])
     "Select a team…"))
 
-(defn ^:private create* [teams sys attrs]
+(defn ^:private create* [sys attrs teams]
   (r/with-let [options (->> teams
                             (colls/split-on personal?)
                             (apply concat)
@@ -53,9 +53,9 @@
                                          (when close!
                                            (close! result))
                                          (some-> *res res/request!)))]
-    [comp/with-resource (:*teams attrs) create* sys attrs]))
+    [comp/with-resource (:*teams attrs) [create* sys attrs]]))
 
-(defn project-list [projects sys]
+(defn project-list [sys projects]
   [:div
    [:p [:strong "Your projects"]]
    (if (seq projects)
@@ -73,7 +73,7 @@
                                                                 :*teams *teams}])]
     [comp/tile
      [:h2.subtitle "Projects"]
-     [comp/with-resource [*res {:spinner/size :small}] project-list sys]
+     [comp/with-resource [*res {:spinner/size :small}] [project-list sys]]
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}

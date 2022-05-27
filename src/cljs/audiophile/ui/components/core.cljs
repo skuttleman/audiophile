@@ -116,13 +116,14 @@
     [:div.panel-block.block
      body]]])
 
-(defn with-resource [*resource & _]
-  (let [[*resource opts] (colls/force-sequential *resource)]
+(defn with-resource [*resource comp]
+  (let [[*resource opts] (colls/force-sequential *resource)
+        comp (colls/force-sequential comp)]
     (when-not (res/requested? *resource)
       (res/request! *resource opts))
-    (fn [_ comp & args]
+    (fn [_ _]
       (let [status (res/status *resource)]
         (case status
-          :success (into [comp @*resource] args)
+          :success (conj comp @*resource)
           :error [:div.error [alert :error "An error occurred."]]
           [spinner {:size (:spinner/size opts)}])))))

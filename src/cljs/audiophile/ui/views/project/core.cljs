@@ -1,6 +1,7 @@
 (ns audiophile.ui.views.project.core
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.strings :as strings]
     [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.components.core :as comp]
@@ -8,9 +9,9 @@
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.views.common.core :as views]
+    [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.project.services :as serv]
-    [reagent.core :as r]
-    [audiophile.ui.views.common.services :as cserv]))
+    [reagent.core :as r]))
 
 (defn ^:private create* [sys attrs]
   (r/with-let [*artifacts (cserv/artifacts#res:new sys)
@@ -45,7 +46,7 @@
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
 
-(defn ^:private project-details [project sys]
+(defn ^:private project-details [sys project]
   (r/with-let [team-id (:project/team-id project)
                *team (serv/teams#res:fetch-one sys team-id)]
     [:div {:style {:display :flex}}
@@ -70,7 +71,7 @@
         :on-click click}
        "New version"]]]))
 
-(defn track-list [files sys *files *project project-id]
+(defn track-list [sys {:keys [*files *project project-id]} files]
   (r/with-let [click (serv/files#modal:create sys [::create {:*res       *files
                                                              :project-id project-id}])]
     (when-not (res/error? *project)
@@ -96,8 +97,8 @@
                *project (serv/projects#res:fetch-one sys project-id)]
     [:div.layout--space-below.layout--xxl.gutters
      [:div {:style {:width "100%"}}
-      [comp/with-resource *project project-details sys]
-      [comp/with-resource *files track-list sys *files *project project-id]]]
+      [comp/with-resource *project [project-details sys]]
+      [comp/with-resource *files [track-list sys (maps/->m *files *project project-id)]]]]
     (finally
       (run! res/destroy! [*project *files]))))
 

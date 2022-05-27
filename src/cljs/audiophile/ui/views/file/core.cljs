@@ -1,6 +1,7 @@
 (ns audiophile.ui.views.file.core
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.input-fields.dropdown :as dd]
@@ -56,7 +57,7 @@
     (finally
       (forms/destroy! *form))))
 
-(defn ^:private init [file {:keys [nav] :as sys} *file]
+(defn ^:private init [{:keys [nav] :as sys} {:keys [*file]} file]
   (let [route @nav
         version-id (or (-> route :params :file-version-id)
                        (serv/files#nav:add-version! sys route file))]
@@ -65,7 +66,7 @@
 (defn ^:private page [{:keys [nav] :as sys}]
   (r/with-let [file-id (-> @nav :params :file/id)
                *file (serv/files#res:fetch-one sys file-id)]
-    [comp/with-resource *file init sys *file]
+    [comp/with-resource *file [init sys (maps/->m *file)]]
     (finally
       (res/destroy! *file))))
 

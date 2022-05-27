@@ -72,7 +72,9 @@
                     (forms/with-attrs *form [:comment/selection])
                     (update :on-change comp ->selection))]
      [comp/form {:*form *form
-                 :style {:min-width "300px"}}
+                 :style {:min-width "300px"
+                         :max-width "700px"
+                         :width     "50%"}}
       [in/textarea (forms/with-attrs {:label       [comment-label *form]
                                       :auto-focus? true}
                                      *form

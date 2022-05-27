@@ -78,6 +78,7 @@
   (second (colls/only! (ig/find-derived system k))))
 
 (comment
+  (some-> system ig/halt!)
   (reset-system! #{"api" "auth" "jobs" "ui"})
   (reset-system! #{"api"})
   (reset-system! #{"auth"})
