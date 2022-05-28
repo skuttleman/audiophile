@@ -33,6 +33,44 @@
         (.on "finish" update-position)
         (.on "pause" update-position)))))
 
+(defn ^:private artifact-player#destroy! [state]
+  (when-let [^js/WaveSurfer surfer (:surfer @state)]
+    (.destroy surfer)
+    (swap! state dissoc :surfer :position)))
+
+(defn ^:private artifact-player#set-region! [this state {:keys [start end]}]
+  (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
+                                     (:surfer @state))]
+    (.clearRegions surfer)
+    (if (and start end)
+      (do (.addRegion surfer #js {:start start :end end})
+          (swap! state assoc :region [start end]))
+      (swap! state dissoc :region))))
+
+(defn artifact-player#load! [this id state *artifact {:keys [artifact-id on-change]}]
+  (remove-watch state ::events)
+  (swap! state dissoc :ready? :error?)
+  (when on-change
+    (add-watch state ::events (fn [_ _ old new]
+                                (let [data (select-keys new #{:region :position})]
+                                  (when (not= data (select-keys old #{:region :position}))
+                                    (on-change data))))))
+  (-> *artifact
+      (res/request! {:artifact/id artifact-id})
+      (v/then (comp (init-surfer state) (on-load this id))
+              (fn [_]
+                (swap! state assoc :error? true)))))
+
+(defn ^:private artifact-player#play-pause! [this state]
+  (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
+                                     (:surfer @state))]
+    (.playPause surfer)))
+
+(defn ^:private artifact-player#playing? [this state]
+  (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
+                                     (:surfer @state))]
+    (.isPlaying surfer)))
+
 (deftype ArtifactPlayer [id state *artifact]
   pcom/IIdentify
   (id [_]
@@ -40,36 +78,17 @@
 
   pcom/IDestroy
   (destroy! [_]
-    (when-let [^js/WaveSurfer surfer (:surfer @state)]
-      (.destroy surfer)
-      (swap! state dissoc :surfer :position)))
+    (artifact-player#destroy! state))
 
   proto/ISelectRegion
-  (set-region! [this {:keys [start end]}]
-    (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
-                                       (:surfer @state))]
-      (.clearRegions surfer)
-      (if (and start end)
-        (do (.addRegion surfer #js {:start start :end end})
-            (swap! state assoc :region [start end]))
-        (swap! state dissoc :region))))
+  (set-region! [this opts]
+    (artifact-player#set-region! this state opts))
   (region [_]
     (:region @state))
 
   proto/ILoad
-  (load! [this {:keys [artifact-id on-change]}]
-    (remove-watch state ::events)
-    (swap! state dissoc :ready? :error?)
-    (when on-change
-      (add-watch state ::events (fn [_ _ old new]
-                                  (let [data (select-keys new #{:region :position})]
-                                    (when (not= data (select-keys old #{:region :position}))
-                                      (on-change data))))))
-    (-> *artifact
-        (res/request! {:artifact/id artifact-id})
-        (v/then (comp (init-surfer state) (on-load this id))
-                (fn [_]
-                  (swap! state assoc :error? true)))))
+  (load! [this opts]
+    (artifact-player#load! this id state *artifact opts))
   (ready? [_]
     (:ready? @state))
   (error? [_]
@@ -77,10 +96,6 @@
 
   proto/IPlayer
   (play-pause! [this]
-    (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
-                                       (:surfer @state))]
-      (.playPause surfer)))
+    (artifact-player#play-pause! this state))
   (playing? [this]
-    (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
-                                       (:surfer @state))]
-      (.isPlaying surfer))))
+    (artifact-player#playing? this state)))

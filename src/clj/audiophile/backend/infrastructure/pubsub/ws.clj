@@ -66,25 +66,31 @@
          ::heartbeat-int-ms heartbeat-int-ms
          ::pubsub pubsub))
 
+(defn ^:private web-socket-channel#send! [this ^Channel ch serde msg]
+  (log/with-ctx [this :WS]
+    (try
+      (log/trace "sending msg to websocket" msg)
+      (web.async/send! ch (cond->> msg
+                            serde (serdes/serialize serde)))
+      (catch Throwable ex
+        (log/error ex "failed to send msg to websocket" msg)
+        (throw ex)))))
+
+(defn ^:private web-socket-channel#close! [this ^Channel ch]
+  (log/with-ctx [this :WS]
+    (try
+      (web.async/close ch)
+      (catch Throwable ex
+        (log/warn ex "web socket did not close successfully")))))
+
 (deftype WebSocketChannel [^Channel ch serde]
   pps/IChannel
   (open? [_]
     (web.async/open? ch))
   (send! [this msg]
-    (log/with-ctx [this :WS]
-      (try
-        (log/trace "sending msg to websocket" msg)
-        (web.async/send! ch (cond->> msg
-                              serde (serdes/serialize serde)))
-        (catch Throwable ex
-          (log/error ex "failed to send msg to websocket" msg)
-          (throw ex)))))
+    (web-socket-channel#send! this ch serde msg))
   (close! [this]
-    (log/with-ctx [this :WS]
-      (try
-        (web.async/close ch)
-        (catch Throwable ex
-          (log/warn ex "web socket did not close successfully"))))))
+    (web-socket-channel#close! this ch)))
 
 (defn handler [{:keys [heartbeat-int-ms pubsub]}]
   (fn [request]
@@ -110,11 +116,9 @@
       (merge (:headers request) (get-in request [:nav/route :params]))))
 
 (defmulti handle-event* (fn [_ _ event]
-                          (case (:event/type event)
-                            :user/created ::signup
-                            nil)))
+                          (:event/type event)))
 
-(defmethod handle-event* ::signup
+(defmethod handle-event* :user/created
   [pubsub jwt-serde {event-id :event/id :event/keys [ctx] :as event}]
   (let [token (jwt/login-token jwt-serde (:event/data event))]
     (ps/send-user! pubsub
@@ -133,14 +137,18 @@
                  (dissoc event :event/ctx)
                  ctx))
 
+(defn ^:private web-socket-message-handler#handle!
+  [this pubsub jwt-serde {event-id :event/id :as event}]
+  (log/with-ctx [this :CP]
+    (log/info "publishing event to ws" event-id)
+    (handle-event* pubsub jwt-serde event)))
+
 (deftype WebSocketMessageHandler [pubsub jwt-serde]
   pint/IMessageHandler
   (handle? [_ _]
     true)
-  (handle! [this {event-id :event/id :as event}]
-    (log/with-ctx [this :CP]
-      (log/info "publishing event to ws" event-id)
-      (handle-event* pubsub jwt-serde event))))
+  (handle! [this msg]
+    (web-socket-message-handler#handle! this pubsub jwt-serde msg)))
 
 (defn event->ws-handler [{:keys [jwt-serde pubsub]}]
   (->WebSocketMessageHandler pubsub jwt-serde))

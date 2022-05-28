@@ -24,19 +24,21 @@
           (assoc :event/event-type event-type)
           (update :event/data (partial val/conform spec))))))
 
-(deftype EventsExecutor [executor event-types events user-events conform-fn]
-  pe/IEventsExecutor
-  (insert-event! [_ {event-type :event/type :as event} {user-id :user/id}]
-    (let [event (assoc event
-                       :emitted-by user-id
-                       :event-type-id (select-event-type-id event-types event-type))]
-      (-> events
-          (models/insert-into event)
-          (->> (repos/execute! executor))
-          colls/only!
-          :id)))
+(defn ^:private events-executor#insert-event!
+  [executor event-types events event opts]
+  (let [event (assoc event
+                     :emitted-by (:user/id opts)
+                     :event-type-id (select-event-type-id event-types
+                                                          (:event/type event)))]
+    (-> events
+        (models/insert-into event)
+        (->> (repos/execute! executor))
+        colls/only!
+        :id)))
 
-  (select-for-user [_ user-id {:filter/keys [since]}]
+(defn ^:private events-executor#select-for-user
+  [executor events user-events conform-fn user-id opts]
+  (let [since (:filter/since opts)]
     (-> user-events
         (models/remove-fields #{:user-id})
         (models/select* (cond->> [:= :user-events.user-id user-id]
@@ -51,6 +53,14 @@
                                      $query
                                      {:model-fn     (crepos/->model-fn user-events)
                                       :result-xform (map conform-fn)})))))
+
+(deftype EventsExecutor [executor event-types events user-events conform-fn]
+  pe/IEventsExecutor
+  (insert-event! [_ event opts]
+    (events-executor#insert-event! executor event-types events event opts))
+
+  (select-for-user [_ user-id opts]
+    (events-executor#select-for-user executor events user-events conform-fn user-id opts)))
 
 (defn ->executor
   "Factory constructor for [[EventsExecutor]] for interacting with the events repository."

@@ -109,63 +109,89 @@
                                      :file-id     file-id
                                      :name        (:version/name version)}))
 
+(defn ^:private files-repo-executor#insert-artifact! [executor artifact artifacts _]
+  (->> artifact
+       (insert-artifact artifacts)
+       (repos/execute! executor)
+       colls/only!
+       :id))
+
+(defn ^:private files-repo-executor#find-by-artifact-id
+  [executor artifacts projects files file-versions user-teams artifact-id opts]
+  (-> artifacts
+      models/select*
+      (assoc :where [:and
+                     [:= :artifacts.id artifact-id]
+                     [:exists (artifact-access-clause projects
+                                                      files
+                                                      file-versions
+                                                      user-teams
+                                                      (:user/id opts))]])
+      (->> (repos/execute! executor))
+      colls/only!))
+
+(defn ^:private files-repo-executor#find-event-artifact [executor artifacts artifact-id]
+  (-> executor
+      (repos/execute! (models/select-by-id* artifacts artifact-id))
+      colls/only!))
+
+(defn ^:private files-repo-executor#insert-file!
+  [executor files file-versions file {project-id :project/id}]
+  (let [file-id (-> files
+                    (insert {:name       (:file/name file)
+                             :project-id project-id})
+                    (->> (repos/execute! executor))
+                    colls/only!
+                    :id)]
+    (-> file-versions
+        (insert-version file file-id)
+        (->> (repos/execute! executor)))
+    file-id))
+
+(defn ^:private files-repo-executor#find-by-file-id
+  [executor files file-versions projects user-teams file-id opts]
+  (when-let [file (-> (if (:includes/versions? opts)
+                        (select-one-plain files file-id)
+                        (select-one files file-id))
+                      (update :where (fn [clause]
+                                       [:and
+                                        clause
+                                        [:exists
+                                         (file-access-clause projects
+                                                             user-teams
+                                                             (:user/id opts))]]))
+                      (->> (repos/execute! executor))
+                      colls/only!)]
+    (cond-> file
+      (:includes/versions? opts)
+      (assoc :file/versions
+             (repos/execute! executor (select-versions file-versions file-id))))))
+
 (deftype FilesRepoExecutor [executor artifacts file-versions files projects user-teams]
   pf/IArtifactsExecutor
   (insert-artifact-access? [_ _ _]
     true)
-  (insert-artifact! [_ artifact _]
-    (->> artifact
-         (insert-artifact artifacts)
-         (repos/execute! executor)
-         colls/only!
-         :id))
+  (insert-artifact! [_ artifact opts]
+    (files-repo-executor#insert-artifact! executor artifact artifacts opts))
   (find-by-artifact-id [_ artifact-id opts]
-    (-> artifacts
-        models/select*
-        (assoc :where [:and
-                       [:= :artifacts.id artifact-id]
-                       [:exists (artifact-access-clause projects
-                                                        files
-                                                        file-versions
-                                                        user-teams
-                                                        (:user/id opts))]])
-        (->> (repos/execute! executor))
-        colls/only!))
+    (files-repo-executor#find-by-artifact-id executor
+                                             artifacts
+                                             projects
+                                             files
+                                             file-versions
+                                             user-teams
+                                             artifact-id
+                                             opts))
   (find-event-artifact [_ artifact-id]
-    (-> executor
-        (repos/execute! (models/select-by-id* artifacts artifact-id))
-        colls/only!))
+    (files-repo-executor#find-event-artifact executor artifacts artifact-id))
 
   pf/IFilesExecutor
   (insert-file-access? [_ _ {project-id :project/id user-id :user/id}]
     (cdb/access? executor (access-project projects user-teams project-id user-id)))
-  (insert-file! [_ file {project-id :project/id}]
-    (let [file-id (-> files
-                      (insert {:name       (:file/name file)
-                               :project-id project-id})
-                      (->> (repos/execute! executor))
-                      colls/only!
-                      :id)]
-      (-> file-versions
-          (insert-version file file-id)
-          (->> (repos/execute! executor)))
-      file-id))
+  (insert-file! [_ file opts]
+    (files-repo-executor#insert-file! executor files file-versions file opts))
   (find-by-file-id [_ file-id opts]
-    (when-let [file (-> (if (:includes/versions? opts)
-                          (select-one-plain files file-id)
-                          (select-one files file-id))
-                        (update :where (fn [clause]
-                                         [:and
-                                          clause
-                                          [:exists (file-access-clause projects
-                                                                       user-teams
-                                                                       (:user/id opts))]]))
-                        (->> (repos/execute! executor))
-                        colls/only!)]
-      (cond-> file
-        (:includes/versions? opts)
-        (assoc :file/versions (repos/execute! executor
-                                              (select-versions file-versions file-id))))))
+    (files-repo-executor#find-by-file-id executor files file-versions projects user-teams file-id opts))
   (select-for-project [_ project-id opts]
     (repos/execute! executor (select-for-user* files
                                                projects

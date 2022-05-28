@@ -2,10 +2,8 @@
   (:require
     [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.api.repositories.projects.protocols :as pp]
-    [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.db.common :as cdb]
     [audiophile.backend.infrastructure.db.models.core :as models]
-    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]))
 
@@ -31,11 +29,12 @@
 (deftype ProjectsRepoExecutor [executor projects teams user-teams users]
   pp/IProjectsExecutor
   (find-by-project-id [_ project-id opts]
-    (colls/only! (repos/execute! executor
-                                 (if-let [user-id (:user/id opts)]
-                                   (select-one-for-user projects project-id user-teams user-id)
-                                   (models/select-by-id* projects project-id))
-                                 opts)))
+    (-> executor
+        (repos/execute! (if-let [user-id (:user/id opts)]
+                          (select-one-for-user projects project-id user-teams user-id)
+                          (models/select-by-id* projects project-id))
+          opts)
+        colls/only!))
   (select-for-user [_ user-id opts]
     (repos/execute! executor
                     (models/select* projects (has-team-clause user-teams user-id))

@@ -80,28 +80,35 @@
           (jwt/signup-token jwt-serde {:user/id    (uuids/random)
                                        :user/email email})))))
 
+(defn ^:private auth-interactor#logout [nav base-url params]
+  (-> nav
+      (->redirect-url base-url params)
+      ring/redirect
+      with-token))
+
+(defn ^:private auth-interactor#callback
+  [interactor oauth nav base-url jwt-serde base64-serde signup? params]
+  (let [token (params->token interactor oauth jwt-serde params signup?)
+        url (when token
+              (some->> params
+                       :state
+                       (serdes/deserialize base64-serde)
+                       :redirect-uri
+                       (str base-url)))]
+    (-> (or url
+            (->redirect-url nav base-url (when-not token
+                                           {:error-msg :login-failed})))
+        ring/redirect
+        (with-token token))))
+
 (deftype AuthInteractor [interactor oauth nav base-url jwt-serde base64-serde signup?]
   pint/IAuthInteractor
   (login [_ params]
     (redirect* nav oauth base-url jwt-serde base64-serde params))
   (logout [_ params]
-    (-> nav
-        (->redirect-url base-url params)
-        ring/redirect
-        with-token))
+    (auth-interactor#logout nav base-url params))
   (callback [_ params]
-    (let [token (params->token interactor oauth jwt-serde params signup?)
-          url (when token
-                (some->> params
-                         :state
-                         (serdes/deserialize base64-serde)
-                         :redirect-uri
-                         (str base-url)))]
-      (-> (or url
-              (->redirect-url nav base-url (when-not token
-                                             {:error-msg :login-failed})))
-          ring/redirect
-          (with-token token)))))
+    (auth-interactor#callback interactor oauth nav base-url jwt-serde base64-serde signup? params)))
 
 (defn interactor
   "Constructor for [[AuthInteractor]] used to provide authentication interaction flows."

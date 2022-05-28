@@ -20,13 +20,17 @@
   [executor opts]
   (users/find-by-email executor (:user/email opts) opts))
 
+(defn ^:private user-accessor#query-one
+  [repo {aud :token/aud user :auth/user :as opts}]
+  (if (contains? aud :token/signup)
+    user
+    (repos/transact! repo find-by opts)))
+
 (deftype UserAccessor [repo ch]
   pint/IUserAccessor
   pint/IAccessor
-  (query-one [_ {aud :token/aud user :auth/user :as opts}]
-    (if (contains? aud :token/signup)
-      user
-      (repos/transact! repo find-by opts)))
+  (query-one [_ opts]
+    (user-accessor#query-one repo opts))
   (create! [_ data opts]
     (ps/emit-command! ch :user/create! data opts)))
 

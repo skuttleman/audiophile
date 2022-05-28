@@ -33,31 +33,45 @@
       (catch Throwable ex
         (log/error ex "an error occurred while handling msg")))))
 
+(defn ^:private rabbit-mq-fanout-channel#send! [this ch exchange serde msg]
+  (let [msg' (serdes/serialize serde msg)]
+    (log/with-ctx [this :MQ]
+      (log/info "publishing to" exchange (select-keys msg #{:event/type :command/type}))
+      (lb/publish ch exchange "" msg' {:content-type (serdes/mime-type serde)}))))
+
+(defn ^:private rabbit-mq-fanout-channel#subscribe!
+  [this ch exchange queue-name serde ch-opts handler opts]
+  (let [queue-name (if-let [handler (:internal/handler opts)]
+                     (let [queue-name (str queue-name ":" handler)]
+                       (lq/declare ch queue-name ch-opts)
+                       (lq/bind ch queue-name exchange)
+                       queue-name)
+                     queue-name)
+        handler* (->handler handler exchange serde)]
+    (log/with-ctx [this :MQ]
+      (log/info "subscribing" queue-name "to" exchange)
+      (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler)))))
+
 (deftype RabbitMQFanoutChannel [ch exchange queue-name serde ch-opts]
   pps/IChannel
   (open? [_]
     (rmq/open? ch))
   (send! [this msg]
-    (let [msg' (serdes/serialize serde msg)]
-      (log/with-ctx [this :MQ]
-        (log/info "publishing to" exchange (select-keys msg #{:event/type :command/type}))
-        (lb/publish ch exchange "" msg' {:content-type (serdes/mime-type serde)}))))
+    (rabbit-mq-fanout-channel#send! this ch exchange serde msg))
   (close! [_]
     (u/silent!
       (some-> ch rmq/close)))
 
   pps/IMQChannel
-  (subscribe! [_ handler opts]
-    (let [queue-name (if-let [handler (:internal/handler opts)]
-                       (let [queue-name (str queue-name ":" handler)]
-                         (lq/declare ch queue-name ch-opts)
-                         (lq/bind ch queue-name exchange)
-                         queue-name)
-                       queue-name)
-          handler* (->handler handler exchange serde)]
-      (log/with-ctx :MQ
-        (log/info "subscribing" queue-name "to" exchange)
-        (lc/subscribe ch queue-name handler* (dissoc opts :internal/handler))))))
+  (subscribe! [this handler opts]
+    (rabbit-mq-fanout-channel#subscribe! this
+                                         ch
+                                         exchange
+                                         queue-name
+                                         serde
+                                         ch-opts
+                                         handler
+                                         opts)))
 
 (defmulti ->channel :type)
 

@@ -38,13 +38,26 @@
                        (models/select-fields #{:team-id}))
                    [:= :user-teams.user-id :member.id])))
 
+(defn ^:private team-repo-executor#insert-team!
+  [executor teams user-teams team {user-id :user/id}]
+  (let [team-id (-> executor
+                    (repos/execute! (models/insert-into teams team))
+                    colls/only!
+                    :id)]
+    (repos/execute! executor
+                    (insert-user-team user-teams
+                                      team-id
+                                      user-id))
+    team-id))
+
 (deftype TeamsRepoExecutor [executor teams user-teams users]
   pt/ITeamsExecutor
   (find-by-team-id [_ team-id opts]
-    (colls/only! (repos/execute! executor
-                                 (if-let [user-id (:user/id opts)]
-                                   (select-one-for-user teams user-teams team-id user-id)
-                                   (models/select-by-id* teams team-id)))))
+    (-> executor
+        (repos/execute! (if-let [user-id (:user/id opts)]
+                          (select-one-for-user teams user-teams team-id user-id)
+                          (models/select-by-id* teams team-id)))
+        colls/only!))
   (select-team-members [_ team-id opts]
     (repos/execute! executor
                     (select-team users user-teams team-id)
@@ -55,16 +68,8 @@
                     (merge opts (opts* teams))))
   (insert-team-access? [_ _ _]
     true)
-  (insert-team! [_ team {user-id :user/id}]
-    (let [team-id (-> executor
-                      (repos/execute! (models/insert-into teams team))
-                      colls/only!
-                      :id)]
-      (repos/execute! executor
-                      (insert-user-team user-teams
-                                        team-id
-                                        user-id))
-      team-id))
+  (insert-team! [_ team opts]
+    (team-repo-executor#insert-team! executor teams user-teams team opts))
   (find-event-team [_ team-id]
     (-> executor
         (repos/execute! (models/select-by-id* teams team-id))

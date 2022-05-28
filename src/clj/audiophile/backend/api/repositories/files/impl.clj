@@ -14,6 +14,13 @@
       [data {:content-type content-type}]
       (throw (ex-info "artifact located with missing data" {:artifact-id artifact-id})))))
 
+(defn ^:private file-accessor#create-artifact! [store ch key data opts]
+  (let [uri (repos/uri store key opts)
+        data (assoc data :artifact/uri uri :artifact/key key)
+        payload (dissoc data :artifact/tempfile)]
+    (repos/put! store key data opts)
+    (ps/emit-command! ch :artifact/create! payload opts)))
+
 (deftype FileAccessor [repo store ch pubsub keygen publish-threshold]
   pint/IAccessor
   (query-many [_ opts]
@@ -23,12 +30,7 @@
 
   pint/IFileAccessor
   (create-artifact! [_ data opts]
-    (let [key (keygen)
-          uri (repos/uri store key opts)
-          data (assoc data :artifact/uri uri :artifact/key key)
-          payload (dissoc data :artifact/tempfile)]
-      (repos/put! store key data opts)
-      (ps/emit-command! ch :artifact/create! payload opts)))
+    (file-accessor#create-artifact! store ch (keygen) data opts))
   (create-file! [_ data opts]
     (ps/emit-command! ch :file/create! data opts))
   (create-file-version! [_ data opts]

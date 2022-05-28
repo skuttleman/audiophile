@@ -25,21 +25,25 @@
       (rfiles/find-event-version executor version-id))
     (throw (ex-info "insufficient access" {}))))
 
+(defn ^:private file-command-handler#handle!
+  [this repo ch {command-id :command/id :command/keys [ctx data type]}]
+  (let [[data-type id create*]
+        (case type
+          :artifact/create! ["artifact" :artifact/id create-artifact*]
+          :file/create! ["file" :file/id create-file*]
+          :file-version/create! ["file-version" :file-version/id create-file-version*])]
+    (log/with-ctx [this :CP]
+      (hc/with-command-failed! [ch type ctx]
+        (log/info "saving" data-type "to db" command-id)
+        (let [payload (repos/transact! repo create* data ctx)]
+          (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx))))))
+
 (deftype FileCommandHandler [repo ch]
   pint/IMessageHandler
   (handle? [_ msg]
     (contains? #{:artifact/create! :file/create! :file-version/create!} (:command/type msg)))
-  (handle! [this {command-id :command/id :command/keys [ctx data type]}]
-    (let [[data-type id create*]
-          (case type
-            :artifact/create! ["artifact" :artifact/id create-artifact*]
-            :file/create! ["file" :file/id create-file*]
-            :file-version/create! ["file-version" :file-version/id create-file-version*])]
-      (log/with-ctx [this :CP]
-        (hc/with-command-failed! [ch type ctx]
-          (log/info "saving" data-type "to db" command-id)
-          (let [payload (repos/transact! repo create* data ctx)]
-            (ps/emit-event! ch (get payload id) (keyword data-type "created") payload ctx)))))))
+  (handle! [this msg]
+    (file-command-handler#handle! this repo ch msg)))
 
 (defn msg-handler [{:keys [ch repo]}]
   (->FileCommandHandler repo ch))

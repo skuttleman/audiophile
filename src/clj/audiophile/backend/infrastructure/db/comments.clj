@@ -40,30 +40,44 @@
         (maps/select (complement selector))
         (assoc :comment/commenter commenter))))
 
+(defn ^:private select-for-file-query [comments projects files file-versions user-teams file-id opts]
+  (let [{file-version-id :file-version/id} opts]
+    (-> comments
+        (models/select* (when file-version-id
+                          [:= :comments.file-version-id file-version-id]))
+        (models/and-where [:= :comments.comment-id nil])
+        (models/and-where (has-file-clause projects
+                                           files
+                                           file-versions
+                                           user-teams
+                                           file-id
+                                           (:user/id opts))))))
+
+(defn ^:private select-for-file-join [query user-events users]
+  (-> query
+      (models/join (models/select-fields user-events #{})
+                   [:and
+                    [:= :user-events.model-id :comments.id]
+                    [:= :user-events.event-type "comment/created"]])
+      (models/left-join (models/alias users :commenter)
+                        [:= :user-events.emitted-by :commenter.id])
+      (models/order-by [:comments.created-at :desc])))
+
+
+(defn ^:private select-for-file* [query executor comments opts]
+  (repos/execute! executor
+                  query
+                  (assoc opts
+                         :model-fn (crepos/->model-fn comments)
+                         :result-xform (map nest-commenter))))
+
 (deftype CommentsRepoExecutor [executor comments projects files file-versions user-events user-teams users]
   pc/ICommentsExecutor
-  (select-for-file [_ file-id {file-version-id :file-version/id :as opts}]
-    (repos/execute! executor
-                    (-> comments
-                        (models/select* (when file-version-id
-                                          [:= :comments.file-version-id file-version-id]))
-                        (models/and-where [:= :comments.comment-id nil])
-                        (models/and-where (has-file-clause projects
-                                                           files
-                                                           file-versions
-                                                           user-teams
-                                                           file-id
-                                                           (:user/id opts)))
-                        (models/join (models/select-fields user-events #{})
-                                     [:and
-                                      [:= :user-events.model-id :comments.id]
-                                      [:= :user-events.event-type "comment/created"]])
-                        (models/left-join (models/alias users :commenter)
-                                          [:= :user-events.emitted-by :commenter.id])
-                        (models/order-by [:comments.created-at :desc]))
-                    (assoc opts
-                           :model-fn (crepos/->model-fn comments)
-                           :result-xform (map nest-commenter))))
+  (select-for-file [_ file-id opts]
+    (-> comments
+        (select-for-file-query projects files file-versions user-teams file-id opts)
+        (select-for-file-join user-events users)
+        (select-for-file* executor comments opts)))
   (insert-comment-access? [_ comment opts]
     (cdb/access? executor (access-file-version projects
                                                files

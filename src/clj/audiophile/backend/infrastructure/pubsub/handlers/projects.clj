@@ -13,16 +13,20 @@
       (rprojects/find-event-project executor project-id))
     (throw (ex-info "insufficient access" project))))
 
+(defn ^:private project-command-handler#handle!
+  [this repo ch {command-id :command/id :command/keys [ctx data type]}]
+  (log/with-ctx [this :CP]
+    (hc/with-command-failed! [ch type ctx]
+      (log/info "saving project to db" command-id)
+      (let [project (repos/transact! repo create* data ctx)]
+        (ps/emit-event! ch (:project/id project) :project/created project ctx)))))
+
 (deftype ProjectCommandHandler [repo ch]
   pint/IMessageHandler
   (handle? [_ msg]
     (= :project/create! (:command/type msg)))
-  (handle! [this {command-id :command/id :command/keys [ctx data type]}]
-    (log/with-ctx [this :CP]
-      (hc/with-command-failed! [ch type ctx]
-        (log/info "saving project to db" command-id)
-        (let [project (repos/transact! repo create* data ctx)]
-          (ps/emit-event! ch (:project/id project) :project/created project ctx))))))
+  (handle! [this msg]
+    (project-command-handler#handle! this repo ch msg)))
 
 (defn msg-handler [{:keys [ch repo]}]
   (->ProjectCommandHandler repo ch))

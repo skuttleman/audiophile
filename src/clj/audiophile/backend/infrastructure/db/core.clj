@@ -20,33 +20,40 @@
     (cond-> sql
       (not (vector? sql)) vector)))
 
+(defn ^:private executor#execute! [this conn ->builder-fn query-formatter query opts]
+  (let [formatted (mapv (fn [v]
+                          (cond-> v
+                            (inst? v) (-> .getTime Timestamp.)))
+                        (prepos/format query-formatter query))]
+    (log/with-ctx [this :DB]
+      (log/debug query)
+      (log/info (first formatted)))
+    (jdbc/execute! conn formatted (assoc (:sql/opts opts)
+                                         :builder-fn (->builder-fn opts)))))
+
+(defn ^:private transactor#healthy? [datasource]
+  (let [conn (.getConnection datasource)]
+    (try
+      (not (.isClosed conn))
+      (catch Throwable _
+        false)
+      (finally (.close conn)))))
+
 (deftype Executor [conn ->builder-fn query-formatter]
   prepos/IExecute
   (execute! [this query opts]
-    (let [formatted (mapv #(cond-> % (inst? %) (-> .getTime Timestamp.)) (prepos/format query-formatter query))]
-      (log/with-ctx [this :DB]
-        (log/debug query)
-        (log/info (first formatted)))
-      (jdbc/execute! conn formatted (assoc (:sql/opts opts)
-                                           :builder-fn (->builder-fn opts))))))
+    (executor#execute! this conn ->builder-fn query-formatter query opts)))
 
 (deftype Transactor [datasource opts ->executor]
   prepos/ITransact
   (transact! [_ f]
-    (jdbc/transact datasource
-                   (comp f ->executor)
-                   opts))
+    (jdbc/transact datasource (comp f ->executor) opts))
 
   phttp/ICheckHealth
   (display-name [_]
     ::Transactor)
   (healthy? [_]
-    (let [conn (.getConnection datasource)]
-      (try
-        (not (.isClosed conn))
-        (catch Throwable _
-          false)
-        (finally (.close conn)))))
+    (transactor#healthy? datasource))
   (details [_]
     nil))
 

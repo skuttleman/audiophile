@@ -24,26 +24,29 @@
     (throw (ex-info "one or more unique fields are present" {:conflicts fields})))
   {:user/id (rusers/insert-user! executor user opts)})
 
+(defn ^:private user-command-handler#handle! [repo commands events {command-id :command/id :command/keys [ctx type data] :as command}]
+  (log/info "saving user to db" command-id)
+  (when-let [user (hc/with-command-failed! [events type ctx]
+                    (repos/transact! repo create* data ctx))]
+    (let [ctx (-> command
+                  :command/ctx
+                  (set/rename-keys {:user/id :signup/id}))
+          ctx' (assoc ctx :user/id (:user/id user))]
+      (hc/with-command-failed! [events type ctx]
+        (ps/emit-command! commands
+                          :team/create!
+                          {:team/name "My Personal Projects"
+                           :team/type :PERSONAL}
+                          ctx')
+        (ps/emit-event! events (:user/id user) :user/created user ctx')))))
+
 (deftype UserCommandHandler [repo commands events]
   pint/IMessageHandler
   (handle? [_ msg]
     (= :user/create! (:command/type msg)))
-  (handle! [this {command-id :command/id :command/keys [ctx type data] :as command}]
+  (handle! [this msg]
     (log/with-ctx [this :CP]
-      (log/info "saving user to db" command-id)
-      (when-let [user (hc/with-command-failed! [events type ctx]
-                        (repos/transact! repo create* data ctx))]
-        (let [ctx (-> command
-                      :command/ctx
-                      (set/rename-keys {:user/id :signup/id}))
-              ctx' (assoc ctx :user/id (:user/id user))]
-          (hc/with-command-failed! [events type ctx]
-            (ps/emit-command! commands
-                              :team/create!
-                              {:team/name "My Personal Projects"
-                               :team/type :PERSONAL}
-                              ctx')
-            (ps/emit-event! events (:user/id user) :user/created user ctx')))))))
+      (user-command-handler#handle! repo commands events msg))))
 
 (defn msg-handler [{:keys [commands events repo]}]
   (->UserCommandHandler repo commands events))
