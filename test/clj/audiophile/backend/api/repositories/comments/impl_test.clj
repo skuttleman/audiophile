@@ -31,27 +31,37 @@
                      [:comments.body "comment/body"]
                      [:comments.selection "comment/selection"]
                      [:comments.created-at "comment/created-at"]
-                     [:comments.file-version-id "comment/file-version-id"]}
+                     [:comments.file-version-id "comment/file-version-id"]
+                     [:commenter.id "commenter/id"]
+                     [:commenter.handle "commenter/handle"]
+                     [:commenter.email "commenter/email"]
+                     [:commenter.mobile-number "commenter/mobile-number"]
+                     [:commenter.first-name "commenter/first-name"]
+                     [:commenter.last-name "commenter/last-name"]
+                     [:commenter.created-at "commenter/created-at"]}
                    (set select)))
 
-            (is (= [:exists {:select #{1}
-                             :from   [:file-versions]
-                             :where  [:and
-                                      #{[:= #{:file-versions.id :comments.file-version-id}]
-                                        [:= #{:files.id file-id}]
-                                        [:= #{:user-teams.user-id user-id}]}]
-                             :join   [:files [:= #{:files.id :file-versions.file-id}]
-                                      :projects [:= #{:projects.id :files.project-id}]
-                                      :user-teams [:= #{:user-teams.team-id :projects.team-id}]]}]
+            (is (= [:and #{[:= #{:comments.comment-id nil}]
+                           [:exists {:select #{1}
+                                     :from   [:file-versions]
+                                     :where  [:and
+                                              #{[:= #{:file-versions.id :comments.file-version-id}]
+                                                [:= #{:files.id file-id}]
+                                                [:= #{:user-teams.user-id user-id}]}]
+                                     :join   [:files [:= #{:files.id :file-versions.file-id}]
+                                              :projects [:= #{:projects.id :files.project-id}]
+                                              :user-teams [:= #{:user-teams.team-id :projects.team-id}]]}]}]
                    (-> where
-                       (update 1 (fns/=> (update :select set)
+                       (update 1 tu/op-set)
+                       (update-in [2 1] (fns/=> (update :select set)
                                          (update :where (fns/=> (update 1 tu/op-set)
                                                                 (update 2 tu/op-set)
                                                                 (update 3 tu/op-set)
                                                                 tu/op-set))
                                          (update :join (fns/=> (update 1 tu/op-set)
                                                                (update 3 tu/op-set)
-                                                               (update 5 tu/op-set)))))))))
+                                                               (update 5 tu/op-set)))))
+                       tu/op-set))))
 
           (testing "returns the results"
             (is (= [{:some :result}] result))))))))

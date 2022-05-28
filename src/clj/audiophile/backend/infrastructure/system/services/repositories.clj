@@ -22,7 +22,7 @@
   (models/models cfg))
 
 (defmethod ig/init-key :audiophile.repositories/model [_ cfg]
-  (models/model cfg))
+  (models/->model cfg))
 
 (defmethod ig/init-key :audiophile.repositories/repo [_ cfg]
   (crepos/repo cfg))

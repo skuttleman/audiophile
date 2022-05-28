@@ -27,6 +27,14 @@
   :values      [{:file-id     #audiophile/fk [:files :name "File Seed"]
                  :artifact-id #audiophile/fk [:artifacts :filename "example.mp3"]
                  :name        "File Version Seed"}]}
+ {:insert-into :comments
+  :values      [{:file-version-id #audiophile/fk [:file-versions :name "File Version Seed"]
+                 :selection [:cast "[0.123,3.21]" :numrange]
+                 :body "Comment Seed 1"}]}
+ {:insert-into :comments
+  :values      [{:file-version-id #audiophile/fk [:file-versions :name "File Version Seed"]
+                 :body "Comment Seed 2"
+                 :comment-id #audiophile/fk [:comments :body "Comment Seed 1"]}]}
  {:insert-into :events
   :values      [{:event-type-id #audiophile/event-type :team/created
                  :model-id #audiophile/fk [:teams :name "Team Seed"]
@@ -39,11 +47,12 @@
                 {:event-type-id #audiophile/event-type :artifact/created
                  :model-id #audiophile/fk [:artifacts :key "some-key"]
                  :emitted-by #audiophile/fk [:users :email "joe@example.com"]
-                 :emitted-at #inst "2020-04-17T09:38:47.599Z"}]}
- {:insert-into :comments
-  :values      [{:file-version-id #audiophile/fk [:file-versions :name "File Version Seed"]
-                 :selection [:cast "[0.123,3.21]" :numrange]
-                 :body "Comment Seed 1"}
-                {:file-version-id #audiophile/fk [:file-versions :name "File Version Seed"]
-                 :body "Comment Seed 2"
-                 :comment-id #audiophile/fk [:comments :body "Comment Seed 1"]}]}]
+                 :emitted-at #inst "2020-04-17T09:38:47.599Z"}
+                {:event-type-id #audiophile/event-type :comment/created
+                 :model-id #audiophile/fk [:comments :body "Comment Seed 1"]
+                 :emitted-by #audiophile/fk [:users :email "joe@example.com"]
+                 :emitted-at #inst "2020-04-17T09:48:47.599Z"}
+                {:event-type-id #audiophile/event-type :comment/created
+                 :model-id #audiophile/fk [:comments :body "Comment Seed 2"]
+                 :emitted-by #audiophile/fk [:users :email "joe@example.com"]
+                 :emitted-at #inst "2020-04-17T09:58:47.599Z"}]}]

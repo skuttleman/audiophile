@@ -37,6 +37,7 @@
                 :returning   [:id]}
                (dissoc query :values)))
         (is (= {:emitted-by    user-id
+                :ctx           {:user/id user-id}
                 :event-type-id {:select #{[:event-types.id "event-type/id"]}
                                 :from   [:event-types]
                                 :where  [:and

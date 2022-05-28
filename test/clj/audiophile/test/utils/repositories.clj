@@ -10,10 +10,10 @@
     [audiophile.test.utils.stubs :as stubs]))
 
 (defn ^:private ->model [[table-name {:keys [spec namespace]}]]
-  [table-name (models/model {:models     {table-name {:fields (set (keys spec))
-                                                      :spec   spec}}
-                             :table-name table-name
-                             :namespace  namespace})])
+  [table-name (models/->model {:models     {table-name {:fields (set (keys spec))
+                                                        :spec   spec}}
+                               :table-name table-name
+                               :namespace  namespace})])
 
 (def models
   (into {}
@@ -33,6 +33,7 @@
                                      :created-at      [:timestamp-without-time-zone]}
                          :namespace :comment}
          :events        {:spec      {:id            [:uuid]
+                                     :ctx           [:jsonb true]
                                      :data          [:jsonb true]
                                      :event-type-id [:uuid]
                                      :model-id      [:uuid]
@@ -65,6 +66,14 @@
                                      :id         [:uuid]
                                      :created-at [:timestamp-without-time-zone]}
                          :namespace :team}
+         :user-events   {:spec      {:id         [:uuid]
+                                     :ctx        [:jsonb true]
+                                     :data       [:jsonb true]
+                                     :event-type [:user-defined]
+                                     :model-id   [:uuid]
+                                     :emitted-at [:timestamp-without-time-zone]
+                                     :emitted-by [:uuid]}
+                         :namespace :user-event}
          :user-teams    {:spec      {:team-id [:uuid]
                                      :user-id [:uuid]}
                          :namespace :user-team}
@@ -98,12 +107,13 @@
   ([config]
    (fn [executor models]
      (->comment-executor executor (merge models config))))
-  ([executor {:keys [comments file-versions files projects user-teams users]}]
+  ([executor {:keys [comments file-versions files projects user-events user-teams users]}]
    (db.comments/->CommentsRepoExecutor executor
                                        comments
                                        projects
                                        files
                                        file-versions
+                                       user-events
                                        user-teams
                                        users)))
 

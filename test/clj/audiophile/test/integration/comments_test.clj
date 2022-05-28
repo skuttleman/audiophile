@@ -28,8 +28,8 @@
               (assert/has? {:comment/body      "Comment Seed 1"
                             :comment/selection [0.123 3.21]}
                            comments)
-              (assert/has? {:comment/body "Comment Seed 2"}
-                           comments))))
+              (assert/missing? {:comment/body "Comment Seed 2"}
+                               comments))))
 
         (testing "when authenticated as a user with no comments"
           (let [user {:user/id (uuids/random)}

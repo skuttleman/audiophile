@@ -59,6 +59,10 @@
    [:comment/selection {:optional true} [:tuple number? number?]]
    [:comment/comment-id {:optional true} uuid?]])
 
+(def comment:fetch-all
+  [:map
+   [:file-version/id {:optional true} uuid?]])
+
 (def event:fetch-all
   [:map
    [:filter/since {:optional true} uuid?]])
@@ -101,6 +105,11 @@
   (-> auth
       (mu/merge [:map [:request/id {:optional true} uuid?]])
       (mu/merge comment:create)))
+
+(def api-comment:fetch-all
+  (-> file-id
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge comment:fetch-all)))
 
 (def api-ws:connect
   (mu/merge auth

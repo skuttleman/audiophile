@@ -27,6 +27,7 @@
       (require 'audiophile.backend.dev.handler :reload)
       (require 'audiophile.backend.api.repositories.common :reload)
       (require 'audiophile.backend.api.repositories.core :reload)
+      (require 'audiophile.backend.api.repositories.comments.impl :reload)
       (require 'audiophile.backend.api.repositories.events.impl :reload)
       (require 'audiophile.backend.api.repositories.files.impl :reload)
       (require 'audiophile.backend.api.repositories.projects.impl :reload)

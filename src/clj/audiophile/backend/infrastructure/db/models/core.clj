@@ -1,7 +1,6 @@
 (ns audiophile.backend.infrastructure.db.models.core
+  (:refer-clojure :exclude [alias])
   (:require
-    [camel-snake-kebab.core :as csk]
-    [clojure.string :as string]
     [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.infrastructure.db.models.sql :as sql]
     [audiophile.common.core.serdes.core :as serdes]
@@ -9,7 +8,10 @@
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.domain.validations.core :as val]
+    [camel-snake-kebab.core :as csk]
+    [clojure.string :as string]
     [jsonista.core :as jsonista]
     [next.jdbc.result-set :as result-set])
   (:import
@@ -79,7 +81,7 @@
                                      [:= :table-schema "public"]
                                      [:not= :table-name "db_migrations"]]})))
 
-(defn model
+(defn ->model
   "Constructor for db model."
   [{:keys [models namespace table-name]}]
   (-> models
@@ -96,6 +98,22 @@
     [(keyword (str (name (or alias table)) "." (name field)))
      (str (name (or alias namespace)) "/" (name field))]))
 
+(defn ^:private where* [query op clause]
+  (cond-> query
+    clause (update :where (fn [[op' :as where]]
+                            (cond
+                              (nil? where) clause
+                              (= op op') (conj where clause)
+                              :else [op where clause])))))
+
+(defn model [{:keys [table] :as model}]
+  (maps/assoc-defaults model
+                       :alias table
+                       :fields #{}))
+
+(defn alias [model alias]
+  (assoc model :alias alias))
+
 (defn select-fields
   "Filter fields on a model before selection. Fields not on the model are ignored."
   [model field-set]
@@ -109,10 +127,17 @@
 (defn select*
   "Generates a query for selecting from a database table"
   ([model clause]
-   (assoc (select* model) :where clause))
+   (cond-> (select* model)
+     clause (assoc :where clause)))
   ([{:keys [fields] :as model}]
    {:select (mapv (->field model) fields)
     :from   [(from model)]}))
+
+(defn and-where [query clause]
+  (where* query :and clause))
+
+(defn or-where [query clause]
+  (where* query :and clause))
 
 (defn select-by-id* [{:keys [alias table] :as model} id]
   (let [primary-key (keyword (str (name (or alias table)) ".id"))]
@@ -142,13 +167,19 @@
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
 
-(defn join [query {:keys [_alias fields _namespace _table] :as model} on]
+(defn ^:private join* [query join-type {:keys [_alias fields _namespace _table] :as model} on]
   (-> query
       (update :select into (map (->field model)) fields)
-      (update :join
+      (update join-type
               (fnil conj [])
               (from model)
               on)))
+
+(defn join [query model on]
+  (join* query :join model on))
+
+(defn left-join [query model on]
+  (join* query :left-join model on))
 
 (defn order-by [query & clauses]
   (update query :order-by (fnil into []) clauses))

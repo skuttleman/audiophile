@@ -30,7 +30,7 @@
 
 (defn ^:private select-team [users user-teams team-id]
   (-> users
-      (assoc :alias :member)
+      (models/alias :member)
       (models/select-fields #{:id :first-name :last-name})
       (models/select* [:= :user-teams.team-id team-id])
       (models/join (-> user-teams

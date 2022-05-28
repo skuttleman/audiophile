@@ -54,17 +54,16 @@
   (-> files
       (models/select-fields #{:id :idx :name :project-id})
       (models/select* clause)
-      (models/join {:table  {:select   [:file-versions.file-id
-                                        [(sql/max :file-versions.created-at) :created-at]]
-                             :from     [:file-versions]
-                             :group-by [:file-versions.file-id]}
-                    :fields #{:created-at}
-                    :alias  :version}
+      (models/join (models/model {:table  {:select   [:file-versions.file-id
+                                                      [(sql/max :file-versions.created-at) :created-at]]
+                                           :from     [:file-versions]
+                                           :group-by [:file-versions.file-id]}
+                                  :fields #{:created-at}
+                                  :alias  :version})
                    [:= :version.file-id :files.id])
-      (models/join {:table     :file-versions
-                    :namespace :version
-                    :fields    #{}
-                    :alias     :fv}
+      (models/join (models/model {:table     :file-versions
+                                  :namespace :version
+                                  :alias     :fv})
                    [:and
                     [:= :fv.file-id :version.file-id]
                     [:= :fv.created-at :version.created-at]])

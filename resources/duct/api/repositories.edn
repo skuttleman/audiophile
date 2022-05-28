@@ -90,6 +90,7 @@
   :files         #ig/ref :models/files
   :file-versions #ig/ref :models/file-versions
   :projects      #ig/ref :models/projects
+  :user-events   #ig/ref :models/user-events
   :user-teams    #ig/ref :models/user-teams
   :users         #ig/ref :models/users}
 

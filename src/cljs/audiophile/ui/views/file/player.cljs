@@ -45,14 +45,13 @@
       (swap! state dissoc :surfer :position)))
 
   proto/ISelectRegion
-  (set-region! [this opts]
+  (set-region! [this {:keys [start end]}]
     (when-let [^js/WaveSurfer surfer (when (proto/ready? this)
                                        (:surfer @state))]
       (.clearRegions surfer)
-      (if-let [{:keys [start end]} opts]
+      (if (and start end)
         (do (.addRegion surfer #js {:start start :end end})
-            (swap! state assoc :region [start end])
-            (.seekTo surfer (/ start (.getDuration surfer))))
+            (swap! state assoc :region [start end]))
         (swap! state dissoc :region))))
   (region [_]
     (:region @state))

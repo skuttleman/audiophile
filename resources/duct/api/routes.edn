@@ -47,7 +47,7 @@
 
  [:audiophile.spec/with-spec :api.handler/comments#get]
  {:handler #ig/ref :audiophile.handlers.comments/fetch-all
-  :spec    :api.common/file-id}
+  :spec    :api.comment/fetch-all}
 
  [:audiophile.spec/with-spec :api.handler/events#get]
  {:handler #ig/ref :audiophile.handlers.events/fetch-all

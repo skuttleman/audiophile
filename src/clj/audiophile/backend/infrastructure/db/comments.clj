@@ -6,7 +6,8 @@
     [audiophile.backend.infrastructure.db.common :as cdb]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.common.core.utils.colls :as colls]
-    [audiophile.common.core.utils.logger :as log]))
+    [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]))
 
 (defn ^:private access* [projects user-teams user-id]
   (-> projects
@@ -32,17 +33,37 @@
                (models/join user-teams [:= :user-teams.team-id :projects.team-id])
                (assoc :select [1]))])
 
-(deftype CommentsRepoExecutor [executor comments projects files file-versions user-teams users]
+(defn ^:private nest-commenter [row]
+  (let [selector (comp #{"commenter"} namespace)
+        commenter (maps/select row selector)]
+    (-> row
+        (maps/select (complement selector))
+        (assoc :comment/commenter commenter))))
+
+(deftype CommentsRepoExecutor [executor comments projects files file-versions user-events user-teams users]
   pc/ICommentsExecutor
-  (select-for-file [_ file-id opts]
+  (select-for-file [_ file-id {file-version-id :file-version/id :as opts}]
     (repos/execute! executor
-                    (models/select* comments (has-file-clause projects
-                                                              files
-                                                              file-versions
-                                                              user-teams
-                                                              file-id
-                                                              (:user/id opts)))
-                    (assoc opts :model-fn (crepos/->model-fn comments))))
+                    (-> comments
+                        (models/select* (when file-version-id
+                                          [:= :comments.file-version-id file-version-id]))
+                        (models/and-where [:= :comments.comment-id nil])
+                        (models/and-where (has-file-clause projects
+                                                           files
+                                                           file-versions
+                                                           user-teams
+                                                           file-id
+                                                           (:user/id opts)))
+                        (models/join (models/select-fields user-events #{})
+                                     [:and
+                                      [:= :user-events.model-id :comments.id]
+                                      [:= :user-events.event-type "comment/created"]])
+                        (models/left-join (models/alias users :commenter)
+                                          [:= :user-events.emitted-by :commenter.id])
+                        (models/order-by [:comments.created-at :desc]))
+                    (assoc opts
+                           :model-fn (crepos/->model-fn comments)
+                           :result-xform (map nest-commenter))))
   (insert-comment-access? [_ comment opts]
     (cdb/access? executor (access-file-version projects
                                                files
@@ -63,6 +84,6 @@
 
 (defn ->comment-executor
   "Factory function for creating [[CommentsRepoExecutor]] which provide access to the comment repository."
-  [{:keys [comments files file-versions projects user-teams users]}]
+  [{:keys [comments files file-versions projects user-events user-teams users]}]
   (fn [executor]
-    (->CommentsRepoExecutor executor comments projects files file-versions user-teams users)))
+    (->CommentsRepoExecutor executor comments projects files file-versions user-events user-teams users)))

@@ -61,7 +61,7 @@
   (->RawFormatter))
 
 (defn ->executor
-  "Factor function for constructing an [[Executor]] used to run individual queries inside a transaction."
+  "Factory function for constructing an [[Executor]] used to run individual queries inside a transaction."
   [{:keys [->builder-fn query-formatter]}]
   (fn [conn]
     (->Executor conn ->builder-fn query-formatter)))

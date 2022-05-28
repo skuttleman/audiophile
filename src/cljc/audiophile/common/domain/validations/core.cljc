@@ -44,15 +44,16 @@
         (conj spec))))
 
 (def ^:private lookup
-  {:api.common/auth       specs/auth
-   :api.profile/fetch     specs/profile
+  {:api.artifact/create   specs/api-artifact:create
+   :api.comment/fetch-all specs/api-comment:fetch-all
+   :api.comment/create    specs/api-comment:create
+   :api.common/auth       specs/auth
    :api.common/file-id    specs/file-id
    :api.common/project-id specs/project-id
    :api.common/team-id    specs/team-id
-   :api.artifact/create   specs/api-artifact:create
-   :api.comment/create    specs/api-comment:create
    :api.events/fetch-all  specs/api-event:fetch-all
    :api.file/create       specs/api-file:create
+   :api.profile/fetch     specs/profile
    :api.project/create    specs/api-project:create
    :api.team/create       specs/api-team:create
    :api.user/create       specs/api-user:create
