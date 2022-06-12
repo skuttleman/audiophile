@@ -8,7 +8,7 @@
 
 (defmethod shared/main* :run
   [_ [mode & args]]
-  (println "running with profile" (or (keyword mode) :single))
+  (println "running with profile" (or (keyword mode) :dev))
   (shared/run* mode args))
 
 (defmethod shared/run* :jar
@@ -21,25 +21,10 @@
                        (assoc "ENV" "production"
                               "SERVICES" "api auth jobs ui"))))
 
-(defmethod shared/run* :split
-  [_ _]
-  (shared/process! "foreman start --procfile Procfile-split"
-                   (-> {"LOG_LEVEL" "debug"}
-                       shared/with-default-env
-                       (assoc "ENV" "development"
-                              "WS_RECONNECT_MS" "1000"))))
-
-(defmethod shared/run* :multi
-  [_ _]
-  (shared/process! "foreman start --procfile Procfile-multi"
-                   (-> {"LOG_LEVEL" "debug"}
-                       shared/with-default-env
-                       (assoc "ENV" "development"
-                              "WS_RECONNECT_MS" "1000"))))
-
 (defmethod shared/run* :default
   [_ _]
-  (shared/process! "foreman start --procfile Procfile-single"
+  (shared/process! "docker-compose up -d")
+  (shared/process! "foreman start --procfile Procfile-dev"
                    (-> {"LOG_LEVEL" "debug"}
                        shared/with-default-env
                        (assoc "ENV" "development"

@@ -6,7 +6,7 @@ volumes:
   rabbitmq-data:
 
 services:
-  api:
+  app:
     build:
       context: .
       dockerfile: Dockerfile-dev
@@ -15,39 +15,19 @@ services:
       - LOG_LEVEL=debug
       - MQ_NAMESPACE=single
       - MQ_CONSUMER_GROUP=app
-      - API_BASE_URL=http://localhost:9000
-      - AUTH_BASE_URL=http://localhost:9000
+      - API_BASE_URL=http://localhost:8080
+      - AUTH_BASE_URL=http://localhost:8080
       - UI_BASE_URL=http://localhost:8080
-      - SERVICES=api auth jobs
+      - SERVICES=api auth jobs ui
     volumes:
       - ./:/app
       - audiophile-data:${HOME}/dev/audiophile:nocopy
     ports:
       - 8000:7000
-      - 9000:3000
+      - 8080:3000
     depends_on:
       - postgres
       - rabbitmq
-
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile-dev
-    environment:
-      - ENV=development
-      - LOG_LEVEL=debug
-      - WS_RECONNECT_MS=1000
-      - API_BASE_URL=http://localhost:9000
-      - AUTH_BASE_URL=http://localhost:9000
-      - UI_BASE_URL=http://localhost:8080
-      - SERVICES=ui
-    volumes:
-      - ./:/app
-    ports:
-      - 8080:3000
-      - 8100:7000
-    depends_on:
-      - api
 
   postgres:
     image: postgres
