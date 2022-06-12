@@ -1,7 +1,9 @@
 (ns audiophile.exec.run
   (:require
     [audiophile.exec.shared :as shared]
-    [babashka.process :as p]
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [clojure.set :as set]
     [clojure.string :as string]))
 
 (defmethod shared/main* :run
@@ -72,9 +74,20 @@
 
 (defmethod shared/main* :seed
   [_ [file]]
-  (let [sql (or file (str (System/getenv "PWD") "/dev/resources/db/seed.sql"))]
+  (let [sql (or file (str (System/getenv "PWD") "/dev/resources/db/seed.sql"))
+        env-common (io/file ".env-common")
+        env (if (.exists env-common)
+              (-> env-common
+                  slurp
+                  edn/read-string
+                  (select-keys #{"DB_USER" "DB_PASSWORD"})
+                  (set/rename-keys {"DB_USER"     "PGUSER"
+                                    "DB_PASSWORD" "PGPASSWORD"})
+                  (assoc "PGHOST" "127.0.0.1"))
+              {})]
     (shared/with-println [:db "seeding" "seeded"]
-      (shared/process! (str "psql audiophile -f " sql)))))
+      (shared/process! (str "psql audiophile -f " sql)
+                       env))))
 
 (defmethod shared/main* :migrate
   [_ _]

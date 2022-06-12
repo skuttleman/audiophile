@@ -64,7 +64,7 @@
   (duct/load-hierarchy)
   (reset-system! components)
   (let [nrepl-port (Long/parseLong (or (System/getenv "NREPL_PORT") "7000"))
-        server (nrepl/start-server :port nrepl-port)]
+        server (nrepl/start-server :bind "0.0.0.0" :port nrepl-port)]
     (log/with-ctx :nREPL
       (log/info "listening on port" nrepl-port))
     (.addShutdownHook (Runtime/getRuntime)

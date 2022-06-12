@@ -1,0 +1,77 @@
+version: "3.8"
+
+volumes:
+  audiophile-data:
+  postgres-data:
+  rabbitmq-data:
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    environment:
+      - ENV=development
+      - LOG_LEVEL=debug
+      - MQ_NAMESPACE=single
+      - MQ_CONSUMER_GROUP=app
+      - API_BASE_URL=http://localhost:9000
+      - AUTH_BASE_URL=http://localhost:9000
+      - UI_BASE_URL=http://localhost:8080
+      - SERVICES=api auth jobs
+    volumes:
+      - ./:/app
+      - audiophile-data:${HOME}/dev/audiophile:nocopy
+    ports:
+      - 8000:7000
+      - 9000:3000
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    environment:
+      - ENV=development
+      - LOG_LEVEL=debug
+      - WS_RECONNECT_MS=1000
+      - API_BASE_URL=http://localhost:9000
+      - AUTH_BASE_URL=http://localhost:9000
+      - UI_BASE_URL=http://localhost:8080
+      - SERVICES=ui
+    volumes:
+      - ./:/app
+    ports:
+      - 8080:3000
+      - 8100:7000
+    depends_on:
+      - api
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=skuttleman
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=audiophile
+    restart: always
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+  rabbitmq:
+    image: rabbitmq
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    restart: always
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./.rabbitmq-enabled-plugins:/etc/rabbitmq/enabled_plugins
+    ports:
+      - 5672:5672
+      - 15672:15672
