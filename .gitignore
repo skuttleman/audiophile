@@ -24,3 +24,4 @@ pom.xml.asc
 .hg/
 .cpcache
 .m2/
+.clj-kondo/

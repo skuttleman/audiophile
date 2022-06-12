@@ -79,4 +79,4 @@
 (defmethod shared/main* :migrate
   [_ _]
   (shared/with-println [:db "migrating" "migrated"]
-    (shared/process! #{:dev} "-m audiophile.backend.dev.migrations migrate")))
+    (shared/process! (shared/clj #{:dev} "-m audiophile.backend.dev.migrations migrate"))))
