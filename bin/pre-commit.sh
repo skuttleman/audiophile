@@ -10,12 +10,12 @@ function references() {
 }
 
 function reference_group() {
-  references src/clj/com/ben_allred/audiophile/backend/$1 $2
-  references src/cljc/com/ben_allred/audiophile/common/$1 $2
-  references src/cljs/com/ben_allred/audiophile/ui/$1 $2
-  references test/clj/com/ben_allred/audiophile/backend/$1 $2
-  references test/cljc/com/ben_allred/audiophile/common/$1 $2
-  references test/cljs/com/ben_allred/audiophile/ui/$1 $2
+  references src/clj/audiophile/backend/$1 $2
+  references src/cljc/audiophile/common/$1 $2
+  references src/cljs/audiophile/ui/$1 $2
+  references test/clj/audiophile/backend/$1 $2
+  references test/cljc/audiophile/common/$1 $2
+  references test/cljs/audiophile/ui/$1 $2
 }
 
 echo 'checking inverted dependencies'

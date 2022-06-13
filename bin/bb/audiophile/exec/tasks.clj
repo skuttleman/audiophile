@@ -81,19 +81,6 @@
                                       (recur [] (rest args)))
       :else (recur (conj run arg) (rest args)))))
 
-(defmethod shared/main* :docker
-  [_ _]
-  (shared/main* :build nil)
-  (shared/with-println [:docker:latest "building" "built"]
-    (shared/process! "docker build -t audiophile -f Dockerfile .")
-    (shared/process! "docker tag audiophile skuttleman/audiophile:latest")
-    (shared/process! "docker push skuttleman/audiophile:latest"))
-
-  (shared/with-println [:docker:dev "building" "built"]
-    (shared/process! "docker build -t audiophile-dev -f Dockerfile-dev .")
-    (shared/process! "docker tag audiophile-dev skuttleman/audiophile:dev")
-    (shared/process! "docker push skuttleman/audiophile:dev")))
-
 (defmethod shared/main* :install
   [_ _]
   (shared/with-println [:repo "installing" "installed"]

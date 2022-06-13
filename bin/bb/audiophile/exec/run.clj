@@ -23,7 +23,7 @@
 
 (defmethod shared/run* :default
   [_ _]
-  (shared/process! "docker-compose up -d")
+  (shared/process! "docker-compose up -d --build app")
   (shared/process! "foreman start --procfile Procfile-dev"
                    (-> {"LOG_LEVEL" "debug"}
                        shared/with-default-env
@@ -42,7 +42,8 @@
 
 (defmethod shared/test* :clj
   [_ args]
-  (try (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
+  (try (shared/process! "docker-compose up -d rabbitmq postgres")
+       (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
                                     "-m shadow.cljs.devtools.cli compile web-test"))
        (shared/process! (shared/clj #{:dev :test} (str "-m kaocha.runner"
                                                        (when (seq args)
