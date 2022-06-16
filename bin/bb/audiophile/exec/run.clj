@@ -11,16 +11,6 @@
   (println "running with profile" (or (keyword mode) :dev))
   (shared/run* mode args))
 
-(defmethod shared/run* :jar
-  [_ _]
-  (shared/main* :clean nil)
-  (shared/main* :build nil)
-  (shared/process! "foreman start"
-                   (-> {"LOG_LEVEL" "info"}
-                       shared/with-default-env
-                       (assoc "ENV" "production"
-                              "SERVICES" "api auth jobs ui"))))
-
 (defmethod shared/run* :default
   [_ _]
   (shared/process! "docker-compose up -d --build app")

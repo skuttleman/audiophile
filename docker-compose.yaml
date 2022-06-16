@@ -11,8 +11,6 @@ services:
       context: .
       dockerfile: Dockerfile-dev
     environment:
-      - ENV=development
-      - LOG_LEVEL=debug
       - MQ_NAMESPACE=single
       - MQ_CONSUMER_GROUP=app
       - API_BASE_URL=http://localhost:8080

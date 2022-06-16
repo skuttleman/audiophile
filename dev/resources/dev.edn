@@ -33,8 +33,7 @@
   {}
 
   :audiophile.dev/oauth
-  {:nav      #ig/ref :services/nav
-   :base-url #ig/ref :env/base-url#auth}
+  {:nav #ig/ref :services/nav}
 
   :audiophile.repositories.dev/mock-interactor#comment
   {:accessor #ig/ref :audiophile.repositories.comments/accessor

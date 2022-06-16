@@ -12,7 +12,8 @@
 
  :audiophile.services.nav/router
  {:base-urls {:api-base   #ig/ref :env/base-url#api
-              :auth-base  #ig/ref :env/base-url#auth}}
+              :auth-base  #ig/ref :env/base-url#auth
+              :ui-base    #ig/ref :env/base-url#ui}}
 
  :audiophile.services.http/client
  {}}

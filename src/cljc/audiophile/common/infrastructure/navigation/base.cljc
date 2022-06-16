@@ -40,6 +40,7 @@
         base-url (case (namespace handle)
                    "routes.auth" (get base-urls :auth-base)
                    "routes.api" (get base-urls :api-base)
+                   "routes.ui" (get base-urls :ui-base)
                    nil)]
     (cond-> (apply bidi/path-for
                    routes
