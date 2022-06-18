@@ -106,7 +106,7 @@
 (defn -main [& _]
   (let [env (System/getenv)
         results (volatile! {:exit-code 1})
-        server-port (Long/parseLong (or (get env "UI_TEST_PORT") "8080"))]
+        server-port (Long/parseLong (or (get env "UI_TEST_PORT") "9080"))]
     (try
       (let [server (web*/run #(or (ring/resource-request % "private")
                                   {:status 204})
