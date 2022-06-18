@@ -1,7 +1,7 @@
 (ns ^:integration audiophile.test.integration.auth-test
   (:require
     [clojure.string :as string]
-    [clojure.test :refer [are deftest is testing use-fixtures]]
+    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.core.serdes.jwt :as jwt]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
@@ -43,22 +43,21 @@
                           (-> jwt-serde
                               (serdes/deserialize (get-in cookies ["auth-token" :value])))))))
 
-        ;; disable signup flow
-        #_(testing "when the auth provider provides an unknown profile"
-            (let [response (-> {}
-                               (ihttp/get system :routes.auth/callback {:params {:code "another-pin"}})
-                               handler)
-                  base-url (int/component system :env/base-url#ui)
-                  jwt-serde (int/component system :serdes/jwt)
-                  cookies (tu/decode-cookies response)]
-              (testing "redirects with a signup token cookie"
-                (is (http/redirect? response))
-                (is (= (str base-url "/")
-                       (get-in response [:headers "Location"])))
-                (assert/is? {:jwt/aud    #{:token/signup}
-                             :user/id    uuid?
-                             :user/email "unknown@user.com"}
-                            (serdes/deserialize jwt-serde (get-in cookies ["auth-token" :value]))))))
+        (testing "when the auth provider provides an unknown profile"
+          (let [response (-> {}
+                             (ihttp/get system :routes.auth/callback {:params {:code "another-pin"}})
+                             handler)
+                base-url (int/component system :env/base-url#ui)
+                jwt-serde (int/component system :serdes/jwt)
+                cookies (tu/decode-cookies response)]
+            (testing "redirects with a signup token cookie"
+              (is (http/redirect? response))
+              (is (= (str base-url "/")
+                     (get-in response [:headers "Location"])))
+              (assert/is? {:jwt/aud    #{:token/signup}
+                           :user/id    uuid?
+                           :user/email "unknown@user.com"}
+                          (serdes/deserialize jwt-serde (get-in cookies ["auth-token" :value]))))))
 
         (testing "when the auth provider interactions fail"
           (-> system

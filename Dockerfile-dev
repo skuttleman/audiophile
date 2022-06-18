@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
 FROM clojure:openjdk-18-tools-deps-buster
-COPY .m2 /app/.m2
-COPY bin /app/bin
-COPY deps.edn /app/deps.edn
-COPY dev /app/dev
-COPY resources /app/resources
-COPY src /app/src
+RUN \
+  apt-get update && \
+  apt-get install -y ruby && \
+  apt-get install -y nodejs
+RUN gem install foreman
+
 WORKDIR /app
+CMD clj -J-XX:-OmitStackTraceInFastThrow -A:dev -m audiophile.backend.dev-server $SERVICES

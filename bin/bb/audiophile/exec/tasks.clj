@@ -3,6 +3,9 @@
     [audiophile.exec.shared :as shared]
     [babashka.curl :as curl]
     [cheshire.core :as cheshire]
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [clojure.set :as set]
     [clojure.string :as string]))
 
 (defmethod shared/main* :build
@@ -78,19 +81,6 @@
                                       (recur [] (rest args)))
       :else (recur (conj run arg) (rest args)))))
 
-(defmethod shared/main* :docker
-  [_ _]
-  (shared/main* :build nil)
-  (shared/with-println [:docker:latest "building" "built"]
-    (shared/process! "docker build -t audiophile -f Dockerfile .")
-    (shared/process! "docker tag audiophile skuttleman/audiophile:latest")
-    (shared/process! "docker push skuttleman/audiophile:latest"))
-
-  (shared/with-println [:docker:dev "building" "built"]
-    (shared/process! "docker build -t audiophile-dev -f Dockerfile-dev .")
-    (shared/process! "docker tag audiophile-dev skuttleman/audiophile:dev")
-    (shared/process! "docker push skuttleman/audiophile:dev")))
-
 (defmethod shared/main* :install
   [_ _]
   (shared/with-println [:repo "installing" "installed"]
@@ -147,9 +137,19 @@
                             "TRUNCATE users CASCADE"
                             "TRUNCATE teams CASCADE"
                             "DELETE FROM artifacts"
-                            "COMMIT"])]
+                            "COMMIT"])
+        env-common (io/file ".env-common")
+        env (if (.exists env-common)
+              (-> env-common
+                  slurp
+                  edn/read-string
+                  (set/rename-keys {"DB_HOST"     "PGHOST"
+                                    "DB_USER"     "PGUSER"
+                                    "DB_PASSWORD" "PGPASSWORD"}))
+              {})]
     (shared/with-println [:postgres.data "deleting" "deleted"]
-      (shared/process! (format "psql %s -c \"%s\"" db query)))))
+      (shared/process! (format "psql %s -c \"%s\"" db query)
+                       env))))
 
 (defmethod shared/wipe* :artifacts
   [_ _]

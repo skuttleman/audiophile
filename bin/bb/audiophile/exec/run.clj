@@ -1,43 +1,20 @@
 (ns audiophile.exec.run
   (:require
     [audiophile.exec.shared :as shared]
-    [babashka.process :as p]
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [clojure.set :as set]
     [clojure.string :as string]))
 
 (defmethod shared/main* :run
   [_ [mode & args]]
-  (println "running with profile" (or (keyword mode) :single))
+  (println "running with profile" (or (keyword mode) :dev))
   (shared/run* mode args))
-
-(defmethod shared/run* :jar
-  [_ _]
-  (shared/main* :clean nil)
-  (shared/main* :build nil)
-  (shared/process! "foreman start"
-                   (-> {"LOG_LEVEL" "info"}
-                       shared/with-default-env
-                       (assoc "ENV" "production"
-                              "SERVICES" "api auth jobs ui"))))
-
-(defmethod shared/run* :split
-  [_ _]
-  (shared/process! "foreman start --procfile Procfile-split"
-                   (-> {"LOG_LEVEL" "debug"}
-                       shared/with-default-env
-                       (assoc "ENV" "development"
-                              "WS_RECONNECT_MS" "1000"))))
-
-(defmethod shared/run* :multi
-  [_ _]
-  (shared/process! "foreman start --procfile Procfile-multi"
-                   (-> {"LOG_LEVEL" "debug"}
-                       shared/with-default-env
-                       (assoc "ENV" "development"
-                              "WS_RECONNECT_MS" "1000"))))
 
 (defmethod shared/run* :default
   [_ _]
-  (shared/process! "foreman start --procfile Procfile-single"
+  (shared/process! "docker-compose up -d --build app")
+  (shared/process! "foreman start --procfile Procfile-dev"
                    (-> {"LOG_LEVEL" "debug"}
                        shared/with-default-env
                        (assoc "ENV" "development"
@@ -55,7 +32,8 @@
 
 (defmethod shared/test* :clj
   [_ args]
-  (try (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
+  (try (shared/process! "docker-compose up -d rabbitmq postgres")
+       (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
                                     "-m shadow.cljs.devtools.cli compile web-test"))
        (shared/process! (shared/clj #{:dev :test} (str "-m kaocha.runner"
                                                        (when (seq args)
@@ -72,9 +50,20 @@
 
 (defmethod shared/main* :seed
   [_ [file]]
-  (let [sql (or file (str (System/getenv "PWD") "/dev/resources/db/seed.sql"))]
+  (let [sql (or file (str (System/getenv "PWD") "/dev/resources/db/seed.sql"))
+        env-common (io/file ".env-common")
+        env (if (.exists env-common)
+              (-> env-common
+                  slurp
+                  edn/read-string
+                  (select-keys #{"DB_USER" "DB_PASSWORD"})
+                  (set/rename-keys {"DB_USER"     "PGUSER"
+                                    "DB_PASSWORD" "PGPASSWORD"})
+                  (assoc "PGHOST" "127.0.0.1"))
+              {})]
     (shared/with-println [:db "seeding" "seeded"]
-      (shared/process! (str "psql audiophile -f " sql)))))
+      (shared/process! (str "psql audiophile -f " sql)
+                       env))))
 
 (defmethod shared/main* :migrate
   [_ _]

@@ -1,9 +1,8 @@
 (ns audiophile.common.infrastructure.navigation.base
   (:require
-    #?(:cljs [audiophile.ui.store.actions :as act])
-    [bidi.bidi :as bidi]
-    [clojure.set :as set]
-    [clojure.string :as string]
+    #?@(:cljs [[audiophile.ui.store.actions :as act]
+               [audiophile.common.infrastructure.store.core :as store]
+               [reagent.core :as r]])
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.protocols :as pserdes]
     [audiophile.common.core.stubs.pushy :as pushy]
@@ -14,8 +13,9 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.navigation.protocols :as pnav]
     [audiophile.common.infrastructure.navigation.routes :as routes]
-    [audiophile.common.infrastructure.store.core :as store]
-    [reagent.core :as r]))
+    [bidi.bidi :as bidi]
+    [clojure.set :as set]
+    [clojure.string :as string]))
 
 (defn ^:private params->internal [params]
   (update params :params (fns/=>
@@ -37,7 +37,11 @@
   (let [qp (uri/join-query (into {}
                                  (remove (comp namespace key))
                                  params))
-        base-url (get base-urls (keyword (namespace handle)))]
+        base-url (case (namespace handle)
+                   "routes.auth" (get base-urls :auth-base)
+                   "routes.api" (get base-urls :api-base)
+                   "routes.ui" (get base-urls :ui-base)
+                   nil)]
     (cond-> (apply bidi/path-for
                    routes
                    handle

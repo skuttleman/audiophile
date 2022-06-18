@@ -4,7 +4,7 @@
                       ^:promote #ig/ref :audiophile.test/transactor
 
                       [:duct/const :services/datasource]
-                      ^:promote #ig/ref :audiophile.test/datasource#pg
+                      ^:promote #ig/ref :audiophile.test/datasource
 
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
@@ -13,7 +13,7 @@
                       {:->executor #ig/ref :audiophile.repositories/->executor
                        :datasource #ig/ref :services/datasource}
 
-                      :audiophile.test/datasource#pg
+                      :audiophile.test/datasource
                       {:seed-data #ig/ref :test/seed-data
                        :spec      #ig/ref :config/db}
 

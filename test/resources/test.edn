@@ -7,7 +7,7 @@
                       ^:promote #ig/ref :audiophile.test/transactor
 
                       [:duct/const :services/datasource]
-                      ^:promote #ig/ref :audiophile.test/datasource#mem
+                      ^:promote #ig/ref :audiophile.test/datasource
 
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
@@ -26,8 +26,9 @@
                        :datasource #ig/ref :services/datasource
                        :migrator   #ig/ref :audiophile.migrations/migrator}
 
-                      :audiophile.test/datasource#mem
-                      {:seed-data  #ig/ref :test/seed-data}
+                      :audiophile.test/datasource
+                      {:seed-data #ig/ref :test/seed-data
+                       :spec      #ig/ref :config/db}
 
                       :audiophile.migrations/migrator
                       {:datasource #ig/ref :services/datasource}

@@ -5,7 +5,6 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.duct :as uduct]
-    [audiophile.test.integration.common.components :as tcomp]
     [audiophile.test.web.common.page :as pg]
     [duct.core :as duct]
     [duct.core.env :as env*]
@@ -51,6 +50,5 @@
 
 (defn wrap-run [run]
   (fn [{:kaocha.testable/keys [id] :as testable} plan]
-    (tcomp/with-db id
-      (pg/with-web id run-system!
-        (run testable plan)))))
+    (pg/with-web id run-system!
+      (run testable plan))))
