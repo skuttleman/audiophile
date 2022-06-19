@@ -1,6 +1,5 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.handlers.comments-test
   (:require
-    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.infrastructure.pubsub.handlers.comments :as pub.comments]
     [audiophile.common.core.utils.colls :as colls]
@@ -9,12 +8,13 @@
     [audiophile.test.utils :as tu]
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [clojure.test :refer [are deftest is testing]]))
 
 (deftest handle!-test
   (testing "(CommentCommandHandler#handle!)"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor trepos/->comment-executor)
+          tx (trepos/stub-transactor)
           handler (pub.comments/->CommentCommandHandler tx ch)
           [comment-id file-version-id user-id] (repeatedly uuids/random)
           comment {:comment/id              comment-id

@@ -1,6 +1,6 @@
 (ns audiophile.backend.infrastructure.db.core
   (:require
-    [audiophile.backend.api.repositories.protocols :as prepos]
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.backend.infrastructure.db.models.sql :as sql]
     [audiophile.common.infrastructure.http.protocols :as phttp]
     [audiophile.common.core.utils.logger :as log]

@@ -58,7 +58,7 @@
  {}
 
  :audiophile.services.rabbitmq/db-handler
- {:repo #ig/ref :repositories/events}
+ {:repo #ig/ref :services/transactor}
 
  :audiophile.services.rabbitmq/ws-handler
  {:jwt-serde #ig/ref :serdes/jwt
@@ -66,21 +66,21 @@
 
  :audiophile.services.rabbitmq/command-handler#comments
  {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :repositories/comments}
+  :repo #ig/ref :services/transactor}
 
  :audiophile.services.rabbitmq/command-handler#files
  {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :repositories/files}
+  :repo #ig/ref :services/transactor}
 
  :audiophile.services.rabbitmq/command-handler#projects
  {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :repositories/projects}
+  :repo #ig/ref :services/transactor}
 
  :audiophile.services.rabbitmq/command-handler#teams
  {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :repositories/teams}
+  :repo #ig/ref :services/transactor}
 
  :audiophile.services.rabbitmq/command-handler#users
  {:commands #ig/ref :rabbitmq.chan/commands
   :events   #ig/ref :rabbitmq.chan/events
-  :repo     #ig/ref :repositories/users}}
+  :repo #ig/ref :services/transactor}}

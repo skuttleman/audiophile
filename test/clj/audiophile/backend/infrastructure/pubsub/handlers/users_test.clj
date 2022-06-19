@@ -1,21 +1,19 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.handlers.users-test
   (:require
-    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.infrastructure.pubsub.handlers.users :as pub.users]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
-    [audiophile.test.utils :as tu]
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [clojure.test :refer [are deftest is testing]]))
 
 (deftest handle!-test
   (testing "(UserCommandHandler#handle!)"
     (let [commands (ts/->chan)
           events (ts/->chan)
-          tx (trepos/stub-transactor trepos/->user-executor)
+          tx (trepos/stub-transactor)
           handler (pub.users/->UserCommandHandler tx commands events)
           [signup-id user-id] (repeatedly uuids/random)
           user {:user/id user-id}]

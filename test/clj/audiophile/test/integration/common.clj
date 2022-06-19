@@ -1,8 +1,8 @@
 (ns audiophile.test.integration.common
   (:require
     [audiophile.backend.api.protocols :as papp]
-    [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.protocols :as prepos]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.backend.infrastructure.system.env :as env]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.duct :as uduct]

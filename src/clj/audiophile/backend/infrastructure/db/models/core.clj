@@ -1,17 +1,12 @@
 (ns audiophile.backend.infrastructure.db.models.core
   (:refer-clojure :exclude [alias])
   (:require
-    [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.infrastructure.db.models.sql :as sql]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.colls :as colls]
-    [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.common.domain.validations.core :as val]
-    [camel-snake-kebab.core :as csk]
-    [clojure.string :as string]
     [jsonista.core :as jsonista]
     [next.jdbc.result-set :as result-set])
   (:import
@@ -54,40 +49,6 @@
               cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
                          (range col-cnt))]
           (->Builder cols col-cnt (xform conj!) ->row! rs))))))
-
-(defn models
-  "Loads table information from the database to generate models needed for db interactions."
-  [{:keys [tx]}]
-  (reduce (fn [models {table :table_name column :column_name type :data_type name :udt_name nilable? :is_nullable}]
-            (let [table (csk/->kebab-case-keyword table)
-                  column (csk/->kebab-case-keyword column)
-                  type (csk/->kebab-case-keyword (string/replace type #"\s+" "-"))
-                  nilable? (= "YES" nilable?)]
-              (update models
-                      table
-                      (fns/=> (update :fields (fnil conj #{}) column)
-                              (assoc-in [:spec column] [type nilable?])
-                              (cond->
-                                (= :user-defined type)
-                                (assoc-in [:casts column] (keyword name))
-
-                                (contains? #{:jsonb :numrange} type)
-                                (assoc-in [:casts column] type))))))
-          {}
-          (repos/transact! tx repos/execute!
-                           {:select [:table-name :column-name :data-type :udt-name :is-nullable]
-                            :from   [:information-schema.columns]
-                            :where  [:and
-                                     [:= :table-schema "public"]
-                                     [:not= :table-name "db_migrations"]]})))
-
-(defn ->model
-  "Constructor for db model."
-  [{:keys [models namespace table-name]}]
-  (-> models
-      (get table-name)
-      (assoc :table table-name :namespace namespace)
-      (update :spec val/->model-spec namespace)))
 
 (defn ^:private from [{:keys [alias table]}]
   (cond-> table

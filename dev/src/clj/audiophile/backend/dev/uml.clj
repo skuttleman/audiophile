@@ -1,7 +1,7 @@
 (ns audiophile.backend.dev.uml
   (:require
     [clojure.string :as string]
-    [audiophile.backend.api.repositories.core :as repos]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.common.core.utils.maps :as maps]))
 
 (defn ^:private indent [x]
