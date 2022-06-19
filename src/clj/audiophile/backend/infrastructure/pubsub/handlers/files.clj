@@ -2,27 +2,27 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.files.core :as rfiles]
+    [audiophile.backend.api.repositories.files.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create-artifact* [executor artifact opts]
-  (if (rfiles/insert-artifact-access? executor artifact opts)
-    (let [artifact-id (rfiles/insert-artifact! executor artifact opts)]
-      (rfiles/find-event-artifact executor artifact-id))
+  (if (q/insert-artifact-access? executor artifact opts)
+    (let [artifact-id (q/insert-artifact! executor artifact opts)]
+      (q/find-event-artifact executor artifact-id))
     (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private create-file* [executor file opts]
-  (if (rfiles/insert-file-access? executor file opts)
-    (let [file-id (rfiles/insert-file! executor file opts)]
-      (rfiles/find-event-file executor file-id))
+  (if (q/insert-file-access? executor file opts)
+    (let [file-id (q/insert-file! executor file opts)]
+      (q/find-event-file executor file-id))
     (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private create-file-version* [executor file-version opts]
-  (if (rfiles/insert-version-access? executor file-version opts)
-    (let [version-id (rfiles/insert-version! executor file-version opts)]
-      (rfiles/find-event-version executor version-id))
+  (if (q/insert-version-access? executor file-version opts)
+    (let [version-id (q/insert-version! executor file-version opts)]
+      (q/find-event-version executor version-id))
     (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private file-command-handler#handle!

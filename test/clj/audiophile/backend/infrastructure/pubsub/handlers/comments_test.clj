@@ -1,7 +1,6 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.handlers.comments-test
   (:require
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.comments :as db.comments]
     [audiophile.backend.infrastructure.pubsub.handlers.comments :as pub.comments]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
@@ -15,7 +14,7 @@
 (deftest handle!-test
   (testing "(CommentCommandHandler#handle!)"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor db.comments/->CommentsRepoExecutor)
+          tx (trepos/stub-transactor)
           handler (pub.comments/->CommentCommandHandler tx ch)
           [comment-id file-version-id user-id] (repeatedly uuids/random)
           comment {:comment/id              comment-id

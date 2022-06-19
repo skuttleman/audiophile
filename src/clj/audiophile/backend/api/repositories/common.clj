@@ -1,6 +1,5 @@
 (ns audiophile.backend.api.repositories.common
   (:require
-    [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.api.repositories.protocols :as prepos]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
@@ -16,16 +15,6 @@
                       keyword)
                     identity)]
       [k (cast-fn v)])))
-
-(deftype Repository [tx ->executor]
-  prepos/ITransact
-  (transact! [_ f]
-    (repos/transact! tx (comp f ->executor))))
-
-(defn repo
-  "Constructor for [[Repository]] used for running processes inside a transaction."
-  [{:keys [->executor tx]}]
-  (->Repository tx ->executor))
 
 (deftype KVStore [client stream-serde]
   prepos/IKVStore

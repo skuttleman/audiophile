@@ -2,7 +2,6 @@
   (:require
     [audiophile.backend.api.repositories.users.impl :as rusers]
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.users :as db.users]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
@@ -14,7 +13,7 @@
 
 (deftest query-by-email-test
   (testing "query-by-email"
-    (let [tx (trepos/stub-transactor db.users/->UserExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rusers/->UserAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying for a user"
@@ -42,7 +41,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor db.users/->UserExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rusers/->UserAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying for a user"

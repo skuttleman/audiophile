@@ -2,17 +2,16 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.search.core :as search]
-    [audiophile.backend.api.repositories.users.core :as rusers]
+    [audiophile.backend.api.repositories.users.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.common.core.utils.logger :as log]
     [clojure.set :as set]))
 
 (defn ^:private query-signup-conflicts [executor user opts]
-  (for [[field f] [[:user/email rusers/find-by-email]
-                   [:user/handle search/find-by-handle]
-                   [:user/mobile-number search/find-by-mobile-number]]
+  (for [[field f] [[:user/email q/find-by-email]
+                   [:user/handle q/find-by-handle]
+                   [:user/mobile-number q/find-by-mobile-number]]
         :let [val (get user field)]
         :when (and val (f executor val opts))]
     [field val]))
@@ -22,7 +21,7 @@
                              seq
                              (into {}))]
     (throw (ex-info "one or more unique fields are present" {:conflicts fields})))
-  {:user/id (rusers/insert-user! executor user opts)})
+  {:user/id (q/insert-user! executor user opts)})
 
 (defn ^:private user-command-handler#handle! [repo commands events {command-id :command/id :command/keys [ctx type data] :as command}]
   (log/info "saving user to db" command-id)

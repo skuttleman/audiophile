@@ -1,7 +1,6 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.handlers.files-test
   (:require
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.files :as db.files]
     [audiophile.backend.infrastructure.db.models.sql :as sql]
     [audiophile.backend.infrastructure.pubsub.handlers.files :as pub.files]
     [audiophile.common.core.utils.colls :as colls]
@@ -16,7 +15,7 @@
 (deftest handle!-test
   (testing "(FileCommandHandler#handle!)"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor db.files/->FilesRepoExecutor)
+          tx (trepos/stub-transactor)
           handler (pub.files/->FileCommandHandler tx ch)]
       (testing "when saving artifacts"
         (testing "and when the content saves to the kv-store"
@@ -142,7 +141,7 @@
                     :file/name       "file name"
                     :file/project-id project-id}
               ch (ts/->chan)
-              tx (trepos/stub-transactor db.files/->FilesRepoExecutor)
+              tx (trepos/stub-transactor)
               handler (pub.files/->FileCommandHandler tx ch)]
           (testing "and when creating a file"
             (stubs/use! tx :execute!
@@ -311,7 +310,7 @@
               version {:file-version/name "version name here"
                        :file-version/id   version-id}
               ch (ts/->chan)
-              tx (trepos/stub-transactor db.files/->FilesRepoExecutor)
+              tx (trepos/stub-transactor)
               handler (pub.files/->FileCommandHandler tx ch)]
           (testing "and when creating a version"
             (stubs/use! tx :execute!

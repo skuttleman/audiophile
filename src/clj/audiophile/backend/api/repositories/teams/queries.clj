@@ -1,8 +1,7 @@
-(ns audiophile.backend.infrastructure.db.teams
+(ns audiophile.backend.api.repositories.teams.queries
   (:require
     [audiophile.backend.api.repositories.common :as crepos]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.teams.protocols :as pt]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.backend.infrastructure.db.models.tables :as tbl]
     [audiophile.common.core.utils.colls :as colls]
@@ -44,32 +43,30 @@
     (repos/execute! executor (insert-user-team team-id user-id))
     team-id))
 
-(deftype TeamsRepoExecutor [executor]
-  pt/ITeamsExecutor
-  (find-by-team-id [_ team-id opts]
-    (-> executor
-        (repos/execute! (if-let [user-id (:user/id opts)]
-                          (select-one-for-user team-id user-id)
-                          (models/select-by-id* tbl/teams team-id)))
-        colls/only!))
-  (select-team-members [_ team-id opts]
-    (repos/execute! executor
-                    (select-team team-id)
-                    opts))
-  (select-for-user [_ user-id opts]
-    (repos/execute! executor
-                    (models/select* tbl/teams (has-team-clause user-id))
-                    (assoc opts :model-fn (crepos/->model-fn tbl/teams))))
-  (insert-team-access? [_ _ _]
-    true)
-  (insert-team! [_ team opts]
-    (team-repo-executor#insert-team! executor team opts))
-  (find-event-team [_ team-id]
-    (-> executor
-        (repos/execute! (models/select-by-id* tbl/teams team-id))
-        colls/only!)))
+(defn find-by-team-id [executor team-id opts]
+  (-> executor
+      (repos/execute! (if-let [user-id (:user/id opts)]
+                        (select-one-for-user team-id user-id)
+                        (models/select-by-id* tbl/teams team-id)))
+      colls/only!))
 
-(defn ->team-executor
-  "Factory function for creating [[TeamsRepoExecutor]] which provide access to the team repository."
-  [_]
-  ->TeamsRepoExecutor)
+(defn select-team-members [executor team-id opts]
+  (repos/execute! executor
+                  (select-team team-id)
+                  opts))
+
+(defn select-for-user [executor user-id opts]
+  (repos/execute! executor
+                  (models/select* tbl/teams (has-team-clause user-id))
+                  (assoc opts :model-fn (crepos/->model-fn tbl/teams))))
+
+(defn insert-team-access? [executor _ _]
+  true)
+
+(defn insert-team! [executor team opts]
+  (team-repo-executor#insert-team! executor team opts))
+
+(defn find-event-team [executor team-id]
+  (-> executor
+      (repos/execute! (models/select-by-id* tbl/teams team-id))
+      colls/only!))

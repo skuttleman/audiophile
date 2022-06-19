@@ -2,14 +2,14 @@
   (:refer-clojure :exclude [accessor])
   (:require
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.files.core :as rfiles]
+    [audiophile.backend.api.repositories.files.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]))
 
 (defn ^:private get-artifact* [executor store artifact-id opts]
-  (when-let [{:artifact/keys [content-type key]} (rfiles/find-by-artifact-id executor artifact-id opts)]
+  (when-let [{:artifact/keys [content-type key]} (q/find-by-artifact-id executor artifact-id opts)]
     (if-let [data (some->> key (repos/get store))]
       [data {:content-type content-type}]
       (throw (ex-info "artifact located with missing data" {:artifact-id artifact-id})))))
@@ -24,9 +24,9 @@
 (deftype FileAccessor [repo store ch pubsub keygen publish-threshold]
   pint/IAccessor
   (query-many [_ opts]
-    (repos/transact! repo rfiles/select-for-project (:project/id opts) opts))
+    (repos/transact! repo q/select-for-project (:project/id opts) opts))
   (query-one [_ opts]
-    (repos/transact! repo rfiles/find-by-file-id (:file/id opts) (assoc opts :includes/versions? true)))
+    (repos/transact! repo q/find-by-file-id (:file/id opts) (assoc opts :includes/versions? true)))
 
   pint/IFileAccessor
   (create-artifact! [_ data opts]

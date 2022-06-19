@@ -11,11 +11,11 @@
                   (get [_ _ _])
                   (put! [_ _ _ _]))))
 
-(defn stub-transactor [cb]
+(defn stub-transactor []
   (stubs/create (reify
                   prepos/ITransact
                   (transact! [this f]
-                    (f (cb this)))
+                    (f this))
 
                   prepos/IExecute
                   (execute! [_ _ _]))))

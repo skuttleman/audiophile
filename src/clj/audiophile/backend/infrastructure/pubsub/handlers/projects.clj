@@ -2,15 +2,15 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.projects.core :as rprojects]
+    [audiophile.backend.api.repositories.projects.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create* [executor project opts]
-  (if (rprojects/insert-project-access? executor project opts)
-    (let [project-id (rprojects/insert-project! executor project opts)]
-      (rprojects/find-event-project executor project-id))
+  (if (q/insert-project-access? executor project opts)
+    (let [project-id (q/insert-project! executor project opts)]
+      (q/find-event-project executor project-id))
     (throw (ex-info "insufficient access" project))))
 
 (defn ^:private project-command-handler#handle!

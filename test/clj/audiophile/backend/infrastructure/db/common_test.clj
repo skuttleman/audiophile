@@ -2,7 +2,6 @@
   (:require
     [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.infrastructure.db.common :as cdb]
-    [audiophile.backend.infrastructure.db.events :as db.events]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.colls :as colls]
@@ -15,7 +14,7 @@
 
 (deftest event->db-handler-test
   (testing "(event->db-handler)"
-    (let [repo (trepos/stub-transactor db.events/->EventsExecutor)
+    (let [repo (trepos/stub-transactor)
           handler (cdb/event->db-handler {:repo repo})
           user-id (uuids/random)]
       (int/handle! handler

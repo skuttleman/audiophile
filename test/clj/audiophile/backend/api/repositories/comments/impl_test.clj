@@ -2,7 +2,6 @@
   (:require
     [audiophile.backend.api.repositories.comments.impl :as rcomments]
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.comments :as db.comments]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -16,7 +15,7 @@
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor db.comments/->CommentsRepoExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rcomments/->CommentAccessor tx nil)
           [file-id user-id] (repeatedly uuids/random)]
       (testing "when querying for projects"

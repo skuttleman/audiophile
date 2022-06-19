@@ -1,8 +1,8 @@
 (ns audiophile.backend.api.repositories.comments.impl
   (:refer-clojure :exclude [accessor])
   (:require
-    [audiophile.backend.api.repositories.comments.core :as rcomments]
     [audiophile.backend.api.repositories.core :as repos]
+    [audiophile.backend.api.repositories.comments.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.common.core.utils.logger :as log]))
@@ -11,7 +11,7 @@
   pint/ICommentAccessor
   pint/IAccessor
   (query-many [_ opts]
-    (repos/transact! repo rcomments/select-for-file (:file/id opts) opts))
+    (repos/transact! repo q/select-for-file (:file/id opts) opts))
   (create! [_ data opts]
     (ps/emit-command! ch :comment/create! data opts)))
 

@@ -1,8 +1,7 @@
-(ns audiophile.backend.infrastructure.db.events
+(ns audiophile.backend.api.repositories.events.queries
   (:require
     [audiophile.backend.api.repositories.common :as crepos]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.events.protocols :as pe]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.backend.infrastructure.db.models.tables :as tbl]
     [audiophile.common.core.utils.colls :as colls]
@@ -24,8 +23,7 @@
         (assoc :event/event-type event-type)
         (update :event/data (partial val/conform spec)))))
 
-(defn ^:private events-executor#insert-event!
-  [executor event opts]
+(defn insert-event! [executor event opts]
   (let [event (assoc event
                      :emitted-by (:user/id opts)
                      :event-type-id (select-event-type-id (:event/type event)))]
@@ -35,8 +33,7 @@
         colls/only!
         :id)))
 
-(defn ^:private events-executor#select-for-user
-  [executor user-id opts]
+(defn select-for-user [executor user-id opts]
   (let [since (:filter/since opts)]
     (-> tbl/user-events
         (models/remove-fields #{:user-id})
@@ -52,16 +49,3 @@
                                      $query
                                      {:model-fn     (crepos/->model-fn tbl/user-events)
                                       :result-xform (map conform-fn)})))))
-
-(deftype EventsExecutor [executor]
-  pe/IEventsExecutor
-  (insert-event! [_ event opts]
-    (events-executor#insert-event! executor event opts))
-
-  (select-for-user [_ user-id opts]
-    (events-executor#select-for-user executor user-id opts)))
-
-(defn ->executor
-  "Factory constructor for [[EventsExecutor]] for interacting with the events repository."
-  [_]
-  ->EventsExecutor)

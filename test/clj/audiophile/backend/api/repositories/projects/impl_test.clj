@@ -2,7 +2,6 @@
   (:require
     [audiophile.backend.api.repositories.projects.impl :as rprojects]
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.projects :as db.projects]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -16,7 +15,7 @@
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor db.projects/->ProjectsRepoExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rprojects/->ProjectAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying for projects"
@@ -47,7 +46,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor db.projects/->ProjectsRepoExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rprojects/->ProjectAccessor tx nil)
           [project-id user-id] (repeatedly uuids/random)]
       (testing "when querying for a single project"

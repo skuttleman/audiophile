@@ -1,6 +1,5 @@
-(ns audiophile.backend.infrastructure.db.comments
+(ns audiophile.backend.api.repositories.comments.queries
   (:require
-    [audiophile.backend.api.repositories.comments.protocols :as pc]
     [audiophile.backend.api.repositories.common :as crepos]
     [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.infrastructure.db.common :as cdb]
@@ -68,28 +67,24 @@
                          :model-fn (crepos/->model-fn tbl/comments)
                          :result-xform (map nest-commenter))))
 
-(deftype CommentsRepoExecutor [executor]
-  pc/ICommentsExecutor
-  (select-for-file [_ file-id opts]
-    (-> file-id
-        (select-for-file-query opts)
-        select-for-file-join
-        (select-for-file* executor opts)))
-  (insert-comment-access? [_ comment opts]
-    (cdb/access? executor (access-file-version (:comment/file-version-id comment)
-                                               (:user/id opts))))
-  (insert-comment! [_ comment _]
-    (-> executor
-        (repos/execute! (models/insert-into tbl/comments comment))
-        colls/only!
-        :id))
-  (find-event-comment [_ comment-id]
-    (-> executor
-        (repos/execute! (models/select-by-id* tbl/comments comment-id)
-                        {:model-fn (crepos/->model-fn tbl/comments)})
-        colls/only!)))
+(defn select-for-file [executor file-id opts]
+  (-> file-id
+      (select-for-file-query opts)
+      select-for-file-join
+      (select-for-file* executor opts)))
 
-(defn ->comment-executor
-  "Factory function for creating [[CommentsRepoExecutor]] which provide access to the comment repository."
-  [_]
-  ->CommentsRepoExecutor)
+(defn insert-comment-access? [executor comment opts]
+  (cdb/access? executor (access-file-version (:comment/file-version-id comment)
+                                             (:user/id opts))))
+
+(defn insert-comment! [executor comment _]
+  (-> executor
+      (repos/execute! (models/insert-into tbl/comments comment))
+      colls/only!
+      :id))
+
+(defn find-event-comment [executor comment-id]
+  (-> executor
+      (repos/execute! (models/select-by-id* tbl/comments comment-id)
+                      {:model-fn (crepos/->model-fn tbl/comments)})
+      colls/only!))

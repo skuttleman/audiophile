@@ -2,15 +2,15 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.teams.core :as rteams]
+    [audiophile.backend.api.repositories.teams.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create* [executor team opts]
-  (if (rteams/insert-team-access? executor team opts)
-    (let [team-id (rteams/insert-team! executor team opts)]
-      (rteams/find-event-team executor team-id))
+  (if (q/insert-team-access? executor team opts)
+    (let [team-id (q/insert-team! executor team opts)]
+      (q/find-event-team executor team-id))
     (throw (ex-info "insufficient access" {}))))
 
 (defn ^:private team-command-handler#handle! [this repo ch {command-id :command/id :command/keys [ctx data type]}]

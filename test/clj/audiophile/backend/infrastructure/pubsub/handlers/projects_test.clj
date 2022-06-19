@@ -1,7 +1,6 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.handlers.projects-test
   (:require
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.projects :as db.projects]
     [audiophile.backend.infrastructure.pubsub.handlers.projects :as pub.projects]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
@@ -15,7 +14,7 @@
 (deftest handle!-test
   (testing "(ProjectCommandHandler#handle!)"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor db.projects/->ProjectsRepoExecutor)
+          tx (trepos/stub-transactor)
           handler (pub.projects/->ProjectCommandHandler tx ch)
           [project-id team-id user-id] (repeatedly uuids/random)
           project {:project/id      project-id

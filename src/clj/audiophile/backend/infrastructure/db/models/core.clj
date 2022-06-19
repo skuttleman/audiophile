@@ -7,7 +7,6 @@
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.common.domain.validations.core :as val]
     [jsonista.core :as jsonista]
     [next.jdbc.result-set :as result-set])
   (:import
@@ -50,14 +49,6 @@
               cols (mapv (fn [^Integer i] (keyword (.getColumnLabel meta (inc i))))
                          (range col-cnt))]
           (->Builder cols col-cnt (xform conj!) ->row! rs))))))
-
-(defn ->model
-  "Constructor for db model."
-  [{:keys [models namespace table-name]}]
-  (-> models
-      (get table-name)
-      (assoc :table table-name :namespace namespace)
-      (update :spec val/->model-spec namespace)))
 
 (defn ^:private from [{:keys [alias table]}]
   (cond-> table

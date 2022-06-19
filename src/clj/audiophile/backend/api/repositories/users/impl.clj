@@ -3,7 +3,7 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.users.core :as users]
+    [audiophile.backend.api.repositories.users.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.common.core.utils.logger :as log]))
 
@@ -14,11 +14,11 @@
 
 (defmethod find-by :user/id
   [executor opts]
-  (users/find-by-id executor (:user/id opts) opts))
+  (q/find-by-id executor (:user/id opts) opts))
 
 (defmethod find-by :user/email
   [executor opts]
-  (users/find-by-email executor (:user/email opts) opts))
+  (q/find-by-email executor (:user/email opts) opts))
 
 (defn ^:private user-accessor#query-one
   [repo {aud :token/aud user :auth/user :as opts}]

@@ -1,16 +1,16 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.comments
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
-    [audiophile.backend.api.repositories.comments.core :as rcomments]
+    [audiophile.backend.api.repositories.comments.queries :as q]
     [audiophile.backend.api.repositories.core :as repos]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create* [executor comment opts]
-  (if (rcomments/insert-comment-access? executor comment opts)
-    (let [comment-id (rcomments/insert-comment! executor comment opts)]
-      (rcomments/find-event-comment executor comment-id))
+  (if (q/insert-comment-access? executor comment opts)
+    (let [comment-id (q/insert-comment! executor comment opts)]
+      (q/find-event-comment executor comment-id))
     (throw (ex-info "insufficient access" comment))))
 
 (defn ^:private comment-command-handler#handle!

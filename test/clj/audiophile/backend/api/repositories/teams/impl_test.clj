@@ -2,7 +2,6 @@
   (:require
     [audiophile.backend.api.repositories.teams.impl :as rteams]
     [audiophile.backend.domain.interactors.core :as int]
-    [audiophile.backend.infrastructure.db.teams :as db.teams]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
@@ -15,7 +14,7 @@
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor db.teams/->TeamsRepoExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rteams/->TeamAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying teams"
@@ -52,7 +51,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor db.teams/->TeamsRepoExecutor)
+    (let [tx (trepos/stub-transactor)
           repo (rteams/->TeamAccessor tx nil)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when querying teams"
