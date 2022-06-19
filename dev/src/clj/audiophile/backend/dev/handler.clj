@@ -4,7 +4,7 @@
     [clojure.java.shell :as sh]
     [clojure.set :as set]
     [audiophile.backend.api.protocols :as papp]
-    [audiophile.backend.api.repositories.protocols :as prepos]
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.navigation.core :as nav]
     [integrant.core :as ig]))

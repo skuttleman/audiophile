@@ -1,7 +1,7 @@
 (ns audiophile.test.utils.services
   (:require
     [audiophile.backend.api.pubsub.protocols :as pps]
-    [audiophile.backend.api.repositories.protocols :as prepos]
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.common.api.pubsub.protocols :as ppubsub]
     [audiophile.test.utils.stubs :as stubs]))
 

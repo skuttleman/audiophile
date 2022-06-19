@@ -1,6 +1,6 @@
 (ns audiophile.backend.infrastructure.stores
   (:require
-    [audiophile.backend.api.repositories.protocols :as prepos]))
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]))
 
 (deftype ArtifactStore [store max-file-size]
   prepos/IKVStore

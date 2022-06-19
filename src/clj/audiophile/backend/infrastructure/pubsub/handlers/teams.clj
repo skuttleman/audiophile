@@ -1,8 +1,8 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.teams
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
-    [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.teams.queries :as q]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
+    [audiophile.backend.infrastructure.repositories.teams.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.common.core.utils.logger :as log]))

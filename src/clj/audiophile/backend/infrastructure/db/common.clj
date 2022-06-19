@@ -1,7 +1,7 @@
 (ns audiophile.backend.infrastructure.db.common
   (:require
-    [audiophile.backend.api.repositories.core :as repos]
-    [audiophile.backend.api.repositories.events.queries :as q]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
+    [audiophile.backend.infrastructure.repositories.events.queries :as q]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.common.core.utils.logger :as log]))
 

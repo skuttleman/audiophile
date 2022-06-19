@@ -1,6 +1,6 @@
 (ns audiophile.test.utils.repositories
   (:require
-    [audiophile.backend.api.repositories.protocols :as prepos]
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.test.utils.stubs :as stubs]))
 
 (defn stub-kv-store []
