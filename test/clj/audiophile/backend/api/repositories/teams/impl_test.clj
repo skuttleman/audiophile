@@ -1,8 +1,8 @@
 (ns ^:unit audiophile.backend.api.repositories.teams.impl-test
   (:require
-    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.api.repositories.teams.impl :as rteams]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.db.teams :as db.teams]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
@@ -10,11 +10,12 @@
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [clojure.test :refer [are deftest is testing]]))
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor trepos/->team-executor)
+    (let [tx (trepos/stub-transactor db.teams/->TeamsRepoExecutor)
           repo (rteams/->TeamAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying teams"
@@ -51,7 +52,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor trepos/->team-executor)
+    (let [tx (trepos/stub-transactor db.teams/->TeamsRepoExecutor)
           repo (rteams/->TeamAccessor tx nil)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when querying teams"

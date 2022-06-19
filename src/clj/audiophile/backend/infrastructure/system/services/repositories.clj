@@ -18,12 +18,6 @@
     [audiophile.backend.infrastructure.stores :as stores]
     [integrant.core :as ig]))
 
-(defmethod ig/init-key :audiophile.repositories/models [_ cfg]
-  (models/models cfg))
-
-(defmethod ig/init-key :audiophile.repositories/model [_ cfg]
-  (models/->model cfg))
-
 (defmethod ig/init-key :audiophile.repositories/repo [_ cfg]
   (crepos/repo cfg))
 

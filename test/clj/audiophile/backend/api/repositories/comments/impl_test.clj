@@ -1,8 +1,8 @@
 (ns ^:unit audiophile.backend.api.repositories.comments.impl-test
   (:require
-    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.api.repositories.comments.impl :as rcomments]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.db.comments :as db.comments]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -11,11 +11,12 @@
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [clojure.test :refer [are deftest is testing]]))
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor trepos/->comment-executor)
+    (let [tx (trepos/stub-transactor db.comments/->CommentsRepoExecutor)
           repo (rcomments/->CommentAccessor tx nil)
           [file-id user-id] (repeatedly uuids/random)]
       (testing "when querying for projects"

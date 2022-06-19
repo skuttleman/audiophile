@@ -1,8 +1,8 @@
 (ns ^:unit audiophile.backend.api.repositories.files.impl-test
   (:require
-    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.api.repositories.files.impl :as rfiles]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.db.files :as db.files]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -11,7 +11,8 @@
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [clojure.test :refer [are deftest is testing]]))
 
 (deftest create-artifact-test
   (testing "create-artifact"
@@ -45,7 +46,7 @@
 (deftest query-many-test
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor trepos/->file-executor)
+          tx (trepos/stub-transactor db.files/->FilesRepoExecutor)
           repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
@@ -109,7 +110,7 @@
 (deftest query-one-test
   (testing "query-one"
     (let [[file-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor trepos/->file-executor)
+          tx (trepos/stub-transactor db.files/->FilesRepoExecutor)
           repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
       (testing "when querying one file"
         (stubs/set-stub! tx :execute! [{:some :result}])
@@ -158,7 +159,7 @@
   (testing "query-artifact"
     (let [[artifact-id user-id] (repeatedly uuids/random)
           store (trepos/stub-kv-store)
-          tx (trepos/stub-transactor trepos/->file-executor)
+          tx (trepos/stub-transactor db.files/->FilesRepoExecutor)
           repo (rfiles/->FileAccessor tx store nil nil nil nil)]
       (testing "when querying an artifact"
         (stubs/set-stub! tx :execute! [{:some                  :result
@@ -175,8 +176,9 @@
                        [:artifacts.id "artifact/id"]
                        [:artifacts.content-type "artifact/content-type"]
                        [:artifacts.uri "artifact/uri"]
-                       [:artifacts.content-size "artifact/content-size"]
-                       [:artifacts.created-at "artifact/created-at"]}
+                       [:artifacts.content-length "artifact/content-length"]
+                       [:artifacts.created-at "artifact/created-at"]
+                       [:artifacts.key "artifact/key"]}
                      (set select)))
               (is (= [:artifacts] from))
               (is (= :and (first where)))

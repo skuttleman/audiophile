@@ -73,41 +73,22 @@
   :tx         #ig/ref :services/transactor}
 
  :audiophile.repositories.events/->executor
- {:event-types #ig/ref :models/event-types
-  :events      #ig/ref :models/events
-  :models      #ig/ref :models/models
-  :user-events #ig/ref :models/user-events}
+ {}
 
  :audiophile.repositories.files/->executor
- {:artifacts     #ig/ref :models/artifacts
-  :file-versions #ig/ref :models/file-versions
-  :files         #ig/ref :models/files
-  :projects      #ig/ref :models/projects
-  :user-teams    #ig/ref :models/user-teams}
+ {}
 
  :audiophile.repositories.comments/->executor
- {:comments      #ig/ref :models/comments
-  :files         #ig/ref :models/files
-  :file-versions #ig/ref :models/file-versions
-  :projects      #ig/ref :models/projects
-  :user-events   #ig/ref :models/user-events
-  :user-teams    #ig/ref :models/user-teams
-  :users         #ig/ref :models/users}
+ {}
 
  :audiophile.repositories.projects/->executor
- {:projects   #ig/ref :models/projects
-  :teams      #ig/ref :models/teams
-  :user-teams #ig/ref :models/user-teams
-  :users      #ig/ref :models/users}
+ {}
 
  :audiophile.repositories.teams/->executor
- {:teams      #ig/ref :models/teams
-  :user-teams #ig/ref :models/user-teams
-  :users      #ig/ref :models/users}
+ {}
 
  :audiophile.repositories.users/->executor
- {:users      #ig/ref :models/users
-  :user-teams #ig/ref :models/user-teams}
+ {}
 
  :audiophile.repositories.files/artifact-store
  {:store         #ig/ref :audiophile.repositories/store
