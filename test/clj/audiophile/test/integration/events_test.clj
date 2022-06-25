@@ -21,7 +21,7 @@
                            handler)]
             (testing "fetches all events"
               (is (http/success? result))
-              (is (= 5 (count (get-in result [:body :data]))))
+              (is (= 3 (count (get-in result [:body :data]))))
 
               (testing "fetches events since an id"
                 (let [since (-> result :body :data second :event/id)

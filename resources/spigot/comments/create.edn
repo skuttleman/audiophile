@@ -2,4 +2,5 @@
                    :comment/selection       (sp.ctx/get ?selection)
                    :comment/file-version-id (sp.ctx/get ?version-id)
                    :comment/comment-id      (sp.ctx/get ?parent-id)
+                   :comment/created-by      (sp.ctx/get ?user-id)
                    :spigot/->ctx            {?comment-id :comment/id}}]

@@ -15,7 +15,7 @@
    :namespace :artifact})
 
 (def comments
-  {:fields    #{:id :comment-id :body :selection :created-at :file-version-id}
+  {:fields    #{:id :comment-id :body :selection :created-at :file-version-id :created-by}
    :spec      [:map
                [:comment/id uuid?]
                [:comment/file-version-id uuid?]

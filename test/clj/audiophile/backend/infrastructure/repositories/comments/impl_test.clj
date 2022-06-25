@@ -38,7 +38,8 @@
                      [:commenter.mobile-number "commenter/mobile-number"]
                      [:commenter.first-name "commenter/first-name"]
                      [:commenter.last-name "commenter/last-name"]
-                     [:commenter.created-at "commenter/created-at"]}
+                     [:commenter.created-at "commenter/created-at"]
+                     [:comments.created-by "comment/created-by"]}
                    (set select)))
 
             (is (= [:and #{[:= #{:comments.comment-id nil}]
@@ -79,7 +80,7 @@
         (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
                                                      colls/only!
                                                      first)]
-          (assert/is? {:ctx                {}
+          (assert/is? {:ctx                {'?user-id user-id}
                        :running            #{}
                        :completed          #{}
                        :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
@@ -89,7 +90,8 @@
                        :spigot/params '{:comment/body            (sp.ctx/get ?body),
                                         :comment/selection       (sp.ctx/get ?selection),
                                         :comment/file-version-id (sp.ctx/get ?version-id),
-                                        :comment/comment-id      (sp.ctx/get ?parent-id)}}
+                                        :comment/comment-id      (sp.ctx/get ?parent-id)
+                                        :comment/created-by      (sp.ctx/get ?user-id)}}
                       (-> data :tasks vals colls/only!))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!

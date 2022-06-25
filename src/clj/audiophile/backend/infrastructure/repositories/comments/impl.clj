@@ -13,7 +13,8 @@
   '{:comment/body            ?body
     :comment/selection       ?selection
     :comment/file-version-id ?version-id
-    :comment/comment-id      ?parent-id})
+    :comment/comment-id      ?parent-id
+    :user/id                 ?user-id})
 (defmethod wf/->result :comments/create
   [_]
   '{:workflows/->result {:comment/id (sp.ctx/get ?comment-id)}})
