@@ -54,13 +54,13 @@
                    (-> where
                        (update 1 tu/op-set)
                        (update-in [2 1] (fns/=> (update :select set)
-                                         (update :where (fns/=> (update 1 tu/op-set)
-                                                                (update 2 tu/op-set)
-                                                                (update 3 tu/op-set)
-                                                                tu/op-set))
-                                         (update :join (fns/=> (update 1 tu/op-set)
-                                                               (update 3 tu/op-set)
-                                                               (update 5 tu/op-set)))))
+                                                (update :where (fns/=> (update 1 tu/op-set)
+                                                                       (update 2 tu/op-set)
+                                                                       (update 3 tu/op-set)
+                                                                       tu/op-set))
+                                                (update :join (fns/=> (update 1 tu/op-set)
+                                                                      (update 3 tu/op-set)
+                                                                      (update 5 tu/op-set)))))
                        tu/op-set))))
 
           (testing "returns the results"
@@ -76,10 +76,23 @@
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :comment/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:ctx                {}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
+                      data)
+          (assert/is? {:spigot/id     uuid?
+                       :spigot/tag    :comment/create!
+                       :spigot/params '{:comment/body            (sp.ctx/get ?body),
+                                        :comment/selection       (sp.ctx/get ?selection),
+                                        :comment/file-version-id (sp.ctx/get ?version-id),
+                                        :comment/comment-id      (sp.ctx/get ?parent-id)}}
+                      (-> data :tasks vals colls/only!))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

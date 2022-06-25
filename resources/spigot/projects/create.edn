@@ -1,0 +1,3 @@
+[:project/create! {:project/team-id (sp.ctx/get ?team-id)
+                   :project/name    (sp.ctx/get ?name)
+                   :spigot/->ctx    {?project-id :project/id}}]

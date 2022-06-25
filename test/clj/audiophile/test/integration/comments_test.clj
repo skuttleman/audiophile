@@ -68,9 +68,7 @@
                              (ihttp/as-async system handler))]
             (testing "creates the comment"
               (is (http/success? response))
-              (assert/is? {:comment/file-version-id file-version-id
-                           :comment/body            "comment body"
-                           :comment/id              uuid?}
+              (assert/is? {:comment/id uuid?}
                           (get-in response [:body :data])))
 
             (testing "and when querying for comments"
@@ -79,9 +77,7 @@
                                  (ihttp/get system :routes.api/files:id.comments {:params {:file/id file-id}})
                                  handler)]
                 (testing "includes the new comment"
-                  (assert/has? {:comment/file-version-id file-version-id
-                                :comment/body            "comment body"
-                                :comment/id              uuid?}
+                  (assert/has? {:comment/id uuid?}
                                (get-in response [:body :data])))))))
 
         (testing "when authenticated as a user without file access"

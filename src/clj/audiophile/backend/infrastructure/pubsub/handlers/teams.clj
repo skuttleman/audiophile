@@ -8,8 +8,7 @@
 
 (defn ^:private create* [executor team opts]
   (if (q/insert-team-access? executor team opts)
-    (let [team-id (q/insert-team! executor team opts)]
-      (q/find-event-team executor team-id))
+    {:team/id (q/insert-team! executor team opts)}
     (throw (ex-info "insufficient access" {}))))
 
 (defmethod wf/command-handler :team/create!
@@ -18,5 +17,5 @@
     (hc/with-command-failed! [events type ctx]
       (log/info "saving team to db" command-id)
       (let [result {:spigot/id     (:spigot/id data)
-                    :spigot/result (create* executor (:spigot/params data) (:spigot/params data))}]
+                    :spigot/result (create* executor (:spigot/params data) ctx)}]
         (ps/emit-command! commands :workflow/next! result ctx)))))

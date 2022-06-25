@@ -95,10 +95,21 @@
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :project/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:ctx                {}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result '{:project/id (sp.ctx/get ?project-id)}}
+                      data)
+          (assert/is? {:spigot/id     uuid?
+                       :spigot/tag    :project/create!
+                       :spigot/params '{:project/name    (sp.ctx/get ?name)
+                                        :project/team-id (sp.ctx/get ?team-id)}}
+                      (-> data :tasks vals colls/only!))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

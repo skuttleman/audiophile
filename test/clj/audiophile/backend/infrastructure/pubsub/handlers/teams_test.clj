@@ -33,7 +33,7 @@
                                                          :user/id    user-id}}
                           :command/ctx  {:user/id user-id}})
 
-        (let [[[insert-team] [insert-user-team] [query-for-event]] (colls/only! 3 (stubs/calls tx :execute!))]
+        (let [[[insert-team] [insert-user-team]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
                     :values      [{:created-at :whenever}]
@@ -43,19 +43,7 @@
                     :values      [{:user-id user-id
                                    :team-id team-id}]
                     :returning   [:*]}
-                   insert-user-team)))
-
-          (testing "queries from the repository"
-            (is (= {:select #{[:teams.created-at "team/created-at"]
-                              [:teams.name "team/name"]
-                              [:teams.type "team/type"]
-                              [:teams.id "team/id"]}
-                    :from   [:teams]
-                    :where  [:= #{:teams.id team-id}]}
-                   (-> query-for-event
-                       (select-keys #{:select :from :where})
-                       (update :select set)
-                       (update :where tu/op-set))))))
+                   insert-user-team))))
 
         (testing "emits a command"
           (let [{command-id :command/id :as command} (-> ch
@@ -65,8 +53,7 @@
             (is (uuid? command-id))
             (is (= {:command/ctx        {:user/id user-id}
                     :command/data       {:spigot/id     spigot-id
-                                         :spigot/result {:team/id   team-id
-                                                         :team/name "some team"}}
+                                         :spigot/result {:team/id team-id}}
                     :command/emitted-by user-id
                     :command/id         command-id
                     :command/type       :workflow/next!}

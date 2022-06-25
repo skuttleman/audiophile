@@ -82,9 +82,3 @@
       (repos/execute! (models/insert-into tbl/comments comment))
       colls/only!
       :id))
-
-(defn find-event-comment [executor comment-id]
-  (-> executor
-      (repos/execute! (models/select-by-id* tbl/comments comment-id)
-                      {:model-fn (crepos/->model-fn tbl/comments)})
-      colls/only!))

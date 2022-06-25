@@ -3,14 +3,14 @@
     [audiophile.backend.infrastructure.auth.core :as auth]
     [audiophile.backend.infrastructure.auth.google :as goog]
     [audiophile.backend.infrastructure.db.common :as cdb]
-    [audiophile.backend.infrastructure.pubsub.handlers.comments :as pub.comments]
-    [audiophile.backend.infrastructure.pubsub.handlers.files :as pub.files]
-    [audiophile.backend.infrastructure.pubsub.handlers.projects :as pub.projects]
     [audiophile.backend.infrastructure.pubsub.handlers.workflows :as pub.workflows]
     [audiophile.backend.infrastructure.pubsub.rabbit :as pub.rabbit]
     [audiophile.backend.infrastructure.pubsub.ws :as ws]
     [audiophile.backend.infrastructure.resources.s3 :as s3]
     [integrant.core :as ig]
+    audiophile.backend.infrastructure.pubsub.handlers.comments
+    audiophile.backend.infrastructure.pubsub.handlers.files
+    audiophile.backend.infrastructure.pubsub.handlers.projects
     audiophile.backend.infrastructure.pubsub.handlers.teams
     audiophile.backend.infrastructure.pubsub.handlers.users
     audiophile.backend.infrastructure.system.services.repositories))
@@ -50,12 +50,6 @@
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/ws-handler [_ cfg]
   (ws/event->ws-handler cfg))
-
-(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#comments [_ cfg]
-  (pub.comments/msg-handler cfg))
-
-(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#projects [_ cfg]
-  (pub.projects/msg-handler cfg))
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#workflows [_ cfg]
   (pub.workflows/msg-handler cfg))
