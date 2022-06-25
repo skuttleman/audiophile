@@ -11,16 +11,19 @@
     [spigot.context :as sp.ctx]
     [spigot.core :as sp]))
 
+(defn ^:private extract-result [workflow-id data]
+  (-> data
+      :workflows/->result
+      (sp.ctx/resolve-params (:ctx data))
+      (assoc :workflow/id workflow-id)))
+
 (defn ^:private next* [executor workflow-id data ctx {:keys [commands events]}]
   (if (sp/finished? data)
     (do (q/update-by-id! executor workflow-id {:status "completed"})
         (ps/emit-event! events
                         workflow-id
                         :workflow/completed
-                        (-> data
-                            :workflows/->result
-                            (sp.ctx/resolve-params (:ctx data))
-                            (assoc :workflow/id workflow-id))
+                        (extract-result workflow-id data)
                         ctx))
     (let [data (sp/next data
                         (fn [task]
@@ -44,13 +47,23 @@
                (:spigot/id data) (sp/finish (:spigot/id data) (:spigot/result data)))]
     (next* executor workflow-id data ctx sys)))
 
+(defn ^:private command-handler* [executor {:keys [commands events] :as sys} {:command/keys [ctx data type] :as msg}]
+  (log/with-ctx :CP
+    (hc/with-command-failed! [events type ctx]
+      (let [result {:spigot/id     (:spigot/id data)
+                    :spigot/result (wf/command-handler executor sys msg)}]
+        (ps/emit-command! commands :workflow/next! result ctx)))))
+
 (deftype WorkflowHandler [repo sys]
   pint/IMessageHandler
   (handle? [_ msg]
     (contains? (methods wf/command-handler) (:command/type msg)))
-  (handle! [_ msg]
-    (hc/with-command-failed! [(:events sys) (:command/type msg) (:command/ctx msg)]
-      (repos/transact! repo wf/command-handler sys msg))))
+  (handle! [_ {type :command/type :as msg}]
+    (let [handler (if (= "workflow" (namespace type))
+                    wf/command-handler
+                    command-handler*)]
+      (hc/with-command-failed! [(:events sys) (:command/type msg) (:command/ctx msg)]
+        (repos/transact! repo handler sys msg)))))
 
 (defn msg-handler [{:keys [commands events jwt-serde repo]}]
   (->WorkflowHandler repo (maps/->m commands events jwt-serde)))

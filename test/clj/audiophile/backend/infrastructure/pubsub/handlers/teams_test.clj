@@ -24,16 +24,15 @@
                     nil
                     [team]
                     [{:id "event-id"}])
-        (repos/transact! tx wf/command-handler
-                         {:commands ch}
-                         {:command/type :team/create!
-                          :command/data {:spigot/id     spigot-id
-                                         :spigot/params {:created-at :whenever
-                                                         :other      :junk
-                                                         :user/id    user-id}}
-                          :command/ctx  {:user/id user-id}})
-
-        (let [[[insert-team] [insert-user-team]] (colls/only! 2 (stubs/calls tx :execute!))]
+        (let [result (repos/transact! tx wf/command-handler
+                                      {:commands ch}
+                                      {:command/type :team/create!
+                                       :command/data {:spigot/id     spigot-id
+                                                      :spigot/params {:created-at :whenever
+                                                                      :other      :junk
+                                                                      :user/id    user-id}}
+                                       :command/ctx  {:user/id user-id}})
+              [[insert-team] [insert-user-team]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :teams
                     :values      [{:created-at :whenever}]
@@ -43,21 +42,10 @@
                     :values      [{:user-id user-id
                                    :team-id team-id}]
                     :returning   [:*]}
-                   insert-user-team))))
+                   insert-user-team)))
 
-        (testing "emits a command"
-          (let [{command-id :command/id :as command} (-> ch
-                                                         (stubs/calls :send!)
-                                                         colls/only!
-                                                         first)]
-            (is (uuid? command-id))
-            (is (= {:command/ctx        {:user/id user-id}
-                    :command/data       {:spigot/id     spigot-id
-                                         :spigot/result {:team/id team-id}}
-                    :command/emitted-by user-id
-                    :command/id         command-id
-                    :command/type       :workflow/next!}
-                   command)))))
+          (testing "returns the result"
+            (is (= {:team/id team-id} result)))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -65,61 +53,10 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           {:events ch}
-                           {:command/type :team/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls ch :send!)))
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :team/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event))))))
-
-      (testing "when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! ch)
-          (stubs/use! tx :execute!
-                      [{:id "team-id"}])
-          (stubs/use! ch :send!
-                      (ex-info "Channel" {})
-                      nil)
-          (repos/transact! tx wf/command-handler
-                           {:events ch :commands ch}
-                           {:command/type :team/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     rest
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :team/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    {:events ch}
+                                                    {:command/type :team/create!
+                                                     :command/data {}
+                                                     :command/ctx  {:user/id    user-id
+                                                                    :request/id request-id}})))))))))

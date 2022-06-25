@@ -12,8 +12,8 @@
     [clojure.test :refer [are deftest is testing]]
     audiophile.backend.infrastructure.pubsub.handlers.comments))
 
-(deftest handle!-test
-  (testing "(CommentCommandHandler#handle!)"
+(deftest comment-create!-test
+  (testing "wf/command-handler :comment/create!"
     (let [ch (ts/->chan)
           tx (trepos/stub-transactor)
           [comment-id file-version-id user-id spigot-id] (repeatedly uuids/random)
@@ -25,16 +25,15 @@
                     [{:id "team-id"}]
                     [{:id comment-id}]
                     [comment])
-        (repos/transact! tx wf/command-handler
-                         {:commands ch}
-                         {:command/type :comment/create!
-                          :command/data {:spigot/id     spigot-id
-                                         :spigot/params {:created-at              :whenever
-                                                         :comment/file-version-id file-version-id
-                                                         :other                   :junk}}
-                          :command/ctx  {:user/id user-id}})
-
-        (let [[[access] [insert]] (colls/only! 2 (stubs/calls tx :execute!))]
+        (let [result (repos/transact! tx wf/command-handler
+                                      {:commands ch}
+                                      {:command/type :comment/create!
+                                       :command/data {:spigot/id     spigot-id
+                                                      :spigot/params {:created-at              :whenever
+                                                                      :comment/file-version-id file-version-id
+                                                                      :other                   :junk}}
+                                       :command/ctx  {:user/id user-id}})
+              [[access] [insert]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "verifies file access"
             (is (= {:select #{1}
                     :from   [:projects]
@@ -58,21 +57,10 @@
                     :values      [{:created-at      :whenever
                                    :file-version-id file-version-id}]
                     :returning   [:id]}
-                   insert))))
+                   insert)))
 
-        (testing "emits an command"
-          (let [{command-id :command/id :as command} (-> ch
-                                                         (stubs/calls :send!)
-                                                         colls/only!
-                                                         first)]
-            (is (uuid? command-id))
-            (is (= {:command/id         command-id
-                    :command/type       :workflow/next!
-                    :command/data       {:spigot/id     spigot-id
-                                         :spigot/result {:comment/id comment-id}}
-                    :command/emitted-by user-id
-                    :command/ctx        {:user/id user-id}}
-                   command)))))
+          (testing "returns the result"
+            (= {:comment/id comment-id} result))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -80,56 +68,8 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           {:events ch}
-                           {:command/type :comment/create!
-                            :command/ctx  {:user/id user-id :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :comment/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event))))))
-
-      (testing "when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! ch)
-          (stubs/use! tx :execute!
-                      [{:id "comment-id"}]
-                      [{:id comment-id}]
-                      [comment])
-          (stubs/use! ch :send!
-                      (ex-info "Channel" {}))
-          (repos/transact! tx wf/command-handler
-                           {:commands ch :events ch}
-                           {:command/type :comment/create!
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     rest
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :comment/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    {:events ch}
+                                                    {:command/type :comment/create!
+                                                     :command/ctx  {:user/id user-id :request/id request-id}})))))))))

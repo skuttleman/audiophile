@@ -68,9 +68,10 @@
   ([ch template opts]
    (start-workflow! ch template {} opts))
   ([ch template ctx opts]
-   (let [wf-ctx (maps/select-rename-keys ctx (wf/->ctx template))
+   (let [[context plan] (maps/extract-keys (wf/with-workflow template) #{:ctx})
+         wf-ctx (maps/select-rename-keys ctx (:ctx context))
          wf (merge (sp/plan (wf/load! template) {:ctx wf-ctx})
-                   (wf/->result template))]
+                   plan)]
      (let [command-id (uuids/random)
            command {:command/id   command-id
                     :command/type :workflow/create!

@@ -9,36 +9,30 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.backend.infrastructure.templates.workflows :as wf]))
 
-(defmethod wf/->ctx :artifacts/create
+(defmethod wf/with-workflow :artifacts/create
   [_]
-  '{:artifact/filename     ?filename
-    :artifact/content-type ?content-type
-    :artifact/size         ?size
-    :artifact/uri          ?uri
-    :artifact/key          ?key})
-(defmethod wf/->result :artifacts/create
-  [_]
-  '{:workflows/->result {:artifact/id       (sp.ctx/get ?artifact-id)
+  '{:ctx                {:artifact/filename     ?filename
+                         :artifact/content-type ?content-type
+                         :artifact/size         ?size
+                         :artifact/uri          ?uri
+                         :artifact/key          ?key}
+    :workflows/->result {:artifact/id       (sp.ctx/get ?artifact-id)
                          :artifact/filename (sp.ctx/get ?filename)}})
 
-(defmethod wf/->ctx :versions/create
+(defmethod wf/with-workflow :versions/create
   [_]
-  '{:artifact/id  ?artifact-id
-    :version/name ?version-name
-    :file/id      ?file-id})
-(defmethod wf/->result :versions/create
-  [_]
-  '{:workflows/->result {:file-version/id (sp.ctx/get ?version-id)}})
+  '{:ctx                {:artifact/id  ?artifact-id
+                         :version/name ?version-name
+                         :file/id      ?file-id}
+    :workflows/->result {:file-version/id (sp.ctx/get ?version-id)}})
 
-(defmethod wf/->ctx :files/create
+(defmethod wf/with-workflow :files/create
   [_]
-  '{:artifact/id  ?artifact-id
-    :project/id   ?project-id
-    :file/name    ?file-name
-    :version/name ?version-name})
-(defmethod wf/->result :files/create
-  [_]
-  '{:workflows/->result {:file/id         (sp.ctx/get ?file-id)
+  '{:ctx                {:artifact/id  ?artifact-id
+                         :project/id   ?project-id
+                         :file/name    ?file-name
+                         :version/name ?version-name}
+    :workflows/->result {:file/id         (sp.ctx/get ?file-id)
                          :file-version/id (sp.ctx/get ?version-id)}})
 
 (defn ^:private get-artifact* [executor store artifact-id opts]

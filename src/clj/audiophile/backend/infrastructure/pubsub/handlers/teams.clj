@@ -1,21 +1,15 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.teams
   (:require
-    [audiophile.backend.api.pubsub.core :as ps]
-    [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.backend.infrastructure.repositories.teams.queries :as q]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create* [executor team opts]
   (if (q/insert-team-access? executor team opts)
-    {:team/id (q/insert-team! executor team opts)}
+    (q/insert-team! executor team opts)
     (throw (ex-info "insufficient access" {}))))
 
 (defmethod wf/command-handler :team/create!
-  [executor {:keys [commands events]} {command-id :command/id :command/keys [ctx data type]}]
-  (log/with-ctx :CP
-    (hc/with-command-failed! [events type ctx]
-      (log/info "saving team to db" command-id)
-      (let [result {:spigot/id     (:spigot/id data)
-                    :spigot/result (create* executor (:spigot/params data) ctx)}]
-        (ps/emit-command! commands :workflow/next! result ctx)))))
+  [executor _sys {command-id :command/id :command/keys [ctx data]}]
+  (log/info "saving team to db" command-id)
+  {:team/id (create* executor (:spigot/params data) ctx)})

@@ -22,35 +22,22 @@
       (testing "when creating a user"
         (stubs/use! tx :execute!
                     [{:id user-id}])
-        (repos/transact! tx wf/command-handler
-                         (maps/->m commands events)
-                         {:command/type :user/create!
-                          :command/data {:spigot/id     spigot-id
-                                         :spigot/params {:created-at :whenever
-                                                         :other      :junk}}
-                          :command/ctx  {:user/id signup-id}})
-
-        (let [[insert-user] (colls/only! (stubs/calls tx :execute!))]
+        (let [result (repos/transact! tx wf/command-handler
+                                      (maps/->m commands events)
+                                      {:command/type :user/create!
+                                       :command/data {:spigot/id     spigot-id
+                                                      :spigot/params {:created-at :whenever
+                                                                      :other      :junk}}
+                                       :command/ctx  {:user/id signup-id}})
+              [insert-user] (colls/only! (stubs/calls tx :execute!))]
           (testing "saves to the repository"
             (is (= {:insert-into :users
                     :values      [{:created-at :whenever}]
                     :returning   [:id]}
-                   insert-user))))
+                   insert-user)))
 
-        (testing "emits a command"
-          (let [{command-id :command/id :as command} (-> commands
-                                                         (stubs/calls :send!)
-                                                         colls/only!
-                                                         first)]
-            (is (uuid? command-id))
-            (is (= {:command/ctx        {:user/id signup-id}
-                    :command/data       {:spigot/id     spigot-id
-                                         :spigot/result {:user/id user-id}}
-                    :command/emitted-by signup-id
-                    :command/id         command-id
-                    :command/type       :workflow/next!}
-
-                   command)))))
+          (testing "returns the result"
+            (is (= {:user/id user-id} result)))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -58,58 +45,10 @@
           (stubs/init! events)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           (maps/->m commands events)
-                           {:command/type :user/create!
-                            :command/data {:spigot/params {}}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> events
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :user/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event))))))
-
-      (testing "when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! events)
-          (stubs/use! tx :execute!
-                      [{:id user-id}])
-          (stubs/use! commands :send!
-                      (ex-info "Channel" {}))
-          (repos/transact! tx wf/command-handler
-                           (maps/->m commands events)
-                           {:command/type :user/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :signup/id  signup-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> events
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :user/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :signup/id  signup-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    (maps/->m commands events)
+                                                    {:command/type :user/create!
+                                                     :command/data {:spigot/params {}}
+                                                     :command/ctx  {:user/id    user-id
+                                                                    :request/id request-id}})))))))))

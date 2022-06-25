@@ -8,16 +8,14 @@
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
 
-(defmethod wf/->ctx :comments/create
+(defmethod wf/with-workflow :comments/create
   [_]
-  '{:comment/body            ?body
-    :comment/selection       ?selection
-    :comment/file-version-id ?version-id
-    :comment/comment-id      ?parent-id
-    :user/id                 ?user-id})
-(defmethod wf/->result :comments/create
-  [_]
-  '{:workflows/->result {:comment/id (sp.ctx/get ?comment-id)}})
+  '{:ctx                {:comment/body            ?body
+                         :comment/selection       ?selection
+                         :comment/file-version-id ?version-id
+                         :comment/comment-id      ?parent-id
+                         :user/id                 ?user-id}
+    :workflows/->result {:comment/id (sp.ctx/get ?comment-id)}})
 
 (deftype CommentAccessor [repo ch]
   pint/ICommentAccessor

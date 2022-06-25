@@ -8,16 +8,14 @@
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
 
-(defmethod wf/->ctx :users/signup
+(defmethod wf/with-workflow :users/signup
   [_]
-  '{:user/handle        ?handle
-    :user/email         ?email
-    :user/first-name    ?first-name
-    :user/last-name     ?last-name
-    :user/mobile-number ?mobile-number})
-(defmethod wf/->result :users/signup
-  [_]
-  '{:workflows/->result {:login/token (sp.ctx/get ?token)}})
+  '{:ctx                {:user/handle        ?handle
+                         :user/email         ?email
+                         :user/first-name    ?first-name
+                         :user/last-name     ?last-name
+                         :user/mobile-number ?mobile-number}
+    :workflows/->result {:login/token (sp.ctx/get ?token)}})
 
 (defmulti ^:private find-by (fn [_ {:user/keys [email id]}]
                               (cond

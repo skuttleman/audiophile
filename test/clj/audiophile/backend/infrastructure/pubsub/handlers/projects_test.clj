@@ -12,8 +12,8 @@
     [clojure.test :refer [are deftest is testing]]
     audiophile.backend.infrastructure.pubsub.handlers.projects))
 
-(deftest handle!-test
-  (testing "(ProjectCommandHandler#handle!)"
+(deftest project-create!-test
+  (testing "wf/command-handler :project/create!"
     (let [ch (ts/->chan)
           tx (trepos/stub-transactor)
           [project-id team-id user-id spigot-id] (repeatedly uuids/random)
@@ -26,16 +26,15 @@
                     [{:id project-id}]
                     [project]
                     [{:id "event-id"}])
-        (repos/transact! tx wf/command-handler
-                         {:commands ch}
-                         {:command/type :project/create!
-                          :command/data {:spigot/id     spigot-id
-                                         :spigot/params {:created-at      :whenever
-                                                         :project/team-id team-id
-                                                         :other           :junk}}
-                          :command/ctx  {:user/id user-id}})
-
-        (let [[[access] [insert]] (colls/only! 2 (stubs/calls tx :execute!))]
+        (let [result (repos/transact! tx wf/command-handler
+                                      {:commands ch}
+                                      {:command/type :project/create!
+                                       :command/data {:spigot/id     spigot-id
+                                                      :spigot/params {:created-at      :whenever
+                                                                      :project/team-id team-id
+                                                                      :other           :junk}}
+                                       :command/ctx  {:user/id user-id}})
+              [[access] [insert]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "verifies team access"
             (is (= {:select [1]
                     :from   [:teams]
@@ -53,21 +52,10 @@
                     :values      [{:created-at :whenever
                                    :team-id    team-id}]
                     :returning   [:id]}
-                   insert))))
+                   insert)))
 
-        (testing "emits an command"
-          (let [{command-id :command/id :as command} (-> ch
-                                                         (stubs/calls :send!)
-                                                         colls/only!
-                                                         first)]
-            (is (uuid? command-id))
-            (is (= {:command/id         command-id
-                    :command/type       :workflow/next!
-                    :command/data       {:spigot/id     spigot-id
-                                         :spigot/result {:project/id project-id}}
-                    :command/emitted-by user-id
-                    :command/ctx        {:user/id user-id}}
-                   command)))))
+          (testing "returns the result"
+            (is (= {:project/id project-id} result)))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -75,60 +63,10 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           {:events ch}
-                           {:command/type :project/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls ch :send!)))
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :project/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event))))))
-
-      (testing "when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! ch)
-          (stubs/use! tx :execute!
-                      [{:id "project-id"}])
-          (stubs/use! ch :send!
-                      (ex-info "Channel" {}))
-          (repos/transact! tx wf/command-handler
-                           {:commands ch :events ch}
-                           {:command/type :project/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     rest
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :project/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    {:events ch}
+                                                    {:command/type :project/create!
+                                                     :command/data {}
+                                                     :command/ctx  {:user/id    user-id
+                                                                    :request/id request-id}})))))))))

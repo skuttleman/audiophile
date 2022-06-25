@@ -1,8 +1,6 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.users
   (:require
-    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.core.serdes.jwt :as jwt]
-    [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.backend.infrastructure.repositories.users.queries :as q]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
@@ -20,21 +18,14 @@
                              seq
                              (into {}))]
     (throw (ex-info "one or more unique fields are present" {:conflicts fields})))
-  {:user/id (q/insert-user! executor user opts)})
+  (q/insert-user! executor user opts))
 
 (defmethod wf/command-handler :user/create!
-  [executor {:keys [commands events]} {command-id :command/id :command/keys [ctx data type]}]
-  (log/with-ctx :CP
-    (log/info "saving user to db" command-id)
-    (hc/with-command-failed! [events type ctx]
-      (let [result {:spigot/id     (:spigot/id data)
-                    :spigot/result (create* executor (:spigot/params data) ctx)}]
-        (ps/emit-command! commands :workflow/next! result ctx)))))
+  [executor _sys {command-id :command/id :command/keys [ctx data]}]
+  (log/info "saving user to db" command-id)
+  {:user/id (create* executor (:spigot/params data) ctx)})
 
 (defmethod wf/command-handler :user/generate-token!
-  [_ {:keys [commands events jwt-serde]} {command-id :command/id :command/keys [ctx data]}]
-  (log/with-ctx :CP
-    (log/info "generating login token" command-id)
-    (hc/with-command-failed! [events type ctx]
-      (let [result {:login/token (jwt/login-token jwt-serde (:spigot/params data))}]
-        (ps/emit-command! commands :workflow/next! (assoc data :spigot/result result) ctx)))))
+  [_executor {:keys [jwt-serde]} {command-id :command/id :command/keys [data]}]
+  (log/info "generating login token" command-id)
+  {:login/token (jwt/login-token jwt-serde (:spigot/params data))})

@@ -26,18 +26,17 @@
                       [{:id artifact-id}]
                       [artifact]
                       [{:id "event-id"}])
-          (repos/transact! tx wf/command-handler
-                           {:commands ch}
-                           {:command/type :artifact/create!
-                            :command/data {:spigot/id     spigot-id
-                                           :spigot/params {:artifact/filename     "file.name"
-                                                           :artifact/size         12345
-                                                           :artifact/content-type "content/type"
-                                                           :artifact/uri          "some://uri"}}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (let [[[insert-artifact] [query-artifact]] (colls/only! 2 (stubs/calls tx :execute!))]
+          (let [result (repos/transact! tx wf/command-handler
+                                        {:commands ch}
+                                        {:command/type :artifact/create!
+                                         :command/data {:spigot/id     spigot-id
+                                                        :spigot/params {:artifact/filename     "file.name"
+                                                                        :artifact/size         12345
+                                                                        :artifact/content-type "content/type"
+                                                                        :artifact/uri          "some://uri"}}
+                                         :command/ctx  {:user/id    user-id
+                                                        :request/id request-id}})
+                [[insert-artifact]] (colls/only! 2 (stubs/calls tx :execute!))]
             (testing "inserts the artifact in the repository"
               (is (= {:insert-into :artifacts
                       :values      [{:filename       "file.name"
@@ -47,20 +46,8 @@
                       :returning   [:id]}
                      insert-artifact)))
 
-            (testing "emits an command"
-              (let [{command-id :command/id :as command} (-> ch
-                                                             (stubs/calls :send!)
-                                                             colls/only!
-                                                             first)]
-                (is (uuid? command-id))
-                (is (= {:command/id         command-id
-                        :command/type       :workflow/next!
-                        :command/data       {:spigot/id     spigot-id
-                                             :spigot/result {:artifact/id artifact-id}}
-                        :command/emitted-by user-id
-                        :command/ctx        {:user/id    user-id
-                                             :request/id request-id}}
-                       command)))))))
+            (testing "returns the result"
+              (is (= {:artifact/id artifact-id} result))))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -68,61 +55,13 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           {:events ch}
-                           {:command/type :artifact/create!
-                            :command/data {:spigot/params {}}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls ch :publish!)))
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event))))))
-
-      (testing "when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! ch)
-          (stubs/use! ch :send!
-                      (ex-info "Channel" {}))
-          (repos/transact! tx wf/command-handler
-                           {:commands ch :events ch}
-                           {:command/type :artifact/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     rest
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :artifact/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    {:events ch}
+                                                    {:command/type :artifact/create!
+                                                     :command/data {:spigot/params {}}
+                                                     :command/ctx  {:user/id    user-id
+                                                                    :request/id request-id}})))))))))
 
 (deftest file-create!-test
   (testing "wf/command-handler :file/create!"
@@ -139,17 +78,16 @@
                     nil
                     [file]
                     [{:id "event-id"}])
-        (repos/transact! tx wf/command-handler
-                         {:commands ch}
-                         {:command/type :file/create!
-                          :command/data {:spigot/id     spigot-id
-                                         :spigot/params {:artifact/id  artifact-id
-                                                         :project/id   project-id
-                                                         :file/name    "file name"
-                                                         :version/name "version"}}
-                          :command/ctx  {:user/id user-id}})
-
-        (let [[[access-query] [file-insert]] (colls/only! 2 (stubs/calls tx :execute!))]
+        (let [result (repos/transact! tx wf/command-handler
+                                      {:commands ch}
+                                      {:command/type :file/create!
+                                       :command/data {:spigot/id     spigot-id
+                                                      :spigot/params {:artifact/id  artifact-id
+                                                                      :project/id   project-id
+                                                                      :file/name    "file name"
+                                                                      :version/name "version"}}
+                                       :command/ctx  {:user/id user-id}})
+              [[access-query] [file-insert]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
             (is (= [:and
@@ -178,19 +116,8 @@
                 (is (= [:= #{:files.project-id project-id}]
                        (tu/op-set where))))))
 
-          (testing "emits an command"
-            (let [{command-id :command/id :as command} (-> ch
-                                                           (stubs/calls :send!)
-                                                           colls/only!
-                                                           first)]
-              (is (uuid? command-id))
-              (is (= {:command/id         command-id
-                      :command/type       :workflow/next!
-                      :command/data       {:spigot/id     spigot-id
-                                           :spigot/result {:file/id file-id}}
-                      :command/emitted-by user-id
-                      :command/ctx        {:user/id user-id}}
-                     command))))))
+          (testing "returns the result"
+            (is (= {:file/id file-id} result)))))
 
       (testing "and when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -198,64 +125,13 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           {:events ch}
-                           {:command/type :file/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls ch :send!)))
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :file/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id `:user/id user-id}}
-                     event))))))
-
-      (testing "and when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! ch)
-          (stubs/use! tx :execute!
-                      [{:id "file-id"}]
-                      [{:id file-id}]
-                      [file])
-          (stubs/use! ch :send!
-                      (ex-info "Channel" {}))
-          (repos/transact! tx wf/command-handler
-                           {:commands ch :events ch}
-                           {:command/type :file/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     rest
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :file/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    {:events ch}
+                                                    {:command/type :file/create!
+                                                     :command/data {}
+                                                     :command/ctx  {:user/id    user-id
+                                                                    :request/id request-id}})))))))))
 
 (deftest file-version-create!-test
   (testing "wf/command-handler :file-version/create!"
@@ -270,16 +146,16 @@
                     [{:id version-id}]
                     [version]
                     [{:id "event-id"}])
-        (repos/transact! tx wf/command-handler
-                         {:commands ch}
-                         {:command/type :file-version/create!
-                          :command/data {:spigot/id     spigot-id
-                                         :spigot/params {:file/id      file-id
-                                                         :file/name    "file name"
-                                                         :version/name "version"
-                                                         :artifact/id  artifact-id}}
-                          :command/ctx  {:user/id user-id}})
-        (let [[[access-query] [version-insert]] (colls/only! 2 (stubs/calls tx :execute!))]
+        (let [result (repos/transact! tx wf/command-handler
+                                      {:commands ch}
+                                      {:command/type :file-version/create!
+                                       :command/data {:spigot/id     spigot-id
+                                                      :spigot/params {:file/id      file-id
+                                                                      :file/name    "file name"
+                                                                      :version/name "version"
+                                                                      :artifact/id  artifact-id}}
+                                       :command/ctx  {:user/id user-id}})
+              [[access-query] [version-insert]] (colls/only! 2 (stubs/calls tx :execute!))]
           (testing "checks for access permission"
             (is (= [:projects] (:from access-query)))
             (is (= [:and
@@ -305,21 +181,10 @@
                                    :file-id     file-id
                                    :name        "version"}]
                     :returning   #{:id}}
-                   (update version-insert :returning set)))))
+                   (update version-insert :returning set))))
 
-        (testing "emits an command"
-          (let [{command-id :command/id :as command} (-> ch
-                                                         (stubs/calls :send!)
-                                                         colls/only!
-                                                         first)]
-            (is (uuid? command-id))
-            (is (= {:command/id         command-id
-                    :command/type       :workflow/next!
-                    :command/data       {:spigot/id     spigot-id
-                                         :spigot/result {:file-version/id version-id}}
-                    :command/emitted-by user-id
-                    :command/ctx        {:user/id user-id}}
-                   command)))))
+          (testing "returns the result"
+            (is (= {:file-version/id version-id} result)))))
 
       (testing "and when the executor throws an exception"
         (let [request-id (uuids/random)
@@ -327,60 +192,10 @@
           (stubs/init! ch)
           (stubs/use! tx :execute!
                       (ex-info "Executor" {}))
-          (repos/transact! tx wf/command-handler
-                           {:events ch}
-                           {:command/type :file-version/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "does not emit a successful event"
-            (empty? (stubs/calls ch :send!)))
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :file-version/create!
-                                         :error/reason  "Executor"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event))))))
-
-      (testing "and when the pubsub throws an exception"
-        (let [request-id (uuids/random)
-              user-id (uuids/random)]
-          (stubs/init! ch)
-          (stubs/use! tx :execute!
-                      [{:id "file-version-id"}])
-          (stubs/use! ch :send!
-                      (ex-info "Channel" {}))
-          (repos/transact! tx wf/command-handler
-                           {:commands ch :events ch}
-                           {:command/type :file-version/create!
-                            :command/data {}
-                            :command/ctx  {:user/id    user-id
-                                           :request/id request-id}})
-
-          (testing "emits a command-failed event"
-            (let [{event-id :event/id :as event} (-> ch
-                                                     (stubs/calls :send!)
-                                                     rest
-                                                     colls/only!
-                                                     first)]
-              (is (uuid? event-id))
-              (is (= {:event/id         event-id
-                      :event/model-id   request-id
-                      :event/type       :command/failed
-                      :event/data       {:error/command :file-version/create!
-                                         :error/reason  "Channel"}
-                      :event/emitted-by user-id
-                      :event/ctx        {:request/id request-id
-                                         :user/id    user-id}}
-                     event)))))))))
+          (testing "throws an exception"
+            (is (thrown? Throwable (repos/transact! tx wf/command-handler
+                                                    {:events ch}
+                                                    {:command/type :file-version/create!
+                                                     :command/data {}
+                                                     :command/ctx  {:user/id    user-id
+                                                                    :request/id request-id}})))))))))

@@ -8,14 +8,12 @@
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
 
-(defmethod wf/->ctx :teams/create
+(defmethod wf/with-workflow :teams/create
   [_]
-  '{:team/name ?team-name
-    :team/type ?team-type
-    :user/id   ?user-id})
-(defmethod wf/->result :teams/create
-  [_]
-  '{:workflows/->result {:team/id (sp.ctx/get ?team-id)}})
+  '{:ctx                {:team/name ?team-name
+                         :team/type ?team-type
+                         :user/id   ?user-id}
+    :workflows/->result {:team/id (sp.ctx/get ?team-id)}})
 
 (defn ^:private query-by-id* [executor team-id opts]
   (when-let [team (q/find-by-team-id executor team-id opts)]
