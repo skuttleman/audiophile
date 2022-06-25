@@ -117,12 +117,23 @@
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        ;; TODO - rewrite ME
-        (is :skipped?)
-        #_(assert/is? {:command/id         uuid?
-                     :command/type       :team/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:ctx                {'?user-id user-id}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result {:team/id '(sp.ctx/get ?team-id)}}
+                      data)
+          (assert/is? {:spigot/->ctx  '{?team-id :team/id}
+                       :spigot/id     uuid?
+                       :spigot/tag    :team/create!
+                       :spigot/params '{:team/name (sp.ctx/get ?team-name)
+                                        :team/type (sp.ctx/get ?team-type)
+                                        :user/id   (sp.ctx/get ?user-id)}}
+                      (-> data :tasks vals colls/only!))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

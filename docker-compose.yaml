@@ -12,6 +12,7 @@ services:
       dockerfile: Dockerfile-dev
     environment:
       - LOG_LEVEL=debug
+      - ENV=development
       - MQ_NAMESPACE=single
       - MQ_CONSUMER_GROUP=app
       - WS_RECONNECT_MS=1000

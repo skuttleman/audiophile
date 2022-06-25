@@ -76,13 +76,50 @@
     (let [ch (ts/->chan)
           repo (rusers/->UserAccessor nil ch)
           user-id (uuids/random)]
-      (int/create! repo {:some :data} {:user/id user-id})
       (testing "emits a command"
-        ;; TODO - rewrite ME
-        (is :skipped?)
-        #_(assert/is? {:command/id         uuid?
-                     :command/type       :user/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id user-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (int/create! repo
+                     {:user/handle        "handle"
+                      :user/email         "email"
+                      :user/first-name    "first"
+                      :user/last-name     "last"
+                      :user/mobile-number "mobile"}
+                     {:user/id user-id})
+        (let [{:command/keys [data] :as command} (ffirst (stubs/calls ch :send!))]
+          (assert/is? {:ctx                '{?handle        "handle"
+                                             ?email         "email"
+                                             ?first-name    "first"
+                                             ?last-name     "last"
+                                             ?mobile-number "mobile"}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result {:login/token '(sp.ctx/get ?token)}}
+                      data)
+          (assert/has? {:spigot/id     uuid?
+                        :spigot/tag    :user/create!
+                        :spigot/->ctx  '{?user-id :user/id}
+                        :spigot/params '{:user/handle        (sp.ctx/get ?handle)
+                                         :user/email         (sp.ctx/get ?email)
+                                         :user/first-name    (sp.ctx/get ?first-name)
+                                         :user/last-name     (sp.ctx/get ?last-name)
+                                         :user/mobile-number (sp.ctx/get ?mobile-number)}}
+                       (-> data :tasks vals))
+          (assert/has? {:spigot/id     uuid?
+                        :spigot/tag    :team/create!
+                        :spigot/params '{:team/name "My Personal Projects"
+                                         :team/type :PERSONAL
+                                         :user/id   (sp.ctx/get ?user-id)}}
+                       (-> data :tasks vals))
+          (assert/has? {:spigot/id     uuid?
+                        :spigot/tag    :user/generate-token!
+                        :spigot/->ctx  '{?token :login/token}
+                        :spigot/params '{:user/id            (sp.ctx/get ?user-id)
+                                         :user/handle        (sp.ctx/get ?handle)
+                                         :user/email         (sp.ctx/get ?email)
+                                         :user/first-name    (sp.ctx/get ?first-name)
+                                         :user/last-name     (sp.ctx/get ?last-name)
+                                         :user/mobile-number (sp.ctx/get ?mobile-number)}}
+                       (-> data :tasks vals))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id user-id}}
+                      command))))))
