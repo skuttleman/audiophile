@@ -1,0 +1,6 @@
+[:artifact/create! {:artifact/filename     (sp.ctx/get ?filename)
+                    :artifact/content-type (sp.ctx/get ?content-type)
+                    :artifact/size         (sp.ctx/get ?size)
+                    :artifact/uri          (sp.ctx/get ?uri)
+                    :artifact/key          (sp.ctx/get ?key)
+                    :spigot/->ctx          {?artifact-id :artifact/id}}]

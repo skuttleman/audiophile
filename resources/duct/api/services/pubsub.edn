@@ -27,12 +27,6 @@
   :opts    {:auto-ack         true
             :internal/handler "comments"}}
 
- [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#files]
- {:ch      #ig/ref :rabbitmq.chan/commands
-  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#files
-  :opts    {:auto-ack         true
-            :internal/handler "files"}}
-
  [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#projects]
  {:ch      #ig/ref :rabbitmq.chan/commands
   :handler #ig/ref :audiophile.services.rabbitmq/command-handler#projects
@@ -58,10 +52,6 @@
  {:pubsub #ig/ref :services/pubsub}
 
  :audiophile.services.rabbitmq/command-handler#comments
- {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :services/transactor}
-
- :audiophile.services.rabbitmq/command-handler#files
  {:ch   #ig/ref :rabbitmq.chan/events
   :repo #ig/ref :services/transactor}
 

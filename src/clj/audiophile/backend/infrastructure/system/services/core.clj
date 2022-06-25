@@ -54,9 +54,6 @@
 (defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#comments [_ cfg]
   (pub.comments/msg-handler cfg))
 
-(defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#files [_ cfg]
-  (pub.files/msg-handler cfg))
-
 (defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#projects [_ cfg]
   (pub.projects/msg-handler cfg))
 

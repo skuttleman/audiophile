@@ -5,17 +5,18 @@
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.users.queries :as q]
-    [audiophile.common.core.utils.logger :as log]
-    [clojure.set :as set]))
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
+    [audiophile.common.core.utils.logger :as log]))
 
-(def ^:private wf-ctx
+(defmethod wf/->ctx :users/signup
+  [_]
   '{:user/handle        ?handle
     :user/email         ?email
     :user/first-name    ?first-name
     :user/last-name     ?last-name
     :user/mobile-number ?mobile-number})
-
-(def ^:private wf-opts
+(defmethod wf/->result :users/signup
+  [_]
   '{:workflows/->result {:login/token (sp.ctx/get ?token)}})
 
 (defmulti ^:private find-by (fn [_ {:user/keys [email id]}]
@@ -43,13 +44,7 @@
   (query-one [_ opts]
     (user-accessor#query-one repo opts))
   (create! [_ data opts]
-    (ps/start-workflow! ch
-                        :users/signup
-                        (-> data
-                            (merge opts)
-                            (select-keys (keys wf-ctx))
-                            (set/rename-keys wf-ctx))
-                        (merge opts wf-opts))))
+    (ps/start-workflow! ch :users/signup data opts)))
 
 (defn accessor
   "Constructor for [[UserAccessor]] which provides semantic access for storing and retrieving users."

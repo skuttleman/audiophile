@@ -33,7 +33,6 @@
 
  [:duct/const :routes/daemon#jobs]
  #{#ig/ref :rabbitmq.sub/commands#comments
-   #ig/ref :rabbitmq.sub/commands#files
    #ig/ref :rabbitmq.sub/commands#projects
    #ig/ref :rabbitmq.sub/commands#workflows
    #ig/ref :rabbitmq.sub/events#persist}

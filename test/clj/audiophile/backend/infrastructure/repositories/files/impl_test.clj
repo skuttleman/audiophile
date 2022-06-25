@@ -32,15 +32,30 @@
                (take 2 (colls/only! (stubs/calls store :put!))))))
 
       (testing "emits a command"
-        (assert/is? {:command/id         uuid?
-                     :command/type       :artifact/create!
-                     :command/data       {:some :data
-                                          :artifact/key "key"
-                                          :artifact/uri "some://uri"}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:ctx                '{?key "key"
+                                             ?uri "some://uri"}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
+                                             :artifact/filename (sp.ctx/get ?filename)}}
+                      data)
+          (assert/is? {:spigot/->ctx  '{?artifact-id :artifact/id}
+                       :spigot/id     uuid?
+                       :spigot/tag    :artifact/create!
+                       :spigot/params '{:artifact/content-type (sp.ctx/get ?content-type)
+                                        :artifact/filename     (sp.ctx/get ?filename)
+                                        :artifact/key          (sp.ctx/get ?key)
+                                        :artifact/size         (sp.ctx/get ?size)
+                                        :artifact/uri          (sp.ctx/get ?uri)}}
+                      (-> data :tasks vals colls/only!))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))
 
 (deftest query-many-test
   (testing "query-many"
@@ -227,13 +242,33 @@
                                               :some/other :opts
                                               :user/id    user-id
                                               :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :file/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:ctx                {}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
+                                             :file/id         (sp.ctx/get ?file-id)}}
+                      data)
+          (assert/has? {:spigot/id     uuid?
+                        :spigot/tag    :file/create!
+                        :spigot/->ctx  '{?file-id :file/id}
+                        :spigot/params '{:file/name  (sp.ctx/get ?file-name)
+                                         :project/id (sp.ctx/get ?project-id)}}
+                       (-> data :tasks vals))
+          (assert/has? {:spigot/id     uuid?
+                        :spigot/tag    :file-version/create!
+                        :spigot/->ctx  '{?version-id :file-version/id}
+                        :spigot/params '{:artifact/id  (sp.ctx/get ?artifact-id)
+                                         :version/name (sp.ctx/get ?version-name)
+                                         :file/id      (sp.ctx/get ?file-id)}}
+                       (-> data :tasks vals))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
@@ -247,10 +282,23 @@
                                    :some/other :opts
                                    :user/id    user-id
                                    :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :file-version/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:ctx                {}
+                       :running            #{}
+                       :completed          #{}
+                       :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
+                      data)
+          (assert/is? {:spigot/id     uuid?
+                       :spigot/tag    :file-version/create!
+                       :spigot/->ctx  '{?version-id :file-version/id}
+                       :spigot/params '{:artifact/id  (sp.ctx/get ?artifact-id)
+                                        :file/id      (sp.ctx/get ?file-id)
+                                        :version/name (sp.ctx/get ?version-name)}}
+                      (-> data :tasks vals colls/only!))
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

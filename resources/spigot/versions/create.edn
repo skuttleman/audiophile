@@ -1,0 +1,4 @@
+[:file-version/create! {:artifact/id  (sp.ctx/get ?artifact-id)
+                        :version/name (sp.ctx/get ?version-name)
+                        :file/id      (sp.ctx/get ?file-id)
+                        :spigot/->ctx {?version-id :file-version/id}}]

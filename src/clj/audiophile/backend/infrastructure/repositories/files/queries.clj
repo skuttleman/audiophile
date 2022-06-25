@@ -105,10 +105,10 @@
       (assoc :artifact/content-length (:artifact/size artifact))
       (->> (models/insert-into tbl/artifacts))))
 
-(defn ^:private insert-version [version file-id]
+(defn ^:private insert-version [version]
   (models/insert-into tbl/file-versions
                       {:artifact-id (:artifact/id version)
-                       :file-id     file-id
+                       :file-id     (:file/id version)
                        :name        (:version/name version)}))
 
 (defn insert-artifact-access? [_ _ _]
@@ -130,25 +130,16 @@
       (->> (repos/execute! executor))
       colls/only!))
 
-(defn find-event-artifact [executor artifact-id]
-  (-> executor
-      (repos/execute! (models/select-by-id* tbl/artifacts artifact-id))
-      colls/only!))
-
-(defn insert-file-access? [executor _ {project-id :project/id user-id :user/id}]
+(defn insert-file-access? [executor {project-id :project/id} {user-id :user/id}]
   (cdb/access? executor (access-project project-id user-id)))
 
-(defn insert-file! [executor file {project-id :project/id}]
-  (let [file-id (-> {:name       (:file/name file)
-                     :project-id project-id}
-                    insert
-                    (->> (repos/execute! executor))
-                    colls/only!
-                    :id)]
-    (-> file
-        (insert-version file-id)
-        (->> (repos/execute! executor)))
-    file-id))
+(defn insert-file! [executor file _]
+  (-> {:name       (:file/name file)
+       :project-id (:project/id file)}
+      insert
+      (->> (repos/execute! executor))
+      colls/only!
+      :id))
 
 (defn find-by-file-id [executor file-id opts]
   (when-let [file (-> (if (:includes/versions? opts)
@@ -169,22 +160,12 @@
 (defn select-for-project [executor project-id opts]
   (repos/execute! executor (select-for-user* project-id (:user/id opts))))
 
-(defn find-event-file [executor file-id]
-  (-> executor
-      (repos/execute! (select-one file-id))
-      colls/only!))
-
-(defn insert-version-access? [executor _ {file-id :file/id user-id :user/id}]
+(defn insert-version-access? [executor {file-id :file/id} {user-id :user/id}]
   (cdb/access? executor (access-file file-id user-id)))
 
-(defn insert-version! [executor version {file-id :file/id}]
+(defn insert-version! [executor version _]
   (-> version
-      (insert-version file-id)
+      insert-version
       (->> (repos/execute! executor))
       colls/only!
       :id))
-
-(defn find-event-version [executor version-id]
-  (-> executor
-      (repos/execute! (models/select-by-id* tbl/file-versions version-id))
-      colls/only!))
