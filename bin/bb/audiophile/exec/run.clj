@@ -15,10 +15,7 @@
   [_ _]
   (shared/process! "docker-compose up -d --build app")
   (shared/process! "foreman start --procfile Procfile-dev"
-                   (-> {"LOG_LEVEL" "debug"}
-                       shared/with-default-env
-                       (assoc "ENV" "development"
-                              "WS_RECONNECT_MS" "1000"))))
+                   (shared/with-default-env {})))
 
 (defmethod shared/main* :test
   [_ [mode & args]]

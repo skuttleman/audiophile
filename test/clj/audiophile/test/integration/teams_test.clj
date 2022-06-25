@@ -100,8 +100,7 @@
                              (ihttp/as-async system handler))]
             (testing "creates the team"
               (is (http/success? response))
-              (assert/is? {:team/name "team name"
-                           :team/id   uuid?}
+              (assert/is? {:team/id uuid?}
                           (get-in response [:body :data])))
 
             (testing "and when querying for teams"

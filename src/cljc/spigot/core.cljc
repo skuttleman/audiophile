@@ -3,8 +3,11 @@
   (:require
     [spigot.impl :as sp.impl]))
 
-(defn plan [form]
-  (sp.impl/create form))
+(defn plan
+  ([form]
+   (plan form nil))
+  ([form opts]
+   (sp.impl/create form opts)))
 
 (defn next
   "Invokes all runnable tasks with executor and returns an updated workflow."
@@ -15,6 +18,11 @@
   "processes a finished task and returns an updated workflow."
   [workflow id result]
   (sp.impl/finish workflow id result))
+
+(defn finished?
+  "have all tasks been completed?"
+  [workflow]
+  (sp.impl/finished? workflow))
 
 (defn run
   "Reduces through a workflow, starting and finishing tasks in dependency order.

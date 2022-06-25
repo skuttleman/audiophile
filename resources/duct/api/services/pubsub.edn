@@ -39,17 +39,11 @@
   :opts    {:auto-ack         true
             :internal/handler "projects"}}
 
- [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#teams]
+ [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#workflows]
  {:ch      #ig/ref :rabbitmq.chan/commands
-  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#teams
+  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#workflows
   :opts    {:auto-ack         true
-            :internal/handler "teams"}}
-
- [:audiophile.services.rabbitmq/subscriber :rabbitmq.sub/commands#users]
- {:ch      #ig/ref :rabbitmq.chan/commands
-  :handler #ig/ref :audiophile.services.rabbitmq/command-handler#users
-  :opts    {:auto-ack         true
-            :internal/handler "users"}}
+            :internal/handler "workflows"}}
 
  [:audiophile.services.rabbitmq/conn :component/health]
  {:cfg {:uri #ig/ref :env.rabbitmq/uri}}
@@ -61,8 +55,7 @@
  {:repo #ig/ref :services/transactor}
 
  :audiophile.services.rabbitmq/ws-handler
- {:jwt-serde #ig/ref :serdes/jwt
-  :pubsub    #ig/ref :services/pubsub}
+ {:pubsub #ig/ref :services/pubsub}
 
  :audiophile.services.rabbitmq/command-handler#comments
  {:ch   #ig/ref :rabbitmq.chan/events
@@ -76,11 +69,8 @@
  {:ch   #ig/ref :rabbitmq.chan/events
   :repo #ig/ref :services/transactor}
 
- :audiophile.services.rabbitmq/command-handler#teams
- {:ch   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :services/transactor}
-
- :audiophile.services.rabbitmq/command-handler#users
- {:commands #ig/ref :rabbitmq.chan/commands
-  :events   #ig/ref :rabbitmq.chan/events
-  :repo #ig/ref :services/transactor}}
+ :audiophile.services.rabbitmq/command-handler#workflows
+ {:commands  #ig/ref :rabbitmq.chan/commands
+  :events    #ig/ref :rabbitmq.chan/events
+  :jwt-serde #ig/ref :serdes/jwt
+  :repo      #ig/ref :services/transactor}}

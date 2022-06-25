@@ -1,0 +1,18 @@
+[:spigot/serial
+ [:user/create! {:user/handle        (sp.ctx/get ?handle)
+                 :user/email         (sp.ctx/get ?email)
+                 :user/first-name    (sp.ctx/get ?first-name)
+                 :user/last-name     (sp.ctx/get ?last-name)
+                 :user/mobile-number (sp.ctx/get ?mobile-number)
+                 :spigot/->ctx       {?user-id :user/id}}]
+ [:spigot/parallel
+  [:team/create! {:team/name "My Personal Projects"
+                  :team/type :PERSONAL
+                  :user/id   (sp.ctx/get ?user-id)}]
+  [:user/generate-token! {:user/id            (sp.ctx/get ?user-id)
+                          :user/handle        (sp.ctx/get ?handle)
+                          :user/email         (sp.ctx/get ?email)
+                          :user/first-name    (sp.ctx/get ?first-name)
+                          :user/last-name     (sp.ctx/get ?last-name)
+                          :user/mobile-number (sp.ctx/get ?mobile-number)
+                          :spigot/->ctx       {?token :login/token}}]]]

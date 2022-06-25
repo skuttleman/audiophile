@@ -1,31 +1,30 @@
 (ns spigot.context
-  (:refer-clojure :exclude [get resolve])
+  (:refer-clojure :exclude [resolve])
   (:require
     [clojure.walk :as walk]
     [spigot.protocols :as psp])
   #?(:clj
-     (:import (clojure.lang TaggedLiteral))))
+     (:import (clojure.lang PersistentList))))
 
-(defmulti ^:private resolve-tagged
-          (fn [tag _ _]
+(defmulti ^:private resolve-list
+          (fn [[tag] _]
             tag))
 
+(defmethod resolve-list :default
+  [list _]
+  list)
+
 (extend-protocol psp/ICtxResolver
-  TaggedLiteral
+  PersistentList
   (resolve [this ctx]
-    (resolve-tagged (:tag this) (:form this) ctx)))
-
-(defn get [k]
-  (tagged-literal 'spigot.ctx/get k))
-
-(def readers
-  {'spigot.ctx/get get})
+    (resolve-list this ctx)))
 
 (defn resolve-params [params ctx]
-  (walk/prewalk (fn [x]
-                  (cond-> x
-                    (satisfies? psp/ICtxResolver x) (psp/resolve ctx)))
-                params))
+  (when params
+    (walk/postwalk (fn [x]
+                     (cond-> x
+                       (satisfies? psp/ICtxResolver x) (psp/resolve ctx)))
+                   params)))
 
 (defn merge-ctx [ctx ->ctx result]
   (reduce (fn [ctx [param k]]
@@ -35,6 +34,6 @@
           ctx
           ->ctx))
 
-(defmethod resolve-tagged 'spigot.ctx/get
-  [_ key ctx]
-  (clojure.core/get ctx key))
+(defmethod resolve-list 'sp.ctx/get
+  [[_ key] ctx]
+  (get ctx key))

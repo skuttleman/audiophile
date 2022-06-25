@@ -109,6 +109,15 @@
        (or (nil? ns-k)
            (= (name ns) ns-k))))
 
+(defn sql-update
+  "Generates a query for updating rows in a database table"
+  [{:keys [table]}]
+  {:update table})
+
+(defn sql-set
+  [query m]
+  (assoc query :set m))
+
 (defn insert-into
   "Generates a query for inserting rows into a database table"
   [{:keys [casts fields table] :as model} input]

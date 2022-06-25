@@ -115,40 +115,22 @@
              :token/aud (get-in request [:auth/user :jwt/aud]))
       (merge (:headers request) (get-in request [:nav/route :params]))))
 
-(defmulti handle-event* (fn [_ _ event]
-                          (:event/type event)))
-
-(defmethod handle-event* :user/created
-  [pubsub jwt-serde {event-id :event/id :event/keys [ctx] :as event}]
-  (let [token (jwt/login-token jwt-serde (:event/data event))]
-    (ps/send-user! pubsub
-                   (:signup/id ctx)
-                   event-id
-                   (-> event
-                       (dissoc :event/ctx)
-                       (assoc-in [:event/data :login/token] token))
-                   ctx)))
-
-(defmethod handle-event* :default
-  [pubsub _ {event-id :event/id :event/keys [ctx] :as event}]
-  (ps/send-user! pubsub
-                 (or (:signup/id ctx) (:user/id ctx))
-                 event-id
-                 (dissoc event :event/ctx)
-                 ctx))
-
 (defn ^:private web-socket-message-handler#handle!
-  [this pubsub jwt-serde {event-id :event/id :as event}]
+  [this pubsub {event-id :event/id :event/keys [ctx] :as event}]
   (log/with-ctx [this :CP]
     (log/info "publishing event to ws" event-id)
-    (handle-event* pubsub jwt-serde event)))
+    (ps/send-user! pubsub
+                   (or (:signup/id ctx) (:user/id ctx))
+                   event-id
+                   (dissoc event :event/ctx)
+                   ctx)))
 
-(deftype WebSocketMessageHandler [pubsub jwt-serde]
+(deftype WebSocketMessageHandler [pubsub]
   pint/IMessageHandler
   (handle? [_ _]
     true)
   (handle! [this msg]
-    (web-socket-message-handler#handle! this pubsub jwt-serde msg)))
+    (web-socket-message-handler#handle! this pubsub msg)))
 
-(defn event->ws-handler [{:keys [jwt-serde pubsub]}]
-  (->WebSocketMessageHandler pubsub jwt-serde))
+(defn event->ws-handler [{:keys [pubsub]}]
+  (->WebSocketMessageHandler pubsub))

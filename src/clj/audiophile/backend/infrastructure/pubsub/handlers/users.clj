@@ -1,12 +1,11 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.users
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
-    [audiophile.backend.infrastructure.repositories.core :as repos]
-    [audiophile.backend.infrastructure.repositories.users.queries :as q]
-    [audiophile.backend.domain.interactors.protocols :as pint]
+    [audiophile.backend.core.serdes.jwt :as jwt]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
-    [audiophile.common.core.utils.logger :as log]
-    [clojure.set :as set]))
+    [audiophile.backend.infrastructure.repositories.users.queries :as q]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
+    [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-signup-conflicts [executor user opts]
   (for [[field f] [[:user/email q/find-by-email]
@@ -23,29 +22,19 @@
     (throw (ex-info "one or more unique fields are present" {:conflicts fields})))
   {:user/id (q/insert-user! executor user opts)})
 
-(defn ^:private user-command-handler#handle! [repo commands events {command-id :command/id :command/keys [ctx type data] :as command}]
-  (log/info "saving user to db" command-id)
-  (when-let [user (hc/with-command-failed! [events type ctx]
-                    (repos/transact! repo create* data ctx))]
-    (let [ctx (-> command
-                  :command/ctx
-                  (set/rename-keys {:user/id :signup/id}))
-          ctx' (assoc ctx :user/id (:user/id user))]
-      (hc/with-command-failed! [events type ctx]
-        (ps/emit-command! commands
-                          :team/create!
-                          {:team/name "My Personal Projects"
-                           :team/type :PERSONAL}
-                          ctx')
-        (ps/emit-event! events (:user/id user) :user/created user ctx')))))
+(defmethod wf/command-handler :user/create!
+  [executor {:keys [commands events]} {command-id :command/id :command/keys [ctx data type]}]
+  (log/with-ctx :CP
+    (log/info "saving user to db" command-id)
+    (hc/with-command-failed! [events type ctx]
+      (let [result {:spigot/id     (:spigot/id data)
+                    :spigot/result (create* executor (:spigot/params data) ctx)}]
+        (ps/emit-command! commands :workflow/next! result ctx)))))
 
-(deftype UserCommandHandler [repo commands events]
-  pint/IMessageHandler
-  (handle? [_ msg]
-    (= :user/create! (:command/type msg)))
-  (handle! [this msg]
-    (log/with-ctx [this :CP]
-      (user-command-handler#handle! repo commands events msg))))
-
-(defn msg-handler [{:keys [commands events repo]}]
-  (->UserCommandHandler repo commands events))
+(defmethod wf/command-handler :user/generate-token!
+  [_ {:keys [commands events jwt-serde]} {command-id :command/id :command/keys [ctx data]}]
+  (log/with-ctx :CP
+    (log/info "generating login token" command-id)
+    (hc/with-command-failed! [events type ctx]
+      (let [result {:login/token (jwt/login-token jwt-serde (:spigot/params data))}]
+        (ps/emit-command! commands :workflow/next! (assoc data :spigot/result result) ctx)))))

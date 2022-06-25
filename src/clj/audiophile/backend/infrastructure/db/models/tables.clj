@@ -93,6 +93,15 @@
    :table     :teams
    :namespace :team})
 
+(def workflows
+  {:fields    #{:data :id :status :created-at}
+   :spec      [:map
+               [:workflow/id uuid?]
+               [:workflow/data string?]
+               [:workflow/created-at inst?]]
+   :table     :workflows
+   :namespace :workflow})
+
 (def user-events
   {:fields    #{:model-id :emitted-by :emitted-at :user-id :id :ctx :event-type :data}
    :spec      [:map

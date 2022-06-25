@@ -86,14 +86,18 @@
         (update :ctx sp.ctx/merge-ctx ->ctx result))
     (throw (ex-info "unknown task" {:id id}))))
 
-(defn create [form]
+(defn finished? [this]
+  (and (empty? (:running this))
+       (empty? (remove (comp (:completed this) key) (:remaining this)))))
+
+(defn create [form opts]
   (let [workflow (->> form
                       force-opts
                       normalize-tree
                       (build-deps [#{} {:deps {} :tasks {}}])
                       second)]
     (assoc workflow
-           :ctx {}
+           :ctx (:ctx opts {})
            :running #{}
            :completed #{}
            :remaining (:deps workflow))))

@@ -35,8 +35,7 @@
  #{#ig/ref :rabbitmq.sub/commands#comments
    #ig/ref :rabbitmq.sub/commands#files
    #ig/ref :rabbitmq.sub/commands#projects
-   #ig/ref :rabbitmq.sub/commands#teams
-   #ig/ref :rabbitmq.sub/commands#users
+   #ig/ref :rabbitmq.sub/commands#workflows
    #ig/ref :rabbitmq.sub/events#persist}
 
  [:duct/const :routes/table#ui]

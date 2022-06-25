@@ -1,9 +1,12 @@
 (ns audiophile.backend.api.pubsub.core
   (:require
     [audiophile.backend.api.pubsub.protocols :as pps]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.api.pubsub.core :as pubsub]
+    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.common.core.utils.uuids :as uuids]))
+    [audiophile.common.core.utils.uuids :as uuids]
+    [spigot.core :as sp]))
 
 (defn open? [ch]
   (pps/open? ch))
@@ -60,6 +63,20 @@
                  :command/ctx        (->ctx ctx)}]
     (send! ch command)
     command-id))
+
+(defn start-workflow!
+  ([ch template opts]
+   (start-workflow! ch template {} opts))
+  ([ch template ctx opts]
+   (let [wf (merge (sp/plan (wf/load! template) {:ctx ctx})
+                   (select-keys opts #{:workflows/->result}))]
+     (let [command-id (uuids/random)
+           command {:command/id   command-id
+                    :command/type :workflow/create!
+                    :command/data wf
+                    :command/ctx  (->ctx opts)}]
+       (send! ch command)
+       command-id))))
 
 (defn command-failed! [ch model-id opts]
   (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason :error/details})]
