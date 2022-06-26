@@ -10,7 +10,7 @@
        ~@body
        (catch Throwable ex#
          (ps/command-failed! ~ch
-                             (or (:request/id ctx#)
+                             (or (:workflow/id ctx#)
                                  (uuids/random))
                              (maps/assoc-maybe ctx#
                                                :error/command ~type

@@ -17,29 +17,37 @@
       (sp.ctx/resolve-params (:ctx data))
       (assoc :workflow/id workflow-id)))
 
-(defn ^:private next* [executor workflow-id data ctx {:keys [commands events]}]
-  (if (sp/finished? data)
-    (do (q/update-by-id! executor workflow-id {:status "completed"})
-        (ps/emit-event! events
-                        workflow-id
-                        :workflow/completed
-                        (extract-result workflow-id data)
-                        ctx))
-    (let [data (sp/next data
-                        (fn [task]
-                          (ps/emit-command! commands
-                                            (:spigot/tag task)
-                                            (select-keys task #{:spigot/id :spigot/params})
-                                            (assoc ctx :workflow/id workflow-id))))]
-      (q/update-by-id! executor workflow-id {:status "running" :data data}))))
+(defmulti ^:private next* (fn [_executor _workflow-id data _ctx _sys]
+                            (sp/finished? data)))
+
+(defmethod next* true
+  [executor workflow-id data ctx {:keys [events]}]
+  (q/update-by-id! executor workflow-id {:status "completed" :data data})
+  (ps/emit-event! events
+                  workflow-id
+                  :workflow/completed
+                  (extract-result workflow-id data)
+                  ctx))
+
+(defmethod next* false
+  [executor workflow-id data ctx {:keys [commands]}]
+  (let [data (sp/next data
+                      (fn [task]
+                        (ps/emit-command! commands
+                                          (:spigot/tag task)
+                                          (select-keys task #{:spigot/id :spigot/params})
+                                          (assoc ctx :workflow/id workflow-id))))]
+    (q/update-by-id! executor workflow-id {:status "running" :data data})))
 
 (defmethod wf/command-handler :workflow/create!
-  [executor sys {:command/keys [ctx data]}]
+  [executor sys {:command/keys [ctx data type]}]
   (let [plan (merge (sp/plan (:workflows/template data) {:ctx (:workflows/ctx data)})
                     (dissoc data :workflows/template :workflows/ctx))
         workflow-id (q/create! executor plan)
-        workflow (q/select-for-update executor workflow-id)]
-    (next* executor workflow-id (:workflow/data workflow) ctx sys)))
+        ctx (assoc ctx :workflow/id workflow-id)]
+    (hc/with-command-failed! [(:events sys) type ctx]
+      (let [data (:workflow/data (q/select-for-update executor workflow-id))]
+        (next* executor workflow-id data ctx sys)))))
 
 (defmethod wf/command-handler :workflow/next!
   [executor sys {:command/keys [ctx data]}]

@@ -22,7 +22,7 @@
 (defn finished?
   "have all tasks been completed?"
   [workflow]
-  (sp.impl/finished? workflow))
+  (boolean (sp.impl/finished? workflow)))
 
 (defn run
   "Reduces through a workflow, starting and finishing tasks in dependency order.
