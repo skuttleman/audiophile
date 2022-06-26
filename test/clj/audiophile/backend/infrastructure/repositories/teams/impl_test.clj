@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.teams.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.teams.impl :as rteams]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.teams.impl :as rteams]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
@@ -120,18 +121,10 @@
         (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
                                                      colls/only!
                                                      first)]
-          (assert/is? {:ctx                {'?user-id user-id}
-                       :running            #{}
-                       :completed          #{}
+          (assert/is? {:workflows/ctx      {'?user-id user-id}
+                       :workflows/template (wf/load! :teams/create)
                        :workflows/->result {:team/id '(sp.ctx/get ?team-id)}}
                       data)
-          (assert/is? {:spigot/->ctx  '{?team-id :team/id}
-                       :spigot/id     uuid?
-                       :spigot/tag    :team/create!
-                       :spigot/params '{:team/name (sp.ctx/get ?team-name)
-                                        :team/type (sp.ctx/get ?team-type)
-                                        :user/id   (sp.ctx/get ?user-id)}}
-                      (-> data :tasks vals colls/only!))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!
                        :command/ctx  {:user/id    user-id

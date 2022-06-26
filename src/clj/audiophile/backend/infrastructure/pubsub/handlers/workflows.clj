@@ -35,7 +35,9 @@
 
 (defmethod wf/command-handler :workflow/create!
   [executor sys {:command/keys [ctx data]}]
-  (let [workflow-id (q/create! executor data)
+  (let [plan (merge (sp/plan (:workflows/template data) {:ctx (:workflows/ctx data)})
+                    (dissoc data :workflows/template :workflows/ctx))
+        workflow-id (q/create! executor plan)
         workflow (q/select-for-update executor workflow-id)]
     (next* executor workflow-id (:workflow/data workflow) ctx sys)))
 

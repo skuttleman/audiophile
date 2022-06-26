@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.comments.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.comments.impl :as rcomments]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.comments.impl :as rcomments]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -80,19 +81,10 @@
         (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
                                                      colls/only!
                                                      first)]
-          (assert/is? {:ctx                {'?user-id user-id}
-                       :running            #{}
-                       :completed          #{}
+          (assert/is? {:workflows/ctx      {'?user-id user-id}
+                       :workflows/template (wf/load! :comments/create)
                        :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
                       data)
-          (assert/is? {:spigot/id     uuid?
-                       :spigot/tag    :comment/create!
-                       :spigot/params '{:comment/body            (sp.ctx/get ?body),
-                                        :comment/selection       (sp.ctx/get ?selection),
-                                        :comment/file-version-id (sp.ctx/get ?version-id),
-                                        :comment/comment-id      (sp.ctx/get ?parent-id)
-                                        :comment/created-by      (sp.ctx/get ?user-id)}}
-                      (-> data :tasks vals colls/only!))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!
                        :command/ctx  {:user/id    user-id

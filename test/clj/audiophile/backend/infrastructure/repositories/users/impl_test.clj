@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.users.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.users.impl :as rusers]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.users.impl :as rusers]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
@@ -85,40 +86,14 @@
                       :user/mobile-number "mobile"}
                      {:user/id user-id})
         (let [{:command/keys [data] :as command} (ffirst (stubs/calls ch :send!))]
-          (assert/is? {:ctx                '{?handle        "handle"
+          (assert/is? {:workflows/ctx      '{?handle        "handle"
                                              ?email         "email"
                                              ?first-name    "first"
                                              ?last-name     "last"
                                              ?mobile-number "mobile"}
-                       :running            #{}
-                       :completed          #{}
+                       :workflows/template (wf/load! :users/signup)
                        :workflows/->result {:login/token '(sp.ctx/get ?token)}}
                       data)
-          (assert/has? {:spigot/id     uuid?
-                        :spigot/tag    :user/create!
-                        :spigot/->ctx  '{?user-id :user/id}
-                        :spigot/params '{:user/handle        (sp.ctx/get ?handle)
-                                         :user/email         (sp.ctx/get ?email)
-                                         :user/first-name    (sp.ctx/get ?first-name)
-                                         :user/last-name     (sp.ctx/get ?last-name)
-                                         :user/mobile-number (sp.ctx/get ?mobile-number)}}
-                       (-> data :tasks vals))
-          (assert/has? {:spigot/id     uuid?
-                        :spigot/tag    :team/create!
-                        :spigot/params '{:team/name "My Personal Projects"
-                                         :team/type :PERSONAL
-                                         :user/id   (sp.ctx/get ?user-id)}}
-                       (-> data :tasks vals))
-          (assert/has? {:spigot/id     uuid?
-                        :spigot/tag    :user/generate-token!
-                        :spigot/->ctx  '{?token :login/token}
-                        :spigot/params '{:user/id            (sp.ctx/get ?user-id)
-                                         :user/handle        (sp.ctx/get ?handle)
-                                         :user/email         (sp.ctx/get ?email)
-                                         :user/first-name    (sp.ctx/get ?first-name)
-                                         :user/last-name     (sp.ctx/get ?last-name)
-                                         :user/mobile-number (sp.ctx/get ?mobile-number)}}
-                       (-> data :tasks vals))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!
                        :command/ctx  {:user/id user-id}}

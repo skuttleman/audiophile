@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.files.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.files.impl :as rfiles]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.files.impl :as rfiles]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -35,22 +36,12 @@
         (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
                                                      colls/only!
                                                      first)]
-          (assert/is? {:ctx                '{?key "key"
+          (assert/is? {:workflows/ctx      '{?key "key"
                                              ?uri "some://uri"}
-                       :running            #{}
-                       :completed          #{}
+                       :workflows/template (wf/load! :artifacts/create)
                        :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
                                              :artifact/filename (sp.ctx/get ?filename)}}
                       data)
-          (assert/is? {:spigot/->ctx  '{?artifact-id :artifact/id}
-                       :spigot/id     uuid?
-                       :spigot/tag    :artifact/create!
-                       :spigot/params '{:artifact/content-type (sp.ctx/get ?content-type)
-                                        :artifact/filename     (sp.ctx/get ?filename)
-                                        :artifact/key          (sp.ctx/get ?key)
-                                        :artifact/size         (sp.ctx/get ?size)
-                                        :artifact/uri          (sp.ctx/get ?uri)}}
-                      (-> data :tasks vals colls/only!))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!
                        :command/ctx  {:user/id    user-id
@@ -245,25 +236,11 @@
         (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
                                                      colls/only!
                                                      first)]
-          (assert/is? {:ctx                {}
-                       :running            #{}
-                       :completed          #{}
+          (assert/is? {:workflows/ctx      {}
+                       :workflows/template (wf/load! :files/create)
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
                                              :file/id         (sp.ctx/get ?file-id)}}
                       data)
-          (assert/has? {:spigot/id     uuid?
-                        :spigot/tag    :file/create!
-                        :spigot/->ctx  '{?file-id :file/id}
-                        :spigot/params '{:file/name  (sp.ctx/get ?file-name)
-                                         :project/id (sp.ctx/get ?project-id)}}
-                       (-> data :tasks vals))
-          (assert/has? {:spigot/id     uuid?
-                        :spigot/tag    :file-version/create!
-                        :spigot/->ctx  '{?version-id :file-version/id}
-                        :spigot/params '{:artifact/id  (sp.ctx/get ?artifact-id)
-                                         :version/name (sp.ctx/get ?version-name)
-                                         :file/id      (sp.ctx/get ?file-id)}}
-                       (-> data :tasks vals))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!
                        :command/ctx  {:user/id    user-id
@@ -285,18 +262,10 @@
         (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
                                                      colls/only!
                                                      first)]
-          (assert/is? {:ctx                {}
-                       :running            #{}
-                       :completed          #{}
+          (assert/is? {:workflows/ctx      {}
+                       :workflows/template (wf/load! :versions/create)
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
                       data)
-          (assert/is? {:spigot/id     uuid?
-                       :spigot/tag    :file-version/create!
-                       :spigot/->ctx  '{?version-id :file-version/id}
-                       :spigot/params '{:artifact/id  (sp.ctx/get ?artifact-id)
-                                        :file/id      (sp.ctx/get ?file-id)
-                                        :version/name (sp.ctx/get ?version-name)}}
-                      (-> data :tasks vals colls/only!))
           (assert/is? {:command/id   uuid?
                        :command/type :workflow/create!
                        :command/ctx  {:user/id    user-id
