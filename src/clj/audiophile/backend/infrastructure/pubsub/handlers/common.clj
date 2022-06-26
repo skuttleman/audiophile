@@ -10,10 +10,10 @@
        ~@body
        (catch Throwable ex#
          (ps/command-failed! ~ch
-                             (or (:request/id ctx#)
+                             (or (:workflow/id ctx#)
                                  (uuids/random))
                              (maps/assoc-maybe ctx#
                                                :error/command ~type
-                                               :error/reason (.getMessage ex#)
+                                               :error/reason (ex-message ex#)
                                                :error/details (not-empty (ex-data ex#))))
          nil))))

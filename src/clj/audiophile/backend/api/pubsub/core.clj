@@ -1,7 +1,9 @@
 (ns audiophile.backend.api.pubsub.core
   (:require
     [audiophile.backend.api.pubsub.protocols :as pps]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.api.pubsub.core :as pubsub]
+    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]))
 
@@ -60,6 +62,24 @@
                  :command/ctx        (->ctx ctx)}]
     (send! ch command)
     command-id))
+
+(defn start-workflow!
+  ([ch template opts]
+   (start-workflow! ch template {} opts))
+  ([ch template ctx opts]
+   (let [[setup form] (wf/setup (wf/load! template))
+         [plan context] (maps/extract-keys setup #{:workflows/->result})
+         wf (assoc plan
+                   :workflows/template template
+                   :workflows/form form
+                   :workflows/ctx (maps/select-rename-keys ctx context))]
+     (let [command-id (uuids/random)
+           command {:command/id   command-id
+                    :command/type :workflow/create!
+                    :command/data wf
+                    :command/ctx  (->ctx opts)}]
+       (send! ch command)
+       command-id))))
 
 (defn command-failed! [ch model-id opts]
   (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason :error/details})]

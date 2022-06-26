@@ -113,3 +113,13 @@
   [m pred]
   (when m
     (medley/filter-keys pred m)))
+
+(defn select-rename-keys
+  "Selects keys and renames them."
+  [m key-m]
+  (reduce (fn [result [old-key new-key]]
+            (if-let [[_ v] (find m old-key)]
+              (assoc result new-key v)
+              result))
+          (empty m)
+          key-m))

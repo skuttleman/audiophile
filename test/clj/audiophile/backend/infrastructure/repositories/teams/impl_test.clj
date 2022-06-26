@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.teams.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.teams.impl :as rteams]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.teams.impl :as rteams]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
@@ -117,10 +118,16 @@
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :team/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:workflows/ctx      {'?user-id user-id}
+                       :workflows/template :teams/create
+                       :workflows/form     (peek (wf/load! :teams/create))
+                       :workflows/->result {:team/id '(sp.ctx/get ?team-id)}}
+                      data)
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

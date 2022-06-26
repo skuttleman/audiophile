@@ -100,9 +100,7 @@
                              (ihttp/as-async system handler))]
             (testing "creates the project"
               (is (http/success? response))
-              (assert/is? {:project/team-id team-id
-                           :project/name    "project name"
-                           :project/id      uuid?}
+              (assert/is? {:project/id uuid?}
                           (get-in response [:body :data])))
 
             (testing "and when querying for projects"

@@ -136,6 +136,7 @@
                             "TRUNCATE events CASCADE"
                             "TRUNCATE users CASCADE"
                             "TRUNCATE teams CASCADE"
+                            "TRUNCATE workflows CASCADE"
                             "DELETE FROM artifacts"
                             "COMMIT"])
         env-common (io/file ".env-common")
@@ -143,6 +144,7 @@
               (-> env-common
                   slurp
                   edn/read-string
+                  (assoc "DB_HOST" "localhost")
                   (set/rename-keys {"DB_HOST"     "PGHOST"
                                     "DB_USER"     "PGUSER"
                                     "DB_PASSWORD" "PGPASSWORD"}))

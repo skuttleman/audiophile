@@ -117,9 +117,8 @@
                              (ihttp/as-async system handler))]
             (testing "creates the file"
               (is (http/success? response))
-              (assert/is? {:file/name       "file name"
-                           :file/project-id project-id
-                           :version/name    "version name"}
+              (assert/is? {:file/id         uuid?
+                           :file-version/id uuid?}
                           (get-in response [:body :data])))
 
             (testing "and when querying for project files"
@@ -186,8 +185,7 @@
                              (ihttp/as-async system handler))]
             (testing "creates the file version"
               (is (http/success? response))
-              (assert/is? {:file-version/name "version name"
-                           :file-version/id   uuid?}
+              (assert/is? {:file-version/id uuid?}
                           (get-in response [:body :data])))
 
             (testing "and when querying for the file"

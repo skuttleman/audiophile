@@ -34,15 +34,6 @@
                        (models/select-fields #{:team-id}))
                    [:= :user-teams.user-id :member.id])))
 
-(defn ^:private team-repo-executor#insert-team!
-  [executor team {user-id :user/id}]
-  (let [team-id (-> executor
-                    (repos/execute! (models/insert-into tbl/teams team))
-                    colls/only!
-                    :id)]
-    (repos/execute! executor (insert-user-team team-id user-id))
-    team-id))
-
 (defn find-by-team-id [executor team-id opts]
   (-> executor
       (repos/execute! (if-let [user-id (:user/id opts)]
@@ -60,13 +51,13 @@
                   (models/select* tbl/teams (has-team-clause user-id))
                   (assoc opts :model-fn (crepos/->model-fn tbl/teams))))
 
-(defn insert-team-access? [executor _ _]
+(defn insert-team-access? [_ _ _]
   true)
 
-(defn insert-team! [executor team opts]
-  (team-repo-executor#insert-team! executor team opts))
-
-(defn find-event-team [executor team-id]
-  (-> executor
-      (repos/execute! (models/select-by-id* tbl/teams team-id))
-      colls/only!))
+(defn insert-team! [executor team _]
+  (let [team-id (-> executor
+                    (repos/execute! (models/insert-into tbl/teams team))
+                    colls/only!
+                    :id)]
+    (repos/execute! executor (insert-user-team team-id (:user/id team)))
+    team-id))

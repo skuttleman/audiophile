@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.users.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.users.impl :as rusers]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.users.impl :as rusers]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
@@ -76,11 +77,25 @@
     (let [ch (ts/->chan)
           repo (rusers/->UserAccessor nil ch)
           user-id (uuids/random)]
-      (int/create! repo {:some :data} {:user/id user-id})
       (testing "emits a command"
-        (assert/is? {:command/id         uuid?
-                     :command/type       :user/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id user-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (int/create! repo
+                     {:user/handle        "handle"
+                      :user/email         "email"
+                      :user/first-name    "first"
+                      :user/last-name     "last"
+                      :user/mobile-number "mobile"}
+                     {:user/id user-id})
+        (let [{:command/keys [data] :as command} (ffirst (stubs/calls ch :send!))]
+          (assert/is? {:workflows/ctx      '{?handle        "handle"
+                                             ?email         "email"
+                                             ?first-name    "first"
+                                             ?last-name     "last"
+                                             ?mobile-number "mobile"}
+                       :workflows/template :users/signup
+                       :workflows/form     (peek (wf/load! :users/signup))
+                       :workflows/->result {:login/token '(sp.ctx/get ?token)}}
+                      data)
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id user-id}}
+                      command))))))

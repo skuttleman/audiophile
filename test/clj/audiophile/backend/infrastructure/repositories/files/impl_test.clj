@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.files.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.files.impl :as rfiles]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.files.impl :as rfiles]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -17,7 +18,7 @@
   (testing "create-artifact"
     (let [ch (ts/->chan)
           store (ts/->store)
-          repo (rfiles/->FileAccessor nil store ch nil (constantly "key") 1)
+          repo (rfiles/->FileAccessor nil store ch nil (constantly "key"))
           [user-id request-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
 
@@ -32,21 +33,27 @@
                (take 2 (colls/only! (stubs/calls store :put!))))))
 
       (testing "emits a command"
-        (assert/is? {:command/id         uuid?
-                     :command/type       :artifact/create!
-                     :command/data       {:some :data
-                                          :artifact/key "key"
-                                          :artifact/uri "some://uri"}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:workflows/ctx      '{?key "key"
+                                             ?uri "some://uri"}
+                       :workflows/template :artifacts/create
+                       :workflows/form     (peek (wf/load! :artifacts/create))
+                       :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
+                                             :artifact/filename (sp.ctx/get ?filename)}}
+                      data)
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))
 
 (deftest query-many-test
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor)
-          repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-many repo {:user/id    user-id
@@ -110,7 +117,7 @@
   (testing "query-one"
     (let [[file-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor)
-          repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying one file"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-one repo {:user/id user-id
@@ -159,7 +166,7 @@
     (let [[artifact-id user-id] (repeatedly uuids/random)
           store (trepos/stub-kv-store)
           tx (trepos/stub-transactor)
-          repo (rfiles/->FileAccessor tx store nil nil nil nil)]
+          repo (rfiles/->FileAccessor tx store nil nil nil)]
       (testing "when querying an artifact"
         (stubs/set-stub! tx :execute! [{:some                  :result
                                         :artifact/key          "some-key"
@@ -220,25 +227,32 @@
 (deftest create-file-test
   (testing "create-file"
     (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil nil nil)
+          repo (rfiles/->FileAccessor nil nil ch nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file! repo {:some :data} {:some       :opts
                                               :some/other :opts
                                               :user/id    user-id
                                               :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :file/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:workflows/ctx      {}
+                       :workflows/template :files/create
+                       :workflows/form     (peek (wf/load! :files/create))
+                       :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
+                                             :file/id         (sp.ctx/get ?file-id)}}
+                      data)
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
     (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil nil nil)
+          repo (rfiles/->FileAccessor nil nil ch nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file-version! repo
@@ -247,10 +261,16 @@
                                    :some/other :opts
                                    :user/id    user-id
                                    :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :file-version/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:workflows/ctx      {}
+                       :workflows/template :versions/create
+                       :workflows/form     (peek (wf/load! :versions/create))
+                       :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
+                      data)
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

@@ -19,9 +19,9 @@
         data (assoc data :artifact/uri uri :artifact/key key)
         payload (dissoc data :artifact/tempfile)]
     (repos/put! store key data opts)
-    (ps/emit-command! ch :artifact/create! payload opts)))
+    (ps/start-workflow! ch :artifacts/create payload opts)))
 
-(deftype FileAccessor [repo store ch pubsub keygen publish-threshold]
+(deftype FileAccessor [repo store ch pubsub keygen]
   pint/IAccessor
   (query-many [_ opts]
     (repos/transact! repo q/select-for-project (:project/id opts) opts))
@@ -32,18 +32,13 @@
   (create-artifact! [_ data opts]
     (file-accessor#create-artifact! store ch (keygen) data opts))
   (create-file! [_ data opts]
-    (ps/emit-command! ch :file/create! data opts))
+    (ps/start-workflow! ch :files/create (merge opts data) opts))
   (create-file-version! [_ data opts]
-    (ps/emit-command! ch :file-version/create! data opts))
+    (ps/start-workflow! ch :versions/create (merge opts data) opts))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* store (:artifact/id opts) opts)))
 
 (defn accessor
   "Constructor for [[FileAccessor]] which provides semantic access for storing and retrieving files."
-  [{:keys [ch pubsub publish-threshold repo store]}]
-  (->FileAccessor repo
-                  store
-                  ch
-                  pubsub
-                  #(str "artifacts/" (uuids/random))
-                  (or publish-threshold 150000)))
+  [{:keys [ch pubsub repo store]}]
+  (->FileAccessor repo store ch pubsub #(str "artifacts/" (uuids/random))))

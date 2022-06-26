@@ -1,7 +1,8 @@
 (ns ^:unit audiophile.backend.infrastructure.repositories.comments.impl-test
   (:require
-    [audiophile.backend.infrastructure.repositories.comments.impl :as rcomments]
     [audiophile.backend.domain.interactors.core :as int]
+    [audiophile.backend.infrastructure.repositories.comments.impl :as rcomments]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
@@ -38,7 +39,8 @@
                      [:commenter.mobile-number "commenter/mobile-number"]
                      [:commenter.first-name "commenter/first-name"]
                      [:commenter.last-name "commenter/last-name"]
-                     [:commenter.created-at "commenter/created-at"]}
+                     [:commenter.created-at "commenter/created-at"]
+                     [:comments.created-by "comment/created-by"]}
                    (set select)))
 
             (is (= [:and #{[:= #{:comments.comment-id nil}]
@@ -54,13 +56,13 @@
                    (-> where
                        (update 1 tu/op-set)
                        (update-in [2 1] (fns/=> (update :select set)
-                                         (update :where (fns/=> (update 1 tu/op-set)
-                                                                (update 2 tu/op-set)
-                                                                (update 3 tu/op-set)
-                                                                tu/op-set))
-                                         (update :join (fns/=> (update 1 tu/op-set)
-                                                               (update 3 tu/op-set)
-                                                               (update 5 tu/op-set)))))
+                                                (update :where (fns/=> (update 1 tu/op-set)
+                                                                       (update 2 tu/op-set)
+                                                                       (update 3 tu/op-set)
+                                                                       tu/op-set))
+                                                (update :join (fns/=> (update 1 tu/op-set)
+                                                                      (update 3 tu/op-set)
+                                                                      (update 5 tu/op-set)))))
                        tu/op-set))))
 
           (testing "returns the results"
@@ -76,10 +78,16 @@
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        (assert/is? {:command/id         uuid?
-                     :command/type       :comment/create!
-                     :command/data       {:some :data}
-                     :command/emitted-by user-id
-                     :command/ctx        {:user/id    user-id
-                                          :request/id request-id}}
-                    (first (colls/only! (stubs/calls ch :send!))))))))
+        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
+                                                     colls/only!
+                                                     first)]
+          (assert/is? {:workflows/ctx      {'?user-id user-id}
+                       :workflows/template :comments/create
+                       :workflows/form     (peek (wf/load! :comments/create))
+                       :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
+                      data)
+          (assert/is? {:command/id   uuid?
+                       :command/type :workflow/create!
+                       :command/ctx  {:user/id    user-id
+                                      :request/id request-id}}
+                      command))))))

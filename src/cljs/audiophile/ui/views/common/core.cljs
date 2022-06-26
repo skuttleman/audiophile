@@ -16,7 +16,9 @@
     (let [filename (get-in @*form [:artifact/details :artifact/filename])]
       [comp/form {:*form    *form
                   :disabled (res/requesting? *artifacts)}
-       [in/uploader (-> {:label     "File"
+       [in/uploader (-> {:style     {:width           "100%"
+                                     :justify-content :flex-start}
+                         :label     "File"
                          :*resource *artifacts
                          :display   (or filename "Select file…")}
                         (forms/with-attrs *form [:artifact/details]))]

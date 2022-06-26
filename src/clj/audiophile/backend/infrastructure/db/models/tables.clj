@@ -15,7 +15,7 @@
    :namespace :artifact})
 
 (def comments
-  {:fields    #{:id :comment-id :body :selection :created-at :file-version-id}
+  {:fields    #{:id :comment-id :body :selection :created-at :file-version-id :created-by}
    :spec      [:map
                [:comment/id uuid?]
                [:comment/file-version-id uuid?]
@@ -92,6 +92,15 @@
    :casts     {:type :team_type}
    :table     :teams
    :namespace :team})
+
+(def workflows
+  {:fields    #{:data :id :status :created-at}
+   :spec      [:map
+               [:workflow/id uuid?]
+               [:workflow/data string?]
+               [:workflow/created-at inst?]]
+   :table     :workflows
+   :namespace :workflow})
 
 (def user-events
   {:fields    #{:model-id :emitted-by :emitted-at :user-id :id :ctx :event-type :data}

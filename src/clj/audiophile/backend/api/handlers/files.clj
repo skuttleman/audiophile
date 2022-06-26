@@ -52,7 +52,7 @@
   "Handles a request to create a new file in the system."
   [{:keys [interactor]}]
   (fn [data]
-    (let [[opts data] (maps/extract-keys data #{:user/id :request/id :project/id})]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create-file! interactor data opts))))
 
 (defmethod selectors/select [:post :routes.api/projects:id.files]
@@ -68,7 +68,7 @@
   "Handles a request to create a new version of an existing file."
   [{:keys [interactor]}]
   (fn [data]
-    (let [[opts data] (maps/extract-keys data #{:user/id :request/id :file/id})]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create-file-version! interactor data opts))))
 
 (defmethod selectors/select [:post :routes.api/files:id]

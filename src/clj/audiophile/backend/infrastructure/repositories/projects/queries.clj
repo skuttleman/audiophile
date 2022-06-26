@@ -48,8 +48,3 @@
       (repos/execute! (models/insert-into tbl/projects project))
       colls/only!
       :id))
-
-(defn find-event-project [executor project-id]
-  (-> executor
-      (repos/execute! (models/select-by-id* tbl/projects project-id))
-      colls/only!))

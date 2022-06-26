@@ -1,0 +1,8 @@
+[:workflows/setup {:artifact/id        ?artifact-id
+                   :version/name       ?version-name
+                   :file/id            ?file-id
+                   :workflows/->result {:file-version/id (sp.ctx/get ?version-id)}}
+ [:file-version/create! {:artifact/id  (sp.ctx/get ?artifact-id)
+                         :version/name (sp.ctx/get ?version-name)
+                         :file/id      (sp.ctx/get ?file-id)
+                         :spigot/->ctx {?version-id :file-version/id}}]]

@@ -17,9 +17,20 @@ user -> api: [HTTP] upload song.mp3
 activate api
     api -> s3: [S3] store blob
     s3 -> api: [S3] blob stored
-    api -> commands: [AMQ] :artifact/create!
+    api -> commands: [AMQ] :workflow/create!
     api -> user: [HTTP] 204
 deactivate api
+
+commands -> jobs: [AMQ] :workflow/create!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] INSERT INTO workflows
+        db -> jobs: [SQL] ResultSet<workflow-id>
+    end
+
+    jobs -> commands: [AMQ] :artifact/create!
+deactivate jobs
 
 commands -> jobs: [AMQ] :artifact/create!
 
@@ -31,10 +42,21 @@ activate jobs
         db -> jobs: [SQL] ResultSet<event-data>
     end
 
-    jobs -> events: [AMQ] :artifact/created
+    jobs -> commands: [AMQ] :workflow/next!
 deactivate jobs
 
-events -> jobs: [AMQ] :artifact/created
+commands -> jobs: [AMQ] :workflow/next!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] UPDATE workflows
+        db -> jobs: [SQL] ResultSet
+    end
+
+    jobs -> events: [AMQ] :workflow/completed
+deactivate jobs
+
+events -> jobs: [AMQ] :workflow/completed
 
 activate jobs
     group tx
@@ -43,17 +65,28 @@ activate jobs
     end
 deactivate jobs
 
-events -> api: [AMQ] :artifact/created
-api -> user: [WS] artifact created
+events -> api: [AMQ] :workflow/completed
+api -> user: [WS] workflow completed
 
 == Create File (project track) ==
 
 user -> api: [HTTP] create file
 
 activate api
-    api -> commands: [AMQ] :file/create!
+    api -> commands: [AMQ] :workflow/create!
     api -> user: [HTTP] 204
 deactivate api
+
+commands -> jobs: [AMQ] :workflow/create!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] INSERT INTO workflows
+        db -> jobs: [SQL] ResultSet<workflow-id>
+    end
+
+    jobs -> commands: [AMQ] :file/create!
+deactivate jobs
 
 commands -> jobs: [AMQ] :file/create!
 
@@ -63,16 +96,47 @@ activate jobs
         jobs -> db: [SQL] ResultSet<access-ok>
         jobs -> db: [SQL] INSERT INTO files
         db -> jobs: [SQL] ResultSet<file-id>
+    end
+
+    jobs -> commands: [AMQ] :workflow/next!
+deactivate jobs
+
+commands -> jobs: [AMQ] :workflow/next!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] UPDATE workflows
+        db -> jobs: [SQL] ResultSet
+    end
+
+    jobs -> commands: [AMQ] :file-version/create!
+deactivate jobs
+
+commands -> jobs: [AMQ] :file-version/create!
+
+activate jobs
+    group tx
         jobs -> db: [SQL] INSERT INTO file_versions
         db -> jobs: [SQL] ResultSet<file-version-id>
         jobs -> db: [SQL] SELECT FROM files
         db -> jobs: [SQL] ResultSet<event-data>
     end
 
-    jobs -> events: [AMQ] :file/created
+    jobs -> commands: [AMQ] :workflow/next!
 deactivate jobs
 
-events -> jobs: [AMQ] :file/created
+commands -> jobs: [AMQ] :workflow/next!
+
+activate jobs
+    group tx
+        jobs -> db: [SQL] UPDATE workflows
+        db -> jobs: [SQL] ResultSet
+    end
+
+    jobs -> events: [AMQ] :workflow/completed
+deactivate jobs
+
+events -> jobs: [AMQ] :workflow/completed
 
 activate jobs
     group tx
@@ -81,7 +145,7 @@ activate jobs
     end
 deactivate jobs
 
-events -> api: [AMQ] :file/created
-api -> user: [WS] file created
+events -> api: [AMQ] :workflow/completed
+api -> user: [WS] workflow completed
 
 @enduml

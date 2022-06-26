@@ -1,10 +1,10 @@
 (ns audiophile.backend.infrastructure.repositories.teams.impl
   (:refer-clojure :exclude [accessor])
   (:require
+    [audiophile.backend.api.pubsub.core :as ps]
+    [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.teams.queries :as q]
-    [audiophile.backend.domain.interactors.protocols :as pint]
-    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
@@ -21,7 +21,7 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
-    (ps/emit-command! ch :team/create! data opts)))
+    (ps/start-workflow! ch :teams/create (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."

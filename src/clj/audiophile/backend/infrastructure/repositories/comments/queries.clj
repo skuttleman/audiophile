@@ -51,12 +51,8 @@
 
 (defn ^:private select-for-file-join [query]
   (-> query
-      (models/join (models/select-fields tbl/user-events #{})
-                   [:and
-                    [:= :user-events.model-id :comments.id]
-                    [:= :user-events.event-type "comment/created"]])
       (models/left-join (models/alias tbl/users :commenter)
-                        [:= :user-events.emitted-by :commenter.id])
+                        [:= :comments.created-by :commenter.id])
       (models/order-by [:comments.created-at :desc])))
 
 
@@ -82,9 +78,3 @@
       (repos/execute! (models/insert-into tbl/comments comment))
       colls/only!
       :id))
-
-(defn find-event-comment [executor comment-id]
-  (-> executor
-      (repos/execute! (models/select-by-id* tbl/comments comment-id)
-                      {:model-fn (crepos/->model-fn tbl/comments)})
-      colls/only!))
