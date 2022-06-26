@@ -5,8 +5,7 @@
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.common.core.utils.uuids :as uuids]
-    [spigot.core :as sp]))
+    [audiophile.common.core.utils.uuids :as uuids]))
 
 (defn open? [ch]
   (pps/open? ch))
