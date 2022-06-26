@@ -47,23 +47,13 @@
                (:spigot/id data) (sp/finish (:spigot/id data) (:spigot/result data)))]
     (next* executor workflow-id data ctx sys)))
 
-(defn ^:private command-handler* [executor {:keys [commands events] :as sys} {:command/keys [ctx data type] :as msg}]
-  (log/with-ctx :CP
-    (hc/with-command-failed! [events type ctx]
-      (let [result {:spigot/id     (:spigot/id data)
-                    :spigot/result (wf/command-handler executor sys msg)}]
-        (ps/emit-command! commands :workflow/next! result ctx)))))
-
 (deftype WorkflowHandler [repo sys]
   pint/IMessageHandler
   (handle? [_ msg]
     (contains? (methods wf/command-handler) (:command/type msg)))
-  (handle! [_ {type :command/type :as msg}]
-    (let [handler (if (= "workflow" (namespace type))
-                    wf/command-handler
-                    command-handler*)]
-      (hc/with-command-failed! [(:events sys) (:command/type msg) (:command/ctx msg)]
-        (repos/transact! repo handler sys msg)))))
+  (handle! [_ {:command/keys [ctx type] :as msg}]
+    (hc/with-command-failed! [(:events sys) type ctx]
+      (repos/transact! repo wf/command-handler sys msg))))
 
 (defn msg-handler [{:keys [commands events jwt-serde repo]}]
   (->WorkflowHandler repo (maps/->m commands events jwt-serde)))

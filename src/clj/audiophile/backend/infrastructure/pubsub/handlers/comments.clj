@@ -9,7 +9,6 @@
     (q/insert-comment! executor comment opts)
     (throw (ex-info "insufficient access" comment))))
 
-(defmethod wf/command-handler :comment/create!
-  [executor _sys {command-id :command/id :command/keys [ctx data]}]
+(wf/defhandler comment/create! [executor _sys {command-id :command/id :command/keys [ctx data]}]
   (log/info "saving comment to db" command-id)
-  {:comment/id (create* executor (:spigot/params data) ctx)})
+  {:comment/id (create* executor data ctx)})

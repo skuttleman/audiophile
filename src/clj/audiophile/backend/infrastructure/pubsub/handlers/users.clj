@@ -20,12 +20,12 @@
     (throw (ex-info "one or more unique fields are present" {:conflicts fields})))
   (q/insert-user! executor user opts))
 
-(defmethod wf/command-handler :user/create!
+(wf/defhandler user/create!
   [executor _sys {command-id :command/id :command/keys [ctx data]}]
   (log/info "saving user to db" command-id)
-  {:user/id (create* executor (:spigot/params data) ctx)})
+  {:user/id (create* executor data ctx)})
 
-(defmethod wf/command-handler :user/generate-token!
+(wf/defhandler user/generate-token!
   [_executor {:keys [jwt-serde]} {command-id :command/id :command/keys [data]}]
   (log/info "generating login token" command-id)
-  {:login/token (jwt/login-token jwt-serde (:spigot/params data))})
+  {:login/token (jwt/login-token jwt-serde data)})

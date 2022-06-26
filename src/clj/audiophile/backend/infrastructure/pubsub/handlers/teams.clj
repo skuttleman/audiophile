@@ -9,7 +9,7 @@
     (q/insert-team! executor team opts)
     (throw (ex-info "insufficient access" {}))))
 
-(defmethod wf/command-handler :team/create!
+(wf/defhandler team/create!
   [executor _sys {command-id :command/id :command/keys [ctx data]}]
   (log/info "saving team to db" command-id)
-  {:team/id (create* executor (:spigot/params data) ctx)})
+  {:team/id (create* executor data ctx)})

@@ -14,6 +14,6 @@
                                  (uuids/random))
                              (maps/assoc-maybe ctx#
                                                :error/command ~type
-                                               :error/reason (.getMessage ex#)
+                                               :error/reason (ex-message ex#)
                                                :error/details (not-empty (ex-data ex#))))
          nil))))

@@ -22,16 +22,16 @@
 (defn ^:private handler* [create* executor msg]
   (let [{command-id :command/id :command/keys [ctx data type]} msg]
     (log/info "saving " (namespace type) " to db" command-id)
-    (create* executor (:spigot/params data) ctx)))
+    (create* executor data ctx)))
 
-(defmethod wf/command-handler :artifact/create!
+(wf/defhandler artifact/create!
   [executor _sys msg]
   {:artifact/id (handler* create-artifact* executor msg)})
 
-(defmethod wf/command-handler :file/create!
+(wf/defhandler file/create!
   [executor _sys msg]
   {:file/id (handler* create-file* executor msg)})
 
-(defmethod wf/command-handler :file-version/create!
+(wf/defhandler file-version/create!
   [executor _sys msg]
   {:file-version/id (handler* create-file-version* executor msg)})

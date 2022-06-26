@@ -60,7 +60,7 @@
                    insert)))
 
           (testing "returns the result"
-            (= {:comment/id comment-id} result))))
+            (is (= {:comment/id comment-id} result)))))
 
       (testing "when the executor throws an exception"
         (let [request-id (uuids/random)
