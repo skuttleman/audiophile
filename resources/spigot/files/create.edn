@@ -1,8 +1,14 @@
-[:spigot/serial
- [:file/create! {:file/name    (sp.ctx/get ?file-name)
-                 :project/id   (sp.ctx/get ?project-id)
-                 :spigot/->ctx {?file-id :file/id}}]
- [:file-version/create! {:artifact/id  (sp.ctx/get ?artifact-id)
-                         :version/name (sp.ctx/get ?version-name)
-                         :file/id      (sp.ctx/get ?file-id)
-                         :spigot/->ctx {?version-id :file-version/id}}]]
+[:workflows/setup {:artifact/id  ?artifact-id
+                   :project/id   ?project-id
+                   :file/name    ?file-name
+                   :version/name ?version-name
+                   :workflows/->result {:file/id         (sp.ctx/get ?file-id)
+                                        :file-version/id (sp.ctx/get ?version-id)}}
+ [:spigot/serial
+  [:file/create! {:file/name    (sp.ctx/get ?file-name)
+                  :project/id   (sp.ctx/get ?project-id)
+                  :spigot/->ctx {?file-id :file/id}}]
+  [:file-version/create! {:artifact/id  (sp.ctx/get ?artifact-id)
+                          :version/name (sp.ctx/get ?version-name)
+                          :file/id      (sp.ctx/get ?file-id)
+                          :spigot/->ctx {?version-id :file-version/id}}]]]

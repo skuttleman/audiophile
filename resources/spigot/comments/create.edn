@@ -1,6 +1,12 @@
-[:comment/create! {:comment/body            (sp.ctx/get ?body)
-                   :comment/selection       (sp.ctx/get ?selection)
-                   :comment/file-version-id (sp.ctx/get ?version-id)
-                   :comment/comment-id      (sp.ctx/get ?parent-id)
-                   :comment/created-by      (sp.ctx/get ?user-id)
-                   :spigot/->ctx            {?comment-id :comment/id}}]
+[:workflows/setup {:comment/body            ?body
+                   :comment/selection       ?selection
+                   :comment/file-version-id ?version-id
+                   :comment/comment-id      ?parent-id
+                   :user/id                 ?user-id
+                   :workflows/->result      {:comment/id (sp.ctx/get ?comment-id)}}
+ [:comment/create! {:comment/body            (sp.ctx/get ?body)
+                    :comment/selection       (sp.ctx/get ?selection)
+                    :comment/file-version-id (sp.ctx/get ?version-id)
+                    :comment/comment-id      (sp.ctx/get ?parent-id)
+                    :comment/created-by      (sp.ctx/get ?user-id)
+                    :spigot/->ctx            {?comment-id :comment/id}}]]

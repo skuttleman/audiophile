@@ -9,12 +9,17 @@
   (let [filename (str "spigot/" (namespace template) "/" (name template) ".edn")]
     (serdes/deserialize serde/edn (io/input-stream (io/resource filename)))))
 
-(defmulti with-workflow identity)
-(defmethod with-workflow :default [_] nil)
-
 (defmulti command-handler
           (fn [_executor _sys {:command/keys [type]}]
             type))
+
+(defn setup [[tag & more :as form]]
+  (let [[opts & children] (cond->> more
+                            (not (map? (first more))) (cons {}))]
+    (if (= tag :workflows/setup)
+      (do (assert (= 1 (count children)))
+          [opts (first children)])
+      [nil form])))
 
 (defmacro defhandler [command-type [ex-bnd sys-bnd msg-bnd :as bnds] & body]
   {:pre [(vector? bnds)

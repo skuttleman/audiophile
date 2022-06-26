@@ -5,17 +5,7 @@
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.comments.queries :as q]
     [audiophile.backend.infrastructure.repositories.core :as repos]
-    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
-
-(defmethod wf/with-workflow :comments/create
-  [_]
-  '{:ctx                {:comment/body            ?body
-                         :comment/selection       ?selection
-                         :comment/file-version-id ?version-id
-                         :comment/comment-id      ?parent-id
-                         :user/id                 ?user-id}
-    :workflows/->result {:comment/id (sp.ctx/get ?comment-id)}})
 
 (deftype CommentAccessor [repo ch]
   pint/ICommentAccessor

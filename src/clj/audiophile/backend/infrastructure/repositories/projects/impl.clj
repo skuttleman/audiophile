@@ -5,14 +5,7 @@
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.projects.queries :as q]
-    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
-
-(defmethod wf/with-workflow :projects/create
-  [_]
-  '{:ctx                {:project/team-id ?team-id
-                         :project/name    ?name}
-    :workflows/->result {:project/id (sp.ctx/get ?project-id)}})
 
 (deftype ProjectAccessor [repo ch]
   pint/IProjectAccessor

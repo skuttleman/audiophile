@@ -91,7 +91,7 @@
                                              ?first-name    "first"
                                              ?last-name     "last"
                                              ?mobile-number "mobile"}
-                       :workflows/template (wf/load! :users/signup)
+                       :workflows/template (peek (wf/load! :users/signup))
                        :workflows/->result {:login/token '(sp.ctx/get ?token)}}
                       data)
           (assert/is? {:command/id   uuid?

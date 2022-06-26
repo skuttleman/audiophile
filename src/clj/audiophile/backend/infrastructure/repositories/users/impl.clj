@@ -5,17 +5,7 @@
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.users.queries :as q]
-    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
-
-(defmethod wf/with-workflow :users/signup
-  [_]
-  '{:ctx                {:user/handle        ?handle
-                         :user/email         ?email
-                         :user/first-name    ?first-name
-                         :user/last-name     ?last-name
-                         :user/mobile-number ?mobile-number}
-    :workflows/->result {:login/token (sp.ctx/get ?token)}})
 
 (defmulti ^:private find-by (fn [_ {:user/keys [email id]}]
                               (cond

@@ -1,4 +1,8 @@
-[:team/create! {:team/name (sp.ctx/get ?team-name)
-                :team/type (sp.ctx/get ?team-type)
-                :user/id   (sp.ctx/get ?user-id)
-                :spigot/->ctx {?team-id :team/id}}]
+[:workflows/setup {:team/name          ?team-name
+                   :team/type          ?team-type
+                   :user/id            ?user-id
+                   :workflows/->result {:team/id (sp.ctx/get ?team-id)}}
+ [:team/create! {:team/name    (sp.ctx/get ?team-name)
+                 :team/type    (sp.ctx/get ?team-type)
+                 :user/id      (sp.ctx/get ?user-id)
+                 :spigot/->ctx {?team-id :team/id}}]]

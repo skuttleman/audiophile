@@ -1,6 +1,13 @@
-[:artifact/create! {:artifact/filename     (sp.ctx/get ?filename)
-                    :artifact/content-type (sp.ctx/get ?content-type)
-                    :artifact/size         (sp.ctx/get ?size)
-                    :artifact/uri          (sp.ctx/get ?uri)
-                    :artifact/key          (sp.ctx/get ?key)
-                    :spigot/->ctx          {?artifact-id :artifact/id}}]
+[:workflows/setup {:artifact/filename     ?filename
+                   :artifact/content-type ?content-type
+                   :artifact/size         ?size
+                   :artifact/uri          ?uri
+                   :artifact/key          ?key
+                   :workflows/->result    {:artifact/id       (sp.ctx/get ?artifact-id)
+                                           :artifact/filename (sp.ctx/get ?filename)}}
+ [:artifact/create! {:artifact/filename     (sp.ctx/get ?filename)
+                     :artifact/content-type (sp.ctx/get ?content-type)
+                     :artifact/size         (sp.ctx/get ?size)
+                     :artifact/uri          (sp.ctx/get ?uri)
+                     :artifact/key          (sp.ctx/get ?key)
+                     :spigot/->ctx          {?artifact-id :artifact/id}}]]

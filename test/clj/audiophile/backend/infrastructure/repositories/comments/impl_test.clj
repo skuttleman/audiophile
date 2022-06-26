@@ -82,7 +82,7 @@
                                                      colls/only!
                                                      first)]
           (assert/is? {:workflows/ctx      {'?user-id user-id}
-                       :workflows/template (wf/load! :comments/create)
+                       :workflows/template (peek (wf/load! :comments/create))
                        :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
                       data)
           (assert/is? {:command/id   uuid?

@@ -18,7 +18,7 @@
   (testing "create-artifact"
     (let [ch (ts/->chan)
           store (ts/->store)
-          repo (rfiles/->FileAccessor nil store ch nil (constantly "key") 1)
+          repo (rfiles/->FileAccessor nil store ch nil (constantly "key"))
           [user-id request-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
 
@@ -38,7 +38,7 @@
                                                      first)]
           (assert/is? {:workflows/ctx      '{?key "key"
                                              ?uri "some://uri"}
-                       :workflows/template (wf/load! :artifacts/create)
+                       :workflows/template (peek (wf/load! :artifacts/create))
                        :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
                                              :artifact/filename (sp.ctx/get ?filename)}}
                       data)
@@ -52,7 +52,7 @@
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor)
-          repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-many repo {:user/id    user-id
@@ -116,7 +116,7 @@
   (testing "query-one"
     (let [[file-id user-id] (repeatedly uuids/random)
           tx (trepos/stub-transactor)
-          repo (rfiles/->FileAccessor tx nil nil nil nil nil)]
+          repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying one file"
         (stubs/set-stub! tx :execute! [{:some :result}])
         (let [result (int/query-one repo {:user/id user-id
@@ -165,7 +165,7 @@
     (let [[artifact-id user-id] (repeatedly uuids/random)
           store (trepos/stub-kv-store)
           tx (trepos/stub-transactor)
-          repo (rfiles/->FileAccessor tx store nil nil nil nil)]
+          repo (rfiles/->FileAccessor tx store nil nil nil)]
       (testing "when querying an artifact"
         (stubs/set-stub! tx :execute! [{:some                  :result
                                         :artifact/key          "some-key"
@@ -226,7 +226,7 @@
 (deftest create-file-test
   (testing "create-file"
     (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil nil nil)
+          repo (rfiles/->FileAccessor nil nil ch nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file! repo {:some :data} {:some       :opts
@@ -237,7 +237,7 @@
                                                      colls/only!
                                                      first)]
           (assert/is? {:workflows/ctx      {}
-                       :workflows/template (wf/load! :files/create)
+                       :workflows/template (peek (wf/load! :files/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
                                              :file/id         (sp.ctx/get ?file-id)}}
                       data)
@@ -250,7 +250,7 @@
 (deftest create-file-version-test
   (testing "create-file-version"
     (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil nil nil)
+          repo (rfiles/->FileAccessor nil nil ch nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file-version! repo
@@ -263,7 +263,7 @@
                                                      colls/only!
                                                      first)]
           (assert/is? {:workflows/ctx      {}
-                       :workflows/template (wf/load! :versions/create)
+                       :workflows/template (peek (wf/load! :versions/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
                       data)
           (assert/is? {:command/id   uuid?
