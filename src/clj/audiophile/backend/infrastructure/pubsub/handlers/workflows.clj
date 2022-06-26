@@ -15,7 +15,8 @@
   (-> data
       :workflows/->result
       (sp.ctx/resolve-params (:ctx data))
-      (assoc :workflow/id workflow-id)))
+      (assoc :workflow/id workflow-id
+             :workflow/template (:workflows/template data))))
 
 (defmulti ^:private next* (fn [_executor _workflow-id data _ctx _sys]
                             (sp/finished? data)))
@@ -41,8 +42,8 @@
 
 (defmethod wf/command-handler :workflow/create!
   [executor sys {:command/keys [ctx data type]}]
-  (let [plan (merge (sp/plan (:workflows/template data) {:ctx (:workflows/ctx data)})
-                    (dissoc data :workflows/template :workflows/ctx))
+  (let [plan (merge (sp/plan (:workflows/form data) {:ctx (:workflows/ctx data)})
+                    (dissoc data :workflows/form :workflows/ctx))
         workflow-id (q/create! executor plan)
         ctx (assoc ctx :workflow/id workflow-id)]
     (hc/with-command-failed! [(:events sys) type ctx]

@@ -70,7 +70,8 @@
    (let [[setup form] (wf/setup (wf/load! template))
          [plan context] (maps/extract-keys setup #{:workflows/->result})
          wf (assoc plan
-                   :workflows/template form
+                   :workflows/template template
+                   :workflows/form form
                    :workflows/ctx (maps/select-rename-keys ctx context))]
      (let [command-id (uuids/random)
            command {:command/id   command-id

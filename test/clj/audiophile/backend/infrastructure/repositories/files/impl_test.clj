@@ -38,7 +38,8 @@
                                                      first)]
           (assert/is? {:workflows/ctx      '{?key "key"
                                              ?uri "some://uri"}
-                       :workflows/template (peek (wf/load! :artifacts/create))
+                       :workflows/template :artifacts/create
+                       :workflows/form     (peek (wf/load! :artifacts/create))
                        :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
                                              :artifact/filename (sp.ctx/get ?filename)}}
                       data)
@@ -237,7 +238,8 @@
                                                      colls/only!
                                                      first)]
           (assert/is? {:workflows/ctx      {}
-                       :workflows/template (peek (wf/load! :files/create))
+                       :workflows/template :files/create
+                       :workflows/form     (peek (wf/load! :files/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
                                              :file/id         (sp.ctx/get ?file-id)}}
                       data)
@@ -263,7 +265,8 @@
                                                      colls/only!
                                                      first)]
           (assert/is? {:workflows/ctx      {}
-                       :workflows/template (peek (wf/load! :versions/create))
+                       :workflows/template :versions/create
+                       :workflows/form     (peek (wf/load! :versions/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
                       data)
           (assert/is? {:command/id   uuid?

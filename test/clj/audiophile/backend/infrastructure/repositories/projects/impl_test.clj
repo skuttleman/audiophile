@@ -100,7 +100,8 @@
                                                      colls/only!
                                                      first)]
           (assert/is? {:workflows/ctx      {}
-                       :workflows/template (peek (wf/load! :projects/create))
+                       :workflows/template :projects/create
+                       :workflows/form     (peek (wf/load! :projects/create))
                        :workflows/->result '{:project/id (sp.ctx/get ?project-id)}}
                       data)
           (assert/is? {:command/id   uuid?
