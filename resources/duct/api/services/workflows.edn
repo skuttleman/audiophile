@@ -10,24 +10,19 @@
  [:audiophile.workflows.kafka/topic-cfg :topics/tasks]
  {:name #ig/ref :env.kafka.topic/tasks}
 
- [:duct/const :workflows.kafka-streams/cfg]
- {:application.id     #ig/ref :env.kafka/app-id
-  :bootstrap.servers  #ig/ref :env.kafka/brokers
-  :commit.interval.ms 1000}
-
- [:duct/const :workflows.producer/cfg]
- {:bootstrap.servers #ig/ref :env.kafka/brokers}
-
  :audiophile.workflows.kafka/producer
- {:cfg       #ig/ref :workflows.producer/cfg
+ {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
   :topic-cfg #ig/ref :topics/workflows}
 
  :audiophile.workflows.kafka/handler
- {:events #ig/ref :rabbitmq.chan/events
-  :repo   #ig/ref :services/transactor}
+ {:events    #ig/ref :rabbitmq.chan/events
+  :repo      #ig/ref :services/transactor
+  :jwt-serde #ig/ref :serdes/jwt}
 
  :audiophile.workflows.kafka/controller
- {:cfg                #ig/ref :workflows.kafka-streams/cfg
+ {:cfg                {:application.id     #ig/ref :env.kafka/app-id
+                       :bootstrap.servers  #ig/ref :env.kafka/brokers
+                       :commit.interval.ms 1000}
   :handler            #ig/ref :audiophile.workflows.kafka/handler
   :task-topic-cfg     #ig/ref :topics/tasks
   :workflow-topic-cfg #ig/ref :topics/workflows}}

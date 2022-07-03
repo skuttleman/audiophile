@@ -15,6 +15,12 @@
                       [:duct/const :services/rabbitmq#conn]
                       ^:promote #ig/ref :audiophile.test/rabbitmq#conn
 
+                      [:duct/const :workflows/producer]
+                      ^:promote #ig/ref :audiophile.test/kafka#producer
+
+                      [:duct/const :workflows/controller]
+                      ^:promote {}
+
                       :audiophile.services.ws/->handler
                       ^:promote {:heartbeat-int-ms 250}
 
@@ -34,4 +40,12 @@
                       {:datasource #ig/ref :services/datasource}
 
                       :audiophile.test/rabbitmq#conn
-                      {}}}]
+                      {}
+
+                      :audiophile.test/kafka#producer
+                      {:test-driver #ig/ref :audiophile.test/kafka#test-driver}
+
+                      :audiophile.test/kafka#test-driver
+                      {:handler            #ig/ref :audiophile.workflows.kafka/handler
+                       :task-topic-cfg     #ig/ref :topics/tasks
+                       :workflow-topic-cfg #ig/ref :topics/workflows}}}]

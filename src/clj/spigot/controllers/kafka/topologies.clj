@@ -2,11 +2,9 @@
   (:require
     [spigot.controllers.kafka.protocols :as sp.kproto]
     [spigot.controllers.kafka.streams :as sp.ks]
-    [spigot.core :as sp]
-    [audiophile.common.core.utils.logger :as log])
+    [spigot.core :as sp])
   (:import
-    (org.apache.kafka.streams StreamsBuilder)
-    (org.apache.kafka.streams.kstream ForeachAction)))
+    (org.apache.kafka.streams StreamsBuilder)))
 
 (defn ^:private workflow-aggregator [agg [_ [tag params ctx]]]
   (case tag
@@ -58,9 +56,6 @@
   (let [handler (->safe-handler handler)
         stream (-> builder
                    (sp.ks/stream workflow-topic)
-                   (.peek (reify ForeachAction
-                            (apply [_ _ v]
-                              (log/info "WORKFLOWS" v))))
                    (sp.ks/group-by-key workflow-topic)
                    (sp.ks/aggregate (constantly nil) workflow-aggregator workflow-topic)
                    .toStream
@@ -79,8 +74,5 @@
   (let [handler (->safe-handler handler)]
     (-> builder
         (sp.ks/stream task-topic)
-        (.peek (reify ForeachAction
-                 (apply [_ _ v]
-                   (log/info "TASKS" v))))
         (sp.ks/flat-map (partial task-flat-mapper handler))
         (sp.ks/to workflow-topic))))

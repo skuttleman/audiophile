@@ -1,8 +1,5 @@
 (ns audiophile.test.integration.common.components
   (:require
-    [clojure.core.async :as async]
-    [clojure.core.async.impl.protocols :as async.protocols]
-    [clojure.string :as string]
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.dev.migrations :as mig]
@@ -13,15 +10,23 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.http.core :as http]
+    [clojure.core.async :as async]
+    [clojure.core.async.impl.protocols :as async.protocols]
+    [clojure.string :as string]
     [hikari-cp.core :as hikari]
     [integrant.core :as ig]
     [next.jdbc :as jdbc]
-    [next.jdbc.protocols :as pjdbc])
+    [next.jdbc.protocols :as pjdbc]
+    [spigot.controllers.kafka.common :as sp.kcom]
+    [spigot.controllers.kafka.core :as sp.kafka]
+    [spigot.controllers.kafka.protocols :as sp.kproto])
   (:import
     (java.io Closeable)
     (java.sql Timestamp)
     (javax.sql DataSource)
-    (org.projectodd.wunderboss.web.async Channel)))
+    (org.projectodd.wunderboss.web.async Channel)
+    (org.apache.kafka.streams TopologyTestDriver TestInputTopic)
+    (org.apache.kafka.streams.test TestRecord)))
 
 (defn migrate! [datasource]
   (mig/migrate! (mig/create-migrator datasource)))
@@ -133,3 +138,24 @@
 
 (defmethod ig/halt-key! :audiophile.test/rabbitmq#conn [_ conn]
   (.close ^Closeable conn))
+
+(defmethod ig/init-key :audiophile.test/kafka#test-driver [_ {:keys [handler task-topic-cfg workflow-topic-cfg]}]
+  (let [driver (-> (sp.kafka/default-builder)
+                   (sp.kafka/build-topology handler
+                                            task-topic-cfg
+                                            workflow-topic-cfg)
+                   (TopologyTestDriver. (sp.kcom/->props {:application.id    (str (uuids/random))
+                                                          :bootstrap.servers "fake"})))]
+    {:driver driver
+     :workflows (.createInputTopic driver
+                                   (:name workflow-topic-cfg)
+                                   (.serializer (:key-serde workflow-topic-cfg))
+                                   (.serializer (:val-serde workflow-topic-cfg)))}))
+
+(defmethod ig/halt-key! :audiophile.test/kafka#test-driver [_ {:keys [^Closeable driver]}]
+  (.close driver))
+
+(defmethod ig/init-key :audiophile.test/kafka#producer [_ {{:keys [^TestInputTopic workflows]} :test-driver}]
+  (reify sp.kproto/ISpigotProducer
+    (send! [_ k v _]
+      (future (.pipeInput workflows k v)))))
