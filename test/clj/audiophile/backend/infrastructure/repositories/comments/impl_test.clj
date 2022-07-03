@@ -12,7 +12,8 @@
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
-    [clojure.test :refer [are deftest is testing]]))
+    [clojure.test :refer [are deftest is testing]]
+    [spigot.controllers.kafka.topologies :as sp.ktop]))
 
 (deftest query-all-test
   (testing "query-all"
@@ -70,24 +71,22 @@
 
 (deftest create!-test
   (testing "create!"
-    (let [ch (ts/->chan)
-          repo (rcomments/->CommentAccessor nil ch)
+    (let [producer (ts/->producer)
+          repo (rcomments/->CommentAccessor nil producer)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create! repo {:some :data} {:some       :opts
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
-                                                     colls/only!
-                                                     first)]
+        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+          (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      {'?user-id user-id}
                        :workflows/template :comments/create
                        :workflows/form     (peek (wf/load! :comments/create))
                        :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
-                      data)
-          (assert/is? {:command/id   uuid?
-                       :command/type :workflow/create!
-                       :command/ctx  {:user/id    user-id
-                                      :request/id request-id}}
-                      command))))))
+                      params)
+          (assert/is? {:user/id    user-id
+                       :request/id request-id
+                       :workflow/id uuid?}
+                      ctx))))))

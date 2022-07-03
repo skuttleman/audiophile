@@ -3,7 +3,8 @@
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.common.api.pubsub.protocols :as ppubsub]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [spigot.controllers.kafka.protocols :as sp.kproto]))
 
 (defn ->pubsub []
   (stubs/create (reify
@@ -20,6 +21,12 @@
                   (open? [_])
                   (send! [_ _])
                   (close! [_]))))
+
+(defn ->producer []
+  (stubs/create (reify
+                  sp.kproto/ISpigotProducer
+                  (send! [_ _ _ _]
+                    (future nil)))))
 
 (defn ->store []
   (stubs/create (reify

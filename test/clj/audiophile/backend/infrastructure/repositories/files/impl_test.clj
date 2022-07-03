@@ -12,13 +12,14 @@
     [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
-    [clojure.test :refer [are deftest is testing]]))
+    [clojure.test :refer [are deftest is testing]]
+    [spigot.controllers.kafka.topologies :as sp.ktop]))
 
 (deftest create-artifact-test
   (testing "create-artifact"
-    (let [ch (ts/->chan)
+    (let [producer (ts/->producer)
           store (ts/->store)
-          repo (rfiles/->FileAccessor nil store ch nil (constantly "key"))
+          repo (rfiles/->FileAccessor nil store producer nil (constantly "key"))
           [user-id request-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
 
@@ -33,21 +34,19 @@
                (take 2 (colls/only! (stubs/calls store :put!))))))
 
       (testing "emits a command"
-        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
-                                                     colls/only!
-                                                     first)]
+        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+          (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      '{?key "key"
                                              ?uri "some://uri"}
                        :workflows/template :artifacts/create
                        :workflows/form     (peek (wf/load! :artifacts/create))
                        :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
                                              :artifact/filename (sp.ctx/get ?filename)}}
-                      data)
-          (assert/is? {:command/id   uuid?
-                       :command/type :workflow/create!
-                       :command/ctx  {:user/id    user-id
-                                      :request/id request-id}}
-                      command))))))
+                      params)
+          (assert/is? {:user/id    user-id
+                       :request/id request-id
+                       :workflow/id uuid?}
+                      ctx))))))
 
 (deftest query-many-test
   (testing "query-many"
@@ -226,33 +225,31 @@
 
 (deftest create-file-test
   (testing "create-file"
-    (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil nil)
+    (let [producer (ts/->producer)
+          repo (rfiles/->FileAccessor nil nil producer nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file! repo {:some :data} {:some       :opts
                                               :some/other :opts
                                               :user/id    user-id
                                               :request/id request-id})
-        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
-                                                     colls/only!
-                                                     first)]
+        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+          (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      {}
                        :workflows/template :files/create
                        :workflows/form     (peek (wf/load! :files/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
                                              :file/id         (sp.ctx/get ?file-id)}}
-                      data)
-          (assert/is? {:command/id   uuid?
-                       :command/type :workflow/create!
-                       :command/ctx  {:user/id    user-id
-                                      :request/id request-id}}
-                      command))))))
+                      params)
+          (assert/is? {:user/id    user-id
+                       :request/id request-id
+                       :workflow/id uuid?}
+                      ctx))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
-    (let [ch (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil ch nil nil)
+    (let [producer (ts/->producer)
+          repo (rfiles/->FileAccessor nil nil producer nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
         (int/create-file-version! repo
@@ -261,16 +258,14 @@
                                    :some/other :opts
                                    :user/id    user-id
                                    :request/id request-id})
-        (let [{:command/keys [data] :as command} (-> (stubs/calls ch :send!)
-                                                     colls/only!
-                                                     first)]
+        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+          (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      {}
                        :workflows/template :versions/create
                        :workflows/form     (peek (wf/load! :versions/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
-                      data)
-          (assert/is? {:command/id   uuid?
-                       :command/type :workflow/create!
-                       :command/ctx  {:user/id    user-id
-                                      :request/id request-id}}
-                      command))))))
+                      params)
+          (assert/is? {:user/id    user-id
+                       :request/id request-id
+                       :workflow/id uuid?}
+                      ctx))))))
