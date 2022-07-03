@@ -157,3 +157,19 @@
   [_ _]
   (shared/with-println [:artifacts "deleting" "deleted"]
     (shared/process! "/bin/rm -f target/artifacts/*")))
+
+(defmethod shared/wipe* :kafka
+  [_ _]
+  (shared/with-println [:kafka "recreating" "recreated"]
+    (shared/process! "docker-compose stop kafka zookeeper app")
+    (shared/process! "docker-compose rm -fv")
+    (shared/silent! (shared/process! "docker volume rm audiophile_kafka_data"))
+    (shared/silent! (shared/process! "docker volume rm audiophile_zookeeper_data"))
+    (shared/process! "docker-compose up -d kafka")
+    (doseq [topic ["spigot-events" "spigot-tasks" "spigot-workflows"]]
+      (shared/process! (shared/with-opts "docker-compose exec -- kafka kafka-topics.sh"
+                                         {:create           true
+                                          :topic            topic
+                                          :bootstrap-server "127.0.0.1:9092"
+                                          :partitions 10
+                                          :replication-factor 1})))))

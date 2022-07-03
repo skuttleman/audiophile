@@ -3,12 +3,10 @@
   (:require
     [audiophile.backend.infrastructure.system.env :as env]
     [audiophile.common.core.utils.fns :as fns]
-    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.infrastructure.duct :as uduct]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    [kinsky.admin :as admin*]
     audiophile.backend.infrastructure.system.core
     audiophile.common.infrastructure.system.core))
 
@@ -30,31 +28,14 @@
 (defn build-system [cfg daemons]
   (ig/init cfg (into [:duct/daemon] daemons)))
 
-(defn create-topics! [cfg]
-  (let [[brokers & topics] (map (comp val (partial ig/find-derived-1 cfg))
-                               [:env.kafka/brokers
-                                :env.kafka.topic/events
-                                :env.kafka.topic/tasks
-                                :env.kafka.topic/workflows])]
-    (with-open [admin (admin*/client {:bootstrap.servers brokers})]
-      (let [existing? (into #{} (map :name) @(admin*/list-topics admin false))
-            topics (remove existing? topics)]
-        (when (seq topics)
-          (doseq [topic topics
-                  :when (not (existing? topic))]
-            (log/info "creating topic" topic)
-            @(admin*/create-topic admin topic {:partitions         10
-                                               :replication-factor 1})))
-        (log/info (count topics) "topics creates")))))
-
 (defn -main [& components]
   (duct/load-hierarchy)
   (let [routes (->refs ig/ref "routes/table#" components)
         daemons (->refs "routes/daemon#" components)
         system (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-prod"]))]
-                 (let [cfg (config "config.edn" [:duct.profile/base :duct.profile/prod] routes)]
-                   (create-topics! cfg)
-                   (build-system cfg daemons)))]
+                 (-> "config.edn"
+                     (config [:duct.profile/base :duct.profile/prod] routes)
+                     (build-system daemons)))]
     (.addShutdownHook (Runtime/getRuntime)
                       (Thread. ^Runnable
                                (fn []

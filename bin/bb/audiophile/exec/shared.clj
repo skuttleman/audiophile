@@ -32,8 +32,8 @@
   ([command env]
    (-> ["sh" "-c" command]
        (p/process {:extra-env env
-                   :inherit true
-                   :shutdown p/destroy-tree})
+                   :inherit   true
+                   :shutdown  p/destroy-tree})
        p/check)))
 
 (defn clj
@@ -49,3 +49,13 @@
      (println [~-ing k# "…"])
      ~@body
      (println ["…" k# ~-ed])))
+
+(defmacro silent! [& body]
+  `(try ~@body
+        (catch Throwable _)))
+
+(defn with-opts [cmd opts]
+  (reduce (fn [cmd [k v]]
+            (str cmd " --" (name k) (when (and (some? v) (not (boolean? v))) (str " " v))))
+          cmd
+          opts))

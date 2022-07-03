@@ -19,10 +19,9 @@
   ([sys routes daemons]
    (some-> sys ig/halt!)
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev"]))]
-     (let [cfg (core/config "dev.edn" [:duct.profile/base :duct.profile/dev] routes)]
-       (when (nil? sys)
-         (core/create-topics! cfg))
-       (core/build-system cfg daemons)))))
+     (-> "dev.edn"
+         (core/config [:duct.profile/base :duct.profile/dev] routes)
+         (core/build-system daemons)))))
 
 (defn reset-system! [components]
   (alter-var-root #'system
