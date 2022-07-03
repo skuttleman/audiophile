@@ -29,6 +29,14 @@
 (defn ^:private ->ctx [ctx]
   (into {} (filter (comp #{"id"} name key)) ctx))
 
+(defn workflow-spec [template ctx]
+  (let [[setup form] (wf/setup (wf/load! template))
+        [spec context] (maps/extract-keys setup #{:workflows/->result})]
+    (assoc spec
+           :workflows/template template
+           :workflows/form form
+           :workflows/ctx (maps/select-rename-keys ctx context))))
+
 (defn broadcast!
   "Broadcast an event to all connections"
   ([pubsub event-id event]
@@ -64,34 +72,11 @@
     (send! ch command)
     command-id))
 
-#_(defn start-workflow!
-  ([ch template opts]
-   (start-workflow! ch template {} opts))
-  ([ch template ctx opts]
-   (let [[setup form] (wf/setup (wf/load! template))
-         [plan context] (maps/extract-keys setup #{:workflows/->result})
-         wf (assoc plan
-                   :workflows/template template
-                   :workflows/form form
-                   :workflows/ctx (maps/select-rename-keys ctx context))]
-     (let [command-id (uuids/random)
-           command {:command/id   command-id
-                    :command/type :workflow/create!
-                    :command/data wf
-                    :command/ctx  (->ctx opts)}]
-       (send! ch command)
-       command-id))))
-
 (defn start-workflow!
   ([producer template opts]
    (start-workflow! producer template {} opts))
   ([producer template ctx opts]
-   (let [[setup form] (wf/setup (wf/load! template))
-         [plan context] (maps/extract-keys setup #{:workflows/->result})
-         wf (assoc plan
-                   :workflows/template template
-                   :workflows/form form
-                   :workflows/ctx (maps/select-rename-keys ctx context))]
+   (let [wf (workflow-spec template ctx)]
      (sp.kafka/start! producer wf (->ctx opts)))))
 
 (defn command-failed! [ch model-id opts]
