@@ -20,7 +20,7 @@
   [:post :routes.api/users]             #ig/ref :api.handler/users#post}
 
  [:duct/const :routes/daemon#api]
- #{#ig/ref :rabbitmq.sub/events#ws}
+ #{#ig/ref :workflows/consumer#ws}
 
  [:duct/const :routes/table#auth]
  {[:get :routes.auth/callback]    #ig/ref :audiophile.handlers.auth/callback
@@ -32,8 +32,8 @@
  {[:get :routes.resources/health] #ig/ref :res.handler/health}
 
  [:duct/const :routes/daemon#jobs]
- #{#_#ig/ref :rabbitmq.sub/commands#workflows
-   #ig/ref :workflows/controller
+ #{#ig/ref :workflows/controller
+   #ig/ref :workflows/consumer#db
    #ig/ref :rabbitmq.sub/events#persist}
 
  [:duct/const :routes/table#ui]

@@ -13,15 +13,12 @@
     (string? topic) sp.kcom/->topic-cfg))
 
 (defn build-topology ^Topology
-  [^StreamsBuilder builder handler task-topic workflow-topic]
+  [^StreamsBuilder builder {:keys [handler] :as opts}]
   {:pre [(satisfies? sp.kproto/ISpigotTaskHandler handler)]}
-  (let [opts {:handler        handler
-              :task-topic     (->topic-cfg task-topic)
-              :workflow-topic (->topic-cfg workflow-topic)}]
-    (-> builder
-        (doto (sp.ktop/task-processor-topology opts))
-        (doto (sp.ktop/workflow-manager-topology opts))
-        .build)))
+  (-> builder
+      (doto (sp.ktop/task-processor-topology opts))
+      (doto (sp.ktop/workflow-manager-topology opts))
+      .build))
 
 (defn start! [producer workflow ctx]
   (let [workflow-id (UUID/randomUUID)]

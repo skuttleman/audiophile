@@ -33,9 +33,9 @@
   (pubsub/subscribe! pubsub ch-id topic (->sub-handler ch event-type)))
 
 (defmulti on-message! (fn [_ _ msg]
-                       (log/debug "received event" msg)
-                       (when (seqable? msg)
-                         (first msg))))
+                        (log/debug "received event" msg)
+                        (when (seqable? msg)
+                          (first msg))))
 
 (defmethod on-message! :default
   [_ _ msg]
@@ -134,3 +134,13 @@
 
 (defn event->ws-handler [{:keys [pubsub]}]
   (->WebSocketMessageHandler pubsub))
+
+(defn event-handler [{:keys [pubsub]}]
+  (fn [{{event-id :event/id :event/keys [ctx] :as event} :value}]
+    (log/with-ctx :CP
+      (log/info "publishing event to ws" event-id)
+      (ps/send-user! pubsub
+                     (or (:signup/id ctx) (:user/id ctx))
+                     event-id
+                     (dissoc event :event/ctx)
+                     ctx))))

@@ -9,6 +9,12 @@
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
 
+                      [:duct/const :workflows/consumer#db]
+                      #ig/ref :audiophile.test/kafka#consumer
+
+                      [:duct/const :workflows/consumer#ws]
+                      #ig/ref :audiophile.test/kafka#consumer
+
                       [:duct/const :workflows/producer]
                       ^:promote #ig/ref :audiophile.test/kafka#producer
 
@@ -26,10 +32,16 @@
                       :audiophile.migrations/migrator
                       {:datasource #ig/ref :services/datasource}
 
+                      :audiophile.test/kafka#consumer
+                      {:listeners   #{#ig/ref :audiophile.services.kafka/db-handler
+                                      #ig/ref :audiophile.services.kafka/ws-handler}
+                       :test-driver #ig/ref :audiophile.test/kafka#test-driver}
+
                       :audiophile.test/kafka#producer
                       {:test-driver #ig/ref :audiophile.test/kafka#test-driver}
 
                       :audiophile.test/kafka#test-driver
                       {:handler            #ig/ref :audiophile.workflows.kafka/handler
+                       :event-topic-cfg    #ig/ref :topics/events
                        :task-topic-cfg     #ig/ref :topics/tasks
                        :workflow-topic-cfg #ig/ref :topics/workflows}}}]

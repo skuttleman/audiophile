@@ -25,8 +25,7 @@
     (java.sql Timestamp)
     (javax.sql DataSource)
     (org.projectodd.wunderboss.web.async Channel)
-    (org.apache.kafka.streams TopologyTestDriver TestInputTopic)
-    (org.apache.kafka.streams.test TestRecord)))
+    (org.apache.kafka.streams TestInputTopic TestOutputTopic TopologyTestDriver)))
 
 (defn migrate! [datasource]
   (mig/migrate! (mig/create-migrator datasource)))
@@ -139,23 +138,43 @@
 (defmethod ig/halt-key! :audiophile.test/rabbitmq#conn [_ conn]
   (.close ^Closeable conn))
 
-(defmethod ig/init-key :audiophile.test/kafka#test-driver [_ {:keys [handler task-topic-cfg workflow-topic-cfg]}]
+(defmethod ig/init-key :audiophile.test/kafka#test-driver
+  [_ {:keys [event-topic-cfg workflow-topic-cfg] :as opts}]
   (let [driver (-> (sp.kafka/default-builder)
-                   (sp.kafka/build-topology handler
-                                            task-topic-cfg
-                                            workflow-topic-cfg)
+                   (sp.kafka/build-topology opts)
                    (TopologyTestDriver. (sp.kcom/->props {:application.id    (str (uuids/random))
                                                           :bootstrap.servers "fake"})))]
     {:driver driver
+     :events (.createOutputTopic driver
+                                 (:name event-topic-cfg)
+                                 (.deserializer (:key-serde workflow-topic-cfg))
+                                 (.deserializer (:val-serde workflow-topic-cfg)))
      :workflows (.createInputTopic driver
                                    (:name workflow-topic-cfg)
                                    (.serializer (:key-serde workflow-topic-cfg))
                                    (.serializer (:val-serde workflow-topic-cfg)))}))
 
-(defmethod ig/halt-key! :audiophile.test/kafka#test-driver [_ {:keys [^Closeable driver]}]
+(defmethod ig/halt-key! :audiophile.test/kafka#test-driver
+  [_ {:keys [^Closeable driver]}]
   (.close driver))
 
-(defmethod ig/init-key :audiophile.test/kafka#producer [_ {{:keys [^TestInputTopic workflows]} :test-driver}]
+(defmethod ig/init-key :audiophile.test/kafka#consumer
+  [_ {{:keys [^TestOutputTopic events]} :test-driver :keys [listeners]}]
+  (let [poll? (volatile! true)]
+    (async/go-loop []
+      (doseq [event (.readValuesToList events)
+              listener listeners]
+        (listener {:value event}))
+      (async/<! (async/timeout 100))
+      (when @poll?
+        (recur)))
+    poll?))
+
+(defmethod ig/halt-key! :audiophile.test/kafka#consumer [_ poll?]
+  (vreset! poll? false))
+
+(defmethod ig/init-key :audiophile.test/kafka#producer
+  [_ {{:keys [^TestInputTopic workflows]} :test-driver}]
   (reify sp.kproto/ISpigotProducer
     (send! [_ k v _]
       (future (.pipeInput workflows k v)))))

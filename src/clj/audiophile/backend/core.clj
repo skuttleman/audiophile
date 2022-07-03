@@ -33,12 +33,12 @@
 (defn create-topics! [cfg]
   (let [[brokers & topics] (map (comp val (partial ig/find-derived-1 cfg))
                                [:env.kafka/brokers
+                                :env.kafka.topic/events
                                 :env.kafka.topic/tasks
                                 :env.kafka.topic/workflows])]
     (with-open [admin (admin*/client {:bootstrap.servers brokers})]
       (let [existing? (into #{} (map :name) @(admin*/list-topics admin false))
-            topics (remove
-                     existing? topics)]
+            topics (remove existing? topics)]
         (when (seq topics)
           (doseq [topic topics
                   :when (not (existing? topic))]

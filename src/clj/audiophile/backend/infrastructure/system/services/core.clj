@@ -55,11 +55,17 @@
 (defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#workflows [_ cfg]
   (pub.workflows/msg-handler cfg))
 
-(defmethod ig/init-key :audiophile.workflows.kafka/admin [_ cfg]
-  (wf/admin cfg))
+(defmethod ig/init-key :audiophile.services.kafka/db-handler [_ cfg]
+  (cdb/event-handler cfg))
 
-(defmethod ig/halt-key! :audiophile.workflows.kafka/admin [_ admin]
-  (wf/admin#close admin))
+(defmethod ig/init-key :audiophile.services.kafka/ws-handler [_ cfg]
+  (ws/event-handler cfg))
+
+(defmethod ig/init-key :audiophile.workflows.kafka/consumer [_ cfg]
+  (wf/consumer cfg))
+
+(defmethod ig/halt-key! :audiophile.workflows.kafka/consumer [_ consumer]
+  (wf/consumer#close consumer))
 
 (defmethod ig/init-key :audiophile.workflows.kafka/producer [_ cfg]
   (wf/producer cfg))

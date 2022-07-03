@@ -33,8 +33,8 @@
   (test [_ k v]
     (boolean (pred [k v]))))
 
-(defn ^KStream stream [^StreamsBuilder builder topic]
-  (.stream builder ^String (:name topic) (Consumed/with (:key-serde topic) (:val-serde topic))))
+(defn ^KStream stream [^StreamsBuilder builder topic-cfg]
+  (.stream builder ^String (:name topic-cfg) (Consumed/with (:key-serde topic-cfg) (:val-serde topic-cfg))))
 
 (defn map ^KStream [^KStream stream f]
   (.map stream (->FnKeyValueMapper (comp ->kv f))))
@@ -48,14 +48,14 @@
 (defn filter ^KStream [^KStream stream pred]
   (.filter stream (->FnPredicate pred)))
 
-(defn ^KGroupedStream group-by-key [^KStream stream topic]
-  (.groupByKey stream (Grouped/with (:key-serde topic) (:val-serde topic))))
+(defn ^KGroupedStream group-by-key [^KStream stream topic-cfg]
+  (.groupByKey stream (Grouped/with (:key-serde topic-cfg) (:val-serde topic-cfg))))
 
-(defn ^KTable aggregate [^KGroupedStream stream init-fn agg-fn topic]
+(defn ^KTable aggregate [^KGroupedStream stream init-fn agg-fn topic-cfg]
   (.aggregate stream
               (->FnInitializer init-fn)
               (->FnAggregator agg-fn)
-              (Materialized/with (:key-serde topic) (:val-serde topic))))
+              (Materialized/with (:key-serde topic-cfg) (:val-serde topic-cfg))))
 
-(defn ^Void to [^KStream stream topic]
-  (.to stream ^String (:name topic) (Produced/with (:key-serde topic) (:val-serde topic))))
+(defn ^Void to [^KStream stream topic-cfg]
+  (.to stream ^String (:name topic-cfg) (Produced/with (:key-serde topic-cfg) (:val-serde topic-cfg))))

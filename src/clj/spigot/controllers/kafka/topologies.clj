@@ -18,7 +18,8 @@
 
 (defn ^:private workflow-flat-mapper [handler [k [wf ctx]]]
   (if (sp/finished? wf)
-    (sp.kproto/on-complete handler ctx wf)
+    (when-let [event (sp.kproto/on-complete handler ctx wf)]
+      [[(:workflow/id ctx) [::event event]]])
     (let [[next-wf tasks] (sp/next-sync wf)]
       (when (or (seq tasks) (not= wf next-wf))
         (cons [k [::workflow [::next! next-wf ctx]]]
@@ -33,8 +34,9 @@
         result {:spigot/id     spigot-id
                 :spigot/result result}]
     (if ex
-      (sp.kproto/on-error handler ctx ex)
-      [[(:workflow/id ctx) [::result result]]])))
+      (when-let [event (sp.kproto/on-error handler ctx ex)]
+        [[(:workflow/id ctx) [::event event]]])
+      [[(:workflow/id ctx) [::workflow [::result result]]]])))
 
 (defn ->safe-handler [handler]
   (reify
@@ -42,37 +44,49 @@
     (on-complete [this ctx workflow]
       (try (sp.kproto/on-complete handler ctx workflow)
            (catch Throwable ex
-             (sp.kproto/on-error this ctx ex)))
-      nil)
+             (sp.kproto/on-error this ctx ex))))
     (on-error [_ ctx ex]
       (try (sp.kproto/on-error handler ctx ex)
-           (catch Throwable _))
-      nil)
+           (catch Throwable _
+             nil)))
     (process-task [_ ctx task]
       (sp.kproto/process-task handler ctx task))))
 
 (defn workflow-manager-topology
-  [^StreamsBuilder builder {:keys [handler task-topic workflow-topic]}]
+  [^StreamsBuilder builder {:keys [handler event-topic-cfg task-topic-cfg workflow-topic-cfg]}]
   (let [handler (->safe-handler handler)
         stream (-> builder
-                   (sp.ks/stream workflow-topic)
-                   (sp.ks/group-by-key workflow-topic)
-                   (sp.ks/aggregate (constantly nil) workflow-aggregator workflow-topic)
+                   (sp.ks/stream workflow-topic-cfg)
+                   (sp.ks/group-by-key workflow-topic-cfg)
+                   (sp.ks/aggregate (constantly nil) workflow-aggregator workflow-topic-cfg)
                    .toStream
                    (sp.ks/flat-map (partial workflow-flat-mapper handler)))]
     (-> stream
         (sp.ks/filter (comp #{::workflow} first second))
         (sp.ks/map-values second)
-        (sp.ks/to workflow-topic))
+        (sp.ks/to workflow-topic-cfg))
     (-> stream
         (sp.ks/filter (comp #{::task} first second))
         (sp.ks/map-values second)
-        (sp.ks/to task-topic))))
+        (sp.ks/to task-topic-cfg))
+    (when event-topic-cfg
+      (-> stream
+          (sp.ks/filter (comp #{::event} first second))
+          (sp.ks/map-values second)
+          (sp.ks/to event-topic-cfg)))))
 
 (defn task-processor-topology
-  [^StreamsBuilder builder {:keys [handler task-topic workflow-topic]}]
-  (let [handler (->safe-handler handler)]
-    (-> builder
-        (sp.ks/stream task-topic)
-        (sp.ks/flat-map (partial task-flat-mapper handler))
-        (sp.ks/to workflow-topic))))
+  [^StreamsBuilder builder {:keys [handler event-topic-cfg task-topic-cfg workflow-topic-cfg]}]
+  (let [handler (->safe-handler handler)
+        stream (-> builder
+                   (sp.ks/stream task-topic-cfg)
+                   (sp.ks/flat-map (partial task-flat-mapper handler)))]
+    (-> stream
+        (sp.ks/filter (comp #{::workflow} first second))
+        (sp.ks/map-values second)
+        (sp.ks/to workflow-topic-cfg))
+    (when event-topic-cfg
+      (-> stream
+          (sp.ks/filter (comp #{::event} first second))
+          (sp.ks/map-values second)
+          (sp.ks/to event-topic-cfg)))))

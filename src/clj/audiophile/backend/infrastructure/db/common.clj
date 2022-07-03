@@ -19,3 +19,9 @@
 
 (defn event->db-handler [{:keys [repo]}]
   (->DBMessageHandler repo))
+
+(defn event-handler [{:keys [repo]}]
+  (fn [{{event-id :event/id :event/keys [ctx] :as event} :value}]
+    (log/with-ctx :CP
+      (log/info "saving event to db" event-id)
+      (repos/transact! repo qevents/insert-event! event ctx))))

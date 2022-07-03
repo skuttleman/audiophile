@@ -1,8 +1,17 @@
 {[:duct/const :workflows/producer]
  #ig/ref :audiophile.workflows.kafka/producer
 
+ [:duct/const :workflows/consumer#db]
+ #ig/ref [:audiophile.workflows.kafka/consumer :consumers/db]
+
+ [:duct/const :workflows/consumer#ws]
+ #ig/ref [:audiophile.workflows.kafka/consumer :consumers/ws]
+
  [:duct/const :workflows/controller]
  #ig/ref :audiophile.workflows.kafka/controller
+
+ [:audiophile.workflows.kafka/topic-cfg :topics/events]
+ {:name #ig/ref :env.kafka.topic/events}
 
  [:audiophile.workflows.kafka/topic-cfg :topics/workflows]
  {:name #ig/ref :env.kafka.topic/workflows}
@@ -14,6 +23,17 @@
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
   :topic-cfg #ig/ref :topics/workflows}
 
+ [:audiophile.workflows.kafka/consumer :consumers/db]
+ {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers
+              :group.id          #ig/ref :env.kafka/db-consumer-id}
+  :listener  #ig/ref :audiophile.services.kafka/db-handler
+  :topic-cfg #ig/ref :topics/events}
+
+ [:audiophile.workflows.kafka/consumer :consumers/ws]
+ {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
+  :listener  #ig/ref :audiophile.services.kafka/ws-handler
+  :topic-cfg #ig/ref :topics/events}
+
  :audiophile.workflows.kafka/handler
  {:events    #ig/ref :rabbitmq.chan/events
   :repo      #ig/ref :services/transactor
@@ -24,5 +44,12 @@
                        :bootstrap.servers  #ig/ref :env.kafka/brokers
                        :commit.interval.ms 1000}
   :handler            #ig/ref :audiophile.workflows.kafka/handler
+  :event-topic-cfg    #ig/ref :topics/events
   :task-topic-cfg     #ig/ref :topics/tasks
-  :workflow-topic-cfg #ig/ref :topics/workflows}}
+  :workflow-topic-cfg #ig/ref :topics/workflows}
+
+ :audiophile.services.kafka/db-handler
+ {:repo #ig/ref :services/transactor}
+
+ :audiophile.services.kafka/ws-handler
+ {:pubsub #ig/ref :services/pubsub}}

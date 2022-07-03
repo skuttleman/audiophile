@@ -51,16 +51,18 @@
   ([pubsub user-id msg-id msg ctx]
    (pubsub/publish! pubsub [::user user-id] [msg-id msg (assoc (->ctx ctx) :user/id user-id)])))
 
-(defn emit-event! [ch model-id event-type data {user-id :user/id :as ctx}]
-  (let [event-id (uuids/random)
-        event {:event/id         event-id
-               :event/model-id   model-id
-               :event/type       event-type
-               :event/data       data
-               :event/emitted-by user-id
-               :event/ctx        (->ctx ctx)}]
+(defn generate-event [model-id event-type data {user-id :user/id :as ctx}]
+  {:event/id         (uuids/random)
+   :event/model-id   model-id
+   :event/type       event-type
+   :event/data       data
+   :event/emitted-by user-id
+   :event/ctx        (->ctx ctx)})
+
+(defn emit-event! [ch model-id event-type data ctx]
+  (let [event (generate-event model-id event-type data ctx)]
     (send! ch event)
-    event-id))
+    (:event/id event)))
 
 (defn emit-command! [ch command-type data {user-id :user/id :as ctx}]
   (let [command-id (uuids/random)

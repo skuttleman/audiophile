@@ -14,7 +14,7 @@
 (def ^:dynamic *ctx* nil)
 
 (defn ^:private log* [form level args]
-  `(when-not (:disabled? *ctx*) ;; TBD - ctx
+  `(when-not (:disabled? *ctx*)
      (log*/log! ~level :p ~args {:?line ~(:line (meta form))})))
 
 (defn spy* [form level expr f separator]
