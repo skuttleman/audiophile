@@ -68,7 +68,7 @@
       Closeable
       (close [_]
         (vreset! polling? false)
-        (client*/close! client)))))
+        (u/silent! (.close ^Closeable @client))))))
 
 (defn consumer#close [^Closeable client]
   (.close client))
@@ -77,7 +77,7 @@
   (sp.kprod/client cfg topic-cfg))
 
 (defn producer#close [^AutoCloseable client]
-  (.close client))
+  (u/silent! (.close client)))
 
 (defn topic-cfg [{:keys [name] :as cfg}]
   (merge cfg (sp.kcom/->topic-cfg name)))

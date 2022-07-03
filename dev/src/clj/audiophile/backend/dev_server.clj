@@ -50,7 +50,9 @@
   (second (colls/only! (ig/find-derived system k))))
 
 (comment
-  (some-> system ig/halt!)
+  (alter-var-root #'system (fn [sys]
+                             (some-> system ig/halt!)
+                             nil))
   (reset-system! #{"api" "auth" "jobs" "ui"})
   (reset-system! #{"api"})
   (reset-system! #{"auth"})
