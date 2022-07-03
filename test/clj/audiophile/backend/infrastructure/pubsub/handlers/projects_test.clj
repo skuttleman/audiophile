@@ -6,7 +6,6 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -15,7 +14,7 @@
 (deftest project-create!-test
   (testing "wf/command-handler :project/create!"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor)
+          tx (ts/->tx)
           [project-id team-id user-id spigot-id] (repeatedly uuids/random)
           project {:project/id      project-id
                    :project/name    "some project"

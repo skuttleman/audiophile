@@ -31,6 +31,16 @@
 (defn ->store []
   (stubs/create (reify
                   prepos/IKVStore
-                  (uri [_ _ _])
+                  (uri [_ key _]
+                    (str "test://uri/" key))
                   (get [_ _ _])
                   (put! [_ _ _ _]))))
+
+(defn ->tx []
+  (stubs/create (reify
+                  prepos/ITransact
+                  (transact! [this f]
+                    (f this))
+
+                  prepos/IExecute
+                  (execute! [_ _ _]))))

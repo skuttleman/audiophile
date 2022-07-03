@@ -1,7 +1,6 @@
 (ns audiophile.backend.infrastructure.workflows.core
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
-    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.workflows.handlers :as wfh]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]

@@ -9,7 +9,6 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
     [audiophile.test.utils.assertions :as assert]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -17,7 +16,7 @@
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (ts/->tx)
           repo (rcomments/->CommentAccessor tx nil)
           [file-id user-id] (repeatedly uuids/random)]
       (testing "when querying for projects"

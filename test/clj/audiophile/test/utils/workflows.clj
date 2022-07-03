@@ -7,7 +7,6 @@
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.pubsub.memory :as pubsub.mem]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]))
 
@@ -54,7 +53,7 @@
              [{}]))))))
 
 (defmacro with-setup [bindings & body]
-  `(let [tx# (trepos/stub-transactor)
+  `(let [tx# (ts/->tx)
          pubsub# (pubsub.mem/pubsub {})
          commands# (reify
                      pps/IChannel

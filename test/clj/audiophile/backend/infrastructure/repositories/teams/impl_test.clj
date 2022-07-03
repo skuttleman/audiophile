@@ -8,7 +8,6 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
     [audiophile.test.utils.assertions :as assert]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -16,7 +15,7 @@
 
 (deftest query-all-test
   (testing "query-all"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (ts/->tx)
           repo (rteams/->TeamAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying teams"
@@ -53,7 +52,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (ts/->tx)
           repo (rteams/->TeamAccessor tx nil)
           [team-id user-id] (repeatedly uuids/random)]
       (testing "when querying teams"

@@ -1,12 +1,10 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.handlers.users-test
   (:require
-    [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -16,7 +14,7 @@
   (testing "wf/command-handler :user/create!"
     (let [commands (ts/->chan)
           events (ts/->chan)
-          tx (trepos/stub-transactor)
+          tx (ts/->tx)
           [signup-id user-id spigot-id] (repeatedly uuids/random)
           user {:user/id user-id}]
       (testing "when creating a user"

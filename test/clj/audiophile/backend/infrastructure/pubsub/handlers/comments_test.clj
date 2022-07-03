@@ -6,7 +6,6 @@
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -15,7 +14,7 @@
 (deftest comment-create!-test
   (testing "wf/command-handler :comment/create!"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor)
+          tx (ts/->tx)
           [comment-id file-version-id user-id spigot-id] (repeatedly uuids/random)
           comment {:comment/id              comment-id
                    :comment/name            "some comment"

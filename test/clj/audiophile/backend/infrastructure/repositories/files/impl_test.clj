@@ -9,7 +9,6 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
     [audiophile.test.utils.assertions :as assert]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -51,7 +50,7 @@
 (deftest query-many-test
   (testing "query-many"
     (let [[project-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor)
+          tx (ts/->tx)
           repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying files"
         (stubs/set-stub! tx :execute! [{:some :result}])
@@ -115,7 +114,7 @@
 (deftest query-one-test
   (testing "query-one"
     (let [[file-id user-id] (repeatedly uuids/random)
-          tx (trepos/stub-transactor)
+          tx (ts/->tx)
           repo (rfiles/->FileAccessor tx nil nil nil nil)]
       (testing "when querying one file"
         (stubs/set-stub! tx :execute! [{:some :result}])
@@ -163,8 +162,8 @@
 (deftest query-artifact-test
   (testing "query-artifact"
     (let [[artifact-id user-id] (repeatedly uuids/random)
-          store (trepos/stub-kv-store)
-          tx (trepos/stub-transactor)
+          store (ts/->store)
+          tx (ts/->tx)
           repo (rfiles/->FileAccessor tx store nil nil nil)]
       (testing "when querying an artifact"
         (stubs/set-stub! tx :execute! [{:some                  :result

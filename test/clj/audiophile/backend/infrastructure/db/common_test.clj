@@ -8,13 +8,13 @@
     [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
-    [audiophile.test.utils.repositories :as trepos]
+    [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]))
 
 (deftest event->db-handler-test
   (testing "(event->db-handler)"
-    (let [repo (trepos/stub-transactor)
+    (let [repo (ts/->tx)
           handler (cdb/event->db-handler {:repo repo})
           user-id (uuids/random)]
       (int/handle! handler

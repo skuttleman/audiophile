@@ -4,8 +4,6 @@
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
-    [audiophile.test.utils :as tu]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
@@ -14,7 +12,7 @@
 (deftest team-create!-test
   (testing "wf/command-handler :team/create!"
     (let [ch (ts/->chan)
-          tx (trepos/stub-transactor)
+          tx (ts/->tx)
           [team-id user-id spigot-id] (repeatedly uuids/random)
           team {:team/id   team-id
                 :team/name "some team"}]
