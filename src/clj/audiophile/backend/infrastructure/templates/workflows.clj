@@ -17,7 +17,7 @@
   (let [[opts & children] (cond->> more
                             (not (map? (first more))) (cons {}))]
     (if (= tag :workflows/setup)
-      (do (assert (= 1 (count children)))
+      (do (assert (= 1 (count children)) "workflows/setup supports exactly 1 child")
           [opts (first children)])
       [nil form])))
 

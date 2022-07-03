@@ -4,6 +4,7 @@
     [audiophile.backend.infrastructure.auth.google :as goog]
     [audiophile.backend.infrastructure.db.common :as cdb]
     [audiophile.backend.infrastructure.pubsub.handlers.workflows :as pub.workflows]
+    [audiophile.backend.infrastructure.workflows.core :as wf]
     [audiophile.backend.infrastructure.pubsub.rabbit :as pub.rabbit]
     [audiophile.backend.infrastructure.pubsub.ws :as ws]
     [audiophile.backend.infrastructure.resources.s3 :as s3]
@@ -53,3 +54,27 @@
 
 (defmethod ig/init-key :audiophile.services.rabbitmq/command-handler#workflows [_ cfg]
   (pub.workflows/msg-handler cfg))
+
+(defmethod ig/init-key :audiophile.workflows.kafka/admin [_ cfg]
+  (wf/admin cfg))
+
+(defmethod ig/halt-key! :audiophile.workflows.kafka/admin [_ admin]
+  (wf/admin#close admin))
+
+(defmethod ig/init-key :audiophile.workflows.kafka/producer [_ cfg]
+  (wf/producer cfg))
+
+(defmethod ig/halt-key! :audiophile.workflows.kafka/producer [_ producer]
+  (wf/producer#close producer))
+
+(defmethod ig/init-key :audiophile.workflows.kafka/topic-cfg [_ cfg]
+  (wf/topic-cfg cfg))
+
+(defmethod ig/init-key :audiophile.workflows.kafka/handler [_ cfg]
+  (wf/handler cfg))
+
+(defmethod ig/init-key :audiophile.workflows.kafka/controller [_ cfg]
+  (wf/wf-controller cfg))
+
+(defmethod ig/halt-key! :audiophile.workflows.kafka/controller [_ controller]
+  (wf/wf-controller#close controller))

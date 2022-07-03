@@ -1,12 +1,12 @@
 (ns audiophile.backend.infrastructure.pubsub.handlers.projects
   (:require
-    [audiophile.backend.infrastructure.repositories.projects.queries :as q]
+    [audiophile.backend.infrastructure.repositories.projects.queries :as qprojects]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private create* [executor project opts]
-  (if (q/insert-project-access? executor project opts)
-    (q/insert-project! executor project opts)
+  (if (qprojects/insert-project-access? executor project opts)
+    (qprojects/insert-project! executor project opts)
     (throw (ex-info "insufficient access" project))))
 
 (wf/defhandler project/create!

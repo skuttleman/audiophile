@@ -1,6 +1,7 @@
 #audiophile/merge
 [#duct/include "duct/api/services/pubsub.edn"
  #duct/include "duct/api/services/queues.edn"
+ #duct/include "duct/api/services/workflows.edn"
  {[:duct/const :services/transactor]
   #ig/ref :audiophile.repositories/transactor
 

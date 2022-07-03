@@ -89,7 +89,7 @@
 
 (defn ^:private filter-external-packages [{:keys [level ?ns-str] :as data}]
   (when (or (#{:warn :error :fatal :report} level)
-            (some-> ?ns-str (string/starts-with? "audiophile")))
+            (some->> ?ns-str (re-matches #"^(audiophile|spigot).*")))
     data))
 
 (defn ^:private output-fn [{:keys [level ?err msg_ ?ns-str ?file timestamp_ ?line]}]

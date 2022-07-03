@@ -4,7 +4,7 @@
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
-    [audiophile.backend.infrastructure.repositories.users.queries :as q]
+    [audiophile.backend.infrastructure.repositories.users.queries :as qusers]
     [audiophile.common.core.utils.logger :as log]))
 
 (defmulti ^:private find-by (fn [_ {:user/keys [email id]}]
@@ -14,11 +14,11 @@
 
 (defmethod find-by :user/id
   [executor opts]
-  (q/find-by-id executor (:user/id opts) opts))
+  (qusers/find-by-id executor (:user/id opts) opts))
 
 (defmethod find-by :user/email
   [executor opts]
-  (q/find-by-email executor (:user/email opts) opts))
+  (qusers/find-by-email executor (:user/email opts) opts))
 
 (defn ^:private user-accessor#query-one
   [repo {aud :token/aud user :auth/user :as opts}]
@@ -26,15 +26,15 @@
     user
     (repos/transact! repo find-by opts)))
 
-(deftype UserAccessor [repo ch]
+(deftype UserAccessor [repo producer]
   pint/IUserAccessor
   pint/IAccessor
   (query-one [_ opts]
     (user-accessor#query-one repo opts))
   (create! [_ data opts]
-    (ps/start-workflow! ch :users/signup data opts)))
+    (ps/start-workflow! producer :users/signup data opts)))
 
 (defn accessor
   "Constructor for [[UserAccessor]] which provides semantic access for storing and retrieving users."
-  [{:keys [ch repo]}]
-  (->UserAccessor repo ch))
+  [{:keys [producer repo]}]
+  (->UserAccessor repo producer))

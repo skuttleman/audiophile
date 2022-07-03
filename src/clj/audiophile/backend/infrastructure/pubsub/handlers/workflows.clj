@@ -4,7 +4,7 @@
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.pubsub.handlers.common :as hc]
     [audiophile.backend.infrastructure.repositories.core :as repos]
-    [audiophile.backend.infrastructure.repositories.workflows.queries :as q]
+    [audiophile.backend.infrastructure.repositories.workflows.queries :as qwf]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
@@ -23,7 +23,7 @@
 
 (defmethod next* true
   [executor workflow-id data ctx {:keys [events]}]
-  (q/update-by-id! executor workflow-id {:status "completed" :data data})
+  (qwf/update-by-id! executor workflow-id {:status "completed" :data data})
   (ps/emit-event! events
                   workflow-id
                   :workflow/completed
@@ -38,22 +38,22 @@
                                           (:spigot/tag task)
                                           (select-keys task #{:spigot/id :spigot/params})
                                           (assoc ctx :workflow/id workflow-id))))]
-    (q/update-by-id! executor workflow-id {:status "running" :data data})))
+    (qwf/update-by-id! executor workflow-id {:status "running" :data data})))
 
 (defmethod wf/command-handler :workflow/create!
   [executor sys {:command/keys [ctx data type]}]
   (let [plan (merge (sp/plan (:workflows/form data) {:ctx (:workflows/ctx data)})
                     (dissoc data :workflows/form :workflows/ctx))
-        workflow-id (q/create! executor plan)
+        workflow-id (qwf/create! executor plan)
         ctx (assoc ctx :workflow/id workflow-id)]
     (hc/with-command-failed! [(:events sys) type ctx]
-      (let [data (:workflow/data (q/select-for-update executor workflow-id))]
+      (let [data (:workflow/data (qwf/select-for-update executor workflow-id))]
         (next* executor workflow-id data ctx sys)))))
 
 (defmethod wf/command-handler :workflow/next!
   [executor sys {:command/keys [ctx data]}]
   (let [workflow-id (:workflow/id ctx)
-        workflow (q/select-for-update executor workflow-id)
+        workflow (qwf/select-for-update executor workflow-id)
         data (cond-> (:workflow/data workflow)
                (:spigot/id data) (sp/finish (:spigot/id data) (:spigot/result data)))]
     (next* executor workflow-id data ctx sys)))
@@ -61,9 +61,9 @@
 (deftype WorkflowHandler [repo sys]
   pint/IMessageHandler
   (handle? [_ msg]
-    (contains? (methods wf/command-handler) (:command/type msg)))
+    #_(contains? (methods wf/command-handler) (:command/type msg)))
   (handle! [_ {:command/keys [ctx type] :as msg}]
-    (hc/with-command-failed! [(:events sys) type ctx]
+    #_(hc/with-command-failed! [(:events sys) type ctx]
       (repos/transact! repo wf/command-handler sys msg))))
 
 (defn msg-handler [{:keys [commands events jwt-serde repo]}]

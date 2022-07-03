@@ -4,6 +4,10 @@ volumes:
   audiophile-data:
   postgres-data:
   rabbitmq-data:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
 
 services:
   app:
@@ -20,6 +24,7 @@ services:
       - AUTH_BASE_URL=http://localhost:8080
       - UI_BASE_URL=http://localhost:8080
       - SERVICES=api auth jobs ui
+    restart: always
     volumes:
       - ./:/app
       - audiophile-data:${HOME}/dev/audiophile:nocopy
@@ -27,6 +32,7 @@ services:
       - 8000:7000
       - 8080:3000
     depends_on:
+      - kafka
       - postgres
       - rabbitmq
 
@@ -37,7 +43,6 @@ services:
       - POSTGRES_USER=skuttleman
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=audiophile
-    restart: always
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
@@ -49,10 +54,30 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
-    restart: always
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
       - ./.rabbitmq-enabled-plugins:/etc/rabbitmq/enabled_plugins
     ports:
       - 5672:5672
       - 15672:15672
+
+  kafka:
+    image: docker.io/bitnami/kafka:3.2
+    ports:
+      - 9092:9092
+    volumes:
+      - kafka_data:/bitnami
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.8
+    ports:
+      - 2181:2181
+    volumes:
+      - zookeeper_data:/bitnami
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes

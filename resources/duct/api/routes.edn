@@ -32,7 +32,8 @@
  {[:get :routes.resources/health] #ig/ref :res.handler/health}
 
  [:duct/const :routes/daemon#jobs]
- #{#ig/ref :rabbitmq.sub/commands#workflows
+ #{#_#ig/ref :rabbitmq.sub/commands#workflows
+   #ig/ref :workflows/controller
    #ig/ref :rabbitmq.sub/events#persist}
 
  [:duct/const :routes/table#ui]

@@ -24,29 +24,29 @@
  {}
 
  :audiophile.repositories.comments/accessor
- {:ch   #ig/ref :rabbitmq.chan/commands
-  :repo #ig/ref :services/transactor}
+ {:producer #ig/ref :workflows/producer
+  :repo     #ig/ref :services/transactor}
 
  :audiophile.repositories.events/accessor
  {:repo #ig/ref :services/transactor}
 
  :audiophile.repositories.files/accessor
- {:ch     #ig/ref :rabbitmq.chan/commands
-  :pubsub #ig/ref :services/pubsub
-  :repo   #ig/ref :services/transactor
-  :store  #ig/ref :audiophile.repositories.files/artifact-store}
+ {:producer #ig/ref :workflows/producer
+  :pubsub   #ig/ref :services/pubsub
+  :repo     #ig/ref :services/transactor
+  :store    #ig/ref :audiophile.repositories.files/artifact-store}
 
  :audiophile.repositories.projects/accessor
- {:ch   #ig/ref :rabbitmq.chan/commands
-  :repo #ig/ref :services/transactor}
+ {:producer #ig/ref :workflows/producer
+  :repo     #ig/ref :services/transactor}
 
  :audiophile.repositories.teams/accessor
- {:ch   #ig/ref :rabbitmq.chan/commands
-  :repo #ig/ref :services/transactor}
+ {:producer #ig/ref :workflows/producer
+  :repo     #ig/ref :services/transactor}
 
  :audiophile.repositories.users/accessor
- {:ch   #ig/ref :rabbitmq.chan/commands
-  :repo #ig/ref :services/transactor}
+ {:producer #ig/ref :workflows/producer
+  :repo     #ig/ref :services/transactor}
 
  :audiophile.repositories.files/artifact-store
  {:store         #ig/ref :audiophile.repositories/store
