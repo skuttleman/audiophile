@@ -102,7 +102,9 @@
 (defmethod ig/init-key :audiophile.test/kafka#test-driver
   [_ {:keys [event-topic-cfg workflow-topic-cfg] :as opts}]
   (let [driver (-> (sp.kafka/default-builder)
-                   (sp.kafka/build-topology opts)
+                   (sp.kafka/with-wf-topology opts)
+                   (sp.kafka/with-task-topology opts)
+                   .build
                    (TopologyTestDriver. (sp.kcom/->props {:application.id    (str (uuids/random))
                                                           :bootstrap.servers "fake"})))]
     {:driver driver

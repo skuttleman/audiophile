@@ -21,7 +21,10 @@
                       [:duct/const :workflows/producer]
                       ^:promote #ig/ref :audiophile.test/kafka#producer
 
-                      [:duct/const :workflows/controller]
+                      [:duct/const :workflows/controller#tasks]
+                      ^:promote {}
+
+                      [:duct/const :workflows/controller#wf]
                       ^:promote {}
 
                       :audiophile.services.ws/->handler

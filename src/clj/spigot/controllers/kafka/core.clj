@@ -13,22 +13,14 @@
   (cond-> topic
     (string? topic) sp.kcom/->topic-cfg))
 
+(defn ^:private ->streams ^KafkaStreams [^Topology topology cfg]
+  (KafkaStreams. topology (sp.kcom/->props cfg)))
+
 (defn create-wf-msg [workflow-id workflow ctx]
   [::sp.ktop/create! workflow (assoc ctx :workflow/id workflow-id)])
 
-(defn build-topology ^Topology
-  [^StreamsBuilder builder {:keys [handler] :as opts}]
-  {:pre [(satisfies? sp.pcon/ISpigotTaskHandler handler)]}
-  (-> builder
-      (doto (sp.ktop/task-processor-topology opts))
-      (doto (sp.ktop/workflow-manager-topology opts))
-      .build))
-
 (defn default-builder ^StreamsBuilder []
   (StreamsBuilder.))
-
-(defn ->streams ^KafkaStreams [^Topology topology cfg]
-  (KafkaStreams. topology (sp.kcom/->props cfg)))
 
 (defn running? [^KafkaStreams kafka-streams]
   (contains? #{KafkaStreams$State/CREATED
@@ -36,28 +28,35 @@
                KafkaStreams$State/RUNNING}
              (.state kafka-streams)))
 
-(defn start! ^KafkaStreams [streams-cfg builder-opts]
-  (let [timeout (:timeout builder-opts 30000)
+(defn with-wf-topology ^StreamsBuilder [^StreamsBuilder builder opts]
+  (doto builder
+    (sp.ktop/workflow-manager-topology opts)))
+
+(defn with-task-topology ^StreamsBuilder [^StreamsBuilder builder opts]
+  (doto builder
+    (sp.ktop/task-processor-topology opts)))
+
+(defn start! ^KafkaStreams [^Topology topology streams-cfg opts]
+  (let [timeout (:timeout opts 30000)
         started (promise)
         stopped (promise)
-        ks (-> (default-builder)
-               (build-topology builder-opts)
-               (->streams streams-cfg)
-               (doto
-                 (.setStateListener (reify KafkaStreams$StateListener
-                                      (onChange [_ curr old]
-                                        (log/debugf "KafkaStreams state transition from [%s] to [%s]" old curr)
-                                        (when (= KafkaStreams$State/RUNNING curr)
-                                          (deliver started true))
-                                        (when (and (realized? started)
-                                                   (contains? #{KafkaStreams$State/NOT_RUNNING
-                                                                KafkaStreams$State/ERROR}
-                                                              curr))
-                                          (deliver stopped true)))))
-                 .start))]
+        streams (-> topology
+                    (->streams streams-cfg)
+                    (doto
+                      (.setStateListener (reify KafkaStreams$StateListener
+                                           (onChange [_ curr old]
+                                             (log/debugf "KafkaStreams state transition from [%s] to [%s]" old curr)
+                                             (when (= KafkaStreams$State/RUNNING curr)
+                                               (deliver started true))
+                                             (when (and (realized? started)
+                                                        (contains? #{KafkaStreams$State/NOT_RUNNING
+                                                                     KafkaStreams$State/ERROR}
+                                                                   curr))
+                                               (deliver stopped true)))))
+                      .start))]
     (when-not (deref started timeout false)
       (throw (ex-info "KafkaStreams did not start within timeout" {:timeout timeout})))
-    {:streams ks
+    {:streams streams
      :stopped stopped
      :timeout timeout}))
 

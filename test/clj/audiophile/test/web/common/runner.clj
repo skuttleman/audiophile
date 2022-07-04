@@ -38,14 +38,16 @@
         (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
                   #{(ig/ref :routes/table#api)
                     (ig/ref :routes/table#auth)
-                    (ig/ref :routes/table#jobs)
-                    (ig/ref :routes/table#ui)})
+                    (ig/ref :routes/table#tasks)
+                    (ig/ref :routes/table#ui)
+                    (ig/ref :routes/table#wf)})
         (duct/prep-config [:duct.profile/base :duct.profile/dev :duct.profile/test])
         (ig/init [:duct/daemon
                   :routes/daemon#api
                   :routes/daemon#auth
-                  :routes/daemon#jobs
-                  :routes/daemon#ui]))))
+                  :routes/daemon#tasks
+                  :routes/daemon#ui
+                  :routes/daemon#wf]))))
 
 (defn wrap-run [run]
   (fn [{:kaocha.testable/keys [id] :as testable} plan]

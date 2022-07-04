@@ -123,9 +123,19 @@
 (defn topic-cfg [{:keys [name] :as cfg}]
   (merge cfg (sp.kcom/->topic-cfg name)))
 
-(defn wf-controller [{:keys [cfg] :as opts}]
-  (let [ks (sp.kafka/start! cfg opts)]
+(defn wf-topology [cfg]
+  (-> (sp.kafka/default-builder)
+      (sp.kafka/with-wf-topology cfg)
+      .build))
+
+(defn task-topology [cfg]
+  (-> (sp.kafka/default-builder)
+      (sp.kafka/with-task-topology cfg)
+      .build))
+
+(defn controller [{:keys [cfg opts topology]}]
+  (let [ks (sp.kafka/start! topology cfg opts)]
     (->SpigotKafkaController ks)))
 
-(defn wf-controller#close [^Closeable controller]
+(defn controller#close [^Closeable controller]
   (.close controller))

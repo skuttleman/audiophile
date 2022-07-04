@@ -54,8 +54,14 @@
 (defmethod ig/init-key :audiophile.workflows.kafka/handler [_ cfg]
   (wf/handler cfg))
 
+(defmethod ig/init-key :audiophile.workflows.kafka.topology/tasks [_ cfg]
+  (wf/task-topology cfg))
+
+(defmethod ig/init-key :audiophile.workflows.kafka.topology/wf [_ cfg]
+  (wf/wf-topology cfg))
+
 (defmethod ig/init-key :audiophile.workflows.kafka/controller [_ cfg]
-  (wf/wf-controller cfg))
+  (wf/controller cfg))
 
 (defmethod ig/halt-key! :audiophile.workflows.kafka/controller [_ controller]
-  (wf/wf-controller#close controller))
+  (wf/controller#close controller))
