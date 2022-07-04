@@ -1,7 +1,6 @@
 version: "3.8"
 
 volumes:
-  audiophile-data:
   postgres-data:
   zookeeper_data:
     driver: local
@@ -16,8 +15,6 @@ services:
     environment:
       - LOG_LEVEL=debug
       - ENV=development
-      - MQ_NAMESPACE=single
-      - MQ_CONSUMER_GROUP=app
       - WS_RECONNECT_MS=1000
       - API_BASE_URL=http://localhost:8080
       - AUTH_BASE_URL=http://localhost:8080
@@ -26,7 +23,6 @@ services:
     restart: always
     volumes:
       - ./:/app
-      - audiophile-data:${HOME}/dev/audiophile:nocopy
     ports:
       - 8000:7000
       - 8080:3000

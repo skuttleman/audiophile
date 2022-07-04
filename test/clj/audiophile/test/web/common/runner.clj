@@ -17,11 +17,8 @@
 (defn ^:private with-test-cfg [cfg]
   (let [port (with-open [server (ServerSocket. 0)]
                (.getLocalPort server))
-        base-url (str "http://localhost:" port)
-        ns (string/replace (str "test." (uuids/random)) #"-" "")]
+        base-url (str "http://localhost:" port)]
     (assoc cfg
-           "MQ_NAMESPACE" ns
-           "MQ_CONSUMER_GROUP" "web"
            "PORT" (str port)
            "API_BASE_URL" base-url
            "AUTH_BASE_URL" base-url

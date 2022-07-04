@@ -19,13 +19,6 @@
   (pps/close! ch)
   nil)
 
-(defn chan [conn opts]
-  (pps/chan conn opts))
-
-(defn subscribe! [ch handler opts]
-  (pps/subscribe! ch handler opts)
-  nil)
-
 (defn ^:private ->ctx [ctx]
   (into {} (filter (comp #{"id"} name key)) ctx))
 

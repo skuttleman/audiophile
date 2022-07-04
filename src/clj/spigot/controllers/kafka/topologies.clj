@@ -2,25 +2,32 @@
   (:require
     [spigot.controllers.protocols :as sp.pcon]
     [spigot.controllers.kafka.streams :as sp.ks]
-    [spigot.core :as sp])
+    [spigot.core :as sp]
+    [taoensso.timbre :as log])
   (:import
     (org.apache.kafka.streams StreamsBuilder)))
 
-(defn ^:private workflow-aggregator [agg [_ [tag params ctx]]]
-  (case tag
-    ::create! (let [[wf tasks] (-> (:workflows/form params)
-                                   (sp/plan {:ctx (:workflows/ctx params)})
-                                   (merge (dissoc params :workflows/form :workflows/ctx))
-                                   sp/next-sync)]
-                [wf ctx tasks])
-    ::result (let [[[wf tasks] ctx'] (-> agg
-                                         (update 0 sp/finish (:spigot/id params) (:spigot/result params))
-                                         (update 0 sp/next-sync))]
-               [wf ctx' tasks])
-    (do (println "HUH?" tag)
-        agg)))
+(defmulti ^:private workflow-aggregator
+          (fn [_ [_ [tag]]]
+            tag))
+
+(defmethod workflow-aggregator ::create!
+  [_ [_ [_ params ctx]]]
+  (let [[wf tasks] (-> (:workflows/form params)
+                       (sp/plan {:ctx (:workflows/ctx params)})
+                       (merge (dissoc params :workflows/form :workflows/ctx))
+                       sp/next-sync)]
+    [wf ctx tasks]))
+
+(defmethod workflow-aggregator ::result
+  [agg [_ [_ params]]]
+  (let [[[wf tasks] ctx] (-> agg
+                              (update 0 sp/finish (:spigot/id params) (:spigot/result params))
+                              (update 0 sp/next-sync))]
+    [wf ctx tasks]))
 
 (defn ^:private workflow-flat-mapper [handler [_ [wf ctx tasks]]]
+  (log/debug "processing workflow" ctx (:ctx wf))
   (if (sp/finished? wf)
     (when-let [event (sp.pcon/on-complete handler ctx wf)]
       [[(:workflow/id ctx) [::event event]]])
@@ -29,6 +36,7 @@
          tasks)))
 
 (defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task]}]]
+  (log/debug "processing task" ctx task)
   (let [[result ex] (try [(sp.pcon/process-task handler ctx task)]
                          (catch Throwable ex
                            [nil ex]))
