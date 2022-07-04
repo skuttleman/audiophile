@@ -7,6 +7,7 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.uuids :as uuids]
+    [audiophile.common.infrastructure.http.protocols :as phttp]
     [clojure.core.async :as async]
     [kinsky.client :as client*]
     [spigot.context :as sp.ctx]
@@ -14,8 +15,8 @@
     [spigot.controllers.kafka.core :as sp.kafka]
     [spigot.controllers.protocols :as sp.pcon])
   (:import
-    (java.lang AutoCloseable)
-    (java.io Closeable)))
+    (java.io Closeable)
+    (org.apache.kafka.streams KafkaStreams KafkaStreams$State)))
 
 (defn ^:private extract-result [workflow-id data]
   (-> data
@@ -56,8 +57,39 @@
       (set! open? false)
       (.close ^Closeable @kinsky-producer))))
 
+(deftype SpigotKafkaController [^KafkaStreams kafka-streams]
+  phttp/ICheckHealth
+  (display-name [_]
+    ::SpigotKafkaController)
+  (healthy? [_]
+    (contains? #{KafkaStreams$State/CREATED
+                 KafkaStreams$State/REBALANCING
+                 KafkaStreams$State/RUNNING}
+               (.state kafka-streams)))
+  (details [_]
+    nil)
+
+  Closeable
+  (close [_]
+    (u/silent!
+      (.close kafka-streams))))
+
 (defn handler [sys]
   (->SpigotHandler sys))
+
+(deftype SpigotKafkaConsumer [^Closeable client topic-cfg polling?]
+  phttp/ICheckHealth
+  (display-name [_]
+    ::SpigotKafkaConsumer)
+  (healthy? [_]
+    @polling?)
+  (details [_]
+    {:topic (:name topic-cfg)})
+
+  Closeable
+  (close [_]
+    (vreset! polling? false)
+    (u/silent! (.close client))))
 
 (defn consumer [{:keys [cfg listener timeout topic-cfg]}]
   (let [cfg (maps/assoc-defaults cfg :group.id (str (uuids/random)))
@@ -69,23 +101,23 @@
     (async/go-loop []
       (when-let [{:keys [by-topic]} (when @polling?
                                       (u/silent! (client*/poll! client (or timeout 1000))))]
-        (u/silent! (->> by-topic
-                        (mapcat val)
-                        (run! listener))
-                   (client*/commit! client))
+        (try (->> by-topic
+                  (mapcat val)
+                  (run! listener))
+             (client*/commit! client)
+             (catch Throwable _
+               (vreset! polling? false)))
         (async/<! (async/timeout 100))
         (recur)))
-    (reify
-      Closeable
-      (close [_]
-        (vreset! polling? false)
-        (u/silent! (.close ^Closeable @client))))))
+    (->SpigotKafkaConsumer @client topic-cfg polling?)))
 
 (defn consumer#close [^Closeable client]
   (.close client))
 
 (defn producer [{:keys [cfg topic-cfg]}]
-  (->SpigotProducer (client*/producer cfg)
+  (->SpigotProducer (client*/producer cfg
+                                      (.serializer (:key-serde topic-cfg))
+                                      (.serializer (:val-serde topic-cfg)))
                     topic-cfg
                     true))
 
@@ -96,7 +128,7 @@
   (merge cfg (sp.kcom/->topic-cfg name)))
 
 (defn wf-controller [{:keys [cfg] :as opts}]
-  (sp.kafka/start! cfg opts))
+  (->SpigotKafkaController (sp.kafka/start! cfg opts)))
 
-(defn wf-controller#close [^AutoCloseable controller]
+(defn wf-controller#close [^Closeable controller]
   (.close controller))

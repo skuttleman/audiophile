@@ -23,13 +23,13 @@
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
   :topic-cfg #ig/ref :topics/workflows}
 
- [:audiophile.workflows.kafka/consumer :consumers/db]
+ [:audiophile.workflows.kafka/consumer :consumers/db :component/health]
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers
               :group.id          #ig/ref :env.kafka/db-consumer-id}
   :listener  #ig/ref :audiophile.services.kafka/db-handler
   :topic-cfg #ig/ref :topics/events}
 
- [:audiophile.workflows.kafka/consumer :consumers/ws]
+ [:audiophile.workflows.kafka/consumer :consumers/ws :component/health]
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
   :listener  #ig/ref :audiophile.services.kafka/ws-handler
   :topic-cfg #ig/ref :topics/events}
@@ -39,7 +39,7 @@
   :repo      #ig/ref :services/transactor
   :jwt-serde #ig/ref :serdes/jwt}
 
- :audiophile.workflows.kafka/controller
+ [:audiophile.workflows.kafka/controller :component/health]
  {:cfg                {:application.id     #ig/ref :env.kafka/app-id
                        :bootstrap.servers  #ig/ref :env.kafka/brokers
                        :commit.interval.ms 1000}

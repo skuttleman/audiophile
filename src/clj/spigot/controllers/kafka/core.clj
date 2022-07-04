@@ -1,10 +1,10 @@
 (ns spigot.controllers.kafka.core
   (:require
     [spigot.controllers.kafka.common :as sp.kcom]
-    [spigot.controllers.protocols :as sp.pcon]
-    [spigot.controllers.kafka.topologies :as sp.ktop])
+    [spigot.controllers.kafka.topologies :as sp.ktop]
+    [spigot.controllers.protocols :as sp.pcon])
   (:import
-    (org.apache.kafka.streams StreamsBuilder Topology KafkaStreams)))
+    (org.apache.kafka.streams KafkaStreams StreamsBuilder Topology)))
 
 (defn ^:private ->topic-cfg [topic]
   (cond-> topic
