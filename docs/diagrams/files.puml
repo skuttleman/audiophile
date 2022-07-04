@@ -4,11 +4,13 @@ skinparam linetype ortho
 
 actor user
 participant api
-participant jobs
+participant "task workers" as tsk
+participant "wf workers" as wf
 database db <<postgres>>
 database artifacts as s3 <<S3>>
-queue commands <<AMQ>>
-queue events <<AMQ>>
+queue workflows <<Topic>>
+queue tasks <<Topic>>
+queue events <<Topic>>
 
 == Upload Artifact (mp3) ==
 
@@ -17,55 +19,36 @@ user -> api: [HTTP] upload song.mp3
 activate api
     api -> s3: [S3] store blob
     s3 -> api: [S3] blob stored
-    api -> commands: [AMQ] :workflow/create!
+    api -> workflows: [MSG] :workflow/create!
     api -> user: [HTTP] 204
 deactivate api
 
-commands -> jobs: [AMQ] :workflow/create!
+workflows -> wf: [MSG] :workflow/create!
+wf -> tasks: [MSG] :artifact/create!
+tasks -> tsk: [MSG] :artifact/create!
 
-activate jobs
+activate tsk
     group tx
-        jobs -> db: [SQL] INSERT INTO workflows
-        db -> jobs: [SQL] ResultSet<workflow-id>
+        tsk -> db: [SQL] INSERT INTO artifacts
+        db -> tsk: [SQL] ResultSet<artifact-id>
     end
 
-    jobs -> commands: [AMQ] :artifact/create!
-deactivate jobs
+    tsk -> workflows: [MSG] :workflow/next!
+deactivate tsk
 
-commands -> jobs: [AMQ] :artifact/create!
+workflows -> wf: [MSG] :workflow/next!
+wf -> events: [MSG] :workflow/completed
 
-activate jobs
+events -> tsk: [MSG] :workflow/completed
+
+activate tsk
     group tx
-        jobs -> db: [SQL] INSERT INTO artifacts
-        db -> jobs: [SQL] ResultSet<artifact-id>
-        jobs -> db: [SQL] SELECT FROM artifacts
-        db -> jobs: [SQL] ResultSet<event-data>
+        tsk -> db: [SQL] INSERT INTO events
+        db -> tsk: [SQL] ResultSet<event-id>
     end
+deactivate tsk
 
-    jobs -> commands: [AMQ] :workflow/next!
-deactivate jobs
-
-commands -> jobs: [AMQ] :workflow/next!
-
-activate jobs
-    group tx
-        jobs -> db: [SQL] UPDATE workflows
-        db -> jobs: [SQL] ResultSet
-    end
-
-    jobs -> events: [AMQ] :workflow/completed
-deactivate jobs
-
-events -> jobs: [AMQ] :workflow/completed
-
-activate jobs
-    group tx
-        jobs -> db: [SQL] INSERT INTO events
-        db -> jobs: [SQL] ResultSet<event-id>
-    end
-deactivate jobs
-
-events -> api: [AMQ] :workflow/completed
+events -> api: [MSG] :workflow/completed
 api -> user: [WS] workflow completed
 
 == Create File (project track) ==
@@ -73,79 +56,51 @@ api -> user: [WS] workflow completed
 user -> api: [HTTP] create file
 
 activate api
-    api -> commands: [AMQ] :workflow/create!
+    api -> workflows: [MSG] :workflow/create!
     api -> user: [HTTP] 204
 deactivate api
 
-commands -> jobs: [AMQ] :workflow/create!
+workflows -> wf: [MSG] :workflow/create!
+wf -> tasks: [MSG] :file/create!
 
-activate jobs
+tasks -> tsk: [MSG] :file/create!
+
+activate tsk
     group tx
-        jobs -> db: [SQL] INSERT INTO workflows
-        db -> jobs: [SQL] ResultSet<workflow-id>
+        tsk -> db: [SQL] access? files
+        db -> tsk: [SQL] ResultSet<access-ok>
+        tsk -> db: [SQL] INSERT INTO files
+        db -> tsk: [SQL] ResultSet<file-id>
     end
 
-    jobs -> commands: [AMQ] :file/create!
-deactivate jobs
+    tsk -> workflows: [MSG] :workflow/next!
+deactivate tsk
 
-commands -> jobs: [AMQ] :file/create!
+workflows -> wf: [MSG] :workflow/next!
+wf -> tasks: [MSG] :file-version/create!
+tasks -> tsk: [MSG] :file-version/create!
 
-activate jobs
+activate tsk
     group tx
-        jobs -> db: [SQL] access? files
-        jobs -> db: [SQL] ResultSet<access-ok>
-        jobs -> db: [SQL] INSERT INTO files
-        db -> jobs: [SQL] ResultSet<file-id>
+        tsk -> db: [SQL] INSERT INTO file_versions
+        db -> tsk: [SQL] ResultSet<file-version-id>
     end
 
-    jobs -> commands: [AMQ] :workflow/next!
-deactivate jobs
+    tsk -> workflows: [MSG] :workflow/next!
+deactivate tsk
 
-commands -> jobs: [AMQ] :workflow/next!
+workflows -> wf: [MSG] :workflow/next!
+wf -> events: [MSG] :workflow/completed
+events -> tsk: [MSG] :workflow/completed
 
-activate jobs
+activate tsk
     group tx
-        jobs -> db: [SQL] UPDATE workflows
-        db -> jobs: [SQL] ResultSet
+        tsk -> db: [SQL] INSERT INTO events
+        db -> tsk: [SQL] ResultSet<event-id>
     end
+deactivate tsk
 
-    jobs -> commands: [AMQ] :file-version/create!
-deactivate jobs
-
-commands -> jobs: [AMQ] :file-version/create!
-
-activate jobs
-    group tx
-        jobs -> db: [SQL] INSERT INTO file_versions
-        db -> jobs: [SQL] ResultSet<file-version-id>
-        jobs -> db: [SQL] SELECT FROM files
-        db -> jobs: [SQL] ResultSet<event-data>
-    end
-
-    jobs -> commands: [AMQ] :workflow/next!
-deactivate jobs
-
-commands -> jobs: [AMQ] :workflow/next!
-
-activate jobs
-    group tx
-        jobs -> db: [SQL] UPDATE workflows
-        db -> jobs: [SQL] ResultSet
-    end
-
-    jobs -> events: [AMQ] :workflow/completed
-deactivate jobs
-
-events -> jobs: [AMQ] :workflow/completed
-
-activate jobs
-    group tx
-        jobs -> db: [SQL] INSERT INTO events
-        db -> jobs: [SQL] ResultSet<event-id>
-    end
-deactivate jobs
-
-events -> api: [AMQ] :workflow/completed
+events -> api: [MSG] :workflow/completed
 api -> user: [WS] workflow completed
 
 @enduml
