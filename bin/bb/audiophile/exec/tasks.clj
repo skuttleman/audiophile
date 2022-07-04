@@ -1,22 +1,16 @@
 (ns audiophile.exec.tasks
   (:require
     [audiophile.exec.shared :as shared]
-    [babashka.curl :as curl]
-    [cheshire.core :as cheshire]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.set :as set]
     [clojure.string :as string]))
 
 (defmethod shared/main* :build
-  [_ [mode & args]]
-  (if mode
-    (shared/build* mode args)
-    (doseq [mode (->> (methods shared/build*)
-                      keys
-                      (concat [:cljs :clj])
-                      distinct)]
-      (shared/build* mode nil)) ))
+  [_ args]
+  (shared/multi* shared/build* args (->> (methods shared/build*)
+                                         keys
+                                         (concat [:cljs :clj]))))
 
 (defmethod shared/build* :clj
   [_ _]
@@ -47,11 +41,8 @@
                                  "-m shadow.cljs.devtools.cli compile ui"))))
 
 (defmethod shared/main* :clean
-  [_ [mode & args]]
-  (if mode
-    (shared/clean* mode args)
-    (doseq [[mode] (methods shared/clean*)]
-      (shared/clean* mode nil))))
+  [_ args]
+  (shared/multi* shared/clean* args))
 
 (defmethod shared/clean* :clj
   [_ _]
@@ -82,18 +73,42 @@
       :else (recur (conj run arg) (rest args)))))
 
 (defmethod shared/main* :install
+  [_ args]
+  (shared/multi* shared/install* args))
+
+(defmethod shared/install* :repo
   [_ _]
   (shared/with-println [:repo "installing" "installed"]
     (shared/process! "cp bin/pre-commit.sh .git/hooks/pre-commit")
     (shared/process! "npm install")
     (shared/process! "clj -X:deps prep")))
 
+(defmethod shared/install* :kafka
+  [_ _]
+  (shared/with-println [:kafka "installing" "installed"]
+    (shared/process! "docker-compose up -d kafka")
+    (doseq [topic ["spigot-events" "spigot-tasks" "spigot-workflows"]]
+      (shared/silent! (-> "docker-compose exec -- kafka kafka-topics.sh"
+                          (shared/with-opts {:create             true
+                                             :topic              topic
+                                             :bootstrap-server   "127.0.0.1:9092"
+                                             :partitions         10
+                                             :replication-factor 1})
+                          (shared/process!))))))
+
+(defmethod shared/main* :stop
+  [_ args]
+  (shared/multi* shared/stop* args))
+
+(defmethod shared/stop* :app
+  [_ _]
+  (shared/with-println [:app "stopping" "stopped"]
+    (shared/process! "docker-compose stop app")
+    (shared/process! "docker-compose rm -fv")))
+
 (defmethod shared/main* :wipe
-  [_ [mode & args]]
-  (if mode
-    (shared/wipe* mode args)
-    (doseq [[mode] (methods shared/wipe*)]
-      (shared/wipe* mode nil))))
+  [_ args]
+  (shared/multi* shared/wipe* args))
 
 (defmethod shared/wipe* :psql
   [_ [db]]
@@ -128,16 +143,9 @@
 
 (defmethod shared/wipe* :kafka
   [_ _]
-  (shared/with-println [:kafka "recreating" "recreated"]
+  (shared/with-println [:kafka "deleting" "deleted"]
     (shared/process! "docker-compose stop kafka zookeeper app")
     (shared/process! "docker-compose rm -fv")
     (shared/silent! (shared/process! "docker volume rm audiophile_kafka_data"))
-    (shared/silent! (shared/process! "docker volume rm audiophile_zookeeper_data"))
-    (shared/process! "docker-compose up -d kafka")
-    (doseq [topic ["spigot-events" "spigot-tasks" "spigot-workflows"]]
-      (shared/process! (shared/with-opts "docker-compose exec -- kafka kafka-topics.sh"
-                                         {:create           true
-                                          :topic            topic
-                                          :bootstrap-server "127.0.0.1:9092"
-                                          :partitions 10
-                                          :replication-factor 1})))))
+    (shared/silent! (shared/process! "docker volume rm audiophile_zookeeper_data")))
+  (shared/install* :kafka nil))

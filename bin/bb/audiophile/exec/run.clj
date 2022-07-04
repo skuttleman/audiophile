@@ -18,14 +18,10 @@
                    (shared/with-default-env {})))
 
 (defmethod shared/main* :test
-  [_ [mode & args]]
-  (if mode
-    (shared/test* mode args)
-    (doseq [mode (->> (methods shared/test*)
-                      keys
-                      (concat [:clj :cljs])
-                      distinct)]
-      (shared/test* mode nil))))
+  [_ args]
+  (shared/multi* shared/test* args (->> (methods shared/test*)
+                                        keys
+                                        (concat [:clj :cljs]))))
 
 (defmethod shared/test* :clj
   [_ args]

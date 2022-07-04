@@ -10,9 +10,13 @@
 
 (defmulti clean* dispatch-fn)
 
+(defmulti install* dispatch-fn)
+
 (defmulti main* dispatch-fn)
 
 (defmulti run* dispatch-fn)
+
+(defmulti stop* dispatch-fn)
 
 (defmulti test* dispatch-fn)
 
@@ -57,3 +61,12 @@
             (str cmd " --" (name k) (when (and (some? v) (not (boolean? v))) (str " " v))))
           cmd
           opts))
+
+(defn multi*
+  ([multi-fn args]
+   (multi* multi-fn args (keys (methods multi-fn))))
+  ([multi-fn [mode & args] modes]
+   (if mode
+     (multi-fn mode args)
+     (doseq [mode (distinct modes)]
+       (multi-fn mode nil)))))
