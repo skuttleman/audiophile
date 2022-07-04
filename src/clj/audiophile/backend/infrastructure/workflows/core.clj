@@ -24,8 +24,8 @@
       (assoc :workflow/id workflow-id
              :workflow/template (:workflows/template data))))
 
-(deftype SpigotHandler [sys]
-  sp.pcon/ISpigotTaskHandler
+(deftype SpigotStatusHandler []
+  sp.pcon/ISpigotStatusHandler
   (on-error [this ctx ex]
     (log/with-ctx [this :WF]
       (log/error ex "workflow failed" ctx)
@@ -39,7 +39,16 @@
       (ps/generate-event workflow-id
                          :workflow/completed
                          (extract-result workflow-id workflow)
-                         ctx)))
+                         ctx))))
+
+(deftype SpigotHandler [sys status-handler]
+  sp.pcon/ISpigotStatusHandler
+  (on-error [_ ctx ex]
+    (sp.pcon/on-error status-handler ctx ex))
+  (on-complete [_ ctx workflow]
+    (sp.pcon/on-complete status-handler ctx workflow))
+
+  sp.pcon/ISpigotTaskHandler
   (process-task [this ctx task]
     (log/with-ctx [this :WF]
       (log/info "processing task" (select-keys task #{:spigot/id :spigot/tag}))
@@ -70,8 +79,11 @@
     (u/silent!
       (sp.kafka/stop! kafka-streams))))
 
-(defn handler [sys]
-  (->SpigotHandler sys))
+(defn handler [{:keys [status-handler sys]}]
+  (->SpigotHandler sys status-handler))
+
+(defn status-handler [_]
+  (->SpigotStatusHandler))
 
 (deftype SpigotKafkaConsumer [id ^Closeable client topic-cfg polling?]
   phttp/ICheckHealth

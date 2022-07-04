@@ -37,35 +37,37 @@
   :listener  #ig/ref :audiophile.services.kafka/ws-handler
   :topic-cfg #ig/ref :topics/events}
 
- :audiophile.workflows.kafka/handler
- {:repo      #ig/ref :services/transactor
-  :jwt-serde #ig/ref :serdes/jwt}
+ :audiophile.workflows.kafka/status-handler
+ {}
 
- [:duct/const :controller/opts]
- {:handler            #ig/ref :audiophile.workflows.kafka/handler
-  :event-topic-cfg    #ig/ref :topics/events
-  :task-topic-cfg     #ig/ref :topics/tasks
-  :workflow-topic-cfg #ig/ref :topics/workflows}
+ :audiophile.workflows.kafka/handler
+ {:sys {:repo      #ig/ref :services/transactor
+        :jwt-serde #ig/ref :serdes/jwt}
+  :status-handler #ig/ref :audiophile.workflows.kafka/status-handler}
 
  [:audiophile.workflows.kafka/controller :component/health :controller/tasks]
  {:cfg      {:application.id     #ig/ref :env.kafka.app-id/tasks
              :bootstrap.servers  #ig/ref :env.kafka/brokers
              :commit.interval.ms 1000}
-  :opts     #ig/ref :controller/opts
   :topology #ig/ref :audiophile.workflows.kafka.topology/tasks}
 
  [:audiophile.workflows.kafka/controller :component/health :controller/wf]
  {:cfg      {:application.id     #ig/ref :env.kafka.app-id/wf
              :bootstrap.servers  #ig/ref :env.kafka/brokers
              :commit.interval.ms 1000}
-  :opts     #ig/ref :controller/opts
   :topology #ig/ref :audiophile.workflows.kafka.topology/wf}
 
  :audiophile.workflows.kafka.topology/tasks
- #ig/ref :controller/opts
+ {:handler            #ig/ref :audiophile.workflows.kafka/handler
+  :event-topic-cfg    #ig/ref :topics/events
+  :task-topic-cfg     #ig/ref :topics/tasks
+  :workflow-topic-cfg #ig/ref :topics/workflows}
 
  :audiophile.workflows.kafka.topology/wf
- #ig/ref :controller/opts
+ {:handler            #ig/ref :audiophile.workflows.kafka/status-handler
+  :event-topic-cfg    #ig/ref :topics/events
+  :task-topic-cfg     #ig/ref :topics/tasks
+  :workflow-topic-cfg #ig/ref :topics/workflows}
 
  :audiophile.services.kafka/db-handler
  {:repo #ig/ref :services/transactor}

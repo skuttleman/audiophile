@@ -49,7 +49,7 @@
 
 (defn ->safe-handler [handler]
   (reify
-    sp.pcon/ISpigotTaskHandler
+    sp.pcon/ISpigotStatusHandler
     (on-complete [this ctx workflow]
       (try (sp.pcon/on-complete handler ctx workflow)
            (catch Throwable ex
@@ -58,6 +58,8 @@
       (try (sp.pcon/on-error handler ctx ex)
            (catch Throwable _
              nil)))
+
+    sp.pcon/ISpigotTaskHandler
     (process-task [_ ctx task]
       (sp.pcon/process-task handler ctx task))))
 

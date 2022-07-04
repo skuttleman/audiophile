@@ -54,6 +54,9 @@
 (defmethod ig/init-key :audiophile.workflows.kafka/handler [_ cfg]
   (wf/handler cfg))
 
+(defmethod ig/init-key :audiophile.workflows.kafka/status-handler [_ cfg]
+  (wf/status-handler cfg))
+
 (defmethod ig/init-key :audiophile.workflows.kafka.topology/tasks [_ cfg]
   (wf/task-topology cfg))
 
