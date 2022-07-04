@@ -89,9 +89,11 @@
 (deftest create!-test
   (testing "create!"
     (let [producer (ts/->chan)
-          repo (rprojects/->ProjectAccessor nil producer)
-          [user-id request-id] (repeatedly uuids/random)]
+          tx (ts/->tx)
+          repo (rprojects/->ProjectAccessor tx producer)
+          [request-id user-id workflow-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create! repo {:some :data} {:some       :opts
                                          :some/other :opts
                                          :user/id    user-id
@@ -105,5 +107,5 @@
                       params)
           (assert/is? {:user/id     user-id
                        :request/id  request-id
-                       :workflow/id uuid?}
+                       :workflow/id workflow-id}
                       ctx))))))

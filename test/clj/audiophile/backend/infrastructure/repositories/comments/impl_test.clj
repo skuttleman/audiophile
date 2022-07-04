@@ -71,9 +71,11 @@
 (deftest create!-test
   (testing "create!"
     (let [producer (ts/->chan)
-          repo (rcomments/->CommentAccessor nil producer)
-          [user-id request-id] (repeatedly uuids/random)]
+          tx (ts/->tx)
+          repo (rcomments/->CommentAccessor tx producer)
+          [request-id user-id workflow-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create! repo {:some :data} {:some       :opts
                                          :some/other :opts
                                          :user/id    user-id
@@ -85,7 +87,7 @@
                        :workflows/form     (peek (wf/load! :comments/create))
                        :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
                       params)
-          (assert/is? {:user/id    user-id
-                       :request/id request-id
-                       :workflow/id uuid?}
+          (assert/is? {:user/id     user-id
+                       :request/id  request-id
+                       :workflow/id workflow-id}
                       ctx))))))

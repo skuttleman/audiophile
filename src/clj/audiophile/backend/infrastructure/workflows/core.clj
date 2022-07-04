@@ -2,7 +2,6 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
-    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.backend.infrastructure.workflows.handlers :as wfh]
     [audiophile.common.core.utils.core :as u]
     [audiophile.common.core.utils.logger :as log]
@@ -11,19 +10,11 @@
     [audiophile.common.infrastructure.http.protocols :as phttp]
     [clojure.core.async :as async]
     [kinsky.client :as client*]
-    [spigot.context :as sp.ctx]
     [spigot.controllers.kafka.common :as sp.kcom]
     [spigot.controllers.kafka.core :as sp.kafka]
     [spigot.controllers.protocols :as sp.pcon])
   (:import
     (java.io Closeable)))
-
-(defn ^:private extract-result [workflow-id data]
-  (-> data
-      :workflows/->result
-      (sp.ctx/resolve-params (:ctx data))
-      (assoc :workflow/id workflow-id
-             :workflow/template (:workflows/template data))))
 
 (deftype SpigotStatusHandler []
   sp.pcon/ISpigotStatusHandler
@@ -33,14 +24,11 @@
       (let [data (maps/assoc-maybe {}
                                    :error/reason (ex-message ex)
                                    :error/details (ex-data ex))]
-        (wf/generate-event (:workflow/id ctx) :command/failed data ctx))))
+        (ps/generate-event (:workflow/id ctx) :command/failed data ctx))))
   (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
     (log/with-ctx [this :WF]
       (log/info "workflow succeeded" ctx)
-      (wf/generate-event workflow-id
-                         :workflow/completed
-                         (extract-result workflow-id workflow)
-                         ctx))))
+      (ps/generate-event workflow-id :workflow/completed workflow ctx))))
 
 (deftype SpigotHandler [sys status-handler]
   sp.pcon/ISpigotStatusHandler

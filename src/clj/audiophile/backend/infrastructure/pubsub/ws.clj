@@ -3,14 +3,14 @@
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.api.validations.selectors :as selectors]
-    [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [clojure.core.async :as async]
-    [immutant.web.async :as web.async])
+    [immutant.web.async :as web.async]
+    [spigot.context :as sp.ctx])
   (:import
     (org.projectodd.wunderboss.web.async Channel)))
 
@@ -82,6 +82,13 @@
       (catch Throwable ex
         (log/warn ex "web socket did not close successfully")))))
 
+(defn ^:private extract-result [data workflow-id]
+  (-> data
+      :workflows/->result
+      (sp.ctx/resolve-params (:ctx data))
+      (assoc :workflow/id workflow-id
+             :workflow/template (:workflows/template data))))
+
 (deftype WebSocketChannel [^Channel ch serde]
   pps/IChannel
   (open? [_]
@@ -115,11 +122,13 @@
       (merge (:headers request) (get-in request [:nav/route :params]))))
 
 (defn event-handler [{:keys [pubsub]}]
-  (fn [{{event-id :event/id :event/keys [ctx] :as event} :value}]
+  (fn [{{event-id :event/id :event/keys [ctx type] :as event} :value}]
     (log/with-ctx :CP
       (log/info "publishing event to ws" event-id)
       (ps/send-user! pubsub
-                     (or (:signup/id ctx) (:user/id ctx))
+                     (:user/id ctx)
                      event-id
-                     (dissoc event :event/ctx)
+                     (-> event
+                         (cond-> (= :workflow/completed type) (update :event/data extract-result (:workflow/id ctx)))
+                         (dissoc :event/ctx))
                      ctx))))

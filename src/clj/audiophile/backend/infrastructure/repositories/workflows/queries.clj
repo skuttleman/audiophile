@@ -8,21 +8,6 @@
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.maps :as maps]))
 
-(defn ^:private parse-data [row]
-  (maps/update-maybe row :workflow/data (partial serdes/deserialize serde/edn)))
-
-(defn ^:private select* [query executor]
-  (repos/execute! executor
-                  query
-                  {:result-xform (map parse-data)}))
-
-(defn select-for-update [executor id]
-  (-> tbl/workflows
-      (models/select* [:= :workflows.id id])
-      (assoc :for :update)
-      (select* executor)
-      colls/only!))
-
 (defn update-by-id! [executor id workflow]
   (repos/execute! executor
                   (-> tbl/workflows

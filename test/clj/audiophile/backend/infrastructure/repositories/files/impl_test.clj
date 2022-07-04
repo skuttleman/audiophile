@@ -17,11 +17,12 @@
 (deftest create-artifact-test
   (testing "create-artifact"
     (let [producer (ts/->chan)
+          tx (ts/->tx)
           store (ts/->store)
-          repo (rfiles/->FileAccessor nil store producer nil (constantly "key"))
-          [user-id request-id] (repeatedly uuids/random)]
+          repo (rfiles/->FileAccessor tx store producer nil (constantly "key"))
+          [request-id user-id workflow-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
-
+      (stubs/use! tx :execute! [{:id workflow-id}])
       (int/create-artifact! repo
                             {:some :data}
                             {:some       :opts
@@ -42,9 +43,9 @@
                        :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
                                              :artifact/filename (sp.ctx/get ?filename)}}
                       params)
-          (assert/is? {:user/id    user-id
-                       :request/id request-id
-                       :workflow/id uuid?}
+          (assert/is? {:user/id     user-id
+                       :request/id  request-id
+                       :workflow/id workflow-id}
                       ctx))))))
 
 (deftest query-many-test
@@ -225,9 +226,11 @@
 (deftest create-file-test
   (testing "create-file"
     (let [producer (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil producer nil nil)
-          [user-id request-id] (repeatedly uuids/random)]
+          tx (ts/->tx)
+          repo (rfiles/->FileAccessor tx nil producer nil nil)
+          [request-id user-id workflow-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create-file! repo {:some :data} {:some       :opts
                                               :some/other :opts
                                               :user/id    user-id
@@ -240,17 +243,19 @@
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
                                              :file/id         (sp.ctx/get ?file-id)}}
                       params)
-          (assert/is? {:user/id    user-id
-                       :request/id request-id
-                       :workflow/id uuid?}
+          (assert/is? {:user/id     user-id
+                       :request/id  request-id
+                       :workflow/id workflow-id}
                       ctx))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
     (let [producer (ts/->chan)
-          repo (rfiles/->FileAccessor nil nil producer nil nil)
-          [user-id request-id] (repeatedly uuids/random)]
+          tx (ts/->tx)
+          repo (rfiles/->FileAccessor tx nil producer nil nil)
+          [request-id user-id workflow-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create-file-version! repo
                                   {:some :data}
                                   {:some       :opts
@@ -264,7 +269,7 @@
                        :workflows/form     (peek (wf/load! :versions/create))
                        :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
                       params)
-          (assert/is? {:user/id    user-id
-                       :request/id request-id
-                       :workflow/id uuid?}
+          (assert/is? {:user/id     user-id
+                       :request/id  request-id
+                       :workflow/id workflow-id}
                       ctx))))))
