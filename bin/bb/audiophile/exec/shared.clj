@@ -10,11 +10,13 @@
 
 (defmulti clean* dispatch-fn)
 
+(defmulti install* dispatch-fn)
+
 (defmulti main* dispatch-fn)
 
-(defmulti rabbit* dispatch-fn)
-
 (defmulti run* dispatch-fn)
+
+(defmulti stop* dispatch-fn)
 
 (defmulti test* dispatch-fn)
 
@@ -32,8 +34,8 @@
   ([command env]
    (-> ["sh" "-c" command]
        (p/process {:extra-env env
-                   :inherit true
-                   :shutdown p/destroy-tree})
+                   :inherit   true
+                   :shutdown  p/destroy-tree})
        p/check)))
 
 (defn clj
@@ -49,3 +51,22 @@
      (println [~-ing k# "…"])
      ~@body
      (println ["…" k# ~-ed])))
+
+(defmacro silent! [& body]
+  `(try ~@body
+        (catch Throwable _)))
+
+(defn with-opts [cmd opts]
+  (reduce (fn [cmd [k v]]
+            (str cmd " --" (name k) (when (and (some? v) (not (boolean? v))) (str " " v))))
+          cmd
+          opts))
+
+(defn multi*
+  ([multi-fn args]
+   (multi* multi-fn args (keys (methods multi-fn))))
+  ([multi-fn [mode & args] modes]
+   (if mode
+     (multi-fn mode args)
+     (doseq [mode (distinct modes)]
+       (multi-fn mode nil)))))

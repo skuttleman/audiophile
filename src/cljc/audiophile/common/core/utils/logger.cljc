@@ -14,7 +14,7 @@
 (def ^:dynamic *ctx* nil)
 
 (defn ^:private log* [form level args]
-  `(when-not (:disabled? *ctx*) ;; TBD - ctx
+  `(when-not (:disabled? *ctx*)
      (log*/log! ~level :p ~args {:?line ~(:line (meta form))})))
 
 (defn spy* [form level expr f separator]
@@ -89,7 +89,7 @@
 
 (defn ^:private filter-external-packages [{:keys [level ?ns-str] :as data}]
   (when (or (#{:warn :error :fatal :report} level)
-            (some-> ?ns-str (string/starts-with? "audiophile")))
+            (some->> ?ns-str (re-matches #"^(audiophile|spigot).*")))
     data))
 
 (defn ^:private output-fn [{:keys [level ?err msg_ ?ns-str ?file timestamp_ ?line]}]

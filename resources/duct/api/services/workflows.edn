@@ -1,0 +1,76 @@
+{[:duct/const :workflows/producer]
+ #ig/ref :audiophile.workflows.kafka/producer
+
+ [:duct/const :workflows/consumer#db]
+ #ig/ref [:audiophile.workflows.kafka/consumer :consumers/db]
+
+ [:duct/const :workflows/consumer#ws]
+ #ig/ref [:audiophile.workflows.kafka/consumer :consumers/ws]
+
+ [:duct/const :workflows/controller#tasks]
+ #ig/ref [:audiophile.workflows.kafka/controller :controller/tasks]
+
+ [:duct/const :workflows/controller#wf]
+ #ig/ref [:audiophile.workflows.kafka/controller :controller/wf]
+
+ [:audiophile.workflows.kafka/topic-cfg :topics/events]
+ {:name #ig/ref :env.kafka.topic/events}
+
+ [:audiophile.workflows.kafka/topic-cfg :topics/workflows]
+ {:name #ig/ref :env.kafka.topic/workflows}
+
+ [:audiophile.workflows.kafka/topic-cfg :topics/tasks]
+ {:name #ig/ref :env.kafka.topic/tasks}
+
+ :audiophile.workflows.kafka/producer
+ {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
+  :topic-cfg #ig/ref :topics/workflows}
+
+ [:audiophile.workflows.kafka/consumer :component/health :consumers/db]
+ {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers
+              :group.id          #ig/ref :env.kafka/db-consumer-id}
+  :listener  #ig/ref :audiophile.services.kafka/db-handler
+  :topic-cfg #ig/ref :topics/events}
+
+ [:audiophile.workflows.kafka/consumer :component/health :consumers/ws]
+ {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
+  :listener  #ig/ref :audiophile.services.kafka/ws-handler
+  :topic-cfg #ig/ref :topics/events}
+
+ :audiophile.workflows.kafka/status-handler
+ {}
+
+ :audiophile.workflows.kafka/handler
+ {:sys {:repo      #ig/ref :services/transactor
+        :jwt-serde #ig/ref :serdes/jwt}
+  :status-handler #ig/ref :audiophile.workflows.kafka/status-handler}
+
+ [:audiophile.workflows.kafka/controller :component/health :controller/tasks]
+ {:cfg      {:application.id     #ig/ref :env.kafka.app-id/tasks
+             :bootstrap.servers  #ig/ref :env.kafka/brokers
+             :commit.interval.ms 1000}
+  :topology #ig/ref :audiophile.workflows.kafka.topology/tasks}
+
+ [:audiophile.workflows.kafka/controller :component/health :controller/wf]
+ {:cfg      {:application.id     #ig/ref :env.kafka.app-id/wf
+             :bootstrap.servers  #ig/ref :env.kafka/brokers
+             :commit.interval.ms 1000}
+  :topology #ig/ref :audiophile.workflows.kafka.topology/wf}
+
+ :audiophile.workflows.kafka.topology/tasks
+ {:handler            #ig/ref :audiophile.workflows.kafka/handler
+  :event-topic-cfg    #ig/ref :topics/events
+  :task-topic-cfg     #ig/ref :topics/tasks
+  :workflow-topic-cfg #ig/ref :topics/workflows}
+
+ :audiophile.workflows.kafka.topology/wf
+ {:handler            #ig/ref :audiophile.workflows.kafka/status-handler
+  :event-topic-cfg    #ig/ref :topics/events
+  :task-topic-cfg     #ig/ref :topics/tasks
+  :workflow-topic-cfg #ig/ref :topics/workflows}
+
+ :audiophile.services.kafka/db-handler
+ {:repo #ig/ref :services/transactor}
+
+ :audiophile.services.kafka/ws-handler
+ {:pubsub #ig/ref :services/pubsub}}

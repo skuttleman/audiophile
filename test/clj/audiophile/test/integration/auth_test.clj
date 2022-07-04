@@ -133,7 +133,7 @@
                         :user/mobile-number "1234567890"
                         :user/first-name    "Bluff"
                         :user/last-name     "Tuffington"
-                        :user/handle        "thebluffster"}
+                        :user/handle        "guyincognito"}
                 response (-> signup
                              (dissoc :user/id :user/email)
                              ihttp/body-data
@@ -142,5 +142,6 @@
                              (ihttp/as-async system handler))]
             (testing "returns an error"
               (is (http/client-error? response))
-              (is (= :user/create!
-                     (get-in response [:body :data :error/command]))))))))))
+              (assert/is? {:conflicts {:user/email         "new@user.com"
+                                       :user/mobile-number "1234567890"}}
+                          (get-in response [:body :data :error/details])))))))))

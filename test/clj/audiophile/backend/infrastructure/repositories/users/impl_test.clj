@@ -7,14 +7,14 @@
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
     [audiophile.test.utils.assertions :as assert]
-    [audiophile.test.utils.repositories :as trepos]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
-    [clojure.test :refer [are deftest is testing]]))
+    [clojure.test :refer [are deftest is testing]]
+    [spigot.controllers.kafka.topologies :as sp.ktop]))
 
 (deftest query-by-email-test
   (testing "query-by-email"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (ts/->tx)
           repo (rusers/->UserAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying for a user"
@@ -42,7 +42,7 @@
 
 (deftest query-by-id-test
   (testing "query-by-id"
-    (let [tx (trepos/stub-transactor)
+    (let [tx (ts/->tx)
           repo (rusers/->UserAccessor tx nil)
           user-id (uuids/random)]
       (testing "when querying for a user"
@@ -74,10 +74,12 @@
 
 (deftest create!-test
   (testing "create!"
-    (let [ch (ts/->chan)
-          repo (rusers/->UserAccessor nil ch)
-          user-id (uuids/random)]
+    (let [producer (ts/->chan)
+          tx (ts/->tx)
+          repo (rusers/->UserAccessor tx producer)
+          [user-id workflow-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create! repo
                      {:user/handle        "handle"
                       :user/email         "email"
@@ -85,7 +87,8 @@
                       :user/last-name     "last"
                       :user/mobile-number "mobile"}
                      {:user/id user-id})
-        (let [{:command/keys [data] :as command} (ffirst (stubs/calls ch :send!))]
+        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
+          (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      '{?handle        "handle"
                                              ?email         "email"
                                              ?first-name    "first"
@@ -93,9 +96,9 @@
                                              ?mobile-number "mobile"}
                        :workflows/template :users/signup
                        :workflows/form     (peek (wf/load! :users/signup))
-                       :workflows/->result {:login/token '(sp.ctx/get ?token)}}
-                      data)
-          (assert/is? {:command/id   uuid?
-                       :command/type :workflow/create!
-                       :command/ctx  {:user/id user-id}}
-                      command))))))
+                       :workflows/->result '{:user/id     (sp.ctx/get ?user-id)
+                                             :login/token (sp.ctx/get ?token)}}
+                      params)
+          (assert/is? {:user/id     user-id
+                       :workflow/id workflow-id}
+                      ctx))))))

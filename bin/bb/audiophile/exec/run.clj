@@ -18,25 +18,19 @@
                    (shared/with-default-env {})))
 
 (defmethod shared/main* :test
-  [_ [mode & args]]
-  (if mode
-    (shared/test* mode args)
-    (doseq [mode (->> (methods shared/test*)
-                      keys
-                      (concat [:clj :cljs])
-                      distinct)]
-      (shared/test* mode nil))))
+  [_ args]
+  (shared/multi* shared/test* args (->> (methods shared/test*)
+                                        keys
+                                        (concat [:clj :cljs]))))
 
 (defmethod shared/test* :clj
   [_ args]
-  (try (shared/process! "docker-compose up -d rabbitmq postgres")
-       (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
-                                    "-m shadow.cljs.devtools.cli compile web-test"))
-       (shared/process! (shared/clj #{:dev :test} (str "-m kaocha.runner"
-                                                       (when (seq args)
-                                                         (str " " (string/join " " args))))))
-       (finally
-         (shared/main* :wipe ["rabbit" "all" "test"]))))
+  (shared/process! "docker-compose up -d postgres")
+  (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
+                               "-m shadow.cljs.devtools.cli compile web-test"))
+  (shared/process! (shared/clj #{:dev :test} (str "-m kaocha.runner"
+                                                  (when (seq args)
+                                                    (str " " (string/join " " args)))))))
 
 (defmethod shared/test* :cljs
   [_ _]

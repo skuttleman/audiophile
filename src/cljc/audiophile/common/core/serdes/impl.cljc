@@ -41,14 +41,13 @@
    (edn#deserialize value nil))
   ([value opts]
    (let [opts (or opts {})]
-     (u/silent!
-       (cond
-         (nil? value) nil
-         (string? value) (edn*/read-string opts value)
-         #?@(:clj [(or (instance? InputStream value)
-                       (instance? URL value))
-                   (some->> value io/reader PushbackReader. (edn*/read opts))])
-         :else (edn*/read opts value))))))
+     (cond
+       (nil? value) nil
+       (string? value) (edn*/read-string opts value)
+       #?@(:clj [(or (instance? InputStream value)
+                     (instance? URL value))
+                 (some->> value io/reader PushbackReader. (edn*/read opts))])
+       :else (edn*/read opts value)))))
 
 (def edn
   (reify
@@ -73,16 +72,15 @@
                (trans/write value))))
 
 (defn ^:private transit#deserialize [value]
-  (u/silent!
-    #?(:clj  (-> value
-                 (cond->
-                   (not (instance? InputStream value))
-                   (-> .getBytes ByteArrayInputStream.))
-                 (trans/reader :json)
-                 trans/read)
-       :cljs (-> :json
-                 trans/reader
-                 (trans/read value)))))
+  #?(:clj  (-> value
+               (cond->
+                 (not (instance? InputStream value))
+                 (-> .getBytes ByteArrayInputStream.))
+               (trans/reader :json)
+               trans/read)
+     :cljs (-> :json
+               trans/reader
+               (trans/read value))))
 
 (def transit
   (reify
@@ -168,13 +166,12 @@
                 (jwt*/sign secret)))))
     (deserialize [_ token opts]
       #?(:clj
-          (u/silent!
-            (when-let [value (some-> token (jwt*/unsign secret))]
-              (-> value
-                  (dissoc :data)
-                  (maps/update-maybe :aud (partial into #{} (map keyword)))
-                  (maps/qualify :jwt)
-                  (merge (pserdes/deserialize transit (:data value) opts)))))))))
+          (when-let [value (some-> token (jwt*/unsign secret))]
+            (-> value
+                (dissoc :data)
+                (maps/update-maybe :aud (partial into #{} (map keyword)))
+                (maps/qualify :jwt)
+                (merge (pserdes/deserialize transit (:data value) opts))))))))
 
 (def serdes
   (maps/->m [:default edn] edn json transit urlencode))

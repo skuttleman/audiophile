@@ -1,6 +1,9 @@
 (ns audiophile.backend.infrastructure.repositories.common
   (:require
+    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.infrastructure.repositories.protocols :as prepos]
+    [audiophile.backend.infrastructure.repositories.workflows.queries :as qworkflows]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.logger :as log]))
@@ -29,3 +32,8 @@
   "Constructor for [[KVStore]] used to store and retrieve binary objects."
   [{:keys [client stream-serde]}]
   (->KVStore client stream-serde))
+
+(defn start-workflow! [executor producer template ctx opts]
+  (let [wf (wf/workflow-spec template ctx)
+        workflow-id (qworkflows/create! executor wf)]
+    (ps/send-workflow! producer workflow-id wf opts)))

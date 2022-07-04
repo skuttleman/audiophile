@@ -26,8 +26,6 @@ $ bb go install
 
 ```bash
 $ bb go run # runs the entire server side api in a single process
-$ bb go run split # runs the server side api as separate microservices
-$ bb go run multi # runs multiple instances of each microservice
 $ bb go run jar # builds static assets and run a pre-compiled jar without any dev-only implementations
 ```
 

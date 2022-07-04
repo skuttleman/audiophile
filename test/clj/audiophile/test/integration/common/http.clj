@@ -102,16 +102,19 @@
 (defn with-serde [handler serde]
   (let [mime-type (serdes/mime-type serde)]
     (fn [{:keys [websocket?] :as request}]
-      (-> request
-          (cond->
-            (not websocket?)
-            (-> (update :headers assoc :content-type mime-type :accept mime-type)
-                (maps/update-maybe :body (partial serdes/serialize serde)))
+      (let [response (-> request
+                         (cond->
+                           (not websocket?)
+                           (-> (update :headers assoc :content-type mime-type :accept mime-type)
+                               (maps/update-maybe :body (partial serdes/serialize serde)))
 
-            websocket?
-            (assoc :query-string (uri/join-query {:content-type mime-type
-                                                  :accept       mime-type})))
-          handler
-          (cond->
-            (not (:websocket? request))
-            (maps/update-maybe :body (partial serdes/deserialize serde)))))))
+                           websocket?
+                           (assoc :query-string (uri/join-query {:content-type mime-type
+                                                                 :accept       mime-type})))
+                         handler)]
+        (cond-> response
+          (= "" (:body response))
+          (dissoc :body)
+
+          (not (:websocket? request))
+          (maps/update-maybe :body (partial serdes/deserialize serde)))))))

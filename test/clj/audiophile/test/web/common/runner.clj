@@ -9,7 +9,6 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    audiophile.backend.dev.accessors
     audiophile.backend.dev.handler
     audiophile.backend.infrastructure.system.core)
   (:import
@@ -18,11 +17,8 @@
 (defn ^:private with-test-cfg [cfg]
   (let [port (with-open [server (ServerSocket. 0)]
                (.getLocalPort server))
-        base-url (str "http://localhost:" port)
-        ns (string/replace (str "test." (uuids/random)) #"-" "")]
+        base-url (str "http://localhost:" port)]
     (assoc cfg
-           "MQ_NAMESPACE" ns
-           "MQ_CONSUMER_GROUP" "web"
            "PORT" (str port)
            "API_BASE_URL" base-url
            "AUTH_BASE_URL" base-url
@@ -39,14 +35,16 @@
         (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
                   #{(ig/ref :routes/table#api)
                     (ig/ref :routes/table#auth)
-                    (ig/ref :routes/table#jobs)
-                    (ig/ref :routes/table#ui)})
+                    (ig/ref :routes/table#tasks)
+                    (ig/ref :routes/table#ui)
+                    (ig/ref :routes/table#wf)})
         (duct/prep-config [:duct.profile/base :duct.profile/dev :duct.profile/test])
         (ig/init [:duct/daemon
                   :routes/daemon#api
                   :routes/daemon#auth
-                  :routes/daemon#jobs
-                  :routes/daemon#ui]))))
+                  :routes/daemon#tasks
+                  :routes/daemon#ui
+                  :routes/daemon#wf]))))
 
 (defn wrap-run [run]
   (fn [{:kaocha.testable/keys [id] :as testable} plan]

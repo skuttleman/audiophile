@@ -1,8 +1,5 @@
 (ns audiophile.test.integration.common.components
   (:require
-    [clojure.core.async :as async]
-    [clojure.core.async.impl.protocols :as async.protocols]
-    [clojure.string :as string]
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.dev.migrations :as mig]
@@ -13,15 +10,21 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.http.core :as http]
+    [clojure.core.async :as async]
+    [clojure.core.async.impl.protocols :as async.protocols]
+    [clojure.string :as string]
     [hikari-cp.core :as hikari]
     [integrant.core :as ig]
     [next.jdbc :as jdbc]
-    [next.jdbc.protocols :as pjdbc])
+    [next.jdbc.protocols :as pjdbc]
+    [spigot.controllers.kafka.common :as sp.kcom]
+    [spigot.controllers.kafka.core :as sp.kafka])
   (:import
     (java.io Closeable)
     (java.sql Timestamp)
     (javax.sql DataSource)
-    (org.projectodd.wunderboss.web.async Channel)))
+    (org.projectodd.wunderboss.web.async Channel)
+    (org.apache.kafka.streams TestInputTopic TestOutputTopic TopologyTestDriver)))
 
 (defn migrate! [datasource]
   (mig/migrate! (mig/create-migrator datasource)))
@@ -96,40 +99,45 @@
 (defmethod ig/halt-key! :audiophile.test/datasource [_ datasource]
   (.close datasource))
 
-(defmethod ig/init-key :audiophile.test/rabbitmq#conn [_ _]
-  (let [chs (atom nil)]
-    (reify
-      pps/IMQConnection
-      (chan [_ {:keys [name]}]
-        (swap! chs (fn [m]
-                     (let [[ch tap] (or (get m name)
-                                        (let [ch (async/chan 100)]
-                                          [ch (async/mult ch)]))]
-                       (assoc m name [ch tap]))))
-        (reify
-          pps/IMQChannel
-          (subscribe! [_ handler _]
-            (let [mq-ch (async/tap (second (get @chs name))
-                                   (async/chan))]
-              (async/go-loop []
-                (when-let [msg (async/<! mq-ch)]
-                  (when (int/handle? handler msg)
-                    (int/handle! handler msg))
-                  (recur)))))
+(defmethod ig/init-key :audiophile.test/kafka#test-driver
+  [_ {:keys [event-topic-cfg workflow-topic-cfg] :as opts}]
+  (let [driver (-> (sp.kafka/default-builder)
+                   (sp.kafka/with-wf-topology opts)
+                   (sp.kafka/with-task-topology opts)
+                   .build
+                   (TopologyTestDriver. (sp.kcom/->props {:application.id    (str (uuids/random))
+                                                          :bootstrap.servers "fake"})))]
+    {:driver driver
+     :events (.createOutputTopic driver
+                                 (:name event-topic-cfg)
+                                 (.deserializer (:key-serde workflow-topic-cfg))
+                                 (.deserializer (:val-serde workflow-topic-cfg)))
+     :workflows (.createInputTopic driver
+                                   (:name workflow-topic-cfg)
+                                   (.serializer (:key-serde workflow-topic-cfg))
+                                   (.serializer (:val-serde workflow-topic-cfg)))}))
 
-          pps/IChannel
-          (open? [_]
-            (let [ch (first (get @chs name))]
-              (not (async.protocols/closed? ch))))
-          (send! [_ msg]
-            (let [ch (first (get @chs name))]
-              (async/go
-                (async/>! ch msg))))
-          (close! [_])))
+(defmethod ig/halt-key! :audiophile.test/kafka#test-driver
+  [_ {:keys [^Closeable driver]}]
+  (.close driver))
 
-      Closeable
-      (close [_]
-        (run! async/close! (map first (vals @chs)))))))
+(defmethod ig/init-key :audiophile.test/kafka#consumer
+  [_ {{:keys [^TestOutputTopic events]} :test-driver :keys [listeners]}]
+  (let [poll? (volatile! true)]
+    (async/go-loop []
+      (doseq [event (.readValuesToList events)
+              listener listeners]
+        (listener {:value event}))
+      (async/<! (async/timeout 100))
+      (when @poll?
+        (recur)))
+    poll?))
 
-(defmethod ig/halt-key! :audiophile.test/rabbitmq#conn [_ conn]
-  (.close ^Closeable conn))
+(defmethod ig/halt-key! :audiophile.test/kafka#consumer [_ poll?]
+  (vreset! poll? false))
+
+(defmethod ig/init-key :audiophile.test/kafka#producer
+  [_ {{:keys [^TestInputTopic workflows]} :test-driver}]
+  (reify pps/IChannel
+    (send! [_ {:keys [key value]}]
+      (.pipeInput workflows key value))))

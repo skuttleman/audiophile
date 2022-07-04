@@ -10,7 +10,6 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    audiophile.backend.dev.accessors
     audiophile.backend.dev.handler
     audiophile.backend.infrastructure.system.core
     audiophile.test.integration.common.components))
@@ -24,7 +23,8 @@
         (assoc-in [:duct.profile/base [:duct.custom/merge :routes/table]]
                   #{(ig/ref :routes/table#api)
                     (ig/ref :routes/table#auth)
-                    (ig/ref :routes/table#jobs)})
+                    (ig/ref :routes/table#tasks)
+                    (ig/ref :routes/table#wf)})
         (duct/prep-config [:duct.profile/base :duct.profile/dev :duct.profile/test]))))
 
 (defn ^:private mocked-cfg
@@ -58,7 +58,8 @@
 (defmacro with-config [[sym keys f & f-args] & body]
   (let [keys (into keys #{:routes/daemon#api
                           :routes/daemon#auth
-                          :routes/daemon#jobs})
+                          :routes/daemon#tasks
+                          :routes/daemon#wf})
          opts (meta sym)]
     `(let [cfg# (~mocked-cfg ~config-base ~opts)
            system# (-> cfg#

@@ -1,13 +1,12 @@
 (ns audiophile.backend.infrastructure.http.resources
   (:require
-    [clojure.string :as string]
     [audiophile.backend.infrastructure.http.core :as handlers]
     [audiophile.backend.infrastructure.http.ring :as ring]
     [audiophile.backend.infrastructure.templates.html :as html]
-    [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
-    [audiophile.common.infrastructure.http.core :as http]))
+    [audiophile.common.infrastructure.http.core :as http]
+    [clojure.string :as string]))
 
 (defn assets
   "Ring handler that returns public/static assets."
@@ -21,6 +20,10 @@
                         (string/ends-with? uri ".css") "text/css"
                         :else "text/plain")))))
 
+(defn ^:private health-data [component]
+  (maps/assoc-maybe {:health/healthy? (handlers/healthy? component)}
+                    :health/details (handlers/details component)))
+
 (defn health
   "Ring handler for communicating the health of the system."
   [{:keys [components]}]
@@ -29,11 +32,7 @@
   (fn [_]
     (log/with-ctx :HEALTH
       (let [result (into {}
-                         (map (juxt handlers/display-name
-                                    (fn [component]
-                                      (-> component
-                                          handlers/details
-                                          (assoc :health/healthy? (handlers/healthy? component))))))
+                         (map (juxt handlers/display-name health-data))
                          components)
             [status log-level] (if (every? :health/healthy? (vals result))
                                  [::http/ok :debug]
