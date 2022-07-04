@@ -30,8 +30,14 @@
 (defmethod ig/init-key :audiophile.services.kafka/ws-handler [_ cfg]
   (ws/event-handler cfg))
 
-(defmethod ig/init-key :audiophile.workflows.kafka/consumer [_ cfg]
-  (wf/consumer cfg))
+(defmethod ig/init-key :audiophile.workflows.kafka/consumer [key cfg]
+  (let [id (if (vector? key)
+             (or (->> key
+                      (filter (comp #{"consumers"} namespace))
+                      first)
+                 (peek key))
+             key)]
+    (wf/consumer (assoc cfg :id id))))
 
 (defmethod ig/halt-key! :audiophile.workflows.kafka/consumer [_ consumer]
   (wf/consumer#close consumer))

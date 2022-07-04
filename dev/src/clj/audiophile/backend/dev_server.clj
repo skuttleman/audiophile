@@ -51,8 +51,4 @@
   (alter-var-root #'system (fn [sys]
                              (some-> system ig/halt!)
                              nil))
-  (reset-system! #{"api" "auth" "jobs" "ui"})
-  (reset-system! #{"api"})
-  (reset-system! #{"auth"})
-  (reset-system! #{"jobs"})
-  (reset-system! #{"ui"}))
+  (reset-system! #{"api" "auth" "jobs" "ui"}))

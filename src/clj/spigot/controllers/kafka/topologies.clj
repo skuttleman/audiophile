@@ -8,24 +8,25 @@
 
 (defn ^:private workflow-aggregator [agg [_ [tag params ctx]]]
   (case tag
-    ::create! [(merge (sp/plan (:workflows/form params)
-                               {:ctx (:workflows/ctx params)})
-                      (dissoc params :workflows/form :workflows/ctx))
-               ctx]
-    ::next! [params ctx]
-    ::result (update agg 0 sp/finish (:spigot/id params) (:spigot/result params))
-    agg))
+    ::create! (let [[wf tasks] (-> (:workflows/form params)
+                                   (sp/plan {:ctx (:workflows/ctx params)})
+                                   (merge (dissoc params :workflows/form :workflows/ctx))
+                                   sp/next-sync)]
+                [wf ctx tasks])
+    ::result (let [[[wf tasks] ctx'] (-> agg
+                                         (update 0 sp/finish (:spigot/id params) (:spigot/result params))
+                                         (update 0 sp/next-sync))]
+               [wf ctx' tasks])
+    (do (println "HUH?" tag)
+        agg)))
 
-(defn ^:private workflow-flat-mapper [handler [k [wf ctx]]]
+(defn ^:private workflow-flat-mapper [handler [_ [wf ctx tasks]]]
   (if (sp/finished? wf)
     (when-let [event (sp.pcon/on-complete handler ctx wf)]
       [[(:workflow/id ctx) [::event event]]])
-    (let [[next-wf tasks] (sp/next-sync wf)]
-      (when (or (seq tasks) (not= wf next-wf))
-        (cons [k [::workflow [::next! next-wf ctx]]]
-              (map (fn [{:spigot/keys [id] :as task}]
-                     [id [::task {:task task :ctx ctx}]])
-                   tasks))))))
+    (map (fn [{:spigot/keys [id] :as task}]
+           [id [::task {:task task :ctx ctx}]])
+         tasks)))
 
 (defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task]}]]
   (let [[result ex] (try [(sp.pcon/process-task handler ctx task)]
@@ -61,10 +62,6 @@
                    (sp.ks/aggregate (constantly nil) workflow-aggregator workflow-topic-cfg)
                    .toStream
                    (sp.ks/flat-map (partial workflow-flat-mapper handler)))]
-    (-> stream
-        (sp.ks/filter (comp #{::workflow} first second))
-        (sp.ks/map-values second)
-        (sp.ks/to workflow-topic-cfg))
     (-> stream
         (sp.ks/filter (comp #{::task} first second))
         (sp.ks/map-values second)

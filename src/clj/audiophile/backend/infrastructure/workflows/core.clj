@@ -15,8 +15,7 @@
     [spigot.controllers.kafka.core :as sp.kafka]
     [spigot.controllers.protocols :as sp.pcon])
   (:import
-    (java.io Closeable)
-    (org.apache.kafka.streams KafkaStreams KafkaStreams$State)))
+    (java.io Closeable)))
 
 (defn ^:private extract-result [workflow-id data]
   (-> data
@@ -57,15 +56,12 @@
       (set! open? false)
       (.close ^Closeable @kinsky-producer))))
 
-(deftype SpigotKafkaController [^KafkaStreams kafka-streams]
+(deftype SpigotKafkaController [kafka-streams]
   phttp/ICheckHealth
   (display-name [_]
     ::SpigotKafkaController)
   (healthy? [_]
-    (contains? #{KafkaStreams$State/CREATED
-                 KafkaStreams$State/REBALANCING
-                 KafkaStreams$State/RUNNING}
-               (.state kafka-streams)))
+    (sp.kafka/running? kafka-streams))
   (details [_]
     nil)
 
@@ -77,10 +73,10 @@
 (defn handler [sys]
   (->SpigotHandler sys))
 
-(deftype SpigotKafkaConsumer [^Closeable client topic-cfg polling?]
+(deftype SpigotKafkaConsumer [id ^Closeable client topic-cfg polling?]
   phttp/ICheckHealth
   (display-name [_]
-    ::SpigotKafkaConsumer)
+    [::SpigotKafkaConsumer id])
   (healthy? [_]
     @polling?)
   (details [_]
@@ -91,7 +87,7 @@
     (vreset! polling? false)
     (u/silent! (.close client))))
 
-(defn consumer [{:keys [cfg listener timeout topic-cfg]}]
+(defn consumer [{:keys [cfg id listener timeout topic-cfg]}]
   (let [cfg (maps/assoc-defaults cfg :group.id (str (uuids/random)))
         client (client*/consumer cfg
                                  (.deserializer (:key-serde topic-cfg))
@@ -109,7 +105,7 @@
                (vreset! polling? false)))
         (async/<! (async/timeout 100))
         (recur)))
-    (->SpigotKafkaConsumer @client topic-cfg polling?)))
+    (->SpigotKafkaConsumer id @client topic-cfg polling?)))
 
 (defn consumer#close [^Closeable client]
   (.close client))
@@ -128,7 +124,8 @@
   (merge cfg (sp.kcom/->topic-cfg name)))
 
 (defn wf-controller [{:keys [cfg] :as opts}]
-  (->SpigotKafkaController (sp.kafka/start! cfg opts)))
+  (let [ks (sp.kafka/start! cfg opts)]
+    (->SpigotKafkaController ks)))
 
 (defn wf-controller#close [^Closeable controller]
   (.close controller))

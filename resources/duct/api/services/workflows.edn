@@ -23,13 +23,13 @@
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
   :topic-cfg #ig/ref :topics/workflows}
 
- [:audiophile.workflows.kafka/consumer :consumers/db :component/health]
+ [:audiophile.workflows.kafka/consumer :component/health :consumers/db]
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers
               :group.id          #ig/ref :env.kafka/db-consumer-id}
   :listener  #ig/ref :audiophile.services.kafka/db-handler
   :topic-cfg #ig/ref :topics/events}
 
- [:audiophile.workflows.kafka/consumer :consumers/ws :component/health]
+ [:audiophile.workflows.kafka/consumer :component/health :consumers/ws]
  {:cfg       {:bootstrap.servers #ig/ref :env.kafka/brokers}
   :listener  #ig/ref :audiophile.services.kafka/ws-handler
   :topic-cfg #ig/ref :topics/events}
