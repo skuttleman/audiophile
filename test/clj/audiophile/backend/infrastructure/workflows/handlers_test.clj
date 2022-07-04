@@ -1,15 +1,15 @@
-(ns audiophile.backend.infrastructure.workflows.handlers-test
+(ns ^:unit audiophile.backend.infrastructure.workflows.handlers-test
   (:require
-    [audiophile.backend.api.pubsub.core :as ps]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.backend.infrastructure.workflows.handlers :as wfh]
+    [audiophile.common.core.serdes.protocols :as pserdes]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
     [spigot.core :as sp]
-    [spigot.core.utils :as spu]
-    [audiophile.common.core.serdes.protocols :as pserdes]))
+    [spigot.core.utils :as spu]))
 
 (defn ^:private ->query-fn [spec]
   (fn [query _]
@@ -25,7 +25,7 @@
   (let [wf-sym (gensym "wf")
         sys-sym (gensym "sys")]
     `(let [tx# (ts/->tx)
-           spec# (ps/workflow-spec ~template ~ctx)
+           spec# (wf/workflow-spec ~template ~ctx)
            ~sys-sym (assoc ~sys :repo tx#)
            ~wf-sym (sp/plan (:workflows/form spec#) {:ctx (:workflows/ctx spec#)})]
        (testing "when the workflow succeeds"

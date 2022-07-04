@@ -1,10 +1,10 @@
 (ns audiophile.backend.infrastructure.repositories.users.impl
   (:refer-clojure :exclude [accessor])
   (:require
-    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.users.queries :as qusers]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]))
 
 (defmulti ^:private find-by (fn [_ {:user/keys [email id]}]
@@ -32,7 +32,7 @@
   (query-one [_ opts]
     (user-accessor#query-one repo opts))
   (create! [_ data opts]
-    (ps/start-workflow! producer :users/signup data opts)))
+    (wf/start-workflow! producer :users/signup data opts)))
 
 (defn accessor
   "Constructor for [[UserAccessor]] which provides semantic access for storing and retrieving users."

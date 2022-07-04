@@ -1,10 +1,10 @@
 (ns audiophile.backend.infrastructure.repositories.files.impl
   (:refer-clojure :exclude [accessor])
   (:require
+    [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.files.queries :as qfiles]
-    [audiophile.backend.domain.interactors.protocols :as pint]
-    [audiophile.backend.api.pubsub.core :as ps]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]))
 
@@ -19,7 +19,7 @@
         data (assoc data :artifact/uri uri :artifact/key key)
         payload (dissoc data :artifact/tempfile)]
     (repos/put! store key data opts)
-    (ps/start-workflow! producer :artifacts/create payload opts)))
+    (wf/start-workflow! producer :artifacts/create payload opts)))
 
 (deftype FileAccessor [repo store producer pubsub keygen]
   pint/IAccessor
@@ -32,9 +32,9 @@
   (create-artifact! [_ data opts]
     (file-accessor#create-artifact! store producer (keygen) data opts))
   (create-file! [_ data opts]
-    (ps/start-workflow! producer :files/create (merge opts data) opts))
+    (wf/start-workflow! producer :files/create (merge opts data) opts))
   (create-file-version! [_ data opts]
-    (ps/start-workflow! producer :versions/create (merge opts data) opts))
+    (wf/start-workflow! producer :versions/create (merge opts data) opts))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* store (:artifact/id opts) opts)))
 

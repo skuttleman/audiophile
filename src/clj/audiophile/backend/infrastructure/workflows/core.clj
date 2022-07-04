@@ -2,6 +2,7 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
+    [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.backend.infrastructure.workflows.handlers :as wfh]
     [audiophile.common.core.utils.core :as u]
     [audiophile.common.core.utils.logger :as log]
@@ -32,11 +33,11 @@
       (let [data (maps/assoc-maybe {}
                                    :error/reason (ex-message ex)
                                    :error/details (ex-data ex))]
-        (ps/generate-event (:workflow/id ctx) :command/failed data ctx))))
+        (wf/generate-event (:workflow/id ctx) :command/failed data ctx))))
   (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
     (log/with-ctx [this :WF]
       (log/info "workflow succeeded" ctx)
-      (ps/generate-event workflow-id
+      (wf/generate-event workflow-id
                          :workflow/completed
                          (extract-result workflow-id workflow)
                          ctx))))
