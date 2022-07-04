@@ -18,8 +18,7 @@
     [next.jdbc :as jdbc]
     [next.jdbc.protocols :as pjdbc]
     [spigot.controllers.kafka.common :as sp.kcom]
-    [spigot.controllers.kafka.core :as sp.kafka]
-    [spigot.controllers.kafka.protocols :as sp.kproto])
+    [spigot.controllers.kafka.core :as sp.kafka])
   (:import
     (java.io Closeable)
     (java.sql Timestamp)
@@ -175,6 +174,6 @@
 
 (defmethod ig/init-key :audiophile.test/kafka#producer
   [_ {{:keys [^TestInputTopic workflows]} :test-driver}]
-  (reify sp.kproto/ISpigotProducer
-    (send! [_ k v _]
-      (future (.pipeInput workflows k v)))))
+  (reify pps/IChannel
+    (send! [_ {:keys [key value]}]
+      (.pipeInput workflows key value))))

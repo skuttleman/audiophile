@@ -78,8 +78,10 @@
   ([producer template opts]
    (start-workflow! producer template {} opts))
   ([producer template ctx opts]
-   (let [wf (workflow-spec template ctx)]
-     (sp.kafka/start! producer wf (->ctx opts)))))
+   (let [wf (workflow-spec template ctx)
+         workflow-id (uuids/random)]
+     (send! producer {:key   workflow-id
+                      :value (sp.kafka/create-wf-msg workflow-id wf (->ctx opts))}))))
 
 (defn command-failed! [ch model-id opts]
   (let [[data ctx] (maps/extract-keys opts #{:error/command :error/reason :error/details})]

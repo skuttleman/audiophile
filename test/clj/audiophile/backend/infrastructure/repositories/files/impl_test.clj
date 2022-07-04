@@ -16,7 +16,7 @@
 
 (deftest create-artifact-test
   (testing "create-artifact"
-    (let [producer (ts/->producer)
+    (let [producer (ts/->chan)
           store (ts/->store)
           repo (rfiles/->FileAccessor nil store producer nil (constantly "key"))
           [user-id request-id] (repeatedly uuids/random)]
@@ -33,7 +33,7 @@
                (take 2 (colls/only! (stubs/calls store :put!))))))
 
       (testing "emits a command"
-        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
           (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      '{?key "key"
                                              ?uri "some://uri"}
@@ -224,7 +224,7 @@
 
 (deftest create-file-test
   (testing "create-file"
-    (let [producer (ts/->producer)
+    (let [producer (ts/->chan)
           repo (rfiles/->FileAccessor nil nil producer nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
@@ -232,7 +232,7 @@
                                               :some/other :opts
                                               :user/id    user-id
                                               :request/id request-id})
-        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
           (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      {}
                        :workflows/template :files/create
@@ -247,7 +247,7 @@
 
 (deftest create-file-version-test
   (testing "create-file-version"
-    (let [producer (ts/->producer)
+    (let [producer (ts/->chan)
           repo (rfiles/->FileAccessor nil nil producer nil nil)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
@@ -257,7 +257,7 @@
                                    :some/other :opts
                                    :user/id    user-id
                                    :request/id request-id})
-        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
           (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      {}
                        :workflows/template :versions/create

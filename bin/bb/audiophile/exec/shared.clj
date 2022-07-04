@@ -12,8 +12,6 @@
 
 (defmulti main* dispatch-fn)
 
-(defmulti rabbit* dispatch-fn)
-
 (defmulti run* dispatch-fn)
 
 (defmulti test* dispatch-fn)

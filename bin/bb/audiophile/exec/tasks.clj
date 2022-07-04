@@ -95,38 +95,6 @@
     (doseq [[mode] (methods shared/wipe*)]
       (shared/wipe* mode nil))))
 
-(defmethod shared/wipe* :rabbit
-  [_ [mode & args]]
-  (case mode
-    (nil "all") (doseq [mode (->> (methods shared/rabbit*)
-                                  keys
-                                  (concat [:queues :exchanges])
-                                  distinct)]
-                  (shared/rabbit* mode args))
-    (shared/rabbit* mode args)))
-
-(defn ^:private rabbit* [single plural ext]
-  (let [url (str "http://guest:guest@localhost:15672/api/" plural)]
-    (shared/with-println [:rabbitmq "deleting" "deleted"]
-      (doseq [name (-> (curl/get url)
-                       :body
-                       (cheshire/parse-string true)
-                       (->> (map :name)))
-              :when (re-find (re-pattern (format "(audiophile%s)"
-                                                 (or (some->> ext (str "\\."))
-                                                     "")))
-                             name)]
-        (println "deleting" name)
-        (shared/process! (format "rabbitmqadmin delete %s name=%s" single name))))))
-
-(defmethod shared/rabbit* :exchanges
-  [_ [ext]]
-  (rabbit* "exchange" "exchanges" ext))
-
-(defmethod shared/rabbit* :queues
-  [_ [ext]]
-  (rabbit* "queue" "queues" ext))
-
 (defmethod shared/wipe* :psql
   [_ [db]]
   (let [db (or db "audiophile")

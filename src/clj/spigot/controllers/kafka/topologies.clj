@@ -1,6 +1,6 @@
 (ns spigot.controllers.kafka.topologies
   (:require
-    [spigot.controllers.kafka.protocols :as sp.kproto]
+    [spigot.controllers.protocols :as sp.pcon]
     [spigot.controllers.kafka.streams :as sp.ks]
     [spigot.core :as sp])
   (:import
@@ -18,7 +18,7 @@
 
 (defn ^:private workflow-flat-mapper [handler [k [wf ctx]]]
   (if (sp/finished? wf)
-    (when-let [event (sp.kproto/on-complete handler ctx wf)]
+    (when-let [event (sp.pcon/on-complete handler ctx wf)]
       [[(:workflow/id ctx) [::event event]]])
     (let [[next-wf tasks] (sp/next-sync wf)]
       (when (or (seq tasks) (not= wf next-wf))
@@ -28,29 +28,29 @@
                    tasks))))))
 
 (defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task]}]]
-  (let [[result ex] (try [(sp.kproto/process-task handler ctx task)]
+  (let [[result ex] (try [(sp.pcon/process-task handler ctx task)]
                          (catch Throwable ex
                            [nil ex]))
         result {:spigot/id     spigot-id
                 :spigot/result result}]
     (if ex
-      (when-let [event (sp.kproto/on-error handler ctx ex)]
+      (when-let [event (sp.pcon/on-error handler ctx ex)]
         [[(:workflow/id ctx) [::event event]]])
       [[(:workflow/id ctx) [::workflow [::result result]]]])))
 
 (defn ->safe-handler [handler]
   (reify
-    sp.kproto/ISpigotTaskHandler
+    sp.pcon/ISpigotTaskHandler
     (on-complete [this ctx workflow]
-      (try (sp.kproto/on-complete handler ctx workflow)
+      (try (sp.pcon/on-complete handler ctx workflow)
            (catch Throwable ex
-             (sp.kproto/on-error this ctx ex))))
+             (sp.pcon/on-error this ctx ex))))
     (on-error [_ ctx ex]
-      (try (sp.kproto/on-error handler ctx ex)
+      (try (sp.pcon/on-error handler ctx ex)
            (catch Throwable _
              nil)))
     (process-task [_ ctx task]
-      (sp.kproto/process-task handler ctx task))))
+      (sp.pcon/process-task handler ctx task))))
 
 (defn workflow-manager-topology
   [^StreamsBuilder builder {:keys [handler event-topic-cfg task-topic-cfg workflow-topic-cfg]}]

@@ -1,7 +1,9 @@
 (ns spigot.controllers.kafka.common
   (:require
-    [kinsky.client :as client*])
+    [clojure.edn :as edn]
+    [clojure.java.io :as io])
   (:import
+    (java.io PushbackReader)
     (java.util Properties)
     (org.apache.kafka.common.serialization Serde Serializer Deserializer)))
 
@@ -12,17 +14,27 @@
   (deserializer [_]
     deserializer))
 
-(defn default-serde []
-  (->SpigotSerde (client*/edn-serializer) (client*/edn-deserializer)))
+(deftype EdnSerializer []
+  Serializer
+  (serialize [_ _ payload]
+    (-> payload pr-str .getBytes)))
+
+(deftype EdnDeserializer []
+  Deserializer
+  (deserialize [_ _ payload]
+    (-> payload io/input-stream io/reader PushbackReader. edn/read)))
 
 (defn create-serde [^Serializer serializer ^Deserializer deserializer]
   (->SpigotSerde serializer deserializer))
 
+(defn default-serde []
+  (create-serde (->EdnSerializer) (->EdnDeserializer)))
+
 (defn ->props ^Properties [m]
   (let [props (Properties.)]
-    (doseq [e m
-            :let [k (key e)
-                  v (val e)]]
+    (doseq [kv m
+            :let [k (key kv)
+                  v (val kv)]]
       (.put props (name k) (cond-> v (keyword? v) name)))
     props))
 

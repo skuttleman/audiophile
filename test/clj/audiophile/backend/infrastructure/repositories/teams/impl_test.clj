@@ -110,7 +110,7 @@
 
 (deftest create!-test
   (testing "create!"
-    (let [producer (ts/->producer)
+    (let [producer (ts/->chan)
           repo (rteams/->TeamAccessor nil producer)
           [user-id request-id] (repeatedly uuids/random)]
       (testing "emits a command"
@@ -118,7 +118,7 @@
                                          :some/other :opts
                                          :user/id    user-id
                                          :request/id request-id})
-        (let [[_ [tag params ctx]] (colls/only! (stubs/calls producer :send!))]
+        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
           (is (= ::sp.ktop/create! tag))
           (assert/is? {:workflows/ctx      {'?user-id user-id}
                        :workflows/template :teams/create
