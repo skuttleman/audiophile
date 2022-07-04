@@ -12,9 +12,6 @@
                       [:duct/const :test/seed-data]
                       #duct/include "seed.edn"
 
-                      [:duct/const :services/rabbitmq#conn]
-                      ^:promote #ig/ref :audiophile.test/rabbitmq#conn
-
                       [:duct/const :workflows/consumer#db]
                       #ig/ref :audiophile.test/kafka#consumer
 
@@ -44,9 +41,6 @@
 
                       :audiophile.migrations/migrator
                       {:datasource #ig/ref :services/datasource}
-
-                      :audiophile.test/rabbitmq#conn
-                      {}
 
                       :audiophile.test/kafka#consumer
                       {:listeners   #{#ig/ref :audiophile.services.kafka/db-handler

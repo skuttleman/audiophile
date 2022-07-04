@@ -33,8 +33,7 @@
 
  [:duct/const :routes/daemon#jobs]
  #{#ig/ref :workflows/controller
-   #ig/ref :workflows/consumer#db
-   #ig/ref :rabbitmq.sub/events#persist}
+   #ig/ref :workflows/consumer#db}
 
  [:duct/const :routes/table#ui]
  {[:get :routes.resources/css]    #ig/ref :audiophile.routes/assets

@@ -32,3 +32,6 @@
       (build-topology builder-opts)
       (->streams streams-cfg)
       (doto .start)))
+
+(defn stop! [^KafkaStreams streams]
+  (.close streams))

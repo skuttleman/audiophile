@@ -3,7 +3,6 @@ version: "3.8"
 volumes:
   audiophile-data:
   postgres-data:
-  rabbitmq-data:
   zookeeper_data:
     driver: local
   kafka_data:
@@ -34,7 +33,6 @@ services:
     depends_on:
       - kafka
       - postgres
-      - rabbitmq
 
   postgres:
     image: postgres
@@ -47,19 +45,6 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
-
-  rabbitmq:
-    image: rabbitmq
-    container_name: rabbitmq
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-      - ./.rabbitmq-enabled-plugins:/etc/rabbitmq/enabled_plugins
-    ports:
-      - 5672:5672
-      - 15672:15672
 
   kafka:
     image: docker.io/bitnami/kafka:3.2

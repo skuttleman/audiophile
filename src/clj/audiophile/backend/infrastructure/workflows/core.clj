@@ -72,7 +72,7 @@
   Closeable
   (close [_]
     (u/silent!
-      (.close kafka-streams))))
+      (sp.kafka/stop! kafka-streams))))
 
 (defn handler [sys]
   (->SpigotHandler sys))

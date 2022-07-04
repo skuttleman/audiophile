@@ -8,7 +8,6 @@
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [nrepl.server :as nrepl]
-    audiophile.backend.dev.accessors
     audiophile.backend.dev.handler))
 
 (defonce system nil)

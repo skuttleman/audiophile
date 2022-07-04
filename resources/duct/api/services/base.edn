@@ -1,7 +1,5 @@
 #audiophile/merge
-[#duct/include "duct/api/services/pubsub.edn"
- #duct/include "duct/api/services/queues.edn"
- #duct/include "duct/api/services/workflows.edn"
+[#duct/include "duct/api/services/workflows.edn"
  {[:duct/const :services/transactor]
   #ig/ref :audiophile.repositories/transactor
 
@@ -13,6 +11,9 @@
 
   [:duct/const :services/s3-client]
   #ig/ref :audiophile.services.s3/client
+
+  [:audiophile.services.pubsub/memory :component/health]
+  {}
 
   [:audiophile.repositories/cfg :config/db]
   {:db-name  #ig/ref :env.db/name

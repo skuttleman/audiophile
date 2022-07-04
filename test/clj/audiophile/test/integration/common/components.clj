@@ -99,44 +99,6 @@
 (defmethod ig/halt-key! :audiophile.test/datasource [_ datasource]
   (.close datasource))
 
-(defmethod ig/init-key :audiophile.test/rabbitmq#conn [_ _]
-  (let [chs (atom nil)]
-    (reify
-      pps/IMQConnection
-      (chan [_ {:keys [name]}]
-        (swap! chs (fn [m]
-                     (let [[ch tap] (or (get m name)
-                                        (let [ch (async/chan 100)]
-                                          [ch (async/mult ch)]))]
-                       (assoc m name [ch tap]))))
-        (reify
-          pps/IMQChannel
-          (subscribe! [_ handler _]
-            (let [mq-ch (async/tap (second (get @chs name))
-                                   (async/chan))]
-              (async/go-loop []
-                (when-let [msg (async/<! mq-ch)]
-                  (when (int/handle? handler msg)
-                    (int/handle! handler msg))
-                  (recur)))))
-
-          pps/IChannel
-          (open? [_]
-            (let [ch (first (get @chs name))]
-              (not (async.protocols/closed? ch))))
-          (send! [_ msg]
-            (let [ch (first (get @chs name))]
-              (async/go
-                (async/>! ch msg))))
-          (close! [_])))
-
-      Closeable
-      (close [_]
-        (run! async/close! (map first (vals @chs)))))))
-
-(defmethod ig/halt-key! :audiophile.test/rabbitmq#conn [_ conn]
-  (.close ^Closeable conn))
-
 (defmethod ig/init-key :audiophile.test/kafka#test-driver
   [_ {:keys [event-topic-cfg workflow-topic-cfg] :as opts}]
   (let [driver (-> (sp.kafka/default-builder)

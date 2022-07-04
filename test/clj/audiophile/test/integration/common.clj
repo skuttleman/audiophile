@@ -10,7 +10,6 @@
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
-    audiophile.backend.dev.accessors
     audiophile.backend.dev.handler
     audiophile.backend.infrastructure.system.core
     audiophile.test.integration.common.components))

@@ -35,8 +35,7 @@
   :topic-cfg #ig/ref :topics/events}
 
  :audiophile.workflows.kafka/handler
- {:events    #ig/ref :rabbitmq.chan/events
-  :repo      #ig/ref :services/transactor
+ {:repo      #ig/ref :services/transactor
   :jwt-serde #ig/ref :serdes/jwt}
 
  [:audiophile.workflows.kafka/controller :component/health]

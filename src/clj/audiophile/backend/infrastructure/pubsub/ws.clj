@@ -1,16 +1,15 @@
 (ns audiophile.backend.infrastructure.pubsub.ws
   (:require
-    [clojure.core.async :as async]
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.api.validations.selectors :as selectors]
-    [audiophile.backend.core.serdes.jwt :as jwt]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
+    [clojure.core.async :as async]
     [immutant.web.async :as web.async])
   (:import
     (org.projectodd.wunderboss.web.async Channel)))
@@ -114,26 +113,6 @@
       (assoc :user/id (get-in request [:auth/user :user/id])
              :token/aud (get-in request [:auth/user :jwt/aud]))
       (merge (:headers request) (get-in request [:nav/route :params]))))
-
-(defn ^:private web-socket-message-handler#handle!
-  [this pubsub {event-id :event/id :event/keys [ctx] :as event}]
-  (log/with-ctx [this :CP]
-    (log/info "publishing event to ws" event-id)
-    (ps/send-user! pubsub
-                   (or (:signup/id ctx) (:user/id ctx))
-                   event-id
-                   (dissoc event :event/ctx)
-                   ctx)))
-
-(deftype WebSocketMessageHandler [pubsub]
-  pint/IMessageHandler
-  (handle? [_ _]
-    true)
-  (handle! [this msg]
-    (web-socket-message-handler#handle! this pubsub msg)))
-
-(defn event->ws-handler [{:keys [pubsub]}]
-  (->WebSocketMessageHandler pubsub))
 
 (defn event-handler [{:keys [pubsub]}]
   (fn [{{event-id :event/id :event/keys [ctx] :as event} :value}]
