@@ -37,20 +37,16 @@
                  :body            "Comment Seed 2"
                  :comment-id      #audiophile/fk [:comments :body "Comment Seed 1"]
                  :created-by      #audiophile/fk [:users :email "joe@example.com"]}]}
- {:insert-into :workflows
-  :values      [{:data "{:workflow 1}"}
-                {:data "{:workflow 2}"}
-                {:data "{:workflow 3}"}]}
  {:insert-into :events
   :values      [{:event-type-id #audiophile/event-type :workflow/completed
-                 :model-id      #audiophile/fk [:workflows :data "{:workflow 1}"]
+                 :model-id      #audiophile/uuid [:workflow 1]
                  :emitted-by    #audiophile/fk [:users :email "joe@example.com"]
                  :emitted-at    #inst "2020-04-17T07:14:51.01Z"}
                 {:event-type-id #audiophile/event-type :workflow/completed
-                 :model-id      #audiophile/fk [:workflows :data "{:workflow 2}"]
+                 :model-id      #audiophile/uuid [:workflow 2]
                  :emitted-by    #audiophile/fk [:users :email "joe@example.com"]
                  :emitted-at    #inst "2020-04-17T07:14:51.02Z"}
                 {:event-type-id #audiophile/event-type :workflow/completed
-                 :model-id      #audiophile/fk [:workflows :data "{:workflow 3}"]
+                 :model-id      #audiophile/uuid [:workflow 3]
                  :emitted-by    #audiophile/fk [:users :email "joe@example.com"]
                  :emitted-at    #inst "2020-04-17T07:14:51.03Z"}]}]

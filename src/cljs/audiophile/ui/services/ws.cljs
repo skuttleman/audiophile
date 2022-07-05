@@ -23,7 +23,7 @@
         event-data (get-in event [:data :event/data])]
     (when-let [request-id (-> event :ctx :request/id)]
       (let [event* (case event-type
-                     :command/failed {:error [event-data]}
+                     :workflow/failed {:error [event-data]}
                      {:data event-data})]
         (log/info [event-type (:ctx event)])
         (pubsub/publish! pubsub request-id event*)))))

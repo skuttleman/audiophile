@@ -72,7 +72,7 @@
       (-> result
           (assoc-in [:body :data] data)
           (cond->
-            (= :command/failed type) (assoc :status 400))))))
+            (= :workflow/failed type) (assoc :status 400))))))
 
 (defn body-data [payload]
   {:body {:data payload}})

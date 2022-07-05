@@ -22,11 +22,12 @@
 (defn default-builder ^StreamsBuilder []
   (StreamsBuilder.))
 
-(defn running? [^KafkaStreams kafka-streams]
-  (contains? #{KafkaStreams$State/CREATED
-               KafkaStreams$State/REBALANCING
-               KafkaStreams$State/RUNNING}
-             (.state kafka-streams)))
+(defn running? [{:keys [^KafkaStreams streams stopped]}]
+  (and (not (realized? stopped))
+       (contains? #{KafkaStreams$State/CREATED
+                    KafkaStreams$State/REBALANCING
+                    KafkaStreams$State/RUNNING}
+                  (.state streams))))
 
 (defn with-wf-topology ^StreamsBuilder [^StreamsBuilder builder opts]
   (doto builder

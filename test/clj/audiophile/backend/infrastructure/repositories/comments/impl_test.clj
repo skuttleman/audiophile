@@ -73,9 +73,8 @@
     (let [producer (ts/->chan)
           tx (ts/->tx)
           repo (rcomments/->CommentAccessor tx producer)
-          [request-id user-id workflow-id] (repeatedly uuids/random)]
+          [request-id user-id] (repeatedly uuids/random)]
       (testing "emits a command"
-        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create! repo {:some :data} {:some       :opts
                                          :some/other :opts
                                          :user/id    user-id
@@ -89,5 +88,5 @@
                       params)
           (assert/is? {:user/id     user-id
                        :request/id  request-id
-                       :workflow/id workflow-id}
+                       :workflow/id uuid?}
                       ctx))))))

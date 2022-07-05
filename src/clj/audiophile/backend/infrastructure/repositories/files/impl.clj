@@ -14,12 +14,12 @@
       [data {:content-type content-type}]
       (throw (ex-info "artifact located with missing data" {:artifact-id artifact-id})))))
 
-(defn ^:private file-accessor#create-artifact! [store repo producer key data opts]
+(defn ^:private file-accessor#create-artifact! [store producer key data opts]
   (let [uri (repos/uri store key opts)
         data (assoc data :artifact/uri uri :artifact/key key)
         payload (dissoc data :artifact/tempfile)]
     (repos/put! store key data opts)
-    (repos/transact! repo crepos/start-workflow! producer :artifacts/create payload opts)))
+    (crepos/start-workflow! producer :artifacts/create payload opts)))
 
 (deftype FileAccessor [repo store producer pubsub keygen]
   pint/IAccessor
@@ -30,11 +30,11 @@
 
   pint/IFileAccessor
   (create-artifact! [_ data opts]
-    (file-accessor#create-artifact! store repo producer (keygen) data opts))
+    (file-accessor#create-artifact! store producer (keygen) data opts))
   (create-file! [_ data opts]
-    (repos/transact! repo crepos/start-workflow! producer :files/create (merge opts data) opts))
+    (crepos/start-workflow! producer :files/create (merge opts data) opts))
   (create-file-version! [_ data opts]
-    (repos/transact! repo crepos/start-workflow! producer :versions/create (merge opts data) opts))
+    (crepos/start-workflow! producer :versions/create (merge opts data) opts))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* store (:artifact/id opts) opts)))
 

@@ -20,9 +20,8 @@
           tx (ts/->tx)
           store (ts/->store)
           repo (rfiles/->FileAccessor tx store producer nil (constantly "key"))
-          [request-id user-id workflow-id] (repeatedly uuids/random)]
+          [request-id user-id] (repeatedly uuids/random)]
       (stubs/set-stub! store :uri "some://uri")
-      (stubs/use! tx :execute! [{:id workflow-id}])
       (int/create-artifact! repo
                             {:some :data}
                             {:some       :opts
@@ -45,7 +44,7 @@
                       params)
           (assert/is? {:user/id     user-id
                        :request/id  request-id
-                       :workflow/id workflow-id}
+                       :workflow/id uuid?}
                       ctx))))))
 
 (deftest query-many-test
@@ -228,9 +227,8 @@
     (let [producer (ts/->chan)
           tx (ts/->tx)
           repo (rfiles/->FileAccessor tx nil producer nil nil)
-          [request-id user-id workflow-id] (repeatedly uuids/random)]
+          [request-id user-id] (repeatedly uuids/random)]
       (testing "emits a command"
-        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create-file! repo {:some :data} {:some       :opts
                                               :some/other :opts
                                               :user/id    user-id
@@ -245,7 +243,7 @@
                       params)
           (assert/is? {:user/id     user-id
                        :request/id  request-id
-                       :workflow/id workflow-id}
+                       :workflow/id uuid?}
                       ctx))))))
 
 (deftest create-file-version-test
@@ -253,9 +251,8 @@
     (let [producer (ts/->chan)
           tx (ts/->tx)
           repo (rfiles/->FileAccessor tx nil producer nil nil)
-          [request-id user-id workflow-id] (repeatedly uuids/random)]
+          [request-id user-id] (repeatedly uuids/random)]
       (testing "emits a command"
-        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create-file-version! repo
                                   {:some :data}
                                   {:some       :opts
@@ -271,5 +268,5 @@
                       params)
           (assert/is? {:user/id     user-id
                        :request/id  request-id
-                       :workflow/id workflow-id}
+                       :workflow/id uuid?}
                       ctx))))))

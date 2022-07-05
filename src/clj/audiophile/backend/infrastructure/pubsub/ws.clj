@@ -123,12 +123,13 @@
 
 (defn event-handler [{:keys [pubsub]}]
   (fn [{{event-id :event/id :event/keys [ctx type] :as event} :value}]
-    (log/with-ctx :CP
-      (log/info "publishing event to ws" event-id)
-      (ps/send-user! pubsub
-                     (:user/id ctx)
-                     event-id
-                     (-> event
-                         (cond-> (= :workflow/completed type) (update :event/data extract-result (:workflow/id ctx)))
-                         (dissoc :event/ctx))
-                     ctx))))
+    (when-let [event (case type
+                       :workflow/completed (update event
+                                                   :event/data
+                                                   extract-result
+                                                   (:workflow/id ctx))
+                       :workflow/failed event
+                       nil)]
+      (log/with-ctx :CP
+        (log/info "publishing event to ws" event-id)
+        (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx)))))

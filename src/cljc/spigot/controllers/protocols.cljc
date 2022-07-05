@@ -1,8 +1,10 @@
 (ns spigot.controllers.protocols)
 
-(defprotocol ISpigotTaskHandler
+(defprotocol ITaskProcessor
   (process-task [this ctx task]))
 
-(defprotocol ISpigotStatusHandler
-  (on-error [this ctx ex])
+(defprotocol IWorkflowHandler
+  (on-create [this ctx workflow])
+  (on-update [this ctx workflow])
+  (on-error [this ctx ex workflow])
   (on-complete [this ctx workflow]))

@@ -21,7 +21,7 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
-    (repos/transact! repo crepos/start-workflow! producer :teams/create (merge opts data) opts)))
+    (crepos/start-workflow! producer :teams/create (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."

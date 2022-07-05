@@ -78,23 +78,27 @@
   (let [datasource (hikari/make-datasource spec)
         db-name (str "audiophile_test_" (string/replace (str (uuids/random)) #"-" ""))]
     (jdbc/execute! datasource [(str "CREATE DATABASE " db-name)])
-    (let [ds (hikari/make-datasource (assoc spec :database-name db-name))]
+    (let [ds (hikari/make-datasource (assoc spec :database-name db-name))
+          wrapped (reify
+                    Closeable
+                    (close [_]
+                      (hikari/close-datasource ds)
+                      (jdbc/execute! datasource [(str "DROP DATABASE " db-name)])
+                      (hikari/close-datasource datasource))
+
+                    DataSource
+                    (getConnection [_]
+                      (.getConnection ds))
+
+                    pjdbc/Transactable
+                    (-transact [_ body-fn opts]
+                      (pjdbc/-transact ds body-fn opts)))]
       (migrate! ds)
-      (seed! ds seed-data)
-      (reify
-        Closeable
-        (close [_]
-          (hikari/close-datasource ds)
-          (jdbc/execute! datasource [(str "DROP DATABASE " db-name)])
-          (hikari/close-datasource datasource))
-
-        DataSource
-        (getConnection [_]
-          (.getConnection ds))
-
-        pjdbc/Transactable
-        (-transact [_ body-fn opts]
-          (pjdbc/-transact ds body-fn opts))))))
+      (try (seed! ds seed-data)
+           (catch Throwable ex
+             (.close wrapped)
+             (throw ex)))
+      wrapped)))
 
 (defmethod ig/halt-key! :audiophile.test/datasource [_ datasource]
   (.close datasource))

@@ -16,7 +16,9 @@
   ([routes daemons]
    (system-init! system routes daemons))
   ([sys routes daemons]
-   (some-> sys ig/halt!)
+   (when sys
+     (ig/halt! sys)
+     (log/info "halt completed"))
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev"]))]
      (-> "dev.edn"
          (core/config [:duct.profile/base :duct.profile/dev] routes)

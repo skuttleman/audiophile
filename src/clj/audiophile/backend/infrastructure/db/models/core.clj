@@ -129,11 +129,13 @@
                                       cast (get casts k')
                                       pre-cast (when cast
                                                  (case cast
+                                                   :custom/edn (partial serdes/serialize serde/edn)
                                                    (:jsonb :numrange) (partial serdes/serialize serde/json)
                                                    name))]
                                   (when (valid-column? model k' (namespace k))
                                     [k' (cond-> v
-                                          pre-cast (-> pre-cast (sql/cast cast)))]))))
+                                          pre-cast pre-cast
+                                          (and cast (not (namespace cast))) (sql/cast cast))]))))
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
 

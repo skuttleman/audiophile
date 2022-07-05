@@ -15,7 +15,7 @@
   (query-one [_ opts]
     (repos/transact! repo qprojects/find-by-project-id (:project/id opts) opts))
   (create! [_ data opts]
-    (repos/transact! repo crepos/start-workflow! producer :projects/create (merge opts data) opts)))
+    (crepos/start-workflow! producer :projects/create (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."

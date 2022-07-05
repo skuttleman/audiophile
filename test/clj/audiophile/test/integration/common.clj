@@ -63,7 +63,7 @@
          opts (meta sym)]
     `(let [cfg# (~mocked-cfg ~config-base ~opts)
            system# (-> cfg#
-                       ((or ~f identity) ~@f-args)
+                       (~(or f identity) ~@f-args)
                        (ig/init ~keys))
            ~sym system#]
        (try

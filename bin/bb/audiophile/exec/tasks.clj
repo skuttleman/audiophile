@@ -119,7 +119,6 @@
                             "TRUNCATE events CASCADE"
                             "TRUNCATE users CASCADE"
                             "TRUNCATE teams CASCADE"
-                            "TRUNCATE workflows CASCADE"
                             "DELETE FROM artifacts"
                             "COMMIT"])
         env-common (io/file ".env-common")

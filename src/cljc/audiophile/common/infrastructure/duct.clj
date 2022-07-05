@@ -1,7 +1,7 @@
 (ns audiophile.common.infrastructure.duct
   (:require
+    [audiophile.common.core.utils.uuids :as uuids]
     [clojure.edn :as edn*]
-    [audiophile.backend.infrastructure.db.models.sql :as sql]
     [duct.core :as duct]
     [duct.core.env :as env*]))
 
@@ -12,6 +12,8 @@
                             {:select [:id]
                              :from   [table]
                              :where  [:= col val]})
+   'audiophile/uuid       (memoize (fn [_]
+                                     (uuids/random)))
    'audiophile/event-type (fn [k]
                             (let [category (namespace k)
                                   name (name k)]

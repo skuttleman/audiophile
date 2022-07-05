@@ -16,6 +16,7 @@
     :user-defined keyword?
     (:text :character-varying) string?
     :integer integer?
+    :custom/edn any?
     :jsonb any?
     :timestamp-without-time-zone inst?
     :uuid uuid?

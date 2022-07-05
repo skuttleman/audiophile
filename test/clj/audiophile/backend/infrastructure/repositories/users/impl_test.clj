@@ -77,9 +77,8 @@
     (let [producer (ts/->chan)
           tx (ts/->tx)
           repo (rusers/->UserAccessor tx producer)
-          [user-id workflow-id] (repeatedly uuids/random)]
+          [user-id] (repeatedly uuids/random)]
       (testing "emits a command"
-        (stubs/use! tx :execute! [{:id workflow-id}])
         (int/create! repo
                      {:user/handle        "handle"
                       :user/email         "email"
@@ -100,5 +99,5 @@
                                              :login/token (sp.ctx/get ?token)}}
                       params)
           (assert/is? {:user/id     user-id
-                       :workflow/id workflow-id}
+                       :workflow/id uuid?}
                       ctx))))))

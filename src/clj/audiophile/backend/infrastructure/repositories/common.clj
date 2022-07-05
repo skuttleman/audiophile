@@ -2,17 +2,18 @@
   (:require
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.infrastructure.repositories.protocols :as prepos]
-    [audiophile.backend.infrastructure.repositories.workflows.queries :as qworkflows]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
-    [audiophile.common.core.utils.logger :as log]))
+    [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.uuids :as uuids]))
 
 (defn ->model-fn [model]
   (fn [[k v]]
     (let [k' (keyword (name k))
           cast-fn (if-let [cast (get-in model [:casts k'])]
                     (case cast
+                      :custom/edn (partial serdes/deserialize serde/edn)
                       :jsonb (partial serdes/deserialize serde/json)
                       :numrange #(some->> % .getValue (serdes/deserialize serde/edn))
                       keyword)
@@ -33,7 +34,7 @@
   [{:keys [client stream-serde]}]
   (->KVStore client stream-serde))
 
-(defn start-workflow! [executor producer template ctx opts]
-  (let [wf (wf/workflow-spec template ctx)
-        workflow-id (qworkflows/create! executor wf)]
+(defn start-workflow! [producer template ctx opts]
+  (let [workflow-id (uuids/random)
+        wf (wf/workflow-spec template ctx)]
     (ps/send-workflow! producer workflow-id wf opts)))

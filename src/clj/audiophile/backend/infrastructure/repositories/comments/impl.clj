@@ -13,7 +13,7 @@
   (query-many [_ opts]
     (repos/transact! repo qcomments/select-for-file (:file/id opts) opts))
   (create! [_ data opts]
-    (repos/transact! repo crepos/start-workflow! producer :comments/create (merge opts data) opts)))
+    (crepos/start-workflow! producer :comments/create (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[CommentAccessor]] which provides semantic access for storing and retrieving comments."

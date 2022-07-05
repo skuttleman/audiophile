@@ -32,7 +32,7 @@
   (query-one [_ opts]
     (user-accessor#query-one repo opts))
   (create! [_ data opts]
-    (repos/transact! repo crepos/start-workflow! producer :users/signup data opts)))
+    (crepos/start-workflow! producer :users/signup data opts)))
 
 (defn accessor
   "Constructor for [[UserAccessor]] which provides semantic access for storing and retrieving users."

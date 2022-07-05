@@ -13,53 +13,72 @@
 
 (defmethod workflow-aggregator ::create!
   [_ [_ [_ params ctx]]]
-  (let [[wf tasks] (-> (:workflows/form params)
-                       (sp/plan {:ctx (:workflows/ctx params)})
-                       (merge (dissoc params :workflows/form :workflows/ctx))
-                       sp/next-sync)]
-    [wf ctx tasks]))
+  (let [init (-> (:workflows/form params)
+                 (sp/plan {:ctx (:workflows/ctx params)})
+                 (merge (dissoc params :workflows/form :workflows/ctx)))
+        [wf tasks] (sp/next-sync init)]
+    {:wf    wf
+     :ctx   ctx
+     :tasks tasks
+     :init  init}))
 
 (defmethod workflow-aggregator ::result
-  [agg [_ [_ params]]]
-  (let [[[wf tasks] ctx] (-> agg
-                              (update 0 sp/finish (:spigot/id params) (:spigot/result params))
-                              (update 0 sp/next-sync))]
-    [wf ctx tasks]))
+  [{:keys [ctx wf]} [_ [_ {:spigot/keys [id result]}]]]
+  (let [[wf' tasks] (-> wf
+                        (sp/finish id result)
+                        sp/next-sync)]
+    {:wf    wf'
+     :ctx   ctx
+     :tasks tasks}))
 
-(defn ^:private workflow-flat-mapper [handler [_ [wf ctx tasks]]]
+(defn ^:private workflow-flat-mapper [handler [_ {:keys [wf ctx tasks init]}]]
   (log/debug "processing workflow" ctx (:ctx wf))
-  (if (sp/finished? wf)
-    (when-let [event (sp.pcon/on-complete handler ctx wf)]
-      [[(:workflow/id ctx) [::event event]]])
-    (map (fn [{:spigot/keys [id] :as task}]
-           [id [::task {:task task :ctx ctx}]])
-         tasks)))
+  (let [workflow-id (:workflow/id ctx)]
+    (if (sp/finished? wf)
+      (when-let [event (sp.pcon/on-complete handler ctx wf)]
+        [[workflow-id [::event event]]])
+      (let [create-event (some->> init (sp.pcon/on-create handler ctx))
+            update-event (sp.pcon/on-update handler ctx wf)]
+        (cond->> (map (fn [{:spigot/keys [id] :as task}]
+                        [id [::task {:task task :ctx ctx :workflow wf}]])
+                      tasks)
+          update-event (cons [workflow-id [::event update-event]])
+          create-event (cons [workflow-id [::event create-event]]))))))
 
-(defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task]}]]
+(defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task workflow]}]]
   (log/debug "processing task" ctx task)
-  (let [[result ex] (try [(sp.pcon/process-task handler ctx task)]
+  (let [workflow-id (:workflow/id ctx)
+        [result ex] (try [(sp.pcon/process-task handler ctx task)]
                          (catch Throwable ex
                            [nil ex]))
         result {:spigot/id     spigot-id
                 :spigot/result result}]
     (if ex
-      (when-let [event (sp.pcon/on-error handler ctx ex)]
-        [[(:workflow/id ctx) [::event event]]])
-      [[(:workflow/id ctx) [::workflow [::result result]]]])))
+      (when-let [event (sp.pcon/on-error handler ctx ex workflow)]
+        [[workflow-id [::event event]]])
+      [[workflow-id [::workflow [::result result]]]])))
 
-(defn ->safe-handler [handler]
+(defn ^:private ->safe-handler [handler]
   (reify
-    sp.pcon/ISpigotStatusHandler
+    sp.pcon/IWorkflowHandler
+    (on-create [this ctx workflow]
+      (try (sp.pcon/on-create handler ctx workflow)
+           (catch Throwable ex
+             (sp.pcon/on-error this ctx ex workflow))))
+    (on-update [this ctx workflow]
+      (try (sp.pcon/on-update handler ctx workflow)
+           (catch Throwable ex
+             (sp.pcon/on-error this ctx ex workflow))))
     (on-complete [this ctx workflow]
       (try (sp.pcon/on-complete handler ctx workflow)
            (catch Throwable ex
-             (sp.pcon/on-error this ctx ex))))
-    (on-error [_ ctx ex]
-      (try (sp.pcon/on-error handler ctx ex)
+             (sp.pcon/on-error this ctx ex workflow))))
+    (on-error [_ ctx ex workflow]
+      (try (sp.pcon/on-error handler ctx ex workflow)
            (catch Throwable _
              nil)))
 
-    sp.pcon/ISpigotTaskHandler
+    sp.pcon/ITaskProcessor
     (process-task [_ ctx task]
       (sp.pcon/process-task handler ctx task))))
 

@@ -17,27 +17,39 @@
     (java.io Closeable)))
 
 (deftype SpigotStatusHandler []
-  sp.pcon/ISpigotStatusHandler
-  (on-error [this ctx ex]
+  sp.pcon/IWorkflowHandler
+  (on-create [this {workflow-id :workflow/id :as ctx} workflow]
+    (log/with-ctx [this :WF]
+      (log/debug "workflow created" ctx)
+      (ps/generate-event workflow-id :workflow/created workflow ctx)))
+  (on-update [this {workflow-id :workflow/id :as ctx} workflow]
+    (log/with-ctx [this :WF]
+      (log/debug "workflow updated" ctx)
+      (ps/generate-event workflow-id :workflow/updated workflow ctx)))
+  (on-error [this {workflow-id :workflow/id :as ctx} ex workflow]
     (log/with-ctx [this :WF]
       (log/error ex "workflow failed" ctx)
-      (let [data (maps/assoc-maybe {}
-                                   :error/reason (ex-message ex)
+      (let [data (maps/assoc-maybe {:workflow/template (:workflows/template workflow)
+                                    :error/reason      (ex-message ex)}
                                    :error/details (ex-data ex))]
-        (ps/generate-event (:workflow/id ctx) :command/failed data ctx))))
+        (ps/generate-event workflow-id :workflow/failed data ctx))))
   (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
     (log/with-ctx [this :WF]
       (log/info "workflow succeeded" ctx)
       (ps/generate-event workflow-id :workflow/completed workflow ctx))))
 
 (deftype SpigotHandler [sys status-handler]
-  sp.pcon/ISpigotStatusHandler
-  (on-error [_ ctx ex]
-    (sp.pcon/on-error status-handler ctx ex))
+  sp.pcon/IWorkflowHandler
+  (on-create [_ ctx workflow]
+    (sp.pcon/on-create status-handler ctx workflow))
+  (on-update [_ ctx workflow]
+    (sp.pcon/on-update status-handler ctx workflow))
+  (on-error [_ ctx ex workflow]
+    (sp.pcon/on-error status-handler ctx ex workflow))
   (on-complete [_ ctx workflow]
     (sp.pcon/on-complete status-handler ctx workflow))
 
-  sp.pcon/ISpigotTaskHandler
+  sp.pcon/ITaskProcessor
   (process-task [this ctx task]
     (log/with-ctx [this :WF]
       (log/info "processing task" (select-keys task #{:spigot/id :spigot/tag}))
