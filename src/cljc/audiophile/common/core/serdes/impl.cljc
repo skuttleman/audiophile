@@ -1,8 +1,8 @@
 (ns audiophile.common.core.serdes.impl
   (:require
-    #?@(:clj [[buddy.sign.jwt :as jwt*]
-              [clojure.java.io :as io]
-              [jsonista.core :as jsonista]]
+    #?@(:clj  [[buddy.sign.jwt :as jwt*]
+               [clojure.java.io :as io]
+               [jsonista.core :as jsonista]]
         :cljs [[com.cognitect.transit.types :as ty]])
     [#?(:clj clojure.edn :cljs cljs.reader) :as edn*]
     [cognitect.transit :as trans]
@@ -99,7 +99,7 @@
      :cljs (js/JSON.stringify (clj->js value :keyword-fn keywords/str))))
 
 (defn ^:private json#deserialize [value]
-  #?(:clj (jsonista/read-value value object-mapper)
+  #?(:clj  (jsonista/read-value value object-mapper)
      :cljs (js->clj (js/JSON.parse value) :keywordize-keys true)))
 
 (def json
@@ -166,12 +166,13 @@
                 (jwt*/sign secret)))))
     (deserialize [_ token opts]
       #?(:clj
-          (when-let [value (some-> token (jwt*/unsign secret))]
-            (-> value
-                (dissoc :data)
-                (maps/update-maybe :aud (partial into #{} (map keyword)))
-                (maps/qualify :jwt)
-                (merge (pserdes/deserialize transit (:data value) opts))))))))
+          (u/silent!
+            (when-let [value (some-> token (jwt*/unsign secret))]
+              (-> value
+                  (dissoc :data)
+                  (maps/update-maybe :aud (partial into #{} (map keyword)))
+                  (maps/qualify :jwt)
+                  (merge (pserdes/deserialize transit (:data value) opts)))))))))
 
 (def serdes
   (maps/->m [:default edn] edn json transit urlencode))
