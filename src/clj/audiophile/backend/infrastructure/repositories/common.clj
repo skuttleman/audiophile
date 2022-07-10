@@ -6,7 +6,8 @@
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.logger :as log]
-    [audiophile.common.core.utils.uuids :as uuids]))
+    [audiophile.common.core.utils.uuids :as uuids]
+    [spigot.controllers.kafka.core :as sp.kafka]))
 
 (defn ->model-fn [model]
   (fn [[k v]]
@@ -36,5 +37,7 @@
 
 (defn start-workflow! [producer template ctx opts]
   (let [workflow-id (uuids/random)
-        wf (wf/workflow-spec template ctx)]
-    (ps/send-workflow! producer workflow-id wf opts)))
+        wf (wf/workflow-spec template ctx)
+        wf-ctx (assoc opts :workflow/id workflow-id)]
+    (ps/send! producer {:key   workflow-id
+                        :value (sp.kafka/create-wf-msg wf wf-ctx)})))

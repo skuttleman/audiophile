@@ -5,7 +5,8 @@
   (:import
     (java.io PushbackReader)
     (java.util Properties)
-    (org.apache.kafka.common.serialization Serde Serializer Deserializer)))
+    (org.apache.kafka.common.serialization Serde Serializer Deserializer)
+    (org.apache.kafka.streams KeyValue)))
 
 (deftype SpigotSerde [^Serializer serializer ^Deserializer deserializer]
   Serde
@@ -42,3 +43,6 @@
   {:name topic
    :key-serde (default-serde)
    :val-serde (default-serde)})
+
+(defn ->kv-pair [^KeyValue kv]
+  [(.-key kv) (.-value kv)])

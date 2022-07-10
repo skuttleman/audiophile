@@ -2,7 +2,6 @@
   (:require
     [spigot.controllers.kafka.common :as sp.kcom]
     [spigot.controllers.kafka.topologies :as sp.ktop]
-    [spigot.controllers.protocols :as sp.pcon]
     [taoensso.timbre :as log])
   (:import
     (org.apache.kafka.streams KafkaStreams KafkaStreams$State
@@ -16,8 +15,8 @@
 (defn ^:private ->streams ^KafkaStreams [^Topology topology cfg]
   (KafkaStreams. topology (sp.kcom/->props cfg)))
 
-(defn create-wf-msg [workflow-id workflow ctx]
-  [::sp.ktop/create! workflow (assoc ctx :workflow/id workflow-id)])
+(defn create-wf-msg [workflow ctx]
+  [::sp.ktop/create! workflow ctx])
 
 (defn default-builder ^StreamsBuilder []
   (StreamsBuilder.))
@@ -37,7 +36,7 @@
   (doto builder
     (sp.ktop/task-processor-topology opts)))
 
-(defn start! ^KafkaStreams [^Topology topology streams-cfg opts]
+(defn start! [^Topology topology streams-cfg opts]
   (let [timeout (:timeout opts 30000)
         started (promise)
         stopped (promise)

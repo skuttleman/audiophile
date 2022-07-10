@@ -15,7 +15,7 @@
   list)
 
 (extend-protocol psp/ICtxResolver
-  PersistentList
+  #?(:cljs List :default PersistentList)
   (resolve [this ctx]
     (resolve-list this ctx)))
 

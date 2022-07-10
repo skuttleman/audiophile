@@ -16,27 +16,35 @@
   (:import
     (java.io Closeable)))
 
+(defn ^:private generate-event [model-id event-type data {user-id :user/id :as ctx}]
+  {:event/id         (uuids/random)
+   :event/model-id   model-id
+   :event/type       event-type
+   :event/data       data
+   :event/emitted-by user-id
+   :event/ctx        ctx})
+
 (deftype SpigotStatusHandler []
   sp.pcon/IWorkflowHandler
   (on-create [this {workflow-id :workflow/id :as ctx} workflow]
     (log/with-ctx [this :WF]
       (log/debug "workflow created" ctx)
-      (ps/generate-event workflow-id :workflow/created workflow ctx)))
+      (generate-event workflow-id :workflow/created workflow ctx)))
   (on-update [this {workflow-id :workflow/id :as ctx} workflow]
     (log/with-ctx [this :WF]
       (log/debug "workflow updated" ctx)
-      (ps/generate-event workflow-id :workflow/updated workflow ctx)))
+      (generate-event workflow-id :workflow/updated workflow ctx)))
   (on-error [this {workflow-id :workflow/id :as ctx} ex workflow]
     (log/with-ctx [this :WF]
       (log/error ex "workflow failed" ctx)
       (let [data (maps/assoc-maybe {:workflow/template (:workflows/template workflow)
                                     :error/reason      (ex-message ex)}
                                    :error/details (ex-data ex))]
-        (ps/generate-event workflow-id :workflow/failed data ctx))))
+        (generate-event workflow-id :workflow/failed data ctx))))
   (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
     (log/with-ctx [this :WF]
       (log/info "workflow succeeded" ctx)
-      (ps/generate-event workflow-id :workflow/completed workflow ctx))))
+      (generate-event workflow-id :workflow/completed workflow ctx))))
 
 (deftype SpigotHandler [sys status-handler]
   sp.pcon/IWorkflowHandler
