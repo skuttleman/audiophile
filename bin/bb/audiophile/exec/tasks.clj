@@ -143,7 +143,7 @@
 (defmethod shared/wipe* :kafka
   [_ _]
   (shared/with-println [:kafka "deleting" "deleted"]
-    (shared/process! "docker-compose stop kafka zookeeper app")
+    (shared/process! "docker-compose stop kafka zookeeper")
     (shared/process! "docker-compose rm -fv")
     (shared/silent! (shared/process! "docker volume rm audiophile_kafka_data"))
     (shared/silent! (shared/process! "docker volume rm audiophile_zookeeper_data")))

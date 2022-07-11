@@ -13,7 +13,7 @@
 
 (defmethod shared/run* :default
   [_ _]
-  (shared/process! "docker-compose up -d --build app")
+  (shared/process! "docker-compose up -d kafka postgres")
   (shared/process! "foreman start --procfile Procfile-dev"
                    (shared/with-default-env {})))
 

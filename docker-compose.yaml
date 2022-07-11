@@ -8,28 +8,6 @@ volumes:
     driver: local
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile-dev
-    environment:
-      - LOG_LEVEL=debug
-      - ENV=development
-      - WS_RECONNECT_MS=1000
-      - API_BASE_URL=http://localhost:8080
-      - AUTH_BASE_URL=http://localhost:8080
-      - UI_BASE_URL=http://localhost:8080
-      - SERVICES=api auth tasks ui wf
-    restart: always
-    volumes:
-      - ./:/app
-    ports:
-      - 8000:7000
-      - 8080:3000
-    depends_on:
-      - kafka
-      - postgres
-
   postgres:
     image: postgres
     container_name: postgres
@@ -51,6 +29,10 @@ services:
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://localhost:9092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
     depends_on:
       - zookeeper
 
