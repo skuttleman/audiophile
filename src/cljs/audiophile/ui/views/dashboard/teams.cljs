@@ -46,9 +46,8 @@
 (defn team-item [{:keys [*res sys]} {:team/keys [name type] :as team}]
   (r/with-let [click (serv/teams#modal:update sys [::update {:*res *res :team team}])]
     (let [[title icon] (team-type->icon (keyword type))]
-      [:li.layout--row.team-item.layout--space-between
-       [:div {:style {:display :flex
-                      :align-items :center}}
+      [:li.team-item.layout--space-between.layout--align-center
+       [:div.layout--align-center
         [:div {:style {:display         :flex
                        :justify-content :center
                        :width           "32px"}}

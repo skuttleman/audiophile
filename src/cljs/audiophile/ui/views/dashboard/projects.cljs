@@ -76,7 +76,7 @@
 
 (defn project-item [{:keys [*res sys]} {:project/keys [id name] :as project}]
   (r/with-let [click (serv/projects#modal:update sys [::update {:*res *res :project project}])]
-    [:li.layout--row.project-item.layout--space-between
+    [:li.project-item.layout--space-between.layout--align-center
      [:a.link {:href (serv/projects#nav:ui sys id)}
       [:span name]]
      [comp/plain-button {:class    ["is-text" "layout--space-between"]

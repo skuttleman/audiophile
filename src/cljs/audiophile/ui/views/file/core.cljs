@@ -36,8 +36,9 @@
         [:div.panel
          [:div.panel-heading
           [:div.layout--align-center
-           [:a.link {:href (serv/projects#nav:ui sys (:file/project-id file))}
-            (:file/name file)]
+           [:a.link.layout--space-after {:href (serv/projects#nav:ui sys (:file/project-id file))}
+            [comp/icon :hand-point-left]]
+           (:file/name file)
            [:div.layout--inset
             (if (empty? (rest versions))
               [:small "version: " [version-name version]]
