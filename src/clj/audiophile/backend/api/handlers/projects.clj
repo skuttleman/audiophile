@@ -42,4 +42,20 @@
       (get-in [:body :data])
       (assoc :user/id (get-in request [:auth/user :user/id])
              :token/aud (get-in request [:auth/user :jwt/aud]))
-      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
+      (maps/assoc-maybe :request/id (-> request :headers :x-request-id uuids/->uuid))))
+
+(defn patch
+  "Handles a request to patch a project."
+  [{:keys [interactor]}]
+  (fn [data]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
+      (int/update! interactor data opts))))
+
+(defmethod selectors/select [:patch :routes.api/projects:id]
+  [_ request]
+  (-> request
+      (get-in [:body :data])
+      (assoc :project/id (get-in request [:nav/route :params :project/id])
+             :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
+      (maps/assoc-maybe :request/id (-> request :headers :x-request-id uuids/->uuid))))

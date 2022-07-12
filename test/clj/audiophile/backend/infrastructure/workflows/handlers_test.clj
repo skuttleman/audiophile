@@ -133,6 +133,20 @@
                                        :team-id team-id}]}
                        db-calls))))))
 
+(deftest projects:update-test
+  (testing ":projects/update workflow"
+    (let [[project-id user-id] (repeatedly uuids/random)
+          ctx {:project/id   project-id
+               :project/name "project name"
+               :user/id   user-id}
+          query-fn (->query-fn {{:insert-into :projects} [{:id project-id}]})]
+      (as-test [db-calls] [:projects/update ctx query-fn]
+        (testing "saves the project"
+          (assert/has? {:update :projects
+                        :set {:project/name "project name"}
+                        :where [:= :projects.id project-id]}
+                       db-calls))))))
+
 (deftest teams:create-test
   (testing ":teams/create workflow"
     (let [[team-id user-id] (repeatedly uuids/random)

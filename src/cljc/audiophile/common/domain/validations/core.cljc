@@ -34,6 +34,7 @@
    :api.file/create       specs/api-file:create
    :api.profile/fetch     specs/profile
    :api.project/create    specs/api-project:create
+   :api.project/update    specs/api-project:update
    :api.team/create       specs/api-team:create
    :api.team/update       specs/api-team:update
    :api.user/create       specs/api-user:create

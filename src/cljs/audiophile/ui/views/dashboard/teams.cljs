@@ -46,18 +46,18 @@
 (defn team-item [{:keys [*res sys]} {:team/keys [name type] :as team}]
   (r/with-let [click (serv/teams#modal:update sys [::update {:*res *res :team team}])]
     (let [[title icon] (team-type->icon (keyword type))]
-      [:li.layout--row.team-item
-       {:style {:display         :flex
-                :align-items :center}}
-       [:div {:style {:display         :flex
-                      :justify-content :center
-                      :width           "32px"}}
-        [comp/icon {:title title} icon]]
-       name
-       [comp/plain-button
-        {:class    ["is-text"]
-         :on-click click}
-        [comp/icon :edit]]])))
+      [:li.layout--row.team-item.layout--space-between
+       [:div {:style {:display :flex
+                      :align-items :center}}
+        [:div {:style {:display         :flex
+                       :justify-content :center
+                       :width           "32px"}}
+         [comp/icon {:title title} icon]]
+        name]
+       [comp/plain-button {:class    ["is-text" "layout--space-between"]
+                           :on-click click}
+        [comp/icon :edit]
+        [:span "edit"]]])))
 
 (defn team-list [attrs teams]
   [:div

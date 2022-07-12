@@ -11,7 +11,8 @@
   [:get :routes.api/teams]              #ig/ref :api.handler/teams#get
   [:get :routes.resources/health]       #ig/ref :res.handler/health
   [:get :routes.ws/connection]          #ig/ref :api.handler/ws#connect
-  [:patch :routes.api/teams:id]         #ig/ref :api.handler/teams#patch
+  [:patch :routes.api/teams:id]         #ig/ref :api.handler/team#patch
+  [:patch :routes.api/projects:id]      #ig/ref :api.handler/project#patch
   [:post :routes.api/artifact]          #ig/ref :api.handler/artifacts#post
   [:post :routes.api/comments]          #ig/ref :api.handler/comments#post
   [:post :routes.api/files:id]          #ig/ref :api.handler/file#post
@@ -119,12 +120,17 @@
   :handler    #ig/ref :audiophile.handlers.projects/create
   :spec       :api.project/create}
 
+ [:audiophile.spec/with-spec :api.handler/project#patch]
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.projects/update
+  :spec       :api.project/update}
+
  [:audiophile.spec/with-spec :api.handler/teams#post]
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.teams/create
   :spec       :api.team/create}
 
- [:audiophile.spec/with-spec :api.handler/teams#patch]
+ [:audiophile.spec/with-spec :api.handler/team#patch]
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.teams/update
   :spec       :api.team/update}
@@ -203,6 +209,9 @@
  {:interactor #ig/ref :interactors/projects}
 
  :audiophile.handlers.projects/create
+ {:interactor #ig/ref :interactors/projects}
+
+ :audiophile.handlers.projects/update
  {:interactor #ig/ref :interactors/projects}
 
  :audiophile.handlers.teams/fetch

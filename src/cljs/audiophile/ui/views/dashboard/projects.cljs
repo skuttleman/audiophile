@@ -47,6 +47,14 @@
     (finally
       (forms/destroy! *form))))
 
+(defn ^:private update* [*form _]
+  [:div
+   [comp/form {:*form *form}
+    [in/input (forms/with-attrs {:label       "Name"
+                                 :auto-focus? true}
+                                *form
+                                [:project/name])]]])
+
 (defmethod modals/body ::create
   [_ sys {:keys [*res close!] :as attrs}]
   (let [attrs (assoc attrs :on-success (fn [result]
@@ -55,16 +63,35 @@
                                          (some-> *res res/request!)))]
     [comp/with-resource (:*teams attrs) [create* sys attrs]]))
 
-(defn project-list [sys projects]
+(defmethod modals/body ::update
+  [_ sys {:keys [*res close! project] :as attrs}]
+  (r/with-let [attrs (assoc attrs :on-success (fn [result]
+                                                (when close!
+                                                  (close! result))
+                                                (some-> *res res/request!)))
+               *form (serv/projects#form:modify sys attrs project)]
+    [update* *form attrs]
+    (finally
+      (forms/destroy! *form))))
+
+(defn project-item [{:keys [*res sys]} {:project/keys [id name] :as project}]
+  (r/with-let [click (serv/projects#modal:update sys [::update {:*res *res :project project}])]
+    [:li.layout--row.project-item.layout--space-between
+     [:a.link {:href (serv/projects#nav:ui sys id)}
+      [:span name]]
+     [comp/plain-button {:class    ["is-text" "layout--space-between"]
+                         :on-click click}
+      [comp/icon :edit]
+      [:span "edit"]]]))
+
+(defn project-list [attrs projects]
   [:div
    [:p [:strong "Your projects"]]
    (if (seq projects)
      [:ul.project-list
-      (for [{:project/keys [id name]} projects]
+      (for [{:project/keys [id] :as project} projects]
         ^{:key id}
-        [:li.project-item.layout--space-between
-         [:a.link {:href (serv/projects#nav:ui sys id)}
-          [:span name]]])]
+        [project-item attrs project])]
      [:p "You don't have any projects. Why not create one?"])])
 
 (defn tile [sys *teams]
@@ -73,7 +100,8 @@
                                                                 :*teams *teams}])]
     [comp/tile
      [:h2.subtitle "Projects"]
-     [comp/with-resource [*res {:spinner/size :small}] [project-list sys]]
+     [comp/with-resource [*res {:spinner/size :small}] [project-list {:*res *res
+                                                                      :sys  sys}]]
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}

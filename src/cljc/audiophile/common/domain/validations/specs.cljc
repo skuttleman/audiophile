@@ -83,6 +83,10 @@
    [:project/name trimmed-string?]
    [:project/team-id uuid?]])
 
+(def project:update
+  [:map
+   [:project/name trimmed-string?]])
+
 (def team:create
   [:map
    [:team/name trimmed-string?]
@@ -138,6 +142,13 @@
   (-> auth
       (mu/merge [:map [:request/id {:optional true} uuid?]])
       (mu/merge project:create)))
+
+(def api-project:update
+  (-> auth
+      (mu/merge [:map
+                 [:project/id uuid?]
+                 [:request/id {:optional true} uuid?]])
+      (mu/merge project:update)))
 
 (def api-team:create
   (-> auth

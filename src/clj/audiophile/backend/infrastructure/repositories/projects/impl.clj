@@ -18,7 +18,11 @@
   (create! [_ data opts]
     (when-not (repos/transact! repo qprojects/insert-project-access? data opts)
       (int/no-access!))
-    (crepos/start-workflow! producer :projects/create (merge opts data) opts)))
+    (crepos/start-workflow! producer :projects/create (merge opts data) opts))
+  (update! [_ data opts]
+    (when-not (repos/transact! repo qprojects/update-project-access? data opts)
+      (int/no-access!))
+    (crepos/start-workflow! producer :projects/update (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[ProjectAccessor]] which provides semantic access for storing and retrieving projects."

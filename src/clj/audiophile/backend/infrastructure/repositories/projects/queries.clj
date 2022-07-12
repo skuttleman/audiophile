@@ -43,8 +43,27 @@
 (defn insert-project-access? [executor project opts]
   (cdb/access? executor (access-team (:project/team-id project) (:user/id opts))))
 
+(defn update-project-access? [executor {project-id :project/id} {user-id :user/id}]
+  (-> executor
+      (repos/execute! (-> tbl/projects
+                          (models/select-fields #{:id})
+                          (models/select*)
+                          (models/join tbl/teams [:= :teams.id :projects.team-id])
+                          (models/join tbl/user-teams [:= :user-teams.team-id :teams.id])
+                          (models/and-where [:and
+                                             [:= :projects.id project-id]
+                                             [:= :user-teams.user-id user-id]])))
+      seq
+      boolean))
+
 (defn insert-project! [executor project _]
   (-> executor
       (repos/execute! (models/insert-into tbl/projects project))
       colls/only!
       :id))
+
+(defn update-project! [executor project _]
+  (repos/execute! executor
+                  (-> (models/sql-update tbl/projects)
+                      (models/sql-set (select-keys project #{:project/name}))
+                      (models/and-where [:= :projects.id (:project/id project)]))))
