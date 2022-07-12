@@ -1,6 +1,7 @@
 (ns audiophile.backend.infrastructure.repositories.teams.impl
   (:refer-clojure :exclude [accessor])
   (:require
+    [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.common :as crepos]
     [audiophile.backend.infrastructure.repositories.core :as repos]
@@ -21,6 +22,8 @@
   (query-one [_ opts]
     (repos/transact! repo query-by-id* (:team/id opts) opts))
   (create! [_ data opts]
+    (when-not (repos/transact! repo qteams/insert-team-access? data opts)
+      (int/no-access!))
     (crepos/start-workflow! producer :teams/create (merge opts data) opts)))
 
 (defn accessor

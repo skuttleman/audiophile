@@ -79,6 +79,7 @@
           repo (rusers/->UserAccessor tx producer)
           [user-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{}])
         (int/create! repo
                      {:user/handle        "handle"
                       :user/email         "email"

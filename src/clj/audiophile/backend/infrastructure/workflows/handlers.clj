@@ -9,70 +9,38 @@
     [audiophile.backend.infrastructure.repositories.users.queries :as qusers]
     [audiophile.common.core.utils.logger :as log]))
 
-(defn ^:private create* [executor access? insert! ctx {:spigot/keys [tag params]}]
+(defn ^:private create* [executor insert! ctx {:spigot/keys [tag params]}]
   (let [ns* (namespace tag)]
     (log/with-ctx :TASK
       (log/info (format "saving %s to db" ns*) ctx)
-      (if (access? executor params ctx)
-        {(keyword ns* "id") (insert! executor params ctx)}
-        (throw (ex-info "insufficient access" params))))))
+      {(keyword ns* "id") (insert! executor params ctx)})))
 
 (defmulti task-handler (fn [_ _ {:spigot/keys [tag]}]
                           tag))
 
 (defmethod task-handler :artifact/create!
   [{:keys [repo]} ctx task]
-  (repos/transact! repo
-                   create*
-                   qfiles/insert-artifact-access?
-                   qfiles/insert-artifact!
-                   ctx
-                   task))
+  (repos/transact! repo create* qfiles/insert-artifact! ctx task))
 
 (defmethod task-handler :comment/create!
   [{:keys [repo]} ctx task]
-  (repos/transact! repo
-                   create*
-                   qcomments/insert-comment-access?
-                   qcomments/insert-comment!
-                   ctx
-                   task))
+  (repos/transact! repo create* qcomments/insert-comment! ctx task))
 
 (defmethod task-handler :file/create!
   [{:keys [repo]} ctx task]
-  (repos/transact! repo
-                   create*
-                   qfiles/insert-file-access?
-                   qfiles/insert-file!
-                   ctx
-                   task))
+  (repos/transact! repo create* qfiles/insert-file! ctx task))
 
 (defmethod task-handler :file-version/create!
   [{:keys [repo]} ctx task]
-  (repos/transact! repo
-                   create*
-                   qfiles/insert-version-access?
-                   qfiles/insert-version!
-                   ctx
-                   task))
+  (repos/transact! repo create* qfiles/insert-version! ctx task))
 
 (defmethod task-handler :project/create!
   [{:keys [repo]} ctx task]
-  (repos/transact! repo
-                   create*
-                   qprojects/insert-project-access?
-                   qprojects/insert-project!
-                   ctx
-                   task))
+  (repos/transact! repo create* qprojects/insert-project! ctx task))
 
 (defmethod task-handler :team/create!
   [{:keys [repo]} ctx task]
-  (repos/transact! repo
-                   create*
-                   qteams/insert-team-access?
-                   qteams/insert-team!
-                   ctx
-                   task))
+  (repos/transact! repo create* qteams/insert-team! ctx task))
 
 (defn ^:private query-signup-conflicts [executor params ctx]
   (for [[field f] [[:user/email qusers/find-by-email]

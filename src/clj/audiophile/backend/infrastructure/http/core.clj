@@ -18,6 +18,10 @@
     (log/error ex "An unknown error occurred"))
   (ring/error ::http/internal-server-error "an unknown error occurred"))
 
+(defmethod ex->response int/NO_ACCESS
+  [_]
+  (ring/error ::http/bad-request "access denied"))
+
 (defmethod ex->response int/INVALID_INPUT
   [_]
   (ring/error ::http/bad-request "invalid request"))
@@ -86,15 +90,22 @@
                handler
                ->response)
            (catch Throwable ex
-             (let [{:keys [details paths]} (ex-data ex)]
-               (if (contains? paths [:user/id])
-                 (int/not-authenticated!)
-                 (log/with-ctx :SERVER
-                   (if details
-                     (do (log/warn "Invalid data" spec details)
-                         (int/invalid-input!))
-                     (do (log/error ex "an error occurred")
-                         (int/internal-error!)))))))))))
+             (let [{:keys [details paths] :as data} (ex-data ex)]
+               (log/with-ctx :SERVER
+                 (cond
+                   (:interactor/reason data)
+                   (throw ex)
+
+                   (contains? paths [:user/id])
+                   (int/not-authenticated!)
+
+                   details
+                   (do (log/warn "Invalid data" spec details)
+                       (int/invalid-input!))
+
+                   :else
+                   (do (log/error ex "an error occurred")
+                       (int/internal-error!))))))))))
 
 (defn ok
   "Wraps result in an http success response"

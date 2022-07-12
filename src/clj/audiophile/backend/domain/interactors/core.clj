@@ -2,12 +2,16 @@
   (:require
     [audiophile.backend.domain.interactors.protocols :as pint]))
 
+(def ^:const NO_ACCESS :interactor/NO_ACCESS)
 (def ^:const INVALID_INPUT :interactor/INVALID_INPUT)
 (def ^:const NOT_AUTHENTICATED :interactor/NOT_AUTHENTICATED)
 (def ^:const INTERNAL_ERROR :interactor/INTERNAL_ERROR)
 
 (defn ^:private throw-reason! [code]
   (throw (ex-info (name code) {:interactor/reason code})))
+
+(defn no-access! []
+  (throw-reason! NO_ACCESS))
 
 (defn invalid-input! []
   (throw-reason! INVALID_INPUT))

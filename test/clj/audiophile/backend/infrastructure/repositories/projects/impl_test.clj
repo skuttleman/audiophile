@@ -93,6 +93,7 @@
           repo (rprojects/->ProjectAccessor tx producer)
           [request-id user-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{}])
         (int/create! repo {:some :data} {:some       :opts
                                          :some/other :opts
                                          :user/id    user-id

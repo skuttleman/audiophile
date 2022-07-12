@@ -21,6 +21,7 @@
           store (ts/->store)
           repo (rfiles/->FileAccessor tx store producer nil (constantly "key"))
           [request-id user-id] (repeatedly uuids/random)]
+      (stubs/use! tx :execute! [{}])
       (stubs/set-stub! store :uri "some://uri")
       (int/create-artifact! repo
                             {:some :data}
@@ -229,6 +230,7 @@
           repo (rfiles/->FileAccessor tx nil producer nil nil)
           [request-id user-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{}])
         (int/create-file! repo {:some :data} {:some       :opts
                                               :some/other :opts
                                               :user/id    user-id
@@ -253,6 +255,7 @@
           repo (rfiles/->FileAccessor tx nil producer nil nil)
           [request-id user-id] (repeatedly uuids/random)]
       (testing "emits a command"
+        (stubs/use! tx :execute! [{}])
         (int/create-file-version! repo
                                   {:some :data}
                                   {:some       :opts

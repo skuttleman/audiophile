@@ -1,6 +1,7 @@
 (ns audiophile.backend.infrastructure.repositories.files.impl
   (:refer-clojure :exclude [accessor])
   (:require
+    [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.common :as crepos]
     [audiophile.backend.infrastructure.repositories.core :as repos]
@@ -30,10 +31,16 @@
 
   pint/IFileAccessor
   (create-artifact! [_ data opts]
+    (when-not (repos/transact! repo qfiles/insert-artifact-access? data opts)
+      (int/no-access!))
     (file-accessor#create-artifact! store producer (keygen) data opts))
   (create-file! [_ data opts]
+    (when-not (repos/transact! repo qfiles/insert-file-access? data opts)
+      (int/no-access!))
     (crepos/start-workflow! producer :files/create (merge opts data) opts))
   (create-file-version! [_ data opts]
+    (when-not (repos/transact! repo qfiles/insert-version-access? data opts)
+      (int/no-access!))
     (crepos/start-workflow! producer :versions/create (merge opts data) opts))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* store (:artifact/id opts) opts)))
