@@ -130,6 +130,10 @@
                                                    (:workflow/id ctx))
                        :workflow/failed event
                        nil)]
-      (log/with-ctx :CP
-        (log/info "publishing event to ws" event-id)
-        (ps/send-user! pubsub (:user/id ctx) event-id (dissoc event :event/ctx) ctx)))))
+      (let [event (dissoc event :event/ctx)]
+        (log/with-ctx :CP
+          (log/info "publishing event to ws" event-id)
+          (doseq [user-id (distinct (cons (:user/id ctx)
+                                          (case (:workflow/template event)
+                                            nil)))]
+            (ps/send-user! pubsub user-id event-id event ctx)))))))
