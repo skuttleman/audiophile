@@ -13,6 +13,9 @@
 (def ^:private teams#validator:new
   (val/validator {:spec specs/team:create}))
 
+(def ^:private teams#validator:modify
+  (val/validator {:spec specs/team:update}))
+
 (defn projects#res:fetch-all [sys]
   (pages/res:fetch sys :routes.api/projects))
 
@@ -33,5 +36,14 @@
   (let [*form (form.std/create store {:team/type :COLLABORATIVE} teams#validator:new)]
     (pages/form:new sys attrs *form :routes.api/teams)))
 
+(defn teams#form:modify [{:keys [store] :as sys} attrs {team-id :team/id :as team}]
+  (let [*form (form.std/create store
+                               (val/select-keys specs/team:update team)
+                               teams#validator:modify)]
+    (pages/form:modify sys attrs *form :routes.api/teams:id {:params {:team/id team-id}})))
+
 (defn teams#modal:create [sys body]
   (pages/modal:open sys [:h1.subtitle "Create a team"] body))
+
+(defn teams#modal:update [sys body]
+  (pages/modal:open sys [:h1.subtitle "Edit team"] body))

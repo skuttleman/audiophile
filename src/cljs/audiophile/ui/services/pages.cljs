@@ -43,27 +43,36 @@
                 {:method :get
                  :url    (nav/path-for nav handle (update params :params merge opts))}))))
 
+(defn ^:private form:* [{:keys [http-client nav store] :as sys} attrs *form method handle params]
+  (let [id (forms/id *form)]
+    (form.submit/create id
+                        *form
+                        (ires/http id
+                                   store
+                                   http-client
+                                   (fn [body]
+                                     {:method      method
+                                      :url         (nav/path-for nav handle params)
+                                      :body        {:data body}
+                                      :http/async? true})
+                                   (fn [vow]
+                                     (-> vow
+                                         (with-handlers attrs)
+                                         (with-toast sys))))
+                        (or (:local->remote attrs) identity)
+                        (or (:remote->local attrs) identity))))
+
 (defn form:new
   ([sys attrs *form handle]
    (form:new sys attrs *form handle nil))
-  ([{:keys [http-client nav store] :as sys} attrs *form handle params]
-   (let [id (forms/id *form)]
-     (form.submit/create id
-                         *form
-                         (ires/http id
-                                    store
-                                    http-client
-                                    (fn [body]
-                                      {:method      :post
-                                       :url         (nav/path-for nav handle params)
-                                       :body        {:data body}
-                                       :http/async? true})
-                                    (fn [vow]
-                                      (-> vow
-                                          (with-handlers attrs)
-                                          (with-toast sys))))
-                         (or (:local->remote attrs) identity)
-                         (or (:remote->local attrs) identity)))))
+  ([sys attrs *form handle params]
+   (form:* sys attrs *form :post handle params)))
+
+(defn form:modify
+  ([sys attrs *form handle]
+   (form:modify sys attrs *form handle nil))
+  ([sys attrs *form handle params]
+   (form:* sys attrs *form :patch handle params)))
 
 (defn modal:open [{:keys [store]} header body]
   (fn [_]

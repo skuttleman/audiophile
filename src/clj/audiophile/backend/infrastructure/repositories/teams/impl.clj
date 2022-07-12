@@ -24,7 +24,11 @@
   (create! [_ data opts]
     (when-not (repos/transact! repo qteams/insert-team-access? data opts)
       (int/no-access!))
-    (crepos/start-workflow! producer :teams/create (merge opts data) opts)))
+    (crepos/start-workflow! producer :teams/create (merge opts data) opts))
+  (update! [_ data opts]
+    (when-not (repos/transact! repo qteams/update-team-access? data opts)
+      (int/no-access!))
+    (crepos/start-workflow! producer :teams/update (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."

@@ -42,6 +42,10 @@
   [{:keys [repo]} ctx task]
   (repos/transact! repo create* qteams/insert-team! ctx task))
 
+(defmethod task-handler :team/update!
+  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  (repos/transact! repo qteams/update-team! params ctx))
+
 (defn ^:private query-signup-conflicts [executor params ctx]
   (for [[field f] [[:user/email qusers/find-by-email]
                    [:user/handle qusers/find-by-handle]

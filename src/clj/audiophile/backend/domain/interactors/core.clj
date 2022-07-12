@@ -31,6 +31,9 @@
 (defn create! [accessor data opts]
   (pint/create! accessor data opts))
 
+(defn update! [accessor data opts]
+  (pint/update! accessor data opts))
+
 (defn create-artifact! [interactor data opts]
   (pint/create-artifact! interactor data opts))
 

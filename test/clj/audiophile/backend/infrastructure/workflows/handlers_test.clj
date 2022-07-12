@@ -94,11 +94,11 @@
                :project/id   project-id
                :file/name    "file"
                :version/name "version"}
-          query-fn (->query-fn {{:insert-into :files} [{:id file-id}]
+          query-fn (->query-fn {{:insert-into :files}         [{:id file-id}]
                                 {:insert-into :file-versions} [{:id version-id}]})]
       (as-test [db-calls result] [:files/create ctx query-fn]
         (testing "produces a final context"
-          (assert/is? {'?file-id   file-id
+          (assert/is? {'?file-id    file-id
                        '?version-id version-id}
                       (:ctx result)))
 
@@ -153,6 +153,20 @@
           (assert/has? {:insert-into :user-teams
                         :values      [{:team-id team-id
                                        :user-id user-id}]}
+                       db-calls))))))
+
+(deftest teams:update-test
+  (testing ":teams/update workflow"
+    (let [[team-id user-id] (repeatedly uuids/random)
+          ctx {:team/id   team-id
+               :team/name "team name"
+               :user/id   user-id}
+          query-fn (->query-fn {{:insert-into :teams} [{:id team-id}]})]
+      (as-test [db-calls] [:teams/update ctx query-fn]
+        (testing "saves the team"
+          (assert/has? {:update :teams
+                        :set {:team/name "team name"}
+                        :where [:= :teams.id team-id]}
                        db-calls))))))
 
 (deftest users:signup-test

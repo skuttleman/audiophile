@@ -114,20 +114,56 @@
           tx (ts/->tx)
           repo (rteams/->TeamAccessor tx producer)
           [request-id user-id] (repeatedly uuids/random)]
-      (testing "emits a command"
+      (testing "when the user has access"
         (stubs/use! tx :execute! [{}])
-        (int/create! repo {:some :data} {:some       :opts
-                                         :some/other :opts
-                                         :user/id    user-id
-                                         :request/id request-id})
-        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
-          (is (= ::sp.ktop/create! tag))
-          (assert/is? {:workflows/ctx      {'?user-id user-id}
-                       :workflows/template :teams/create
-                       :workflows/form     (peek (wf/load! :teams/create))
-                       :workflows/->result {:team/id '(sp.ctx/get ?team-id)}}
-                      params)
-          (assert/is? {:user/id     user-id
-                       :request/id  request-id
-                       :workflow/id uuid?}
-                      ctx))))))
+        (testing "emits a command"
+          (int/create! repo {:some :data} {:some       :opts
+                                           :some/other :opts
+                                           :user/id    user-id
+                                           :request/id request-id})
+          (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
+            (is (= ::sp.ktop/create! tag))
+            (assert/is? {:workflows/ctx      {'?user-id user-id}
+                         :workflows/template :teams/create
+                         :workflows/form     (peek (wf/load! :teams/create))
+                         :workflows/->result {:team/id '(sp.ctx/get ?team-id)}}
+                        params)
+            (assert/is? {:user/id     user-id
+                         :request/id  request-id
+                         :workflow/id uuid?}
+                        ctx)))))))
+
+(deftest update!-test
+  (testing "update!"
+    (let [producer (ts/->chan)
+          tx (ts/->tx)
+          repo (rteams/->TeamAccessor tx producer)
+          [request-id team-id user-id] (repeatedly uuids/random)]
+      (testing "when the user has access"
+        (stubs/use! tx :execute! [{}])
+        (testing "emits a command"
+          (int/update! repo {:some :data} {:some       :opts
+                                           :some/other :opts
+                                           :team/id    team-id
+                                           :user/id    user-id
+                                           :request/id request-id})
+          (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
+            (is (= ::sp.ktop/create! tag))
+            (assert/is? {:workflows/ctx      {'?team-id team-id}
+                         :workflows/template :teams/update
+                         :workflows/form     (peek (wf/load! :teams/update))}
+                        params)
+            (assert/is? {:user/id     user-id
+                         :request/id  request-id
+                         :workflow/id uuid?}
+                        ctx))))
+
+      (testing "when the user does not have access"
+        (stubs/use! tx :execute! [])
+        (testing "throws"
+          (let [ex (is (thrown? Throwable (int/update! repo {:some :data} {:some       :opts
+                                                                           :some/other :opts
+                                                                           :team/id    team-id
+                                                                           :user/id    user-id
+                                                                           :request/id request-id})))]
+            (is (= int/NO_ACCESS (:interactor/reason (ex-data ex))))))))))

@@ -229,24 +229,34 @@
           tx (ts/->tx)
           repo (rfiles/->FileAccessor tx nil producer nil nil)
           [request-id user-id] (repeatedly uuids/random)]
-      (testing "emits a command"
-        (stubs/use! tx :execute! [{}])
-        (int/create-file! repo {:some :data} {:some       :opts
-                                              :some/other :opts
-                                              :user/id    user-id
-                                              :request/id request-id})
-        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
-          (is (= ::sp.ktop/create! tag))
-          (assert/is? {:workflows/ctx      {}
-                       :workflows/template :files/create
-                       :workflows/form     (peek (wf/load! :files/create))
-                       :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
-                                             :file/id         (sp.ctx/get ?file-id)}}
-                      params)
-          (assert/is? {:user/id     user-id
-                       :request/id  request-id
-                       :workflow/id uuid?}
-                      ctx))))))
+      (testing "when the user has access"
+          (stubs/use! tx :execute! [{}])
+        (testing "emits a command"
+          (int/create-file! repo {:some :data} {:some       :opts
+                                                :some/other :opts
+                                                :user/id    user-id
+                                                :request/id request-id})
+          (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
+            (is (= ::sp.ktop/create! tag))
+            (assert/is? {:workflows/ctx      {}
+                         :workflows/template :files/create
+                         :workflows/form     (peek (wf/load! :files/create))
+                         :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
+                                               :file/id         (sp.ctx/get ?file-id)}}
+                        params)
+            (assert/is? {:user/id     user-id
+                         :request/id  request-id
+                         :workflow/id uuid?}
+                        ctx))))
+
+      (testing "when the user does not have access"
+        (stubs/use! tx :execute! [])
+        (testing "throws"
+          (let [ex (is (thrown? Throwable (int/create-file! repo {:some :data} {:some       :opts
+                                                                                :some/other :opts
+                                                                                :user/id    user-id
+                                                                                :request/id request-id})))]
+            (is (= int/NO_ACCESS (:interactor/reason (ex-data ex))))))))))
 
 (deftest create-file-version-test
   (testing "create-file-version"
@@ -254,22 +264,34 @@
           tx (ts/->tx)
           repo (rfiles/->FileAccessor tx nil producer nil nil)
           [request-id user-id] (repeatedly uuids/random)]
-      (testing "emits a command"
+      (testing "when the user has access"
         (stubs/use! tx :execute! [{}])
-        (int/create-file-version! repo
-                                  {:some :data}
-                                  {:some       :opts
-                                   :some/other :opts
-                                   :user/id    user-id
-                                   :request/id request-id})
-        (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
-          (is (= ::sp.ktop/create! tag))
-          (assert/is? {:workflows/ctx      {}
-                       :workflows/template :versions/create
-                       :workflows/form     (peek (wf/load! :versions/create))
-                       :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
-                      params)
-          (assert/is? {:user/id     user-id
-                       :request/id  request-id
-                       :workflow/id uuid?}
-                      ctx))))))
+        (testing "emits a command"
+          (int/create-file-version! repo
+                                    {:some :data}
+                                    {:some       :opts
+                                     :some/other :opts
+                                     :user/id    user-id
+                                     :request/id request-id})
+          (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
+            (is (= ::sp.ktop/create! tag))
+            (assert/is? {:workflows/ctx      {}
+                         :workflows/template :versions/create
+                         :workflows/form     (peek (wf/load! :versions/create))
+                         :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
+                        params)
+            (assert/is? {:user/id     user-id
+                         :request/id  request-id
+                         :workflow/id uuid?}
+                        ctx))))
+
+      (testing "when the user does not have access"
+        (stubs/use! tx :execute! [])
+        (testing "throws"
+          (let [ex (is (thrown? Throwable (int/create-file-version! repo
+                                                                    {:some :data}
+                                                                    {:some       :opts
+                                                                     :some/other :opts
+                                                                     :user/id    user-id
+                                                                     :request/id request-id})))]
+            (is (= int/NO_ACCESS (:interactor/reason (ex-data ex))))))))))

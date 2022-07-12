@@ -11,6 +11,7 @@
   [:get :routes.api/teams]              #ig/ref :api.handler/teams#get
   [:get :routes.resources/health]       #ig/ref :res.handler/health
   [:get :routes.ws/connection]          #ig/ref :api.handler/ws#connect
+  [:patch :routes.api/teams:id]         #ig/ref :api.handler/teams#patch
   [:post :routes.api/artifact]          #ig/ref :api.handler/artifacts#post
   [:post :routes.api/comments]          #ig/ref :api.handler/comments#post
   [:post :routes.api/files:id]          #ig/ref :api.handler/file#post
@@ -123,6 +124,11 @@
   :handler    #ig/ref :audiophile.handlers.teams/create
   :spec       :api.team/create}
 
+ [:audiophile.spec/with-spec :api.handler/teams#patch]
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.teams/update
+  :spec       :api.team/update}
+
  [:audiophile.spec/with-spec :api.handler/users#post]
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.users/create
@@ -206,6 +212,9 @@
  {:interactor #ig/ref :interactors/teams}
 
  :audiophile.handlers.teams/create
+ {:interactor #ig/ref :interactors/teams}
+
+ :audiophile.handlers.teams/update
  {:interactor #ig/ref :interactors/teams}
 
  :audiophile.handlers.users/create

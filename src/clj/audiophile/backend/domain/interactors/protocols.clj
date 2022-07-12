@@ -7,7 +7,9 @@
   (query-many [this opts]
     "Queries many entities")
   (create! [this data opts]
-    "Creates a new entity"))
+    "Creates a new entity")
+  (update! [this data opts]
+    "Updates an existing entity"))
 
 (defprotocol IEventAccessor
   "Abstraction for saving and querying events")
