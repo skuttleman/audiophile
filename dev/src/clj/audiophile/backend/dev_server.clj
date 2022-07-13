@@ -51,6 +51,6 @@
 
 (comment
   (alter-var-root #'system (fn [sys]
-                             (some-> system ig/halt!)
+                             (some-> sys ig/halt!)
                              nil))
   (reset-system! #{"api" "auth" "tasks" "ui" "wf"}))

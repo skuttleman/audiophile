@@ -1,12 +1,15 @@
 (ns audiophile.ui.views.project.services
   (:require
+    [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.domain.validations.core :as val]
     [audiophile.common.domain.validations.specs :as specs]
     [audiophile.common.infrastructure.navigation.core :as nav]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.forms.standard :as form.std]
-    [audiophile.ui.views.common.services :as cserv]
-    [audiophile.ui.services.pages :as pages]))
+    [audiophile.ui.services.pages :as pages]
+    [audiophile.ui.views.common.services :as cserv]))
 
 (def ^:private ui-file-spec
   (conj cserv/ui-version-spec [:file/name specs/trimmed-string?]))
@@ -33,6 +36,17 @@
 
 (defn projects#res:fetch-one [sys project-id]
   (pages/res:fetch sys :routes.api/projects:id {:params {:project/id project-id}}))
+
+(defn projects#sub:start! [{:keys [nav pubsub]} project-id *project]
+  (pubsub/subscribe! pubsub
+                     ::pages/sub
+                     [:projects (-> @nav :params :project/id)]
+                     (fn [_]
+                       (res/request! *project)))
+  (maps/->m project-id pubsub))
+
+(defn project#sub:stop! [{:keys [project-id pubsub]}]
+  (pubsub/unsubscribe! pubsub ::pages/sub [:projects project-id]))
 
 (defn teams#res:fetch-one [sys team-id]
   (pages/res:fetch sys :routes.api/teams:id {:params {:team/id team-id}}))

@@ -94,12 +94,14 @@
 (defn ^:private page [{:keys [nav] :as sys}]
   (r/with-let [project-id (-> @nav :params :project/id)
                *files (serv/files#res:fetch-all sys project-id)
-               *project (serv/projects#res:fetch-one sys project-id)]
+               *project (serv/projects#res:fetch-one sys project-id)
+               *sub (serv/projects#sub:start! sys project-id *project)]
     [:div.layout--space-below.layout--xxl.gutters
      [:div {:style {:width "100%"}}
       [comp/with-resource *project [project-details sys]]
       [comp/with-resource *files [track-list sys (maps/->m *files *project project-id)]]]]
     (finally
+      (serv/project#sub:stop! *sub)
       (run! res/destroy! [*project *files]))))
 
 (defn root [sys]

@@ -64,18 +64,20 @@
     [comp/with-resource (:*teams attrs) [create* sys attrs]]))
 
 (defmethod modals/body ::update
-  [_ sys {:keys [*res close! project] :as attrs}]
+  [_ sys {:keys [*res close! project-id] :as attrs}]
   (r/with-let [attrs (assoc attrs :on-success (fn [result]
                                                 (when close!
                                                   (close! result))
                                                 (some-> *res res/request!)))
-               *form (serv/projects#form:modify sys attrs project)]
+               *form (serv/projects#form:modify sys attrs (->> @*res
+                                                               (filter (comp #{project-id} :project/id))
+                                                               first))]
     [update* *form attrs]
     (finally
       (forms/destroy! *form))))
 
-(defn project-item [{:keys [*res sys]} {:project/keys [id name] :as project}]
-  (r/with-let [click (serv/projects#modal:update sys [::update {:*res *res :project project}])]
+(defn project-item [{:keys [*res sys]} {:project/keys [id name]}]
+  (r/with-let [click (serv/projects#modal:update sys [::update {:*res *res :project-id id}])]
     [:li.project-item.layout--space-between.layout--align-center
      [:a.link {:href (serv/projects#nav:ui sys id)}
       [:span name]]

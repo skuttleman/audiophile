@@ -4,6 +4,9 @@
  [:duct/const :services/store]
  #ig/ref :audiophile.ui.services/store
 
+ [:duct/const :services/pubsub]
+ ^:promote #ig/ref :audiophile.ui.services/pubsub
+
  :audiophile.ui.services/base-urls
  {}
 
@@ -14,4 +17,7 @@
  {}
 
  :audiophile.services.pubsub/memory
- {}}
+ {}
+
+ :audiophile.ui.services/pubsub
+ {:pubsub #ig/ref :audiophile.services.pubsub/memory}}

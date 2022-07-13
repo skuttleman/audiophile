@@ -33,18 +33,20 @@
       (forms/destroy! *form))))
 
 (defmethod modals/body ::update
-  [_ sys {:keys [*res close! team] :as attrs}]
+  [_ sys {:keys [*res close! team-id] :as attrs}]
   (r/with-let [attrs (assoc attrs :on-success (fn [result]
                                                 (when close!
                                                   (close! result))
                                                 (some-> *res res/request!)))
-               *form (serv/teams#form:modify sys attrs team)]
+               *form (serv/teams#form:modify sys attrs (->> @*res
+                                                            (filter (comp #{team-id} :team/id))
+                                                            first))]
     [body* *form attrs]
     (finally
       (forms/destroy! *form))))
 
-(defn team-item [{:keys [*res sys]} {:team/keys [name type] :as team}]
-  (r/with-let [click (serv/teams#modal:update sys [::update {:*res *res :team team}])]
+(defn team-item [{:keys [*res sys]} {:team/keys [id name type]}]
+  (r/with-let [click (serv/teams#modal:update sys [::update {:*res *res :team-id id}])]
     (let [[title icon] (team-type->icon (keyword type))]
       [:li.team-item.layout--space-between.layout--align-center
        [:div.layout--align-center

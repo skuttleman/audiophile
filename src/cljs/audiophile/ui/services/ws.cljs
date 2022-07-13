@@ -1,32 +1,34 @@
 (ns audiophile.ui.services.ws
   (:require
-    [clojure.core.async :as async]
-    [clojure.core.match :as match]
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uri :as uri]
     [audiophile.common.infrastructure.navigation.core :as nav]
-    [com.ben-allred.ws-client-cljc.core :as ws*]))
+    [clojure.core.async :as async]
+    [clojure.core.match :as match]
+    [com.ben-allred.ws-client-cljc.core :as ws*]
+    clojure.pprint))
 
 (defonce ^:private conn
   (atom nil))
 
 (defn handle-msg [pubsub msg]
   (let [event (match/match msg
-                     [msg-type event-id data ctx] {:id   event-id
-                                                   :data data
-                                                   :ctx  ctx}
-                     _ nil)
-        event-type (get-in event [:data :event/type])
-        event-data (get-in event [:data :event/data])]
-    (when-let [request-id (-> event :ctx :request/id)]
-      (let [event* (case event-type
-                     :workflow/failed {:error [event-data]}
-                     {:data event-data})]
-        (log/info [event-type (:ctx event)])
-        (pubsub/publish! pubsub request-id event*)))))
+                [_ event-id data ctx] {:id       event-id
+                                       :data     data
+                                       :ctx      ctx}
+                _ nil)
+        {request-id :request/id topics :subscription/topics} (:ctx event)]
+    (doseq [topic (or topics [request-id])
+            :when topic
+            :let [{event-type :event/type event-data :event/data} (:data event)
+                  event* (case event-type
+                           :workflow/failed {:error [event-data]}
+                           {:data event-data})]]
+      (log/info [event-type (:ctx event)])
+      (pubsub/publish! pubsub topic event*))))
 
 (defn ws-uri [nav base-url]
   (let [mime-type (serdes/mime-type serde/transit)
@@ -57,3 +59,7 @@
           (handle-msg pubsub msg)
           (recur)))
       nil)))
+
+(defn send! [msg]
+  (async/go
+    (async/>! @conn msg)))

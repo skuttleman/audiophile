@@ -116,13 +116,15 @@
         polling? (volatile! true)]
     (client*/subscribe! client (:name topic-cfg))
     (async/go-loop []
-      (when-let [{:keys [by-topic]} (when @polling?
-                                      (u/silent! (client*/poll! client (or timeout 1000))))]
+      (when-let [{:keys [by-topic]} (if @polling?
+                                      (u/silent! (client*/poll! client (or timeout 1000)))
+                                      (log/debug "shutting down consumer" id))]
         (try (->> by-topic
                   (mapcat val)
                   (run! listener))
              (client*/commit! client)
-             (catch Throwable _
+             (catch Throwable ex
+               (log/error ex "consumer error" id)
                (vreset! polling? false)))
         (async/<! (async/timeout 100))
         (recur)))

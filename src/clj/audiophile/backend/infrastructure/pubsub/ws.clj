@@ -48,6 +48,14 @@
 (defmethod on-message! :conn/pong
   [_ _ _])
 
+(defmethod on-message! :sub/start!
+  [ctx ch [_ topic]]
+  (subscribe* ctx ch topic :event/subscription))
+
+(defmethod on-message! :sub/stop!
+  [{::keys [pubsub ch-id]} _ [_ topic]]
+  (pubsub/unsubscribe! pubsub ch-id topic))
+
 (defn on-open! [{::keys [user-id] :as ctx} ch]
   (subscribe* ctx ch [::ps/broadcast] :event/broadcast)
   (subscribe* ctx ch [::ps/user user-id] :event/user)
@@ -133,7 +141,12 @@
       (let [event (dissoc event :event/ctx)]
         (log/with-ctx :CP
           (log/info "publishing event to ws" event-id)
-          (doseq [user-id (distinct (cons (:user/id ctx)
-                                          (case (:workflow/template event)
-                                            nil)))]
-            (ps/send-user! pubsub user-id event-id event ctx)))))))
+          (ps/send-user! pubsub (:user/id ctx) event-id event ctx)
+          (when-let [topic (when-let [k (some-> event
+                                                :event/data
+                                                :workflow/template
+                                                namespace
+                                                keyword)]
+                             (some->> ctx :subscription/id (vector k)))]
+            (let [ctx (assoc ctx :subscription/topics #{topic})]
+              (ps/publish! pubsub topic event-id event ctx))))))))

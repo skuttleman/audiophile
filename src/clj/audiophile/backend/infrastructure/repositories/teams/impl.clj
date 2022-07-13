@@ -28,7 +28,8 @@
   (update! [_ data opts]
     (when-not (repos/transact! repo qteams/update-team-access? data opts)
       (int/no-access!))
-    (crepos/start-workflow! producer :teams/update (merge opts data) opts)))
+    (let [opts (assoc opts :subscription/id (:team/id data))]
+      (crepos/start-workflow! producer :teams/update (merge opts data) opts))))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."
