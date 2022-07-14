@@ -20,4 +20,6 @@
  {}
 
  :audiophile.ui.services/pubsub
- {:pubsub #ig/ref :audiophile.services.pubsub/memory}}
+ {:env    #ig/ref :services.ui/base-urls
+  :nav    #ig/ref :services/nav
+  :pubsub #ig/ref :audiophile.services.pubsub/memory}}

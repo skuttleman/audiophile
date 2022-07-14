@@ -1,8 +1,8 @@
 (ns audiophile.ui.app
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.common.infrastructure.store.core :as store]
-    [audiophile.ui.services.ws :as ws]
     [audiophile.ui.store.actions :as act]
     [audiophile.ui.store.queries :as q]
     [audiophile.ui.system.core :as sys]
@@ -26,25 +26,26 @@
                            (.getElementById js/document "root")
                            resolve))))
 
-(defn ^:private init* [{:keys [login-key store] :as sys}]
+(defn ^:private on-profile-loaded [{:keys [login-key pubsub store] :as sys}]
+  (fn [[status]]
+    (when-not (= :error status)
+      (pcom/init! pubsub))
+    (let [profile (q/user:profile store)
+          view (cond
+                 (= :error status)
+                 [@login sys {:msg "Login to get started" :login-key login-key}]
+
+                 (contains? (:jwt/aud profile) :token/signup)
+                 [@login sys {:msg "Sign up to get started" :login-key :signup}]
+
+                 :else
+                 [@layout sys])]
+      (v/always (render view) (log/info [:app/initialized])))))
+
+(defn ^:private init* [{:keys [store] :as sys}]
   (store/init! store sys)
   (-> (store/dispatch! store act/profile#load!)
-      (v/peek (fn [[status]]
-                (let [profile (q/user:profile store)
-                      view (cond
-                             (= :error status)
-                             [@login sys {:msg "Login to get started" :login-key login-key}]
-
-                             (contains? (:jwt/aud profile) :token/signup)
-                             (do
-                               (ws/init! sys)
-                               [@login sys {:msg "Sign up to get started" :login-key :signup}])
-
-                             :else
-                             (do
-                               (ws/init! sys)
-                               [@layout sys]))]
-                  (v/always (render view) (log/info [:app/initialized])))))))
+      (v/peek (on-profile-loaded sys))))
 
 (defn find-component [system k]
   (some-> system (ig/find-derived-1 k) val))

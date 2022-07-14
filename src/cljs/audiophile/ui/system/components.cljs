@@ -18,3 +18,6 @@
 
 (defmethod ig/init-key :audiophile.ui.services/pubsub [_ cfg]
   (pubsub.ui/ws cfg))
+
+(defmethod ig/halt-key! :audiophile.ui.services/pubsub [_ pubsub]
+  (pubsub.ui/ws#close pubsub))

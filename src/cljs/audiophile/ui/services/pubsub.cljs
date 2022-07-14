@@ -2,25 +2,40 @@
   (:require
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.api.pubsub.protocols :as ppubsub]
+    [audiophile.common.core.utils.maps :as maps]
+    [audiophile.common.infrastructure.protocols :as pcom]
     [audiophile.ui.services.ws :as ws]
     [clojure.core.async :as async]))
 
-(deftype WsPubSub [pubsub]
+(deftype WsPubSub [env nav pubsub ^:mutable ws]
+  pcom/IInit
+  (init! [this]
+    (set! ws (ws/init! (maps/->m {:pubsub this} env nav))))
+
+  pcom/IDestroy
+  (destroy! [_]
+    (some-> ws async/close!)
+    (set! ws nil))
+
   ppubsub/IPub
   (publish! [_ topic event]
-    (ppubsub/publish! pubsub topic event))
+    (pubsub/publish! pubsub topic event))
 
   ppubsub/ISub
   (subscribe! [_ key topic listener]
-    (ppubsub/subscribe! pubsub key topic listener)
+    (when-not ws
+      (throw (ex-info "cannot subscribe before pubsub has been initialized" {})))
+    (pubsub/subscribe! pubsub key topic listener)
     (async/go
-      (async/>! @ws/conn [:sub/start! topic])))
-  (unsubscribe! [_ _]
-    (throw (ex-info "unsupported operation" {})))
+      (async/>! ws [:sub/start! topic])))
   (unsubscribe! [_ key topic]
-    (async/go
-      (async/>! @ws/conn [:sub/stop! topic]))
-    (pubsub/unsubscribe! pubsub key topic)))
+    (pubsub/unsubscribe! pubsub key topic)
+    (when ws
+      (async/go
+        (async/>! ws [:sub/stop! topic])))))
 
-(defn ws [{:keys [pubsub]}]
-  (->WsPubSub pubsub))
+(defn ws [{:keys [env nav pubsub]}]
+  (->WsPubSub env nav pubsub nil))
+
+(defn ws#close [pubsub]
+  (pcom/destroy! pubsub))

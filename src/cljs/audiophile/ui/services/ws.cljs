@@ -8,11 +8,7 @@
     [audiophile.common.infrastructure.navigation.core :as nav]
     [clojure.core.async :as async]
     [clojure.core.match :as match]
-    [com.ben-allred.ws-client-cljc.core :as ws*]
-    clojure.pprint))
-
-(defonce ^:private conn
-  (atom nil))
+    [com.ben-allred.ws-client-cljc.core :as ws*]))
 
 (defn handle-msg [pubsub msg]
   (let [event (match/match msg
@@ -44,7 +40,6 @@
 
 (defn init! [{:keys [env nav pubsub]}]
   (let [url (ws-uri nav (:api-base env))]
-    (some-> @conn async/close!)
     (let [ws (ws*/keep-alive! url
                               {:reconnect-ms 100
                                :in-buf-or-n  100
@@ -53,13 +48,8 @@
                                                    (remove (comp #{:conn/ping :conn/pong} first)))
                                :out-buf-or-n 100
                                :out-xform    (map (partial serdes/serialize serde/transit))})]
-      (reset! conn ws)
       (async/go-loop []
         (when-let [msg (async/<! ws)]
           (handle-msg pubsub msg)
           (recur)))
-      nil)))
-
-(defn send! [msg]
-  (async/go
-    (async/>! @conn msg)))
+      ws)))
