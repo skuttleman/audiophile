@@ -21,14 +21,6 @@ entity "teams" as teams {
   * name : character varying
 }
 
-entity "workflows" as workflows {
-  * id : uuid <<generated>>
-  --
-  * data : text
-  * created_at : timestamp without time zone <<generated>>
-  * status : character varying <<generated>>
-}
-
 entity "files" as files {
   * id : uuid <<generated>>
   --
@@ -41,12 +33,12 @@ entity "files" as files {
 entity "all_events *VIEW*" as all_events {
   id : uuid
   --
-  ctx : jsonb
-  emitted_at : timestamp without time zone
-  event_type : text
-  data : jsonb
-  model_id : uuid <<FK>>
   emitted_by : uuid
+  model_id : uuid <<FK>>
+  emitted_at : timestamp without time zone
+  data : text
+  event_type : text
+  ctx : jsonb
 }
 
 entity "event_types" as event_types {
@@ -80,9 +72,9 @@ entity "events" as events {
   * id : uuid <<generated>>
   --
   * emitted_at : timestamp without time zone <<generated>>
-  data : jsonb
   ctx : jsonb
   * model_id : uuid <<FK>>
+  data : text
   * event_type_id : uuid <<FK>>
   emitted_by : uuid
 }
@@ -96,6 +88,13 @@ entity "comments" as comments {
   * created_at : timestamp without time zone <<generated>>
   selection : numrange
   * body : text
+}
+
+entity "team_invitations" as team_invitations {
+  * created_at : timestamp without time zone <<generated>>
+  * team_id : uuid <<FK>>
+  * status : USER-DEFINED <<generated>>
+  * email : character varying
 }
 
 entity "projects" as projects {
@@ -114,13 +113,13 @@ entity "user_teams" as user_teams {
 entity "user_events *VIEW*" as user_events {
   id : uuid
   --
-  event_type : text
   emitted_at : timestamp without time zone
+  event_type : text
+  model_id : uuid <<FK>>
+  ctx : jsonb
+  data : text
   emitted_by : uuid
   user_id : uuid <<FK>>
-  ctx : jsonb
-  model_id : uuid <<FK>>
-  data : jsonb
 }
 
 projects ..o files
@@ -129,6 +128,7 @@ files ..o file_versions
 event_types ..o events
 file_versions ..o comments
 comments ..o comments
+teams ..o team_invitations
 teams ..o projects
 teams ..o user_teams
 users ..o user_teams
