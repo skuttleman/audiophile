@@ -48,6 +48,16 @@
                   (testing "does not receive other events"
                     (is (not (contains? calls [[:topic/two :a] "event 2"])))))))
 
+            (testing "when resubscribing to topic"
+              (spies/init! spy)
+              (pubsub/subscribe! pubsub ::id [:topic/two :a] spy)
+              (pubsub/publish! pubsub [:topic/two :a] "event 4")
+              (tu/<ch! (async/timeout 200))
+
+              (let [calls (set (spies/calls spy))]
+                (testing "receives the subscribed event"
+                  (is (contains? calls [[:topic/two :a] "event 4"])))))
+
             (testing "when unsubscribing from all topics"
               (spies/init! spy)
               (pubsub/unsubscribe! pubsub ::id)

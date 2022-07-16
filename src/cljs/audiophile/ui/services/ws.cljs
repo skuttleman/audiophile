@@ -12,9 +12,9 @@
 
 (defn handle-msg [pubsub msg]
   (let [event (match/match msg
-                [_ event-id data ctx] {:id       event-id
-                                       :data     data
-                                       :ctx      ctx}
+                [_ event-id data ctx] {:id   event-id
+                                       :data data
+                                       :ctx  ctx}
                 _ nil)
         {request-id :request/id topics :subscription/topics} (:ctx event)]
     (doseq [topic (or topics [request-id])
@@ -38,7 +38,7 @@
         uri/stringify
         (str (nav/path-for nav :routes.ws/connection params)))))
 
-(defn init! [{:keys [env nav pubsub]}]
+(defn init! [{:keys [env nav]} {:keys [on-connect pubsub]}]
   (let [url (ws-uri nav (:api-base env))]
     (let [ws (ws*/keep-alive! url
                               {:reconnect-ms 100
@@ -47,7 +47,8 @@
                                                    (remove nil?)
                                                    (remove (comp #{:conn/ping :conn/pong} first)))
                                :out-buf-or-n 100
-                               :out-xform    (map (partial serdes/serialize serde/transit))})]
+                               :out-xform    (map (partial serdes/serialize serde/transit))
+                               :on-connect   on-connect})]
       (async/go-loop []
         (when-let [msg (async/<! ws)]
           (handle-msg pubsub msg)

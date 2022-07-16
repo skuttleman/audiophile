@@ -37,7 +37,7 @@
     (sp.ktop/task-processor-topology opts)))
 
 (defn start! [^Topology topology streams-cfg opts]
-  (let [timeout (:timeout opts 30000)
+  (let [timeout (:timeout opts 60000)
         started (promise)
         stopped (promise)
         streams (-> topology

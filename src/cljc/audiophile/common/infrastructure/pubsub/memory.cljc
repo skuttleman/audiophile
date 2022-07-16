@@ -54,6 +54,7 @@
                  (let [next-subs (not-empty (disj (get-in state [:subs topic]) key))
                        next-topics (not-empty (disj (get-in state [:topics key])))]
                    (-> state
+                       (update-in [:listeners key] dissoc topic)
                        (cond->
                          next-subs (assoc-in [:subs topic] next-subs)
                          (not next-subs) (update :subs dissoc topic)

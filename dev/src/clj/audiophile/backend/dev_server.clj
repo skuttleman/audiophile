@@ -18,7 +18,8 @@
   ([sys routes daemons]
    (when sys
      (ig/halt! sys)
-     (log/info "halt completed"))
+     (log/info "halt completed")
+     (Thread/sleep 1000))
    (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev"]))]
      (-> "dev.edn"
          (core/config [:duct.profile/base :duct.profile/dev] routes)
