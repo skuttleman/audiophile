@@ -45,3 +45,6 @@
 
 (defn get-artifact [interactor opts]
   (pint/get-artifact interactor opts))
+
+(defn team-invite! [interactor data opts]
+  (pint/team-invite! interactor data opts))

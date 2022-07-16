@@ -39,7 +39,7 @@
                 (tu/<ch! (on-connect ch))
                 (let [msg (tu/<ch! ch)
                       msgs (set [(tu/<ch! ch) (tu/<ch! ch)])]
-                  (is (= [:sub/reconnecting] msg))
+                  (is (= [:conn/ping] msg))
                   (is (contains? msgs [:sub/start! [:topic 1]]))
                   (is (contains? msgs [:sub/start! [:topic 2]]))))))
 
@@ -80,6 +80,11 @@
 
           (testing "#destroy!"
             (pcom/destroy! pubsub)
+            (testing "stops subscriptions"
+              (let [msgs (set [(tu/<ch! ch) (tu/<ch! ch)])]
+                (is (contains? msgs [:sub/stop! [:topic 1]]))
+                (is (contains? msgs [:sub/stop! [:topic 2]]))))
+
             (testing "closes websocket"
               (async.protocols/closed? ch))
 

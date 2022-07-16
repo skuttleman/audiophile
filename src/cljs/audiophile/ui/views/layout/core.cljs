@@ -14,6 +14,8 @@
 
 (def project (mod/lazy-component audiophile.ui.views.project.core/root))
 
+(def team (mod/lazy-component audiophile.ui.views.team.core/root))
+
 (defn ^:private logout [{:keys [text] :as attrs}]
   (r/with-let [logout (serv/nav#logout! attrs)]
     [:a (-> attrs
@@ -73,6 +75,7 @@
                :routes.ui/home @dashboard
                :routes.ui/files:id @file
                :routes.ui/projects:id @project
+               :routes.ui/teams:id @team
                comp/not-found)]
     [comp sys]))
 

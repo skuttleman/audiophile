@@ -139,6 +139,11 @@
                         value))
    :returning   [(if (contains? fields :id) :id :*)]})
 
+(defn on-conflict-do-nothing [query constraint]
+  (assoc query
+         :on-conflict constraint
+         :do-nothing []))
+
 (defn ^:private join* [query join-type {:keys [_alias fields _namespace _table] :as model} on]
   (-> query
       (update :select into (map (->field model)) fields)

@@ -38,7 +38,8 @@
   (-> executor
       (repos/execute! (if-let [user-id (:user/id opts)]
                         (select-one-for-user team-id user-id)
-                        (models/select-by-id* tbl/teams team-id)))
+                        (models/select-by-id* tbl/teams team-id))
+                      (assoc opts :model-fn (crepos/->model-fn tbl/teams)))
       colls/only!))
 
 (defn select-team-members [executor team-id opts]
@@ -52,6 +53,9 @@
                   (assoc opts :model-fn (crepos/->model-fn tbl/teams))))
 
 (defn insert-team-access? [_ _ _]
+  true)
+
+(defn invite-member-access? [_ _ _]
   true)
 
 (defn update-team-access? [executor {team-id :team/id} {user-id :user/id}]
@@ -79,3 +83,9 @@
                   (-> (models/sql-update tbl/teams)
                       (models/sql-set (select-keys team #{:team/name}))
                       (models/and-where [:= :teams.id (:team/id team)]))))
+
+(defn invite-member! [executor params _]
+  (repos/execute! executor
+                  (-> tbl/team-invitations
+                      (models/insert-into params)
+                      (models/on-conflict-do-nothing [:team-id :email]))))

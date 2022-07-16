@@ -1,18 +1,25 @@
 (ns audiophile.backend.dev.migrations
   (:require
-    [clojure.java.io :as io]
-    [clojure.string :as string]
-    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.dev.protocols :as pdev]
     [audiophile.backend.dev.uml :as uml]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
+    [audiophile.backend.infrastructure.repositories.protocols :as prepos]
     [audiophile.backend.infrastructure.system.env :as env]
     [audiophile.common.infrastructure.duct :as uduct]
+    [clojure.java.io :as io]
+    [clojure.string :as string]
     [duct.core :as duct]
     [duct.core.env :as env*]
     [integrant.core :as ig]
     [migratus.core :as migratus]
     audiophile.backend.infrastructure.system.core
     audiophile.common.infrastructure.system.core))
+
+(deftype RawFormatter []
+  prepos/IFormatQuery
+  (format [_ sql]
+    (cond-> sql
+      (not (vector? sql)) vector)))
 
 (deftype Migrator [cfg]
   pdev/IMigrate
@@ -50,6 +57,9 @@
 
 (defmethod ig/init-key :audiophile.migrations/migrator [_ {:keys [datasource]}]
   (create-migrator datasource))
+
+(defmethod ig/init-key :audiophile.migrations/raw-formatter [_ _]
+  (->RawFormatter))
 
 (defmacro ^:private with-migrator [sys & body]
   `(let [system# (binding [env*/*env* (merge env*/*env* (env/load-env [".env-common" ".env-dev" ".env-migrations"]))]

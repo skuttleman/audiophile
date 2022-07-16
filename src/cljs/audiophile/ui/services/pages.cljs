@@ -74,6 +74,12 @@
   ([sys attrs *form handle params]
    (form:* sys attrs *form :patch handle params)))
 
+(defn form:upsert
+  ([sys attrs *form handle]
+   (form:upsert sys attrs *form handle nil))
+  ([sys attrs *form handle params]
+   (form:* sys attrs *form :put handle params)))
+
 (defn modal:open [{:keys [store]} header body]
   (fn [_]
     (store/dispatch! store (act/modal#add! header body))))

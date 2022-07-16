@@ -59,3 +59,19 @@
              :user/id (get-in request [:auth/user :user/id])
              :token/aud (get-in request [:auth/user :jwt/aud]))
       (maps/assoc-maybe :request/id (-> request :headers :x-request-id uuids/->uuid))))
+
+(defn invite
+  "Handles a request to invite a new team member"
+  [{:keys [interactor]}]
+  (fn [data]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
+      (int/team-invite! interactor data opts))))
+
+(defmethod selectors/select [:put :routes.api/teams:id.invitations]
+  [_ request]
+  (-> request
+      (get-in [:body :data])
+      (assoc :team/id (get-in request [:nav/route :params :team/id])
+             :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud]))
+      (maps/assoc-maybe :request/id (-> request :headers :x-request-id uuids/->uuid))))

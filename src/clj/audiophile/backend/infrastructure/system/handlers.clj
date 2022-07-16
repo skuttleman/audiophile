@@ -79,6 +79,9 @@
 (defmethod ig/init-key :audiophile.handlers.teams/create [_ cfg]
   (teams/create cfg))
 
+(defmethod ig/init-key :audiophile.handlers.teams/invite [_ cfg]
+  (teams/invite cfg))
+
 (defmethod ig/init-key :audiophile.handlers.teams/update [_ cfg]
   (teams/patch cfg))
 

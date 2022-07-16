@@ -92,6 +92,10 @@
    [:team/name trimmed-string?]
    [:team/type [:fn #{:PERSONAL :COLLABORATIVE}]]])
 
+(def team:invite
+  [:map
+   [:user/email email?]])
+
 (def team:update
   [:map
    [:team/name trimmed-string?]])
@@ -154,6 +158,13 @@
   (-> auth
       (mu/merge [:map [:request/id {:optional true} uuid?]])
       (mu/merge team:create)))
+
+(def api-team:invite
+  (-> auth
+      (mu/merge [:map
+                 [:team/id uuid?]
+                 [:request/id {:optional true} uuid?]])
+      (mu/merge team:invite)))
 
 (def api-team:update
   (-> auth

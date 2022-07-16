@@ -46,6 +46,10 @@
   [{:keys [repo]} ctx task]
   (repos/transact! repo create* qteams/insert-team! ctx task))
 
+(defmethod task-handler :team/invite!
+  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  (repos/transact! repo qteams/invite-member! params ctx))
+
 (defmethod task-handler :team/update!
   [{:keys [repo]} ctx {:spigot/keys [params]}]
   (repos/transact! repo qteams/update-team! params ctx))

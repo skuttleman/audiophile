@@ -8,6 +8,7 @@
     [audiophile.ui.components.input-fields.dropdown :as dd]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
+    [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.dashboard.services :as serv]
     [reagent.core :as r]))
 
@@ -28,7 +29,7 @@
                             (apply concat)
                             (map (juxt :team/id identity)))
                options-by-id (into {} options)
-               *form (serv/projects#form:new sys attrs (ffirst options))]
+               *form (cserv/projects#form:new sys attrs (ffirst options))]
     [:div
      [comp/form {:*form *form}
       (when (>= (count options-by-id) 2)
@@ -77,32 +78,37 @@
       (forms/destroy! *form))))
 
 (defn project-item [{:keys [*res sys]} {:project/keys [id name]}]
-  (r/with-let [click (serv/projects#modal:update sys [::update {:*res *res :project-id id}])]
+  (r/with-let [click (when *res
+                       (serv/projects#modal:update sys [::update {:*res *res :project-id id}]))]
     [:li.project-item.layout--space-between.layout--align-center
      [:a.link {:href (serv/projects#nav:ui sys id)}
       [:span name]]
-     [comp/plain-button {:class    ["is-text" "layout--space-between"]
-                         :on-click click}
-      [comp/icon :edit]
-      [:span "edit"]]]))
+     (when click
+       [comp/plain-button {:class    ["is-text" "layout--space-between"]
+                           :on-click click}
+        [comp/icon :edit]
+        [:span "edit"]])]))
 
 (defn project-list [attrs projects]
+  (if (seq projects)
+    [:ul.project-list
+     (for [{:project/keys [id] :as project} projects]
+       ^{:key id}
+       [project-item attrs project])]
+    [:p "You don't have any projects. Why not create one?"]))
+
+(defn tile-content [attrs projects]
   [:div
    [:p [:strong "Your projects"]]
-   (if (seq projects)
-     [:ul.project-list
-      (for [{:project/keys [id] :as project} projects]
-        ^{:key id}
-        [project-item attrs project])]
-     [:p "You don't have any projects. Why not create one?"])])
+   [project-list attrs projects]])
 
 (defn tile [sys *teams]
   (r/with-let [*res (serv/projects#res:fetch-all sys)
-               click (serv/projects#modal:create sys [::create {:*res   *res
+               click (cserv/projects#modal:create sys [::create {:*res  *res
                                                                 :*teams *teams}])]
     [comp/tile
      [:h2.subtitle "Projects"]
-     [comp/with-resource [*res {:spinner/size :small}] [project-list {:*res *res
+     [comp/with-resource [*res {:spinner/size :small}] [tile-content {:*res *res
                                                                       :sys  sys}]]
      [comp/plain-button
       {:class    ["is-primary"]

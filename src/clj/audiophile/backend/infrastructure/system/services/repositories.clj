@@ -18,9 +18,6 @@
 (defmethod ig/init-key :audiophile.repositories/query-formatter [_ cfg]
   (db/query-formatter cfg))
 
-(defmethod ig/init-key :audiophile.repositories/raw-formatter [_ cfg]
-  (db/raw-formatter cfg))
-
 (defmethod ig/init-key :audiophile.repositories/->builder-fn [_ cfg]
   (models/->builder-fn cfg))
 

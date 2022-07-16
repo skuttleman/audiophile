@@ -22,7 +22,7 @@
   (update! [_ data opts]
     (when-not (repos/transact! repo qprojects/update-project-access? data opts)
       (int/no-access!))
-    (let [opts (assoc opts :subscription/id (:project/id data))]
+    (let [opts (assoc opts :subscription/topics #{[:projects (:project/id data)]})]
       (crepos/start-workflow! producer :projects/update (merge opts data) opts))))
 
 (defn accessor

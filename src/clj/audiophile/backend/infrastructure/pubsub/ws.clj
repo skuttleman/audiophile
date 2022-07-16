@@ -6,6 +6,7 @@
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
+    [audiophile.common.core.utils.core :as u]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [clojure.core.async :as async]
@@ -50,7 +51,8 @@
 
 (defmethod on-message! :sub/start!
   [ctx ch [_ topic]]
-  (subscribe* ctx ch topic :event/subscription))
+  (u/silent!
+    (subscribe* ctx ch topic :event/subscription)))
 
 (defmethod on-message! :sub/stop!
   [{::keys [pubsub ch-id]} _ [_ topic]]
@@ -141,12 +143,6 @@
       (let [event (dissoc event :event/ctx)]
         (log/with-ctx :CP
           (log/info "publishing event to ws" event-id)
-          (ps/send-user! pubsub (:user/id ctx) event-id event ctx)
-          (when-let [topic (when-let [k (some-> event
-                                                :event/data
-                                                :workflow/template
-                                                namespace
-                                                keyword)]
-                             (some->> ctx :subscription/id (vector k)))]
-            (let [ctx (assoc ctx :subscription/topics #{topic})]
-              (ps/publish! pubsub topic event-id event ctx))))))))
+          (ps/send-user! pubsub (:user/id ctx) event-id event (dissoc ctx :subscription/topics))
+          (doseq [topic (:subscription/topics ctx)]
+            (ps/publish! pubsub topic event-id event ctx)))))))

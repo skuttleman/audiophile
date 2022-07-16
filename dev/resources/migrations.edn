@@ -8,7 +8,7 @@
    {:datasource #ig/ref :services/datasource}
 
    :audiophile.repositories/->executor
-   ^:promote {:query-formatter #ig/ref :audiophile.repositories/raw-formatter}
+   ^:promote {:query-formatter #ig/ref :audiophile.migrations/raw-formatter}
 
-   :audiophile.repositories/raw-formatter
+   :audiophile.migrations/raw-formatter
    {}}}]

@@ -58,10 +58,11 @@
       (testing "when querying teams"
         (stubs/use! tx :execute!
                     [{:some :result}]
-                    [{:with :team}])
+                    [{:with :team}]
+                    [{:with :project}])
         (let [result (int/query-one repo {:user/id user-id
                                           :team/id team-id})
-              [[select-team] [select-members]] (colls/only! 2 (stubs/calls tx :execute!))]
+              [[select-team] [select-members] [select-projects]] (colls/only! 3 (stubs/calls tx :execute!))]
           (testing "queries the team from the repository"
             (let [{:keys [from select where]} select-team]
               (is (= #{[:teams.name "team/name"]
@@ -99,9 +100,23 @@
               (is (= [:= #{:user-teams.team-id team-id}]
                      (tu/op-set where)))))
 
+          (testing "queries the team projects from the repository"
+            (let [{:keys [from select where]} select-projects]
+              (is (= #{[:projects.created-at "project/created-at"]
+                       [:projects.id "project/id"]
+                       [:projects.name "project/name"]
+                       [:projects.team-id "project/team-id"]}
+                     (set select)))
+              (is (= [:projects] from))
+              (is (= [:= #{:projects.team-id team-id}]
+                     (tu/op-set where)))))
+
 
           (testing "returns the results"
-            (is (= {:some :result :team/members [{:with :team}]} result)))))
+            (is (= {:some :result
+                    :team/members [{:with :team}]
+                    :team/projects [{:with :project}]}
+                   result)))))
 
       (testing "when querying the repository throws"
         (stubs/use! tx :execute!

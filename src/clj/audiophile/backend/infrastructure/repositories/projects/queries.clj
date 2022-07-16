@@ -40,6 +40,11 @@
                   (models/select* tbl/projects (has-team-clause user-id))
                   opts))
 
+(defn select-for-team [executor team-id opts]
+  (repos/execute! executor
+                  (models/select* tbl/projects [:= :projects.team-id team-id])
+                  opts))
+
 (defn insert-project-access? [executor project opts]
   (cdb/access? executor (access-team (:project/team-id project) (:user/id opts))))
 

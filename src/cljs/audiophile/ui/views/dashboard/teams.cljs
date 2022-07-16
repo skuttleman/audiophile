@@ -6,12 +6,9 @@
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
+    [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.dashboard.services :as serv]
     [reagent.core :as r]))
-
-(def ^:private team-type->icon
-  {:PERSONAL      ["Personal Team" :user]
-   :COLLABORATIVE ["Collaborative Team" :users]})
 
 (defn ^:private body* [*form _]
   [:div
@@ -47,14 +44,14 @@
 
 (defn team-item [{:keys [*res sys]} {:team/keys [id name type]}]
   (r/with-let [click (serv/teams#modal:update sys [::update {:*res *res :team-id id}])]
-    (let [[title icon] (team-type->icon (keyword type))]
+    (let [[title icon] (cserv/teams#type->icon (keyword type))]
       [:li.team-item.layout--space-between.layout--align-center
-       [:div.layout--align-center
-        [:div {:style {:display         :flex
-                       :justify-content :center
+       [:div.layout--align-center.flex
+        [:div {:style {:justify-content :center
                        :width           "32px"}}
          [comp/icon {:title title} icon]]
-        name]
+        [:a.link {:href (serv/teams#nav:ui sys id)}
+         [:span name]]]
        [comp/plain-button {:class    ["is-text" "layout--space-between"]
                            :on-click click}
         [comp/icon :edit]

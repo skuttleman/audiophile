@@ -19,7 +19,7 @@
 
 (defn files#form:new [{:keys [store] :as sys} attrs project-id]
   (let [*form (form.std/create store nil files#validator:new)
-        attrs (assoc attrs :local->remote cserv/files#local->remove)]
+        attrs (assoc attrs :local->remote cserv/files#local->remote)]
     (pages/form:new sys attrs *form :routes.api/projects:id.files {:params {:project/id project-id}})))
 
 (defn files#modal:create [sys body]
@@ -37,15 +37,16 @@
 (defn projects#res:fetch-one [sys project-id]
   (pages/res:fetch sys :routes.api/projects:id {:params {:project/id project-id}}))
 
-(defn projects#sub:start! [{:keys [nav pubsub]} project-id *project]
-  (pubsub/subscribe! pubsub
-                     ::pages/sub
-                     [:projects (-> @nav :params :project/id)]
-                     (fn [_]
-                       (res/request! *project)))
-  (maps/->m project-id pubsub))
+(defn projects#sub:start! [{:keys [nav pubsub]} *project]
+  (let [project-id (-> @nav :params :project/id)]
+    (pubsub/subscribe! pubsub
+                       ::pages/sub
+                       [:projects project-id]
+                       (fn [_]
+                         (res/request! *project)))
+    (maps/->m project-id pubsub)))
 
-(defn project#sub:stop! [{:keys [project-id pubsub]}]
+(defn projects#sub:stop! [{:keys [project-id pubsub]}]
   (pubsub/unsubscribe! pubsub ::pages/sub [:projects project-id]))
 
 (defn teams#res:fetch-one [sys team-id]

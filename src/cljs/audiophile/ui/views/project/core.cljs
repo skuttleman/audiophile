@@ -49,7 +49,7 @@
 (defn ^:private project-details [sys project]
   (r/with-let [team-id (:project/team-id project)
                *team (serv/teams#res:fetch-one sys team-id)]
-    [:div {:style {:display :flex}}
+    [:div.flex
      [:h2.subtitle (:project/name project)]
      [:div {:style {:width "16px"}}]
      [comp/with-resource *team team-view]]
@@ -95,13 +95,13 @@
   (r/with-let [project-id (-> @nav :params :project/id)
                *files (serv/files#res:fetch-all sys project-id)
                *project (serv/projects#res:fetch-one sys project-id)
-               *sub (serv/projects#sub:start! sys project-id *project)]
+               *sub (serv/projects#sub:start! sys *project)]
     [:div.layout--space-below.layout--xxl.gutters
      [:div {:style {:width "100%"}}
       [comp/with-resource *project [project-details sys]]
       [comp/with-resource *files [track-list sys (maps/->m *files *project project-id)]]]]
     (finally
-      (serv/project#sub:stop! *sub)
+      (serv/projects#sub:stop! *sub)
       (run! res/destroy! [*project *files]))))
 
 (defn root [sys]

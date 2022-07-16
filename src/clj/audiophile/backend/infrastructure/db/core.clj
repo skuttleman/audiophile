@@ -14,22 +14,16 @@
   (format [_ query]
     (sql/format query opts)))
 
-(deftype RawFormatter []
-  prepos/IFormatQuery
-  (format [_ sql]
-    (cond-> sql
-      (not (vector? sql)) vector)))
-
 (defn ^:private executor#execute! [this conn ->builder-fn query-formatter query opts]
-  (let [formatted (mapv (fn [v]
-                          (cond-> v
-                            (inst? v) (-> .getTime Timestamp.)))
-                        (prepos/format query-formatter query))]
-    (log/with-ctx [this :DB]
-      (log/debug query)
-      (log/info (first formatted)))
-    (jdbc/execute! conn formatted (assoc (:sql/opts opts)
-                                         :builder-fn (->builder-fn opts)))))
+  (log/with-ctx [this :DB]
+    (log/debug "QUERY" query)
+    (let [formatted (mapv (fn [v]
+                            (cond-> v
+                              (inst? v) (-> .getTime Timestamp.)))
+                          (prepos/format query-formatter query))]
+      (log/info (first formatted))
+      (jdbc/execute! conn formatted (assoc (:sql/opts opts)
+                                           :builder-fn (->builder-fn opts))))))
 
 (defn ^:private transactor#healthy? [datasource]
   (let [conn (.getConnection datasource)]
@@ -61,11 +55,6 @@
   "Constructor for [[QueryFormatter]] to convert query maps into a prepared SQL statement."
   [{:keys [format-opts]}]
   (->QueryFormatter format-opts))
-
-(defn raw-formatter
-  "Constructor for [[RawFormatter]] used to query with raw SQL directly."
-  [_]
-  (->RawFormatter))
 
 (defn ->executor
   "Factory function for constructing an [[Executor]] used to run individual queries inside a transaction."

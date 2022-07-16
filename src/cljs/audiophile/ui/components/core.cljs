@@ -54,9 +54,8 @@
        boolean))
 
 (defn not-found [_]
-  [:div {:style {:display         :flex
-                 :align-items     :center
-                 :justify-content :center}}
+  [:div.flex {:style {:align-items     :center
+                      :justify-content :center}}
    [:img {:src "https://i.imgur.com/HYpqZvg.jpg"}]])
 
 (defn alert [level body]

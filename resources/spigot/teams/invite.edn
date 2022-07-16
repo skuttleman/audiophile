@@ -1,0 +1,4 @@
+[:workflows/setup {:user/email ?email
+                   :team/id    ?team-id}
+ [:team/invite! {:team-invitation/team-id (sp.ctx/get ?team-id)
+                 :team-invitation/email   (sp.ctx/get ?email)}]]

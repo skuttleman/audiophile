@@ -36,6 +36,7 @@
    :api.project/create    specs/api-project:create
    :api.project/update    specs/api-project:update
    :api.team/create       specs/api-team:create
+   :api.team/invite       specs/api-team:invite
    :api.team/update       specs/api-team:update
    :api.user/create       specs/api-user:create
    :api.version/create    specs/api-version:create

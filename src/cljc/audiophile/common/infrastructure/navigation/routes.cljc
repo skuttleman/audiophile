@@ -31,7 +31,9 @@
          [["" :routes.api/projects:id.files]]]]]]]
     ["/teams"
      [["" :routes.api/teams]
-      [["/" [uuids/regex :team/id]] :routes.api/teams:id]]]
+      [["/" [uuids/regex :team/id]]
+       [["" :routes.api/teams:id]
+        ["/invitations" :routes.api/teams:id.invitations]]]]]
     ["/users"
      [["" :routes.api/users]
       ["/profile" :routes.api/users.profile]]]
@@ -44,7 +46,9 @@
      [[["/" [uuids/regex :file/id]] :routes.ui/files:id]]]
     ["/login" :routes.ui/login]
     ["/projects"
-     [[["/" [uuids/regex :project/id]] :routes.ui/projects:id]]]]])
+     [[["/" [uuids/regex :project/id]] :routes.ui/projects:id]]]
+    ["/teams"
+     [[["/" [uuids/regex :team/id]] :routes.ui/teams:id]]]]])
 
 (def resource-routes
   [""

@@ -1,6 +1,7 @@
 (ns audiophile.backend.infrastructure.db.models.tables
   (:require
-    [audiophile.common.core.utils.maps :as maps]))
+    [audiophile.common.core.utils.maps :as maps]
+    [audiophile.common.domain.validations.specs :as specs]))
 
 (def artifacts
   {:fields    #{:key :filename :content-length :id :content-type :uri :created-at}
@@ -93,6 +94,17 @@
    :casts     {:type :team_type}
    :table     :teams
    :namespace :team})
+
+(def team-invitations
+  {:fields    #{:team-id :email :status :created-at}
+   :spec      [:map
+               [:team-invitation/team-id uuid?]
+               [:team-invitation/email specs/email?]
+               [:team-invitation/status keyword?]
+               [:team-invitation/created-at inst?]]
+   :casts     {:status :team_invitation_status}
+   :table     :team-invitations
+   :namespace :team-invitation})
 
 (def user-events
   {:fields    #{:model-id :emitted-by :emitted-at :user-id :id :ctx :event-type :data}

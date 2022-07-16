@@ -18,10 +18,8 @@
 (def ^:private files#validator:version
   (val/validator {:spec ui-version-spec}))
 
-(defn files#local->remove [data]
-  (-> data
-      (select-keys #{:file/name :version/name})
-      (assoc :artifact/id (-> data :artifact/details :artifact/id))))
+(def ^:private projects#validator:new
+  (val/validator {:spec specs/project:create}))
 
 (defn artifacts#res:new [{:keys [http-client nav store]}]
   (ires/http store
@@ -34,7 +32,23 @@
                                         ["files[]" file])}
                    (merge (select-keys opts #{:multi? :on-progress}))))))
 
+(defn files#local->remote [data]
+  (-> data
+      (select-keys #{:file/name :version/name})
+      (assoc :artifact/id (-> data :artifact/details :artifact/id))))
+
 (defn files#form:version [{:keys [store] :as sys} attrs file-id]
   (let [*form (form.std/create store nil files#validator:version)
-        attrs (assoc attrs :local->remote files#local->remove)]
+        attrs (assoc attrs :local->remote files#local->remote)]
     (pages/form:new sys attrs *form :routes.api/files:id {:params {:file/id file-id}})))
+
+(defn projects#form:new [{:keys [store] :as sys} attrs team-id]
+  (let [*form (form.std/create store {:project/team-id team-id} projects#validator:new)]
+    (pages/form:new sys attrs *form :routes.api/projects)))
+
+(defn projects#modal:create [sys body]
+  (pages/modal:open sys [:h1.subtitle "Create a project"] body))
+
+(def teams#type->icon
+  {:PERSONAL      ["Personal Team" :user]
+   :COLLABORATIVE ["Collaborative Team" :users]})
