@@ -92,6 +92,14 @@
             (some->> ?ns-str (re-matches #"^(audiophile|spigot).*")))
     data))
 
+(defn ^:private ->log-level [level]
+  (case level
+    :debug "\u001b[36mDEBUG \u001b[0m"
+    :info "INFO  "
+    :warn "\u001b[33mWARN  \u001b[0m"
+    :report "\u001b[37;1mREPORT\u001b[0m"
+    (str "\u001b[31m" (string/upper-case (name level)) " \u001b[0m")))
+
 (defn ^:private output-fn [{:keys [level ?err msg_ ?ns-str ?file timestamp_ ?line]}]
   (let [logger (or (:logger/name *ctx*)
                    #?(:clj (some-> *ctx* :logger/class class .getSimpleName)))
@@ -103,7 +111,7 @@
     (str
       (when-let [ts (some-> timestamp_ deref)]
         (str ts " "))
-      (string/upper-case (name level))
+      (->log-level level)
       " [" loc "\u001B[0m]"
       (when-let [ctx (:logger/id *ctx*)]
         (str " \u001b[35;1m" (name ctx) "\u001b[0m"))

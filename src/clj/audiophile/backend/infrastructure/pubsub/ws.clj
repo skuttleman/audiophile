@@ -3,6 +3,9 @@
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.api.validations.selectors :as selectors]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
+    [audiophile.backend.infrastructure.repositories.projects.queries :as qprojects]
+    [audiophile.backend.infrastructure.repositories.teams.queries :as qteams]
     [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
@@ -10,6 +13,7 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [clojure.core.async :as async]
+    [clojure.core.match :as match]
     [immutant.web.async :as web.async]
     [spigot.context :as sp.ctx])
   (:import
@@ -32,6 +36,21 @@
 (defn ^:private subscribe* [{::keys [ch-id pubsub]} ch topic event-type]
   (pubsub/subscribe! pubsub ch-id topic (->sub-handler ch event-type)))
 
+(defmulti ^:private sub? (fn [_ [category]]
+                           category))
+
+(defmethod sub? :default
+  [_ _]
+  false)
+
+(defmethod sub? :teams
+  [{::keys [repo user-id]} [_ team-id]]
+  (repos/transact! repo qteams/find-by-team-id team-id {:user/id user-id}))
+
+(defmethod sub? :projects
+  [{::keys [repo user-id]} [_ project-id]]
+  (repos/transact! repo qprojects/find-by-project-id project-id {:user/id user-id}))
+
 (defmulti on-message! (fn [_ _ msg]
                         (log/debug "received event" msg)
                         (when (seqable? msg)
@@ -50,9 +69,11 @@
   [_ _ _])
 
 (defmethod on-message! :sub/start!
-  [ctx ch [_ topic]]
-  (u/silent!
-    (subscribe* ctx ch topic :event/subscription)))
+  [{::keys [user-id] :as ctx} ch [_ topic]]
+  (if-not (sub? ctx topic)
+    (log/warn (format "insufficient access to subscribe user %s to topic %s" user-id topic))
+    (u/silent!
+      (subscribe* ctx ch topic :event/subscription))))
 
 (defmethod on-message! :sub/stop!
   [{::keys [pubsub ch-id]} _ [_ topic]]
@@ -68,12 +89,13 @@
     (log/info ch-id "closed for" user-id))
   (pubsub/unsubscribe! pubsub ch-id))
 
-(defn build-ctx [request pubsub heartbeat-int-ms]
+(defn build-ctx [request repo pubsub heartbeat-int-ms]
   (assoc request
          ::ch-id (uuids/random)
          ::user-id (:user/id request)
          ::heartbeat-int-ms heartbeat-int-ms
-         ::pubsub pubsub))
+         ::pubsub pubsub
+         ::repo repo))
 
 (defn ^:private web-socket-channel#send! [this ^Channel ch serde msg]
   (log/with-ctx [this :WS]
@@ -108,21 +130,24 @@
   (close! [this]
     (web-socket-channel#close! this ch)))
 
-(defn handler [{:keys [heartbeat-int-ms pubsub]}]
+(defn handler [{:keys [heartbeat-int-ms pubsub repo]}]
   (fn [request]
     (let [serde (serdes/find-serde! serde/serdes (:accept request))
-          ctx (build-ctx request pubsub heartbeat-int-ms)]
+          ctx (build-ctx request repo pubsub heartbeat-int-ms)]
       (web.async/as-channel request
                             {:on-open    (fn [ch]
                                            (let [ch (->WebSocketChannel ch serde)]
-                                             (on-open! ctx ch)))
+                                             (log/with-ctx :WS
+                                               (on-open! ctx ch))))
                              :on-message (fn [ch msg]
                                            (let [ch (->WebSocketChannel ch serde)]
-                                             (->> msg
-                                                  (serdes/deserialize serde)
-                                                  (on-message! ctx ch))))
+                                             (log/with-ctx :WS
+                                               (->> msg
+                                                    (serdes/deserialize serde)
+                                                    (on-message! ctx ch)))))
                              :on-close   (fn [ch _]
-                                           (on-close! ctx ch))}))))
+                                           (log/with-ctx :WS
+                                             (on-close! ctx ch)))}))))
 
 (defmethod selectors/select [:get :routes.ws/connection]
   [_ request]

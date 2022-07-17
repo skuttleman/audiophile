@@ -3,13 +3,13 @@
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.dev.migrations :as mig]
-    [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.infrastructure.db.core :as db]
     [audiophile.backend.infrastructure.db.models.sql :as sql]
     [audiophile.backend.infrastructure.pubsub.ws :as ws]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.common.infrastructure.http.core :as http]
+    [audiophile.test.utils :as tu]
     [clojure.core.async :as async]
     [clojure.core.async.impl.protocols :as async.protocols]
     [clojure.string :as string]
@@ -37,10 +37,12 @@
                              (inst? x) (-> .getTime Timestamp.)))
                          (sql/format query)))))
 
-(defmethod ig/init-key :audiophile.test/ws-handler [_ {:keys [pubsub]}]
+(defmethod ig/init-key :audiophile.test/ws-handler [_ {:keys [pubsub repo]}]
   (fn [request]
-    (let [msgs (async/chan 100)
-          ctx (ws/build-ctx request pubsub 100)
+    (let [msgs (async/chan 100 (if (::tu/no-keep-alive? request)
+                                 (remove #{[:conn/ping] [:conn/pong]})
+                                 identity))
+          ctx (ws/build-ctx request repo pubsub 100)
           ch (reify
                pps/IChannel
                (open? [_]

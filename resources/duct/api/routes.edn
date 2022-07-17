@@ -267,4 +267,5 @@
 
  :audiophile.services.ws/handler
  {:heartbeat-int-ms #ig/ref :env.ws/heartbeat-int-ms
-  :pubsub           #ig/ref :services/pubsub}}
+  :pubsub           #ig/ref :services/pubsub
+  :repo             #ig/ref :services/transactor}}

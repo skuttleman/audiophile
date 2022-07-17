@@ -34,8 +34,11 @@
           (finally
             (u/silent! (async/close! ~sym))))))
 
-(defn as-ws [request]
-  (assoc request :websocket? true))
+(defn as-ws
+  ([request]
+   (as-ws request nil))
+  ([request {:keys [no-keep-alive?]}]
+   (assoc request :websocket? true ::tu/no-keep-alive? no-keep-alive?)))
 
 (defn ^:private go [request system method handle params]
   (let [nav (int/component system :services/nav)
@@ -60,14 +63,13 @@
 (defn as-async [request system handler]
   (with-ws [ch (-> request
                    (get system :routes.ws/connection)
-                   as-ws
+                   (as-ws {:no-keep-alive? true})
                    handler)]
-    (let [ws (async/pipe ch (async/chan 10 (remove #{[:conn/ping] [:conn/pong]})))
-          result (-> request
+    (let [result (-> request
                      (assoc-in [:headers :x-request-id] (uuids/random))
                      handler)
           {:event/keys [type data]} (if (http/success? result)
-                                      (second (rest (tu/<!!ms ws)))
+                                      (second (rest (tu/<!!ms ch)))
                                       (get-in result [:body :data]))]
       (-> result
           (assoc-in [:body :data] data)

@@ -24,7 +24,7 @@
   (models/insert-into tbl/user-teams {:user-id user-id
                                       :team-id team-id}))
 
-(defn ^:private select-team [team-id]
+(defn ^:private select-members* [team-id]
   (-> tbl/users
       (models/alias :member)
       (models/select-fields #{:id :first-name :last-name})
@@ -44,7 +44,7 @@
 
 (defn select-team-members [executor team-id opts]
   (repos/execute! executor
-                  (select-team team-id)
+                  (select-members* team-id)
                   opts))
 
 (defn select-for-user [executor user-id opts]

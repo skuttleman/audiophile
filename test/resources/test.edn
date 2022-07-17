@@ -31,7 +31,8 @@
                       ^:promote {:heartbeat-int-ms 250}
 
                       :audiophile.test/ws-handler
-                      {:pubsub #ig/ref :services/pubsub}
+                      {:pubsub #ig/ref :services/pubsub
+                       :repo   #ig/ref :services/transactor}
 
                       :audiophile.test/transactor
                       {:->executor #ig/ref :audiophile.repositories/->executor
