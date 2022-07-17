@@ -16,12 +16,12 @@
   nil)
 
 (defn ^:private ->ctx [ctx]
-  (into {} (filter (comp #{"id" "topics"} name key)) ctx))
+  (into {} (filter (comp #{"id"} name key)) ctx))
 
 (defn publish!
   "Publish an event"
-  ([pubsub topic id msg]
-   (publish! pubsub topic id msg nil))
+  ([pubsub topic msg-id msg]
+   (publish! pubsub topic msg-id msg nil))
   ([pubsub topic msg-id msg ctx]
    (pubsub/publish! pubsub topic [msg-id msg (->ctx ctx)])))
 

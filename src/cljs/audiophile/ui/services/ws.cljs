@@ -10,23 +10,19 @@
     [clojure.core.match :as match]
     [com.ben-allred.ws-client-cljc.core :as ws*]))
 
-(defn handle-msg [pubsub msg]
-  (let [event (match/match msg
-                [_ event-id data ctx] {:id   event-id
-                                       :data data
-                                       :ctx  ctx}
-                _ nil)
-        {request-id :request/id topics :subscription/topics} (:ctx event)]
-    (doseq [topic (or topics [request-id])
-            :when topic
-            :let [{event-type :event/type event-data :event/data} (:data event)
-                  event* (case event-type
-                           :workflow/failed {:error [event-data]}
-                           {:data event-data})]]
-      (log/info [event-type (:ctx event)])
-      (pubsub/publish! pubsub topic event*))))
+(defn ^:private handle-msg [pubsub msg]
+  (when-let [[{:event/keys [data type]} ctx] (match/match msg
+                                               [_ _ data ctx] [data ctx]
+                                               _ nil)]
+    (log/info "websocket msg received" ctx)
+    (when-let [topic (or (:sub/id ctx) (:request/id ctx))]
+      (let [msg' (merge {:event/type type}
+                        (case type
+                          :workflow/failed {:error [data]}
+                          {:data data}))]
+        (pubsub/publish! pubsub topic msg')))))
 
-(defn ws-uri [nav base-url]
+(defn ^:private ws-uri [nav base-url]
   (let [mime-type (serdes/mime-type serde/transit)
         params {:params {:content-type mime-type
                          :accept       mime-type}}]

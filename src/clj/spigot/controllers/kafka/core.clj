@@ -61,6 +61,7 @@
      :timeout timeout}))
 
 (defn stop! [{:keys [stopped ^KafkaStreams streams timeout]}]
+  (log/debug "Stopping KafkaStreams")
   (.close streams)
   (when-not (deref stopped timeout false)
     (throw (ex-info "KafkaStreams did not stop within timeout" {:timeout timeout}))))

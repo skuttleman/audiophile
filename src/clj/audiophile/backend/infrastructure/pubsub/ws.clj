@@ -143,6 +143,4 @@
       (let [event (dissoc event :event/ctx)]
         (log/with-ctx :CP
           (log/info "publishing event to ws" event-id)
-          (ps/send-user! pubsub (:user/id ctx) event-id event (dissoc ctx :subscription/topics))
-          (doseq [topic (:subscription/topics ctx)]
-            (ps/publish! pubsub topic event-id event ctx)))))))
+          (ps/send-user! pubsub (:user/id ctx) event-id event ctx))))))

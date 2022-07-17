@@ -1,8 +1,10 @@
 (ns ^:unit audiophile.backend.infrastructure.workflows.handlers-test
   (:require
+    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.infrastructure.templates.workflows :as wf]
     [audiophile.backend.infrastructure.workflows.handlers :as wfh]
     [audiophile.common.core.serdes.protocols :as pserdes]
+    [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.services :as ts]
@@ -25,14 +27,16 @@
   (let [wf-sym (gensym "wf")
         sys-sym (gensym "sys")]
     `(let [tx# (ts/->tx)
+           pubsub# (ts/->pubsub)
            spec# (wf/workflow-spec ~template ~ctx)
-           ~sys-sym (assoc ~sys :repo tx#)
+           ~sys-sym (assoc ~sys :repo tx# :pubsub pubsub#)
            ~wf-sym (sp/plan (:workflows/form spec#) {:ctx (:workflows/ctx spec#)})]
        (testing "when the workflow succeeds"
          (stubs/set-stub! tx# :execute! ~query-fn)
          (let [result# (spu/run-sync ~wf-sym (partial wfh/task-handler ~sys-sym {}))
-               {:keys ~(or bindings [])} {:db-calls (map first (stubs/calls tx# :execute!))
-                                          :result   result#}]
+               {:keys ~(or bindings [])} {:db-calls     (map first (stubs/calls tx# :execute!))
+                                          :pubsub-calls (stubs/calls pubsub# :publish!)
+                                          :result       result#}]
            ~@body))
 
        (testing "when the workflow fails"
@@ -138,14 +142,24 @@
     (let [[project-id user-id] (repeatedly uuids/random)
           ctx {:project/id   project-id
                :project/name "project name"
-               :user/id   user-id}
+               :user/id      user-id}
           query-fn (->query-fn {{:insert-into :projects} [{:id project-id}]})]
-      (as-test [db-calls] [:projects/update ctx query-fn]
+      (as-test [db-calls pubsub-calls] [:projects/update ctx query-fn]
         (testing "saves the project"
           (assert/has? {:update :projects
-                        :set {:project/name "project name"}
-                        :where [:= :projects.id project-id]}
-                       db-calls))))))
+                        :set    {:project/name "project name"}
+                        :where  [:= :projects.id project-id]}
+                       db-calls))
+
+        (testing "publishes an event"
+          (let [[topic [_ event ctx]] (colls/only! pubsub-calls)]
+            (is (= [:projects project-id] topic))
+            (assert/is? {:event/type :project/updated
+                         :event/data {:project/id   project-id
+                                      :project/name "project name"}}
+                        event)
+            (assert/is? {:sub/id [:projects project-id]}
+                        ctx)))))))
 
 (deftest teams:create-test
   (testing ":teams/create workflow"
@@ -169,6 +183,43 @@
                                        :user-id user-id}]}
                        db-calls))))))
 
+(deftest teams:invite-test
+  (testing ":teams/invite workflow"
+    (let [[invite-id team-id] (repeatedly uuids/random)
+          ctx {:team/id    team-id
+               :user/email "user@example.com"
+               :user/id    invite-id}
+          query-fn (->query-fn {})]
+      (as-test [db-calls pubsub-calls] [:teams/invite ctx query-fn]
+        (testing "saves the invitation"
+          (assert/has? {:insert-into :team-invitations
+                        :values      [{:email   "user@example.com"
+                                       :team-id team-id}]
+                        :on-conflict [:team-id :email]
+                        :do-nothing  []}
+                       db-calls))
+
+        (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
+          (testing "publishes an event to teams topic"
+            (let [[topic [_ event ctx]] call-1]
+              (is (= [:teams team-id] topic))
+              (assert/is? {:event/type :team/invited
+                           :event/data {:team-invitation/team-id team-id
+                                        :team-invitation/email   "user@example.com"}}
+                          event)
+              (assert/is? {:sub/id [:teams team-id]}
+                          ctx)))
+
+          (testing "publishes an event to user topic"
+              (let [[topic [_ event ctx]] call-2]
+                (is (= [::ps/user invite-id] topic))
+                (assert/is? {:event/type :team/invited
+                             :event/data {:team-invitation/team-id team-id
+                                          :team-invitation/email   "user@example.com"}}
+                            event)
+                (assert/is? {:sub/id [::ps/user invite-id]}
+                            ctx))))))))
+
 (deftest teams:update-test
   (testing ":teams/update workflow"
     (let [[team-id user-id] (repeatedly uuids/random)
@@ -176,12 +227,22 @@
                :team/name "team name"
                :user/id   user-id}
           query-fn (->query-fn {{:insert-into :teams} [{:id team-id}]})]
-      (as-test [db-calls] [:teams/update ctx query-fn]
+      (as-test [db-calls pubsub-calls] [:teams/update ctx query-fn]
         (testing "saves the team"
           (assert/has? {:update :teams
-                        :set {:team/name "team name"}
-                        :where [:= :teams.id team-id]}
-                       db-calls))))))
+                        :set    {:team/name "team name"}
+                        :where  [:= :teams.id team-id]}
+                       db-calls))
+
+        (testing "publishes an event"
+          (let [[topic [_ event ctx]] (colls/only! pubsub-calls)]
+            (is (= [:teams team-id] topic))
+            (assert/is? {:event/type :team/updated
+                         :event/data {:team/id   team-id
+                                      :team/name "team name"}}
+                        event)
+            (assert/is? {:sub/id [:teams team-id]}
+                        ctx)))))))
 
 (deftest users:signup-test
   (testing ":users/signup workflow"

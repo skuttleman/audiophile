@@ -7,6 +7,7 @@
     [audiophile.test.utils :refer [async] :as tu]
     [audiophile.test.utils.spies :as spies]
     [audiophile.test.utils.stubs :as stubs]
+    [audiophile.ui.services.pages :as pages]
     [audiophile.ui.services.pubsub :as pubsub.ui]
     [clojure.core.async :as async]
     [clojure.core.async.impl.protocols :as async.protocols]
@@ -27,7 +28,7 @@
       (async done
         (async/go
           (testing "cannot subscribe to uninitialized pubsub"
-            (is (thrown? js/Object (pubsub/subscribe! pubsub ::key [:some :topic] ::listener))))
+            (is (thrown? js/Object (pubsub/subscribe! pubsub ::pages/sub [:some :topic] ::listener))))
 
           (testing "#init!"
             (pcom/init! pubsub)
@@ -51,13 +52,13 @@
                        call)))))
 
           (testing "#subscribe!"
-            (pubsub/subscribe! pubsub ::key [:topic 3] ::listener)
+            (pubsub/subscribe! pubsub ::pages/sub [:topic 3] ::listener)
             (testing "adds the subscription"
               (is (contains? @subs [:topic 3])))
 
             (testing "subscribes to underlying pubsub"
               (let [[key topic] (colls/only! (stubs/calls ps-stub :subscribe!))]
-                (is (= ::key key))
+                (is (= ::pages/sub key))
                 (is (= [:topic 3] topic))))
 
             (testing "sends subscription via websocket"
@@ -65,13 +66,13 @@
                 (is (= [:sub/start! [:topic 3]] msg)))))
 
           (testing "#unsubscribe!"
-            (pubsub/unsubscribe! pubsub ::key [:topic 3])
+            (pubsub/unsubscribe! pubsub ::pages/sub [:topic 3])
             (testing "removes the subscription"
               (is (not (contains? @subs [:topic 3]))))
 
             (testing "unsubscribes from underlying pubsub"
               (let [[key topic] (colls/only! (stubs/calls ps-stub :unsubscribe!))]
-                (is (= ::key key))
+                (is (= ::pages/sub key))
                 (is (= [:topic 3] topic))))
 
             (testing "sends subscription removal via websocket"
@@ -88,7 +89,12 @@
             (testing "closes websocket"
               (async.protocols/closed? ch))
 
-            (testing "cannot subscribe to uninitialized pubsub"
-              (is (thrown? js/Object (pubsub/subscribe! pubsub ::key [:some :topic] ::listener)))))
+            (testing "when creating a page subscription"
+              (testing "cannot subscribe to uninitialized pubsub"
+                (is (thrown? js/Object (pubsub/subscribe! pubsub ::pages/sub [:some :topic] ::listener)))))
+
+            (testing "when creating a non-page subscription"
+              (testing "subscribes to the topic"
+                (is (pubsub/subscribe! pubsub ::key [:some :topic] ::listener)))))
 
           (done))))))

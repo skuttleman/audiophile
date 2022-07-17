@@ -55,8 +55,14 @@
 (defn insert-team-access? [_ _ _]
   true)
 
-(defn invite-member-access? [_ _ _]
-  true)
+(defn invite-member-access? [executor {team-id :team/id} {user-id :user/id}]
+  (-> executor
+      (repos/execute! (-> tbl/user-teams
+                          (models/select* [:and
+                                           [:= :user-teams.team-id team-id]
+                                           [:= :user-teams.user-id user-id]])))
+      seq
+      boolean))
 
 (defn update-team-access? [executor {team-id :team/id} {user-id :user/id}]
   (-> executor

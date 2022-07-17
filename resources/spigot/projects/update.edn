@@ -1,4 +1,9 @@
 [:workflows/setup {:project/id   ?project-id
                    :project/name ?name}
- [:project/update! {:project/id   (sp.ctx/get ?project-id)
-                    :project/name (sp.ctx/get ?name)}]]
+ [:spigot/serial
+  [:project/update! {:project/id   (sp.ctx/get ?project-id)
+                     :project/name (sp.ctx/get ?name)}]
+  [:pubsub/publish! {:events [{:topic   [:projects (sp.ctx/get ?project-id)]
+                               :payload {:event/type :project/updated
+                                         :event/data {:project/id   (sp.ctx/get ?project-id)
+                                                      :project/name (sp.ctx/get ?name)}}}]}]]]

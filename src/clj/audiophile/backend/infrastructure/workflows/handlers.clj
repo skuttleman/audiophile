@@ -1,5 +1,6 @@
 (ns audiophile.backend.infrastructure.workflows.handlers
   (:require
+    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.core.serdes.jwt :as jwt]
     [audiophile.backend.infrastructure.repositories.comments.queries :as qcomments]
     [audiophile.backend.infrastructure.repositories.core :as repos]
@@ -7,7 +8,8 @@
     [audiophile.backend.infrastructure.repositories.projects.queries :as qprojects]
     [audiophile.backend.infrastructure.repositories.teams.queries :as qteams]
     [audiophile.backend.infrastructure.repositories.users.queries :as qusers]
-    [audiophile.common.core.utils.logger :as log]))
+    [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.uuids :as uuids]))
 
 (defn ^:private create* [executor insert! ctx {:spigot/keys [tag params]}]
   (let [ns* (namespace tag)]
@@ -41,6 +43,12 @@
 (defmethod task-handler :project/update!
   [{:keys [repo]} ctx {:spigot/keys [params]}]
   (repos/transact! repo qprojects/update-project! params ctx))
+
+(defmethod task-handler :pubsub/publish!
+  [{:keys [pubsub]} ctx {{:keys [events]} :spigot/params}]
+  (doseq [{:keys [topic payload]} events
+          :let [event-id (uuids/random)]]
+    (ps/publish! pubsub topic event-id payload (assoc ctx :sub/id topic))))
 
 (defmethod task-handler :team/create!
   [{:keys [repo]} ctx task]

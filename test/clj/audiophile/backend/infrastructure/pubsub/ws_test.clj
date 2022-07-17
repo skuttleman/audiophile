@@ -89,7 +89,7 @@
     (let [ch (ts/->chan)
           pubsub (ts/->pubsub)
           ch-id (uuids/random)
-          ctx {::ws/ch-id ch-id
+          ctx {::ws/ch-id  ch-id
                ::ws/pubsub pubsub}]
       (testing "when the channel is closed"
         (ws/on-close! ctx ch)
@@ -99,3 +99,51 @@
                            (stubs/calls :unsubscribe!)
                            colls/only!
                            colls/only!))))))))
+
+(deftest event-handler-test
+  (let [pubsub (ts/->pubsub)
+        handler (ws/event-handler {:pubsub pubsub})
+        [event-id request-id some-id user-id workflow-id] (repeatedly uuids/random)]
+    (testing "when emitting :workflow/completed event"
+      (stubs/init! pubsub)
+      (handler {:value {:event/id   event-id
+                        :event/type :workflow/completed
+                        :event/data {:ctx                {'?foo some-id}
+                                     :workflows/->result '{:foo/id (sp.ctx/get ?foo)}
+                                     :workflows/template :foo/bar}
+                        :event/ctx  {:user/id     user-id
+                                     :request/id  request-id
+                                     :workflow/id workflow-id}}})
+      (testing "publishes a user event"
+        (let [[topic [_ event ctx]] (colls/only! (stubs/calls pubsub :publish!))]
+          (is (= [::ps/user user-id] topic))
+          (is (= {:event/id   event-id
+                  :event/type :workflow/completed
+                  :event/data {:workflow/id       workflow-id
+                               :workflow/template :foo/bar
+                               :foo/id            some-id}}
+                 event))
+          (is (= {:user/id     user-id
+                  :request/id  request-id
+                  :workflow/id workflow-id}
+                 ctx)))))
+
+    (testing "when emitting :workflow/failed event"
+      (stubs/init! pubsub)
+      (handler {:value {:event/id   event-id
+                        :event/type :workflow/failed
+                        :event/data {:some :error}
+                        :event/ctx  {:user/id     user-id
+                                     :request/id  request-id
+                                     :workflow/id workflow-id}}})
+      (testing "publishes a user event"
+        (let [[topic [_ event ctx]] (colls/only! (stubs/calls pubsub :publish!))]
+          (is (= [::ps/user user-id] topic))
+          (is (= {:event/id   event-id
+                  :event/type :workflow/failed
+                  :event/data {:some :error}}
+                 event))
+          (is (= {:user/id     user-id
+                  :request/id  request-id
+                  :workflow/id workflow-id}
+                 ctx)))))))

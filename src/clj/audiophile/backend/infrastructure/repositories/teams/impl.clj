@@ -1,7 +1,6 @@
 (ns audiophile.backend.infrastructure.repositories.teams.impl
   (:refer-clojure :exclude [accessor])
   (:require
-    [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.domain.interactors.core :as int]
     [audiophile.backend.domain.interactors.protocols :as pint]
     [audiophile.backend.infrastructure.repositories.common :as crepos]
@@ -19,15 +18,18 @@
            :team/projects
            (qprojects/select-for-team executor team-id opts))))
 
+(defn ^:private team-invite* [executor {:user/keys [email] :as data} opts]
+  (when-not (qteams/invite-member-access? executor data opts)
+    (int/no-access!))
+  (merge opts data {:user/id (-> executor
+                                 (qusers/find-by-email email opts)
+                                 :user/id)}))
+
 (deftype TeamAccessor [repo producer]
   pint/ITeamAccessor
   (team-invite! [_ data opts]
-    (when-not (repos/transact! repo qteams/invite-member-access? data opts)
-      (int/no-access!))
-    (let [user-id (:user/id (repos/transact! repo qusers/find-by-email (:user/email data) opts))
-          opts (cond-> (assoc opts :subscription/topics #{[:teams (:team/id data)]})
-                 user-id (update :subscription/topics conj [::ps/user user-id]))]
-      (crepos/start-workflow! producer :teams/invite (merge opts data) opts)))
+    (let [data (repos/transact! repo team-invite* data opts)]
+      (crepos/start-workflow! producer :teams/invite data opts)))
 
   pint/IAccessor
   (query-many [_ opts]
@@ -41,8 +43,7 @@
   (update! [_ data opts]
     (when-not (repos/transact! repo qteams/update-team-access? data opts)
       (int/no-access!))
-    (let [opts (assoc opts :subscription/topics #{[:teams (:team/id data)]})]
-      (crepos/start-workflow! producer :teams/update (merge opts data) opts))))
+    (crepos/start-workflow! producer :teams/update (merge opts data) opts)))
 
 (defn accessor
   "Constructor for [[TeamAccessor]] which provides semantic access for storing and retrieving teams."

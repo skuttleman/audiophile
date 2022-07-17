@@ -41,8 +41,9 @@
  {}
 
  :audiophile.workflows.kafka/handler
- {:sys {:repo      #ig/ref :services/transactor
-        :jwt-serde #ig/ref :serdes/jwt}
+ {:sys            {:jwt-serde #ig/ref :serdes/jwt
+                   :pubsub    #ig/ref :services/pubsub
+                   :repo      #ig/ref :services/transactor}
   :status-handler #ig/ref :audiophile.workflows.kafka/status-handler}
 
  [:audiophile.workflows.kafka/controller :component/health :controller/tasks]
