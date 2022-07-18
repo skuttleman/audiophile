@@ -23,25 +23,26 @@
                     ::m/missing-key {:error/fn f})}))
 
 (def ^:private lookup
-  {:api.artifact/create   specs/api-artifact:create
-   :api.comment/fetch-all specs/api-comment:fetch-all
-   :api.comment/create    specs/api-comment:create
-   :api.common/auth       specs/auth
-   :api.common/file-id    specs/file-id
-   :api.common/project-id specs/project-id
-   :api.common/team-id    specs/team-id
-   :api.events/fetch-all  specs/api-event:fetch-all
-   :api.file/create       specs/api-file:create
-   :api.profile/fetch     specs/profile
-   :api.project/create    specs/api-project:create
-   :api.project/update    specs/api-project:update
-   :api.team/create       specs/api-team:create
-   :api.team/invite       specs/api-team:invite
-   :api.team/update       specs/api-team:update
-   :api.user/create       specs/api-user:create
-   :api.version/create    specs/api-version:create
-   :api.ws/connect        specs/api-ws:connect
-   :res.version/download  specs/res-version:download})
+  {:api.artifact/create        specs/api-artifact:create
+   :api.comment/fetch-all      specs/api-comment:fetch-all
+   :api.comment/create         specs/api-comment:create
+   :api.common/auth            specs/auth
+   :api.common/file-id         specs/file-id
+   :api.common/project-id      specs/project-id
+   :api.common/team-id         specs/team-id
+   :api.events/fetch-all       specs/api-event:fetch-all
+   :api.file/create            specs/api-file:create
+   :api.profile/fetch          specs/profile
+   :api.project/create         specs/api-project:create
+   :api.project/update         specs/api-project:update
+   :api.team/create            specs/api-team:create
+   :api.team-invitation/create specs/api-team-invitation:create
+   :api.team-invitation/update specs/api-team-invitation:update
+   :api.team/update            specs/api-team:update
+   :api.user/create            specs/api-user:create
+   :api.version/create         specs/api-version:create
+   :api.ws/connect             specs/api-ws:connect
+   :res.version/download       specs/res-version:download})
 
 (defn validator [{:keys [spec]}]
   (let [opts (humanize-opts (:missing-keys (meta spec)))]

@@ -43,6 +43,22 @@
                 {:method :get
                  :url    (nav/path-for nav handle (update params :params merge opts))}))))
 
+(defn res:modify
+  ([sys attrs handle]
+   (res:modify sys attrs handle nil))
+  ([{:keys [http-client nav store] :as sys} attrs handle params]
+   (ires/http store
+              http-client
+              (fn [body]
+                {:method      :patch
+                 :url         (nav/path-for nav handle params)
+                 :body        {:data body}
+                 :http/async? true})
+              (fn [vow]
+                (-> vow
+                    (with-handlers attrs)
+                    (with-toast sys))))))
+
 (defn ^:private form:* [{:keys [http-client nav store] :as sys} attrs *form method handle params]
   (let [id (forms/id *form)]
     (form.submit/create id
@@ -73,12 +89,6 @@
    (form:modify sys attrs *form handle nil))
   ([sys attrs *form handle params]
    (form:* sys attrs *form :patch handle params)))
-
-(defn form:upsert
-  ([sys attrs *form handle]
-   (form:upsert sys attrs *form handle nil))
-  ([sys attrs *form handle params]
-   (form:* sys attrs *form :put handle params)))
 
 (defn modal:open [{:keys [store]} header body]
   (fn [_]

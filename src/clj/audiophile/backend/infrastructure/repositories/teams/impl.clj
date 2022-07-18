@@ -7,7 +7,6 @@
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.projects.queries :as qprojects]
     [audiophile.backend.infrastructure.repositories.teams.queries :as qteams]
-    [audiophile.backend.infrastructure.repositories.users.queries :as qusers]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
@@ -18,19 +17,8 @@
            :team/projects
            (qprojects/select-for-team executor team-id opts))))
 
-(defn ^:private team-invite* [executor {:user/keys [email] :as data} opts]
-  (when-not (qteams/invite-member-access? executor data opts)
-    (int/no-access!))
-  (merge opts data {:user/id (-> executor
-                                 (qusers/find-by-email email opts)
-                                 :user/id)}))
-
 (deftype TeamAccessor [repo producer]
   pint/ITeamAccessor
-  (team-invite! [_ data opts]
-    (let [data (repos/transact! repo team-invite* data opts)]
-      (crepos/start-workflow! producer :teams/invite data opts)))
-
   pint/IAccessor
   (query-many [_ opts]
     (repos/transact! repo qteams/select-for-user (:user/id opts) opts))

@@ -102,17 +102,14 @@
    [:p [:strong "Your projects"]]
    [project-list attrs projects]])
 
-(defn tile [sys *teams]
-  (r/with-let [*res (serv/projects#res:fetch-all sys)
-               click (cserv/projects#modal:create sys [::create {:*res  *res
-                                                                :*teams *teams}])]
+(defn tile [sys *projects *teams]
+  (r/with-let [click (cserv/projects#modal:create sys [::create {:*res   *projects
+                                                                 :*teams *teams}])]
     [comp/tile
      [:h2.subtitle "Projects"]
-     [comp/with-resource [*res {:spinner/size :small}] [tile-content {:*res *res
-                                                                      :sys  sys}]]
+     [comp/with-resource [*projects {:spinner/size :small}] [tile-content {:*res *projects
+                                                                           :sys  sys}]]
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}
-      "Create one"]]
-    (finally
-      (res/destroy! *res))))
+      "Create one"]]))

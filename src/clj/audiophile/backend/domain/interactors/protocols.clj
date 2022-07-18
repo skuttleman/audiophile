@@ -32,9 +32,10 @@
   "Abstraction for saving and querying projects")
 
 (defprotocol ITeamAccessor
-  "Abstraction for saving and querying teams and user/team relationships"
-  (team-invite! [this data opts]
-    "Invites a new team member"))
+  "Abstraction for saving and querying teams and user/team relationships")
+
+(defprotocol ITeamInvitationAccessor
+  "Abstraction for saving and querying team-invitations")
 
 (defprotocol IUserAccessor
   "Abstraction for saving and querying users")

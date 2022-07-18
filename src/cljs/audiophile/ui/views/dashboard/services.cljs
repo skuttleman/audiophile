@@ -5,6 +5,7 @@
     [audiophile.common.domain.validations.specs :as specs]
     [audiophile.common.infrastructure.navigation.core :as nav]
     [audiophile.ui.forms.standard :as form.std]
+    [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.services.pages :as pages]))
 
 (def ^:private projects#validator:modify
@@ -15,6 +16,28 @@
 
 (def ^:private teams#validator:modify
   (val/validator {:spec specs/team:update}))
+
+(defn invitations#res:fetch-all [sys]
+  (pages/res:fetch sys :routes.api/team-invitations))
+
+(defn invitations#form:modify [{:keys [store] :as sys} {:keys [status team-id] :as attrs}]
+  (let [*form (form.std/create store {:team-invitation/team-id team-id
+                                      :team-invitation/status  status})]
+    (pages/form:modify sys attrs *form :routes.api/team-invitations)))
+
+(defn invitations#modal:confirm [sys [k attrs]]
+  (fn [mode team-id]
+    (let [attrs' (merge attrs
+                        {:mode-text (name mode)
+                         :team-id   team-id}
+                        (case mode
+                          :accept {:*res   (ires/multi (select-keys attrs #{:*invitations
+                                                                            :*projects
+                                                                            :*teams}))
+                                   :status :ACCEPT}
+                          :reject {:*res   (:*invitations attrs)
+                                   :status :REJECT}))]
+      (pages/modal:open sys [:h1.subtitle "Team invitation"] [k attrs']))))
 
 (defn projects#res:fetch-all [sys]
   (pages/res:fetch sys :routes.api/projects))

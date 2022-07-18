@@ -87,14 +87,19 @@
   [:map
    [:project/name trimmed-string?]])
 
+(def team-invitation:create
+  [:map
+   [:user/email email?]])
+
+(def team-invitation:update
+  [:map
+   [:team-invitation/team-id uuid?]
+   [:team-invitation/status [:fn #{:ACCEPTED :REJECTED}]]])
+
 (def team:create
   [:map
    [:team/name trimmed-string?]
    [:team/type [:fn #{:PERSONAL :COLLABORATIVE}]]])
-
-(def team:invite
-  [:map
-   [:user/email email?]])
 
 (def team:update
   [:map
@@ -154,17 +159,23 @@
                  [:request/id {:optional true} uuid?]])
       (mu/merge project:update)))
 
-(def api-team:create
-  (-> auth
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
-      (mu/merge team:create)))
-
-(def api-team:invite
+(def api-team-invitation:create
   (-> auth
       (mu/merge [:map
                  [:team/id uuid?]
                  [:request/id {:optional true} uuid?]])
-      (mu/merge team:invite)))
+      (mu/merge team-invitation:create)))
+
+(def api-team-invitation:update
+  (-> auth
+      (mu/merge [:map
+                 [:request/id {:optional true} uuid?]])
+      (mu/merge team-invitation:update)))
+
+(def api-team:create
+  (-> auth
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge team:create)))
 
 (def api-team:update
   (-> auth

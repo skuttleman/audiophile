@@ -6,6 +6,7 @@
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.files.queries :as qfiles]
     [audiophile.backend.infrastructure.repositories.projects.queries :as qprojects]
+    [audiophile.backend.infrastructure.repositories.team-invitations.queries :as qinvitations]
     [audiophile.backend.infrastructure.repositories.teams.queries :as qteams]
     [audiophile.backend.infrastructure.repositories.users.queries :as qusers]
     [audiophile.common.core.utils.logger :as log]
@@ -50,13 +51,17 @@
           :let [event-id (uuids/random)]]
     (ps/publish! pubsub topic event-id payload (assoc ctx :sub/id topic))))
 
+(defmethod task-handler :team-invitation/create!
+  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  (repos/transact! repo qinvitations/invite-member! params ctx))
+
+(defmethod task-handler :team-invitation/update!
+  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  (repos/transact! repo qinvitations/update-invitation! params ctx))
+
 (defmethod task-handler :team/create!
   [{:keys [repo]} ctx task]
   (repos/transact! repo create* qteams/insert-team! ctx task))
-
-(defmethod task-handler :team/invite!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
-  (repos/transact! repo qteams/invite-member! params ctx))
 
 (defmethod task-handler :team/update!
   [{:keys [repo]} ctx {:spigot/keys [params]}]

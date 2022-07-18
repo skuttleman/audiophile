@@ -144,6 +144,11 @@
          :on-conflict constraint
          :do-nothing []))
 
+(defn on-conflict-do-update [query constraint m]
+  (assoc query
+         :on-conflict constraint
+         :do-update-set m))
+
 (defn ^:private join* [query join-type {:keys [_alias fields _namespace _table] :as model} on]
   (-> query
       (update :select into (map (->field model)) fields)

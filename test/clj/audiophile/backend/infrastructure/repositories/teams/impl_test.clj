@@ -13,43 +13,6 @@
     [clojure.test :refer [are deftest is testing]]
     [spigot.controllers.kafka.topologies :as sp.ktop]))
 
-(deftest team-invite!-test
-  (testing "team-invite!"
-    (let [producer (ts/->chan)
-          tx (ts/->tx)
-          repo (rteams/->TeamAccessor tx producer)
-          [invite-id request-id team-id user-id] (repeatedly uuids/random)]
-      (testing "when the user has access"
-        (stubs/use! tx :execute!
-                    [{}]
-                    [{:user/id invite-id}])
-        (testing "emits a command"
-          (int/team-invite! repo {:some :data} {:some       :opts
-                                                :some/other :opts
-                                                :team/id    team-id
-                                                :user/id    user-id
-                                                :request/id request-id})
-          (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
-            (is (= ::sp.ktop/create! tag))
-            (assert/is? {:workflows/ctx      {'?user-id invite-id '?team-id team-id}
-                         :workflows/template :teams/invite
-                         :workflows/form     (peek (wf/load! :teams/invite))}
-                        params)
-            (assert/is? {:user/id     user-id
-                         :request/id  request-id
-                         :workflow/id uuid?}
-                        ctx))))
-
-      (testing "when the user does not have access"
-        (stubs/use! tx :execute! [])
-        (testing "throws"
-          (let [ex (is (thrown? Throwable (int/team-invite! repo {:some :data} {:some       :opts
-                                                                                :some/other :opts
-                                                                                :team/id    team-id
-                                                                                :user/id    user-id
-                                                                                :request/id request-id})))]
-            (is (= int/NO_ACCESS (:interactor/reason (ex-data ex))))))))))
-
 (deftest query-all-test
   (testing "query-all"
     (let [tx (ts/->tx)

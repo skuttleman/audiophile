@@ -96,7 +96,7 @@
    :namespace :team})
 
 (def team-invitations
-  {:fields    #{:team-id :email :status :created-at}
+  {:fields    #{:team-id :email :status :created-at :invited-by}
    :spec      [:map
                [:team-invitation/team-id uuid?]
                [:team-invitation/email specs/email?]
@@ -150,6 +150,7 @@
             file-versions
             files
             projects
+            team-invitations
             teams
             user-events
             user-teams

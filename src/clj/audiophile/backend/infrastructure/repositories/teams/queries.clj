@@ -1,9 +1,9 @@
 (ns audiophile.backend.infrastructure.repositories.teams.queries
   (:require
-    [audiophile.backend.infrastructure.repositories.common :as crepos]
-    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.backend.infrastructure.db.models.tables :as tbl]
+    [audiophile.backend.infrastructure.repositories.common :as crepos]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.logger :as log]))
 
@@ -55,15 +55,6 @@
 (defn insert-team-access? [_ _ _]
   true)
 
-(defn invite-member-access? [executor {team-id :team/id} {user-id :user/id}]
-  (-> executor
-      (repos/execute! (-> tbl/user-teams
-                          (models/select* [:and
-                                           [:= :user-teams.team-id team-id]
-                                           [:= :user-teams.user-id user-id]])))
-      seq
-      boolean))
-
 (defn update-team-access? [executor {team-id :team/id} {user-id :user/id}]
   (-> executor
       (repos/execute! (-> tbl/teams
@@ -89,9 +80,3 @@
                   (-> (models/sql-update tbl/teams)
                       (models/sql-set (select-keys team #{:team/name}))
                       (models/and-where [:= :teams.id (:team/id team)]))))
-
-(defn invite-member! [executor params _]
-  (repos/execute! executor
-                  (-> tbl/team-invitations
-                      (models/insert-into params)
-                      (models/on-conflict-do-nothing [:team-id :email]))))

@@ -1,0 +1,16 @@
+[:workflows/setup {:user/id    ?user-id
+                   :user/email ?email
+                   :team/id    ?team-id
+                   :inviter/id ?inviter-id}
+ [:spigot/serial
+  [:team-invitation/create! {:team-invitation/team-id    (sp.ctx/get ?team-id)
+                             :team-invitation/email      (sp.ctx/get ?email)
+                             :team-invitation/invited-by (sp.ctx/get ?inviter-id)}]
+  [:pubsub/publish! {:events [{:topic   [:teams (sp.ctx/get ?team-id)]
+                               :payload {:event/type :team-invitation/created
+                                         :event/data {:team-invitation/team-id (sp.ctx/get ?team-id)
+                                                      :team-invitation/email   (sp.ctx/get ?email)}}}
+                              {:topic   [:audiophile.backend.api.pubsub.core/user (sp.ctx/get ?user-id)]
+                               :payload {:event/type :team-invitation/created
+                                         :event/data {:team-invitation/team-id (sp.ctx/get ?team-id)
+                                                      :team-invitation/email   (sp.ctx/get ?email)}}}]}]]]

@@ -81,6 +81,13 @@
                   [(f k) v]))
         coll))
 
+(defn map-vals [f coll]
+  "creates a new map where all the keys are the result of calling f"
+  (into (with-meta {} (meta coll))
+        (map (fn [[k v]]
+               [k (f v)]))
+        coll))
+
 (defmacro ->m
   "Compiles a sequence of symbols into a map literal of (keyword symbol) -> symbol.
    Optional tries to add any other value on to the returned map via conj.

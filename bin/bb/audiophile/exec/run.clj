@@ -25,7 +25,7 @@
 
 (defmethod shared/test* :clj
   [_ args]
-  (shared/process! "docker-compose up -d postgres")
+  (shared/process! "docker-compose up -d postgres kafka")
   (shared/process! (shared/clj #{:cljs-dev :test :shadow-cljs}
                                "-m shadow.cljs.devtools.cli compile web-test"))
   (shared/process! (shared/clj #{:dev :test} (str "-m kaocha.runner"

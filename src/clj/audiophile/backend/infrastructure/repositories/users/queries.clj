@@ -1,8 +1,8 @@
 (ns audiophile.backend.infrastructure.repositories.users.queries
   (:require
-    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.backend.infrastructure.db.models.tables :as tbl]
+    [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.common.core.utils.colls :as colls]))
 
 (defn ^:private select-by [clause]

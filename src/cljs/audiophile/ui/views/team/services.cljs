@@ -9,11 +9,11 @@
     [audiophile.ui.services.pages :as pages]))
 
 (def ^:private teams#validator:invite
-  (val/validator {:spec specs/team:invite}))
+  (val/validator {:spec specs/team-invitation:create}))
 
 (defn teams#form:invite [{:keys [store] :as sys} attrs team-id]
-  (let [*form (form.std/create store nil teams#validator:invite)]
-    (pages/form:upsert sys attrs *form :routes.api/teams:id.invitations {:params {:team/id team-id}})))
+  (let [*form (form.std/create store {:team/id team-id} teams#validator:invite)]
+    (pages/form:new sys attrs *form :routes.api/team-invitations)))
 
 (defn teams#modal:invite [sys body]
   (pages/modal:open sys [:h1.subtitle "Invite a new team member"] body))

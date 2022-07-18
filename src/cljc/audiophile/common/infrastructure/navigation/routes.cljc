@@ -29,11 +29,12 @@
        [["" :routes.api/projects:id]
         ["/files"
          [["" :routes.api/projects:id.files]]]]]]]
+    ["/team-invitations"
+     [["" :routes.api/team-invitations]]]
     ["/teams"
      [["" :routes.api/teams]
       [["/" [uuids/regex :team/id]]
-       [["" :routes.api/teams:id]
-        ["/invitations" :routes.api/teams:id.invitations]]]]]
+       [["" :routes.api/teams:id]]]]]
     ["/users"
      [["" :routes.api/users]
       ["/profile" :routes.api/users.profile]]]

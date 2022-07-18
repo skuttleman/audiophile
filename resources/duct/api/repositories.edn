@@ -10,6 +10,9 @@
  [:duct/const :interactors/projects]
  #ig/ref :audiophile.repositories.projects/accessor
 
+ [:duct/const :interactors/team-invitations]
+ #ig/ref :audiophile.repositories.team-invitations/accessor
+
  [:duct/const :interactors/teams]
  #ig/ref :audiophile.repositories.teams/accessor
 
@@ -37,6 +40,10 @@
   :store    #ig/ref :audiophile.repositories.files/artifact-store}
 
  :audiophile.repositories.projects/accessor
+ {:producer #ig/ref :workflows/producer
+  :repo     #ig/ref :services/transactor}
+
+ :audiophile.repositories.team-invitations/accessor
  {:producer #ig/ref :workflows/producer
   :repo     #ig/ref :services/transactor}
 

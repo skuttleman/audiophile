@@ -34,6 +34,29 @@
   (-deref [_]
     (:result (q/res:state store id))))
 
+(deftype MultiResource [resources]
+  pcom/IIdentify
+  (id [_]
+    (maps/map-vals pcom/id resources))
+
+  pres/IResource
+  (request! [_ opts]
+    (v/all (into {}
+                 (map (fn [[k *res]]
+                        [k (pres/request! *res (get opts k opts))]))
+                 resources)))
+  (status [_]
+    (maps/map-vals pres/status resources))
+
+  pcom/IDestroy
+  (destroy! [_]
+    (doseq [[_ *res] resources]
+      (pcom/destroy! *res)))
+
+  IDeref
+  (-deref [_]
+    (maps/map-vals deref resources)))
+
 (defn base
   ([store opts-vow]
    (base (uuids/random) store opts-vow))
@@ -51,3 +74,6 @@
                     (-> (res/request! http-client (opts->req opts))
                         (v/then :data (comp v/reject :error))
                         handler)))))
+
+(defn multi [resources]
+  (->MultiResource resources))

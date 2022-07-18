@@ -1,26 +1,28 @@
 {[:duct/const :routes/table#api]
- {[:get :routes.api/artifacts:id]         #ig/ref :res.handler/file-version#get
-  [:get :routes.api/events]               #ig/ref :api.handler/events#get
-  [:get :routes.api/files:id.comments]    #ig/ref :api.handler/comments#get
-  [:get :routes.api/files:id]             #ig/ref :api.handler/file#get
-  [:get :routes.api/users.profile]        #ig/ref :api.handler/user#get
-  [:get :routes.api/projects:id.files]    #ig/ref :api.handler/project.files#get
-  [:get :routes.api/projects:id]          #ig/ref :api.handler/project#get
-  [:get :routes.api/projects]             #ig/ref :api.handler/projects#get
-  [:get :routes.api/teams:id]             #ig/ref :api.handler/team#get
-  [:get :routes.api/teams]                #ig/ref :api.handler/teams#get
-  [:get :routes.resources/health]         #ig/ref :res.handler/health
-  [:get :routes.ws/connection]            #ig/ref :api.handler/ws#connect
-  [:patch :routes.api/teams:id]           #ig/ref :api.handler/team#patch
-  [:patch :routes.api/projects:id]        #ig/ref :api.handler/project#patch
-  [:post :routes.api/artifact]            #ig/ref :api.handler/artifacts#post
-  [:post :routes.api/comments]            #ig/ref :api.handler/comments#post
-  [:post :routes.api/files:id]            #ig/ref :api.handler/file#post
-  [:post :routes.api/projects:id.files]   #ig/ref :api.handler/project.files#post
-  [:post :routes.api/projects]            #ig/ref :api.handler/projects#post
-  [:post :routes.api/teams]               #ig/ref :api.handler/teams#post
-  [:post :routes.api/users]               #ig/ref :api.handler/users#post
-  [:put :routes.api/teams:id.invitations] #ig/ref :api.handler/team.invitations#put}
+ {[:get :routes.api/artifacts:id]       #ig/ref :res.handler/file-version#get
+  [:get :routes.api/events]             #ig/ref :api.handler/events#get
+  [:get :routes.api/files:id.comments]  #ig/ref :api.handler/comments#get
+  [:get :routes.api/files:id]           #ig/ref :api.handler/file#get
+  [:get :routes.api/team-invitations]   #ig/ref :api.handler/team-invitations#get
+  [:get :routes.api/users.profile]      #ig/ref :api.handler/user#get
+  [:get :routes.api/projects:id.files]  #ig/ref :api.handler/project.files#get
+  [:get :routes.api/projects:id]        #ig/ref :api.handler/project#get
+  [:get :routes.api/projects]           #ig/ref :api.handler/projects#get
+  [:get :routes.api/teams:id]           #ig/ref :api.handler/team#get
+  [:get :routes.api/teams]              #ig/ref :api.handler/teams#get
+  [:get :routes.resources/health]       #ig/ref :res.handler/health
+  [:get :routes.ws/connection]          #ig/ref :api.handler/ws#connect
+  [:patch :routes.api/teams:id]         #ig/ref :api.handler/team#patch
+  [:patch :routes.api/projects:id]      #ig/ref :api.handler/project#patch
+  [:patch :routes.api/team-invitations] #ig/ref :api.handler/team-invitations#patch
+  [:post :routes.api/artifact]          #ig/ref :api.handler/artifacts#post
+  [:post :routes.api/comments]          #ig/ref :api.handler/comments#post
+  [:post :routes.api/files:id]          #ig/ref :api.handler/file#post
+  [:post :routes.api/projects:id.files] #ig/ref :api.handler/project.files#post
+  [:post :routes.api/projects]          #ig/ref :api.handler/projects#post
+  [:post :routes.api/teams]             #ig/ref :api.handler/teams#post
+  [:post :routes.api/team-invitations]  #ig/ref :api.handler/team-invitations#post
+  [:post :routes.api/users]             #ig/ref :api.handler/users#post}
 
  [:duct/const :routes/daemon#api]
  #{#ig/ref :workflows/consumer#ws}
@@ -75,6 +77,10 @@
  {:handler #ig/ref :audiophile.handlers.users/profile
   :spec    :api.profile/fetch}
 
+ [:audiophile.spec/with-spec :api.handler/team-invitations#get]
+ {:handler #ig/ref :audiophile.handlers.teams-invitations/fetch-all
+  :spec    :api.common/auth}
+
  [:audiophile.spec/with-spec :api.handler/project#get]
  {:handler #ig/ref :audiophile.handlers.projects/fetch
   :spec    :api.common/project-id}
@@ -126,6 +132,11 @@
   :handler    #ig/ref :audiophile.handlers.projects/update
   :spec       :api.project/update}
 
+ [:audiophile.spec/with-spec :api.handler/team-invitations#patch]
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.teams-invitations/update
+  :spec       :api.team-invitation/update}
+
  [:audiophile.spec/with-spec :api.handler/teams#post]
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.teams/create
@@ -141,10 +152,10 @@
   :handler    #ig/ref :audiophile.handlers.users/create
   :spec       :api.user/create}
 
- [:audiophile.spec/with-spec :api.handler/team.invitations#put]
+ [:audiophile.spec/with-spec :api.handler/team-invitations#post]
  {:->response #ig/ref :audiophile.spec/no-content
-  :handler    #ig/ref :audiophile.handlers.teams/invite
-  :spec       :api.team/invite}
+  :handler    #ig/ref :audiophile.handlers.teams-invitations/create
+  :spec       :api.team-invitation/create}
 
  :audiophile.spec/ok
  {}
@@ -208,6 +219,9 @@
  :audiophile.handlers.users/profile
  {:interactor #ig/ref :interactors/users}
 
+ :audiophile.handlers.teams-invitations/fetch-all
+ {:interactor #ig/ref :interactors/team-invitations}
+
  :audiophile.handlers.projects/fetch-all
  {:interactor #ig/ref :interactors/projects}
 
@@ -229,8 +243,11 @@
  :audiophile.handlers.teams/create
  {:interactor #ig/ref :interactors/teams}
 
- :audiophile.handlers.teams/invite
- {:interactor #ig/ref :interactors/teams}
+ :audiophile.handlers.teams-invitations/create
+ {:interactor #ig/ref :interactors/team-invitations}
+
+ :audiophile.handlers.teams-invitations/update
+ {:interactor #ig/ref :interactors/team-invitations}
 
  :audiophile.handlers.teams/update
  {:interactor #ig/ref :interactors/teams}

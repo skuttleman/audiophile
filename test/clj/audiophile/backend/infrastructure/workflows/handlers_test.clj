@@ -183,27 +183,29 @@
                                        :user-id user-id}]}
                        db-calls))))))
 
-(deftest teams:invite-test
-  (testing ":teams/invite workflow"
-    (let [[invite-id team-id] (repeatedly uuids/random)
+(deftest invitations:create-test
+  (testing ":invitations/create workflow"
+    (let [[invite-id user-id team-id] (repeatedly uuids/random)
           ctx {:team/id    team-id
                :user/email "user@example.com"
-               :user/id    invite-id}
+               :user/id    user-id
+               :inviter/id invite-id}
           query-fn (->query-fn {})]
-      (as-test [db-calls pubsub-calls] [:teams/invite ctx query-fn]
+      (as-test [db-calls pubsub-calls] [:invitations/create ctx query-fn]
         (testing "saves the invitation"
-          (assert/has? {:insert-into :team-invitations
-                        :values      [{:email   "user@example.com"
-                                       :team-id team-id}]
-                        :on-conflict [:team-id :email]
-                        :do-nothing  []}
+          (assert/has? {:insert-into   :team-invitations
+                        :values        [{:email      "user@example.com"
+                                         :team-id    team-id
+                                         :invited-by invite-id}]
+                        :on-conflict   [:team-id :email]
+                        :do-update-set map?}
                        db-calls))
 
         (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
           (testing "publishes an event to teams topic"
             (let [[topic [_ event ctx]] call-1]
               (is (= [:teams team-id] topic))
-              (assert/is? {:event/type :team/invited
+              (assert/is? {:event/type :team-invitation/created
                            :event/data {:team-invitation/team-id team-id
                                         :team-invitation/email   "user@example.com"}}
                           event)
@@ -211,14 +213,104 @@
                           ctx)))
 
           (testing "publishes an event to user topic"
+            (let [[topic [_ event ctx]] call-2]
+              (is (= [::ps/user user-id] topic))
+              (assert/is? {:event/type :team-invitation/created
+                           :event/data {:team-invitation/team-id team-id
+                                        :team-invitation/email   "user@example.com"}}
+                          event)
+              (assert/is? {:sub/id [::ps/user user-id]}
+                          ctx))))))))
+
+(deftest invitations:update-test
+  (testing ":invitations/update workflow"
+    (testing "when accepting the invitation"
+      (let [[invite-id user-id team-id] (repeatedly uuids/random)
+            ctx {:team/id                    team-id
+                 :user/id                    user-id
+                 :team-invitation/email      "user@example.com"
+                 :team-invitation/invited-by invite-id
+                 :team-invitation/status     :ACCEPTED}
+            query-fn (->query-fn {})]
+        (as-test [db-calls pubsub-calls] [:invitations/update ctx query-fn]
+          (testing "saves the invitation"
+            (assert/has? {:insert-into :user-teams
+                          :values      [{:user-id user-id
+                                         :team-id team-id}]
+                          :on-conflict [:team-id :user-id]
+                          :do-nothing  []}
+                         db-calls)
+            (assert/has? {:update :team-invitations
+                          :set    {:status [:cast "ACCEPTED" :team-invitation-status]}
+                          :where
+                          [:and
+                           [:= :team-invitations.team-id team-id]
+                           [:= :team-invitations.email "user@example.com"]]}
+                         db-calls))
+
+          (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
+              (testing "publishes an event to teams topic"
+                (let [[topic [_ event ctx]] call-1]
+                  (is (= [:teams team-id] topic))
+                  (assert/is? {:event/type :team-invitation/updated
+                               :event/data {:team-invitation/team-id team-id
+                                            :team-invitation/email   "user@example.com"
+                                            :team-invitation/status :ACCEPTED}}
+                              event)
+                  (assert/is? {:sub/id [:teams team-id]}
+                              ctx)))
+
+              (testing "publishes an event to user topic"
+                (let [[topic [_ event ctx]] call-2]
+                  (is (= [::ps/user invite-id] topic))
+                  (assert/is? {:event/type :team-invitation/updated
+                               :event/data {:team-invitation/team-id team-id
+                                            :team-invitation/email   "user@example.com"
+                                            :team-invitation/status :ACCEPTED}}
+                              event)
+                  (assert/is? {:sub/id [::ps/user invite-id]}
+                              ctx)))))))
+
+    (testing "when accepting the invitation"
+      (let [[invite-id user-id team-id] (repeatedly uuids/random)
+            ctx {:team/id                    team-id
+                 :user/id                    user-id
+                 :team-invitation/email      "user@example.com"
+                 :team-invitation/invited-by invite-id
+                 :team-invitation/status     :REJECTED}
+            query-fn (->query-fn {})]
+        (as-test [db-calls pubsub-calls] [:invitations/update ctx query-fn]
+          (testing "saves the invitation"
+            (assert/has? {:update :team-invitations
+                          :set    {:status [:cast "REJECTED" :team-invitation-status]}
+                          :where
+                          [:and
+                           [:= :team-invitations.team-id team-id]
+                           [:= :team-invitations.email "user@example.com"]]}
+                         db-calls))
+
+          (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
+            (testing "publishes an event to teams topic"
+              (let [[topic [_ event ctx]] call-1]
+                (is (= [:teams team-id] topic))
+                (assert/is? {:event/type :team-invitation/updated
+                             :event/data {:team-invitation/team-id team-id
+                                          :team-invitation/email   "user@example.com"
+                                          :team-invitation/status :REJECTED}}
+                            event)
+                (assert/is? {:sub/id [:teams team-id]}
+                            ctx)))
+
+            (testing "publishes an event to user topic"
               (let [[topic [_ event ctx]] call-2]
                 (is (= [::ps/user invite-id] topic))
-                (assert/is? {:event/type :team/invited
+                (assert/is? {:event/type :team-invitation/updated
                              :event/data {:team-invitation/team-id team-id
-                                          :team-invitation/email   "user@example.com"}}
+                                          :team-invitation/email   "user@example.com"
+                                          :team-invitation/status :REJECTED}}
                             event)
                 (assert/is? {:sub/id [::ps/user invite-id]}
-                            ctx))))))))
+                            ctx)))))))))
 
 (deftest teams:update-test
   (testing ":teams/update workflow"

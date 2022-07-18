@@ -1,14 +1,15 @@
 (ns audiophile.backend.infrastructure.system.services.repositories
   (:require
-    [audiophile.backend.infrastructure.repositories.comments.impl :as comments]
-    [audiophile.backend.infrastructure.repositories.common :as crepos]
-    [audiophile.backend.infrastructure.repositories.events.impl :as events]
-    [audiophile.backend.infrastructure.repositories.files.impl :as files]
-    [audiophile.backend.infrastructure.repositories.projects.impl :as projects]
-    [audiophile.backend.infrastructure.repositories.teams.impl :as teams]
-    [audiophile.backend.infrastructure.repositories.users.impl :as rusers]
     [audiophile.backend.infrastructure.db.core :as db]
     [audiophile.backend.infrastructure.db.models.core :as models]
+    [audiophile.backend.infrastructure.repositories.comments.impl :as rcomments]
+    [audiophile.backend.infrastructure.repositories.common :as crepos]
+    [audiophile.backend.infrastructure.repositories.events.impl :as revents]
+    [audiophile.backend.infrastructure.repositories.files.impl :as rfiles]
+    [audiophile.backend.infrastructure.repositories.projects.impl :as projects]
+    [audiophile.backend.infrastructure.repositories.team-invitations.impl :as rinvitations]
+    [audiophile.backend.infrastructure.repositories.teams.impl :as rteams]
+    [audiophile.backend.infrastructure.repositories.users.impl :as rusers]
     [audiophile.backend.infrastructure.stores :as stores]
     [integrant.core :as ig]))
 
@@ -37,13 +38,13 @@
   (db/datasource#close cfg))
 
 (defmethod ig/init-key :audiophile.repositories.comments/accessor [_ cfg]
-  (comments/accessor cfg))
+  (rcomments/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.events/accessor [_ cfg]
-  (events/accessor cfg))
+  (revents/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/accessor [_ cfg]
-  (files/accessor cfg))
+  (rfiles/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.files/artifact-store [_ cfg]
   (stores/artifact-store cfg))
@@ -51,8 +52,11 @@
 (defmethod ig/init-key :audiophile.repositories.projects/accessor [_ cfg]
   (projects/accessor cfg))
 
+(defmethod ig/init-key :audiophile.repositories.team-invitations/accessor [_ cfg]
+  (rinvitations/accessor cfg))
+
 (defmethod ig/init-key :audiophile.repositories.teams/accessor [_ cfg]
-  (teams/accessor cfg))
+  (rteams/accessor cfg))
 
 (defmethod ig/init-key :audiophile.repositories.users/accessor [_ cfg]
   (rusers/accessor cfg))
