@@ -36,20 +36,20 @@
 (defn ^:private subscribe* [{::keys [ch-id pubsub]} ch topic event-type]
   (pubsub/subscribe! pubsub ch-id topic (->sub-handler ch event-type)))
 
-(defmulti ^:private sub? (fn [_ [category]]
-                           category))
+(defmulti sub? (fn [_ [category]]
+                 category))
 
 (defmethod sub? :default
   [_ _]
   false)
 
-(defmethod sub? :teams
-  [{::keys [repo user-id]} [_ team-id]]
-  (repos/transact! repo qteams/find-by-team-id team-id {:user/id user-id}))
-
 (defmethod sub? :projects
   [{::keys [repo user-id]} [_ project-id]]
   (repos/transact! repo qprojects/find-by-project-id project-id {:user/id user-id}))
+
+(defmethod sub? :teams
+  [{::keys [repo user-id]} [_ team-id]]
+  (repos/transact! repo qteams/find-by-team-id team-id {:user/id user-id}))
 
 (defmulti on-message! (fn [_ _ msg]
                         (log/debug "received event" msg)

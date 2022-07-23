@@ -41,3 +41,6 @@
                                (fn []
                                  (ig/halt! system))))
     (duct/await-daemons system)))
+
+(comment
+  (require 'audiophile.backend.core :reload-all))

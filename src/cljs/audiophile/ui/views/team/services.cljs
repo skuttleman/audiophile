@@ -15,6 +15,15 @@
   (let [*form (form.std/create store {:team/id team-id} teams#validator:invite)]
     (pages/form:new sys attrs *form :routes.api/team-invitations)))
 
+(defn invitations#form:modify [{:keys [store] :as sys} attrs team-id email]
+  (let [*form (form.std/create store {:team-invitation/team-id team-id
+                                      :team-invitation/email   email
+                                      :team-invitation/status  :REVOKED})]
+    (pages/form:modify sys attrs *form :routes.api/team-invitations)))
+
+(defn invitations#modal:revoke [sys body]
+  (pages/modal:open sys [:h1.subtitle "Revoke team invitation"] body))
+
 (defn teams#modal:invite [sys body]
   (pages/modal:open sys [:h1.subtitle "Invite a new team member"] body))
 

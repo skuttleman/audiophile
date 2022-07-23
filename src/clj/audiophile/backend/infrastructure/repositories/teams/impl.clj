@@ -6,16 +6,16 @@
     [audiophile.backend.infrastructure.repositories.common :as crepos]
     [audiophile.backend.infrastructure.repositories.core :as repos]
     [audiophile.backend.infrastructure.repositories.projects.queries :as qprojects]
+    [audiophile.backend.infrastructure.repositories.team-invitations.queries :as qinvitations]
     [audiophile.backend.infrastructure.repositories.teams.queries :as qteams]
     [audiophile.common.core.utils.logger :as log]))
 
 (defn ^:private query-by-id* [executor team-id opts]
   (when-let [team (qteams/find-by-team-id executor team-id opts)]
     (assoc team
-           :team/members
-           (qteams/select-team-members executor team-id opts)
-           :team/projects
-           (qprojects/select-for-team executor team-id opts))))
+           :team/members (qteams/select-team-members executor team-id opts)
+           :team/projects (qprojects/select-for-team executor team-id opts)
+           :team/invitations (qinvitations/select-for-team executor team-id opts))))
 
 (deftype TeamAccessor [repo producer]
   pint/ITeamAccessor

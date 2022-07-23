@@ -42,7 +42,7 @@
     (finally
       (forms/destroy! *form))))
 
-(defn team-item [{:keys [*res sys]} {:team/keys [id name type]}]
+(defn team-item [sys *res {:team/keys [id name type]}]
   (r/with-let [click (serv/teams#modal:update sys [::update {:*res *res :team-id id}])]
     (let [[title icon] (cserv/teams#type->icon (keyword type))]
       [:li.team-item.layout--space-between.layout--align-center
@@ -57,22 +57,21 @@
         [comp/icon :edit]
         [:span "edit"]]])))
 
-(defn team-list [attrs teams]
+(defn team-list [sys *res teams]
   [:div
    [:p [:strong "Your teams"]]
    (if (seq teams)
      [:ul.team-list
       (for [team teams]
         ^{:key (:team/id team)}
-        [team-item attrs team])]
+        [team-item sys *res team])]
      [:p "You don't have any teams. Why not create one?"])])
 
 (defn tile [sys *res]
   (r/with-let [click (serv/teams#modal:create sys [::create {:*res *res}])]
     [comp/tile
      [:h2.subtitle "Teams"]
-     [comp/with-resource [*res {:spinner/size :small}] [team-list {:*res *res
-                                                                   :sys  sys}]]
+     [comp/with-resource [*res {:spinner/size :small}] [team-list sys *res]]
      [comp/plain-button
       {:class    ["is-primary"]
        :on-click click}

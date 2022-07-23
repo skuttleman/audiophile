@@ -7,6 +7,7 @@
     [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
+    [audiophile.ui.store.queries :as q]
     [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.dashboard.projects :as cproj]
     [audiophile.ui.views.team.services :as serv]
@@ -48,8 +49,43 @@
                                          (some-> *res res/request!)))]
     [create* sys attrs]))
 
-(defn ^:private team-details [sys {:keys [on-invite on-project]} team]
-  (let [[title icon] (cserv/teams#type->icon (keyword (:team/type team)))]
+(defn ^:private revoke* [*form]
+  [:div
+   [:p "Are you sure you want to "
+    [:strong [:em "revoke"]]
+    " this invitation?"]
+   [comp/form {:*form       *form
+               :submit/text "Revoke"}]])
+
+(defmethod modals/body ::revoke-invitation
+  [_ sys {:keys [*res close! email team-id] :as attrs}]
+  (r/with-let [attrs (assoc attrs :on-success (fn [result]
+                                                (when close!
+                                                  (close! result))
+                                                (some-> *res res/request!)))
+               *form (serv/invitations#form:modify sys attrs team-id email)]
+    [revoke* *form]
+    (finally
+      (forms/destroy! *form))))
+
+(defn ^:private invitation-details [sys *team invitation users-invite?]
+  (r/with-let [modal-body [::revoke-invitation {:*res *team
+                                                :team-id (:team/id invitation)
+                                                :email (:team-invitation/email invitation)}]
+               click (serv/invitations#modal:revoke sys modal-body)]
+    [:li.team-invitation
+     [:div.layout--align-center
+      [:span.layout--space-after (:team-invitation/email invitation)]
+      (when users-invite?
+        [:div.buttons
+         [comp/plain-button {:class ["is-danger" "layout--space-between"]
+                             :on-click click}
+          [comp/icon :times]]])]]))
+
+(defn ^:private team-details [{:keys [store] :as sys} *team {:keys [on-invite on-project]} team]
+  (let [[title icon] (cserv/teams#type->icon (keyword (:team/type team)))
+        personal? (= :PERSONAL (:team/type team))
+        user-id (:user/id (q/user:profile store))]
     [:div
      [:h2.subtitle.flex
       [:div.layout--space-after
@@ -57,7 +93,7 @@
       (:team/name team)]
      [:div {:style {:width "16px"}}]
      [:div.buttons
-      (when-not (= :PERSONAL (:team/type team))
+      (when-not personal?
         [comp/plain-button
          {:class    ["is-primary"]
           :on-click on-invite}
@@ -66,13 +102,21 @@
        {:class    ["is-primary"]
         :on-click on-project}
        "Create a project"]]
-     (when-not (= :PERSONAL (:team/type team))
+     (when-not personal?
        [:<>
         [:strong "Team members"]
         [:ul.team-members
          (for [{member-id :member/id :as member} (:team/members team)]
            ^{:key member-id}
            [:li.team-member (:member/first-name member) " " (:member/last-name member)])]])
+     (when (seq (:team/invitations team))
+       [:<>
+        [:strong "Open invitations"]
+        [:ul.team-invitations
+         (for [{email :team-invitation/email :as invitation} (:team/invitations team)
+               :let [invitation (assoc invitation :team/id (:team/id team))]]
+           ^{:key email}
+           [invitation-details sys *team invitation (= user-id (:inviter/id invitation))])]])
      [:strong "Team projects"]
      [cproj/project-list {:sys sys} (:team/projects team)]]))
 
@@ -80,12 +124,13 @@
   (r/with-let [team-id (-> @nav :params :team/id)
                *team (serv/teams#res:fetch-one sys team-id)
                *sub (serv/teams#sub:start! sys *team)
-               on-invite (serv/teams#modal:invite sys [::invite {:team-id team-id}])
+               on-invite (serv/teams#modal:invite sys [::invite {:*res    *team
+                                                                 :team-id team-id}])
                on-project (cserv/projects#modal:create sys [::create-project {:*res    *team
                                                                               :team-id team-id}])]
     [:div.layout--space-below.layout--xxl.gutters
      [:div {:style {:width "100%"}}
-      [comp/with-resource *team [team-details sys (maps/->m on-invite on-project)]]]]
+      [comp/with-resource *team [team-details sys *team (maps/->m on-invite on-project)]]]]
     (finally
       (serv/teams#sub:stop! *sub)
       (res/destroy! *team))))

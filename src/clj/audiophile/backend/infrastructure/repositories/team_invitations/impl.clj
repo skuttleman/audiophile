@@ -17,9 +17,11 @@
                                  :user/id)
                     :inviter/id (:user/id opts)}))
 
-(defn ^:private update-invite* [executor data {user-id :user/id :as opts}]
+(defn ^:private update-invite* [executor {email :team-invitation/email :as data} {user-id :user/id :as opts}]
   (let [team-id (:team-invitation/team-id data)
-        invitation (qinvitations/find-for-user executor team-id user-id)]
+        invitation (if email
+                     (qinvitations/find-for-email executor team-id email)
+                     (qinvitations/find-for-user executor team-id user-id))]
     (when-not invitation
       (int/no-access!))
     (merge invitation opts data {:team/id team-id})))
@@ -34,7 +36,7 @@
     (let [data (repos/transact! repo update-invite* data opts)]
       (crepos/start-workflow! producer :invitations/update data opts)))
   (query-many [_ opts]
-    (repos/transact! repo qinvitations/select-invitations-for-user (:user/id opts) opts)))
+    (repos/transact! repo qinvitations/select-for-user (:user/id opts) opts)))
 
 (defn accessor
   "Constructor for [[TeamInvitationAccessor]] which provides semantic access for storing and retrieving teams."

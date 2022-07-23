@@ -74,4 +74,4 @@
                 (testing "and when publishing an event"
                   (ps/publish! pubsub [:projects no-project-id] "msg-id" {:some :msg} {:sub/id [:projects no-project-id]})
                   (testing "does not receives the event from the websocket"
-                    (is (nil? (clojure.pprint/pprint (u/silent! (tu/<!!ms ch)))))))))))))))
+                    (is (thrown? Throwable (tu/<!!ms ch 500)))))))))))))

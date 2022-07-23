@@ -17,6 +17,15 @@
 (def ^:private ^:const REJECTED
   (->status :REJECTED))
 
+(defn find-for-email [executor team-id email]
+  (-> executor
+      (repos/execute! (-> tbl/team-invitations
+                          models/select*
+                          (models/and-where [:and
+                                             [:= :team-invitations.team-id team-id]
+                                             [:= :team-invitations.email email]])))
+      colls/only!))
+
 (defn find-for-user [executor team-id user-id]
   (-> executor
       (repos/execute! (-> tbl/team-invitations
@@ -86,7 +95,7 @@
                                              [:= :team-invitations.email email]]))
                       opts)))
 
-(defn select-invitations-for-user [executor user-id opts]
+(defn select-for-user [executor user-id opts]
   (let [query (-> tbl/team-invitations
                   (models/select-fields #{:created-at})
                   models/select*
@@ -102,3 +111,16 @@
                                      [:= :users.id user-id]
                                      [:= :team-invitations.status PENDING]]))]
     (repos/execute! executor query (assoc opts :model-fn (crepos/->model-fn tbl/teams)))))
+
+(defn select-for-team [executor team-id opts]
+  (let [query (-> tbl/team-invitations
+                  (models/select-fields #{:created-at :email})
+                  models/select*
+                  (models/join (-> tbl/users
+                                   (models/alias :inviter)
+                                   (models/select-fields #{:id :first-name :last-name}))
+                               [:= :inviter.id :team-invitations.invited-by])
+                  (models/and-where [:and
+                                     [:= :team-invitations.team-id team-id]
+                                     [:= :team-invitations.status PENDING]]))]
+    (repos/execute! executor query opts)))

@@ -1,13 +1,73 @@
 (ns ^:unit audiophile.backend.infrastructure.pubsub.ws-test
   (:require
-    [clojure.test :refer [are deftest is testing]]
     [audiophile.backend.api.pubsub.core :as ps]
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.infrastructure.pubsub.ws :as ws]
     [audiophile.common.core.utils.colls :as colls]
     [audiophile.common.core.utils.uuids :as uuids]
+    [audiophile.test.utils :as tu]
     [audiophile.test.utils.services :as ts]
-    [audiophile.test.utils.stubs :as stubs]))
+    [audiophile.test.utils.stubs :as stubs]
+    [clojure.test :refer [are deftest is testing]]
+    [audiophile.common.core.utils.fns :as fns]))
+
+(deftest sub?-test
+  (testing "(sub?)"
+    (testing "[:projects ?id]"
+      (let [tx (ts/->tx)
+            [user-id project-id] (repeatedly uuids/random)]
+        (testing "when the user has access to the project"
+          (stubs/use! tx :execute! [{}])
+          (is (ws/sub? {::ws/repo tx ::ws/user-id user-id} [:projects project-id]))
+          (let [[{:keys [from where]}] (colls/only! (stubs/calls tx :execute!))]
+            (is (= [:projects] from))
+            (is (= [:and
+                    #{[:= #{:projects.id project-id}]
+                      [:exists
+                       {:from   [:user-teams]
+                        :select #{1}
+                        :where  [:and
+                                 #{[:= #{:projects.team-id :user-teams.team-id}]
+                                   [:= #{:user-teams.user-id user-id}]}]}]}]
+                   (-> where
+                       (update 1 tu/op-set)
+                       (update-in [2 1] (fns/=> (update :select set)
+                                                (update :where (fns/=> (update 1 tu/op-set)
+                                                                       (update 2 tu/op-set)
+                                                                       tu/op-set))))
+                       tu/op-set)))))
+
+        (testing "when the user does not have access to the project"
+          (stubs/use! tx :execute! [])
+          (is (not (ws/sub? {::ws/repo tx ::ws/user-id user-id} [:projects project-id]))))))
+
+    (testing "[:teams ?id]"
+      (let [tx (ts/->tx)
+            [user-id team-id] (repeatedly uuids/random)]
+        (testing "when the user has access to the team"
+          (stubs/use! tx :execute! [{}])
+          (is (ws/sub? {::ws/repo tx ::ws/user-id user-id} [:teams team-id]))
+          (let [[{:keys [from where]}] (colls/only! (stubs/calls tx :execute!))]
+            (is (= [:teams] from))
+            (is (= [:and
+                    #{[:= #{:teams.id team-id}]
+                      [:exists
+                       {:from   [:user-teams]
+                        :select #{1}
+                        :where  [:and
+                                 #{[:= #{:teams.id :user-teams.team-id}]
+                                   [:= #{:user-teams.user-id user-id}]}]}]}]
+                   (-> where
+                       (update 1 tu/op-set)
+                       (update-in [2 1] (fns/=> (update :select set)
+                                                (update :where (fns/=> (update 1 tu/op-set)
+                                                                       (update 2 tu/op-set)
+                                                                       tu/op-set))))
+                       tu/op-set)))))
+
+        (testing "when the user does not have access to the team"
+          (stubs/use! tx :execute! [])
+          (is (not (ws/sub? {::ws/repo tx ::ws/user-id user-id} [:teams team-id]))))))))
 
 (deftest on-message!-test
   (testing "(on-message!)"

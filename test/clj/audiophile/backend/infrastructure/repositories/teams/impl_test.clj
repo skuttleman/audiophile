@@ -59,10 +59,14 @@
         (stubs/use! tx :execute!
                     [{:some :result}]
                     [{:with :team}]
-                    [{:with :project}])
-        (let [result (int/query-one repo {:user/id user-id
-                                          :team/id team-id})
-              [[select-team] [select-members] [select-projects]] (colls/only! 3 (stubs/calls tx :execute!))]
+                    [{:with :project}]
+                    [{:with :invitations}])
+        (let [result
+              (int/query-one repo {:user/id user-id
+                                   :team/id team-id})
+
+              [[select-team] [select-members] [select-projects] [select-invitations]]
+              (colls/only! 4 (stubs/calls tx :execute!))]
           (testing "queries the team from the repository"
             (let [{:keys [from select where]} select-team]
               (is (= #{[:teams.name "team/name"]
@@ -111,11 +115,30 @@
               (is (= [:= #{:projects.team-id team-id}]
                      (tu/op-set where)))))
 
+          (testing "queries the team invitations from the repository"
+            (let [{:keys [from join select where]} select-invitations]
+              (is (= #{[:inviter.id "inviter/id"]
+                       [:inviter.first-name "inviter/first-name"]
+                       [:inviter.last-name "inviter/last-name"]
+                       [:team-invitations.email "team-invitation/email"]
+                       [:team-invitations.created-at "team-invitation/created-at"]}
+                     (set select)))
+              (is (= [:team-invitations] from))
+              (is (= [[:users :inviter] [:= #{:inviter.id :team-invitations.invited-by}]]
+                     (update join 1 tu/op-set)))
+              (is (= [:and
+                      #{[:= #{:team-invitations.team-id team-id}]
+                        [:= #{:team-invitations.status [:cast "PENDING" :team-invitation-status]}]}]
+                     (-> where
+                         (update 1 tu/op-set)
+                         (update 2 tu/op-set)
+                         tu/op-set)))))
 
           (testing "returns the results"
             (is (= {:some          :result
                     :team/members  [{:with :team}]
-                    :team/projects [{:with :project}]}
+                    :team/projects [{:with :project}]
+                    :team/invitations [{:with :invitations}]}
                    result)))))
 
       (testing "when querying the repository throws"

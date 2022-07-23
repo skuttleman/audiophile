@@ -94,7 +94,8 @@
 (def team-invitation:update
   [:map
    [:team-invitation/team-id uuid?]
-   [:team-invitation/status [:fn #{:ACCEPTED :REJECTED}]]])
+   [:team-invitation/email {:optional true} email?]
+   [:team-invitation/status [:fn #{:ACCEPTED :REJECTED :REVOKED}]]])
 
 (def team:create
   [:map

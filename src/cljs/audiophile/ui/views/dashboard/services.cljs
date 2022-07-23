@@ -34,9 +34,9 @@
                           :accept {:*res   (ires/multi (select-keys attrs #{:*invitations
                                                                             :*projects
                                                                             :*teams}))
-                                   :status :ACCEPT}
+                                   :status :ACCEPTED}
                           :reject {:*res   (:*invitations attrs)
-                                   :status :REJECT}))]
+                                   :status :REJECTED}))]
       (pages/modal:open sys [:h1.subtitle "Team invitation"] [k attrs']))))
 
 (defn projects#res:fetch-all [sys]
