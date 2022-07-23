@@ -14,8 +14,8 @@
 (def ^:private ^:const PENDING
   (->status :PENDING))
 
-(def ^:private ^:const REJECTED
-  (->status :REJECTED))
+(def ^:private ^:const REVOKED
+  (->status :REVOKED))
 
 (defn find-for-email [executor team-id email]
   (-> executor
@@ -64,18 +64,19 @@
 
 (defn invite-member! [executor params opts]
   (let [invited-by (:team-invitation/invited-by params)
+        status [:case
+                [:and
+                 [:= :team-invitations.invited-by invited-by]
+                 [:= :team-invitations.status REVOKED]]
+                PENDING
+
+                :else
+                :team-invitations.status]
         query (-> tbl/team-invitations
                   (models/insert-into params)
                   (models/on-conflict-do-update [:team-id :email]
                                                 {:invited-by invited-by
-                                                 :status     [:case
-                                                              [:and
-                                                               [:= :team-invitations.invited-by invited-by]
-                                                               [:= :team-invitations.status REJECTED]]
-                                                              REJECTED
-
-                                                              :else
-                                                              PENDING]}))]
+                                                 :status     status}))]
     (repos/execute! executor query opts)))
 
 (defn update-invitation! [executor {:team-invitation/keys [user-id email status team-id]} opts]
@@ -92,7 +93,8 @@
                           (models/sql-set {:status (->status status)})
                           (models/and-where [:and
                                              [:= :team-invitations.team-id team-id]
-                                             [:= :team-invitations.email email]]))
+                                             [:= :team-invitations.email email]
+                                             [:= :team-invitations.status PENDING]]))
                       opts)))
 
 (defn select-for-user [executor user-id opts]

@@ -245,7 +245,8 @@
                           :where
                           [:and
                            [:= :team-invitations.team-id team-id]
-                           [:= :team-invitations.email "user@example.com"]]}
+                           [:= :team-invitations.email "user@example.com"]
+                           [:= :team-invitations.status [:cast "PENDING" :team-invitation-status]]]}
                          db-calls))
 
           (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
@@ -286,7 +287,8 @@
                           :where
                           [:and
                            [:= :team-invitations.team-id team-id]
-                           [:= :team-invitations.email "user@example.com"]]}
+                           [:= :team-invitations.email "user@example.com"]
+                           [:= :team-invitations.status [:cast "PENDING" :team-invitation-status]]]}
                          db-calls))
 
           (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
