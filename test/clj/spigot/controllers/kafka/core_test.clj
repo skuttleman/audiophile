@@ -80,25 +80,26 @@
   (let [handler (->test-handler)
         wf-id (UUID/randomUUID)]
     (with-driver [^TestInputTopic workflows ^TestOutputTopic events] handler
-      (are [input] (let [wf (sp/plan input)
-                         [_ _ result] (do (.pipeInput workflows wf-id (sp.kafka/create-wf-msg wf {}))
-                                          (.-value (last (.readKeyValuesToList events))))]
-                     (= (spu/run-sync wf (->executor handler))
-                        result))
-        [:task-1]
+      (testing "matches the sync-run result"
+        (are [input] (let [wf (sp/plan input)
+                           [_ _ result] (do (.pipeInput workflows wf-id (sp.kafka/create-wf-msg wf {}))
+                                            (.-value (last (.readKeyValuesToList events))))]
+                       (= (spu/run-sync wf (->executor handler))
+                          result))
+          [:task-1]
 
-        [:spigot/parallel
-         [:task-1]
-         [:spigot/serial
-          [:task-2]
-          [:task-3]]]
-
-        '[:spigot/serial
           [:spigot/parallel
-           [:task-1 {:spigot/->ctx {?task-1 :result}}]
-           [:task-2 {:spigot/->ctx {?task-2 :result}}]]
-          [:task-3 {:task-1-result (sp.ctx/get ?task-1)
-                    :task-2-result (sp.ctx/get ?task-2)}]]))))
+           [:task-1]
+           [:spigot/serial
+            [:task-2]
+            [:task-3]]]
+
+          '[:spigot/serial
+            [:spigot/parallel
+             [:task-1 {:spigot/->ctx {?task-1 :result}}]
+             [:task-2 {:spigot/->ctx {?task-2 :result}}]]
+            [:task-3 {:task-1-result (sp.ctx/get ?task-1)
+                      :task-2-result (sp.ctx/get ?task-2)}]])))))
 
 (deftest topology-success-test
   (let [handler (->test-handler)

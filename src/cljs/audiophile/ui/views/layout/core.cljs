@@ -3,6 +3,7 @@
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.components.notices :as not]
+    [audiophile.ui.services.login :as login]
     [audiophile.ui.store.queries :as q]
     [audiophile.ui.utils.modulizer :as mod]
     [audiophile.ui.views.layout.services :as serv]
@@ -15,15 +16,6 @@
 (def project (mod/lazy-component audiophile.ui.views.project.core/root))
 
 (def team (mod/lazy-component audiophile.ui.views.team.core/root))
-
-(defn ^:private logout [{:keys [text] :as attrs}]
-  (r/with-let [logout (serv/nav#logout! attrs)]
-    [:a (-> attrs
-            (select-keys #{:class})
-            (assoc :href "#"
-                   :on-click logout)
-            (cond-> (not (:minimal? attrs)) (update :class conj "button" "is-primary")))
-     (or text "Logout")]))
 
 (defn ^:private header [{:keys [nav store] :as sys}]
   (r/with-let [shown? (r/atom false)]
@@ -56,10 +48,10 @@
            [:li
             [:hr.nav-divider]]
            [:li
-            [logout {:minimal? true
-                     :nav      nav
-                     :text     text
-                     :class    ["navbar-item"]}]]]
+            [login/logout {:minimal? true
+                           :nav      nav
+                           :text     text
+                           :class    ["navbar-item"]}]]]
           [:ul.navbar-start.oversize.tabs
            [:li
             {:class [(when (= :routes.ui/home handle) "is-active")]}
@@ -67,7 +59,7 @@
         [:div.navbar-end.oversize
          [:div.navbar-item
           [:div.buttons
-           [logout {:nav nav :text text}]]]]]])))
+           [login/logout {:nav nav :text text}]]]]]])))
 
 (defn ^:private root* [{:keys [nav] :as sys}]
   (let [handle (:handle @nav)

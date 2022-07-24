@@ -2,9 +2,5 @@
   (:require
     [audiophile.common.infrastructure.navigation.core :as nav]))
 
-(defn nav#logout! [{:keys [nav]}]
-  (fn [_]
-    (nav/goto! nav :routes.auth/logout)))
-
 (defn nav#home [{:keys [nav]}]
   (nav/path-for nav :routes.ui/home))

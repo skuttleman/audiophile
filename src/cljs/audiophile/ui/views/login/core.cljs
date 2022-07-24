@@ -15,7 +15,7 @@
   (r/with-let [click (serv/users#nav:login! sys path)]
     [:div.buttons
      [comp/plain-button
-      {:class ["is-primary"]
+      {:class    ["is-primary"]
        :on-click click}
       "Login"]]))
 
@@ -44,27 +44,33 @@
      [layout sys attrs]]]])
 
 (defmethod login/form :signup
-  [_ sys {:keys [path]}]
+  [_ {:keys [nav] :as sys} {:keys [path]}]
   (r/with-let [*form (serv/users#form:signup sys path)]
-    [comp/form {:class       ["signup-form"]
-                :submit/text "Signup"
-                :*form       *form}
-     [in/input (forms/with-attrs {:label    "email"
-                                  :disabled true}
-                                 *form
-                                 [:user/email])]
-     [in/input (forms/with-attrs {:label       "handle"
-                                  :auto-focus? true}
-                                 *form
-                                 [:user/handle])]
-     [in/input (forms/with-attrs {:label "first name"}
-                                 *form
-                                 [:user/first-name])]
-     [in/input (forms/with-attrs {:label "last name"}
-                                 *form
-                                 [:user/last-name])]
-     [in/input (forms/with-attrs {:label "mobile number"}
-                                 *form
-                                 [:user/mobile-number])]]
+    [:div.layout--stack-between
+     [:div
+      [login/logout {:nav      nav
+                     :text     "Start over"
+                     :class    ["button" "is-warning"]
+                     :minimal? true}]]
+     [comp/form {:class       ["signup-form"]
+                 :submit/text "Signup"
+                 :*form       *form}
+      [in/input (forms/with-attrs {:label    "email"
+                                   :disabled true}
+                                  *form
+                                  [:user/email])]
+      [in/input (forms/with-attrs {:label       "handle"
+                                   :auto-focus? true}
+                                  *form
+                                  [:user/handle])]
+      [in/input (forms/with-attrs {:label "first name"}
+                                  *form
+                                  [:user/first-name])]
+      [in/input (forms/with-attrs {:label "last name"}
+                                  *form
+                                  [:user/last-name])]
+      [in/input (forms/with-attrs {:label "mobile number"}
+                                  *form
+                                  [:user/mobile-number])]]]
     (finally
       (forms/destroy! *form))))
