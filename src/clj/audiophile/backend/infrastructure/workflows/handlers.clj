@@ -49,7 +49,7 @@
   [{:keys [pubsub]} ctx {{:keys [events]} :spigot/params}]
   (doseq [{:keys [topic payload]} events
           :let [event-id (uuids/random)]]
-    (ps/publish! pubsub topic event-id payload (assoc ctx :sub/id topic))))
+    (ps/publish! pubsub topic event-id payload ctx)))
 
 (defmethod task-handler :team-invitation/create!
   [{:keys [repo]} ctx {:spigot/keys [params]}]

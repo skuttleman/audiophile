@@ -11,6 +11,7 @@
     [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.dashboard.projects :as cproj]
     [audiophile.ui.views.team.services :as serv]
+    [com.ben-allred.vow.core :as v :include-macros true]
     [reagent.core :as r]))
 
 (defn ^:private invite* [sys attrs]
@@ -24,11 +25,8 @@
       (forms/destroy! *form))))
 
 (defmethod modals/body ::invite
-  [_ sys {:keys [close!] :as attrs}]
-  (let [attrs (assoc attrs :on-success (fn [result]
-                                         (when close!
-                                           (close! result))))]
-    [invite* sys attrs]))
+  [_ sys attrs]
+  [invite* sys (cserv/modals#with-on-success attrs)])
 
 (defn ^:private create* [sys attrs]
   (r/with-let [*form (cserv/projects#form:new sys attrs (:team-id attrs))]
@@ -42,11 +40,8 @@
       (forms/destroy! *form))))
 
 (defmethod modals/body ::create-project
-  [_ sys {:keys [*res close!] :as attrs}]
-  (let [attrs (assoc attrs :on-success (fn [result]
-                                         (when close!
-                                           (close! result))
-                                         (some-> *res res/request!)))]
+  [_ sys attrs]
+  (let [attrs (cserv/modals#with-on-success attrs)]
     [create* sys attrs]))
 
 (defn ^:private revoke* [*form]
@@ -58,11 +53,8 @@
                :submit/text "Revoke"}]])
 
 (defmethod modals/body ::revoke-invitation
-  [_ sys {:keys [*res close! email team-id] :as attrs}]
-  (r/with-let [attrs (assoc attrs :on-success (fn [result]
-                                                (when close!
-                                                  (close! result))
-                                                (some-> *res res/request!)))
+  [_ sys {:keys [email team-id] :as attrs}]
+  (r/with-let [attrs (cserv/modals#with-on-success attrs)
                *form (serv/invitations#form:modify sys attrs team-id email)]
     [revoke* *form]
     (finally
@@ -75,12 +67,12 @@
                click (serv/invitations#modal:revoke sys modal-body)]
     [:li.team-invitation
      [:div.layout--align-center
-      [:span.layout--space-after (:team-invitation/email invitation)]
       (when users-invite?
-        [:div.buttons
-         [comp/plain-button {:class ["is-danger" "layout--space-between"]
+        [:div.layout--space-after
+         [comp/plain-button {:class    ["is-danger" "layout--space-between"]
                              :on-click click}
-          [comp/icon :times]]])]]))
+          [comp/icon :times]]])
+      [:span (:team-invitation/email invitation)]]]))
 
 (defn ^:private team-details [{:keys [store] :as sys} *team {:keys [on-invite on-project]} team]
   (let [[title icon] (cserv/teams#type->icon (keyword (:team/type team)))
@@ -105,14 +97,14 @@
      (when-not personal?
        [:<>
         [:strong "Team members"]
-        [:ul.team-members
+        [:ul.team-members.layout--space-below
          (for [{member-id :member/id :as member} (:team/members team)]
            ^{:key member-id}
            [:li.team-member (:member/first-name member) " " (:member/last-name member)])]])
      (when (seq (:team/invitations team))
        [:<>
         [:strong "Open invitations"]
-        [:ul.team-invitations
+        [:ul.team-invitations.layout--stack-between.layout--space-below
          (for [{email :team-invitation/email :as invitation} (:team/invitations team)
                :let [invitation (assoc invitation :team/id (:team/id team))]]
            ^{:key email}

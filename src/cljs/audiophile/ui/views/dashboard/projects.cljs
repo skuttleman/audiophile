@@ -57,19 +57,13 @@
                                 [:project/name])]]])
 
 (defmethod modals/body ::create
-  [_ sys {:keys [*res close!] :as attrs}]
-  (let [attrs (assoc attrs :on-success (fn [result]
-                                         (when close!
-                                           (close! result))
-                                         (some-> *res res/request!)))]
+  [_ sys attrs]
+  (let [attrs (cserv/modals#with-on-success attrs)]
     [comp/with-resource (:*teams attrs) [create* sys attrs]]))
 
 (defmethod modals/body ::update
-  [_ sys {:keys [*res close! project-id] :as attrs}]
-  (r/with-let [attrs (assoc attrs :on-success (fn [result]
-                                                (when close!
-                                                  (close! result))
-                                                (some-> *res res/request!)))
+  [_ sys {:keys [*res project-id] :as attrs}]
+  (r/with-let [attrs (cserv/modals#with-on-success attrs)
                *form (serv/projects#form:modify sys attrs (->> @*res
                                                                (filter (comp #{project-id} :project/id))
                                                                first))]

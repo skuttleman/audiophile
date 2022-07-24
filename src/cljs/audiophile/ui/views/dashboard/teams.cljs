@@ -19,22 +19,16 @@
                                 [:team/name])]]])
 
 (defmethod modals/body ::create
-  [_ sys {:keys [*res close!] :as attrs}]
-  (r/with-let [attrs (assoc attrs :on-success (fn [result]
-                                                (when close!
-                                                  (close! result))
-                                                (some-> *res res/request!)))
+  [_ sys attrs]
+  (r/with-let [attrs (cserv/modals#with-on-success attrs)
                *form (serv/teams#form:new sys attrs)]
     [body* *form attrs]
     (finally
       (forms/destroy! *form))))
 
 (defmethod modals/body ::update
-  [_ sys {:keys [*res close! team-id] :as attrs}]
-  (r/with-let [attrs (assoc attrs :on-success (fn [result]
-                                                (when close!
-                                                  (close! result))
-                                                (some-> *res res/request!)))
+  [_ sys {:keys [*res team-id] :as attrs}]
+  (r/with-let [attrs (cserv/modals#with-on-success attrs)
                *form (serv/teams#form:modify sys attrs (->> @*res
                                                             (filter (comp #{team-id} :team/id))
                                                             first))]

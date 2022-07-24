@@ -73,7 +73,7 @@
   (if-not (sub? ctx topic)
     (log/warn (format "insufficient access to subscribe user %s to topic %s" user-id topic))
     (u/silent!
-      (subscribe* ctx ch topic :event/subscription))))
+      (subscribe* ctx ch topic topic))))
 
 (defmethod on-message! :sub/stop!
   [{::keys [pubsub ch-id]} _ [_ topic]]

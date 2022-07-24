@@ -1,9 +1,12 @@
 (ns audiophile.ui.views.dashboard.services
   (:require
+    [audiophile.common.api.pubsub.core :as pubsub]
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.domain.validations.core :as val]
     [audiophile.common.domain.validations.specs :as specs]
     [audiophile.common.infrastructure.navigation.core :as nav]
+    [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.forms.standard :as form.std]
     [audiophile.ui.resources.impl :as ires]
     [audiophile.ui.services.pages :as pages]))
@@ -16,9 +19,6 @@
 
 (def ^:private teams#validator:modify
   (val/validator {:spec specs/team:update}))
-
-(defn invitations#res:fetch-all [sys]
-  (pages/res:fetch sys :routes.api/team-invitations))
 
 (defn invitations#form:modify [{:keys [store] :as sys} {:keys [status team-id] :as attrs}]
   (let [*form (form.std/create store {:team-invitation/team-id team-id
@@ -38,6 +38,21 @@
                           :reject {:*res   (:*invitations attrs)
                                    :status :REJECTED}))]
       (pages/modal:open sys [:h1.subtitle "Team invitation"] [k attrs']))))
+
+(defn invitations#res:fetch-all [sys]
+  (pages/res:fetch sys :routes.api/team-invitations))
+
+(defn invitations#sub:start! [{:keys [pubsub]} *invitations]
+  (let [key (gensym)]
+    (pubsub/subscribe! pubsub
+                       key
+                       :event/user
+                       (fn [_]
+                         (res/request! *invitations)))
+    (maps/->m key pubsub)))
+
+(defn invitations#sub:stop! [{:keys [key pubsub]}]
+  (pubsub/unsubscribe! pubsub key :event/user))
 
 (defn projects#res:fetch-all [sys]
   (pages/res:fetch sys :routes.api/projects))

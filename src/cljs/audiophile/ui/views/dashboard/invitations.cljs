@@ -1,14 +1,15 @@
 (ns audiophile.ui.views.dashboard.invitations
   (:require
     [audiophile.common.core.utils.logger :as log]
+    [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.core.utils.strings :as strings]
     [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.components.core :as comp]
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
+    [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.dashboard.services :as serv]
-    [reagent.core :as r]
-    [audiophile.common.core.utils.maps :as maps]))
+    [reagent.core :as r]))
 
 (defn ^:private invitation* [{:keys [mode-text]} *form]
   [:div
@@ -19,11 +20,8 @@
                :submit/text (strings/capitalize mode-text)}]])
 
 (defmethod modals/body ::handle-invitation
-  [_ sys {:keys [*res close!] :as attrs}]
-  (r/with-let [attrs (assoc attrs :on-success (fn [result]
-                                                (when close!
-                                                  (close! result))
-                                                (some-> *res res/request!)))
+  [_ sys attrs]
+  (r/with-let [attrs (cserv/modals#with-on-success attrs)
                *form (serv/invitations#form:modify sys attrs)]
     [invitation* attrs *form]
     (finally
@@ -61,10 +59,12 @@
 
 (defn tile [sys *projects *teams]
   (r/with-let [*invitations (serv/invitations#res:fetch-all sys)
+               *sub (serv/invitations#sub:start! sys *invitations)
                modal-body [::handle-invitation (maps/->m *invitations *projects *teams)]
                clicker (serv/invitations#modal:confirm sys modal-body)]
     [comp/tile
      [:h2.subtitle "Pending Invitations"]
      [comp/with-resource [*invitations {:spinner/size :small}] [invitation-list clicker]]]
     (finally
+      (serv/invitations#sub:stop! *sub)
       (res/destroy! *invitations))))

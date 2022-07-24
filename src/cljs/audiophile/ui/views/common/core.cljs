@@ -7,7 +7,6 @@
     [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.views.common.services :as cserv]
-    [com.ben-allred.vow.core :as v]
     [reagent.core :as r]))
 
 (defn ^:private version* [sys {:keys [file] :as attrs}]
@@ -30,12 +29,6 @@
       (res/destroy! *artifacts))))
 
 (defmethod modals/body ::version
-  [_ sys {:keys [*res close! on-success] :as attrs}]
-  (let [attrs (assoc attrs :on-success (fn [result]
-                                         (when close!
-                                           (close! result))
-                                         (v/and (v/resolve)
-                                                (some-> *res res/request!)
-                                                (when on-success
-                                                  (on-success result)))))]
+  [_ sys attrs]
+  (let [attrs (cserv/modals#with-on-success attrs)]
     [version* sys attrs]))

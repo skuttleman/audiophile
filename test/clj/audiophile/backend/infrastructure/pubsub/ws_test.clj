@@ -4,12 +4,12 @@
     [audiophile.backend.api.pubsub.protocols :as pps]
     [audiophile.backend.infrastructure.pubsub.ws :as ws]
     [audiophile.common.core.utils.colls :as colls]
+    [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils :as tu]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
-    [clojure.test :refer [are deftest is testing]]
-    [audiophile.common.core.utils.fns :as fns]))
+    [clojure.test :refer [are deftest is testing]]))
 
 (deftest sub?-test
   (testing "(sub?)"

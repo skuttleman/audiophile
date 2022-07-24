@@ -63,15 +63,15 @@
             (testing "and when subscribing to an allowed topic"
               (async/>!! ch [:sub/start! [:projects project-id]])
               (testing "and when publishing an event"
-                (ps/publish! pubsub [:projects project-id] "msg-id" {:some :msg} {:sub/id [:projects project-id]})
+                (ps/publish! pubsub [:projects project-id] "msg-id" {:some :msg} {:some/id :ctx})
                 (testing "receives the event from the websocket"
-                  (is (= [:event/subscription "msg-id" {:some :msg} {:sub/id [:projects project-id]}]
+                  (is (= [[:projects project-id] "msg-id" {:some :msg} {:some/id :ctx}]
                          (tu/<!!ms ch))))))
 
             (testing "and when subscribing to a disallowed topic"
               (let [no-project-id (uuids/random)]
                 (async/>!! ch [:sub/start! [:projects no-project-id]])
                 (testing "and when publishing an event"
-                  (ps/publish! pubsub [:projects no-project-id] "msg-id" {:some :msg} {:sub/id [:projects no-project-id]})
+                  (ps/publish! pubsub [:projects no-project-id] "msg-id" {:some :msg} {})
                   (testing "does not receives the event from the websocket"
                     (is (thrown? Throwable (tu/<!!ms ch 500)))))))))))))

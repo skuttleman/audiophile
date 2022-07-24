@@ -11,15 +11,17 @@
     [com.ben-allred.ws-client-cljc.core :as ws*]))
 
 (defn ^:private handle-msg [pubsub msg]
-  (when-let [[{:event/keys [data type]} ctx] (match/match msg
-                                               [_ _ data ctx] [data ctx]
-                                               _ nil)]
-    (log/info "websocket msg received" ctx)
-    (when-let [topic (or (:sub/id ctx) (:request/id ctx))]
-      (let [msg' (merge {:event/type type}
-                        (case type
-                          :workflow/failed {:error [data]}
-                          {:data data}))]
+  (when-let [[event-type event ctx] (match/match msg
+                                      [event-type _ data ctx] [event-type data ctx]
+                                      _ nil)]
+    (log/info "websocket msg received" event-type ctx)
+    (let [{:event/keys [data type]} event
+          msg' (merge {:event/type type}
+                      (case type
+                        :workflow/failed {:error [data]}
+                        {:data data}))]
+      (doseq [topic [(:request/id ctx) event-type]
+              :when topic]
         (pubsub/publish! pubsub topic msg')))))
 
 (defn ^:private ws-uri [nav base-url]

@@ -36,12 +36,8 @@
       (forms/destroy! *artifacts))))
 
 (defmethod modals/body ::create
-  [_ sys {:keys [*res close!] :as attrs}]
-  (let [attrs (assoc attrs :on-success (fn [result]
-                                         (when close!
-                                           (close! result))
-                                         (some-> *res res/request!)))]
-    [create* sys attrs]))
+  [_ sys attrs]
+  [create* sys (cserv/modals#with-on-success attrs)])
 
 (defn ^:private team-view [team]
   [:h3 [:em (:team/name team)]])
