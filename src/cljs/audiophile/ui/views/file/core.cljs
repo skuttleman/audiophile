@@ -33,11 +33,7 @@
           attrs {:artifact-id     artifact-id
                  :file-id         (:file/id file)
                  :file-version-id file-version-id}]
-      (cond
-        (res/requesting? *select)
-        [comp/spinner]
-
-        artifact-id
+      (if artifact-id
         [:div.panel
          [:div.panel-heading
           [:div.layout--align-center
@@ -62,12 +58,11 @@
             (when-not (= file-version-id current-version-id)
               [comp/plain-button
                {:class    ["is-outlined" "is-primary"]
+                :disabled (res/requesting? *select)
                 :on-click (fn [_]
                             (res/request! *select {:file-version/id file-version-id}))}
                "Set as current"])]]]
          ^{:key artifact-id} [audio/player sys attrs]]
-
-        :else
         [comp/alert :error "File version could not be found"]))
     (finally
       (forms/destroy! *form)
