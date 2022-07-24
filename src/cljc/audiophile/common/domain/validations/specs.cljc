@@ -73,6 +73,10 @@
    [:file/name trimmed-string?]
    [:version/name trimmed-string?]])
 
+(def file:select-version
+  [:map
+   [:file-version/id uuid?]])
+
 (def version:create
   [:map
    [:artifact/id uuid?]
@@ -141,7 +145,14 @@
   (mu/merge auth event:fetch-all))
 
 (def api-file:create
-  (mu/merge project-id file:create))
+  (-> project-id
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge file:create)))
+
+(def api-file:select-version
+  (-> file-id
+      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge file:select-version)))
 
 (def api-version:create
   (-> file-id

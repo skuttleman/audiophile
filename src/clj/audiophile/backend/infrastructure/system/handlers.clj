@@ -41,6 +41,9 @@
 (defmethod ig/init-key :audiophile.handlers.files/download [_ cfg]
   (files/download cfg))
 
+(defmethod ig/init-key :audiophile.handlers.files/set-version [_ cfg]
+  (files/set-version cfg))
+
 (defmethod ig/init-key :audiophile.handlers.files/fetch [_ cfg]
   (files/fetch cfg))
 

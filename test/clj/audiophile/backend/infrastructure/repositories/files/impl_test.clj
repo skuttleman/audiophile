@@ -64,7 +64,7 @@
                        [:files.id "file/id"]
                        [:files.idx "file/idx"]
                        [:files.project-id "file/project-id"]
-                       [:version.created-at "version/created-at"]
+                       [:version.selected-at "version/selected-at"]
                        [:fv.id "version/id"]
                        [:fv.name "version/name"]
                        [:fv.artifact-id "version/artifact-id"]}
@@ -89,7 +89,7 @@
                            (update-in [1 :where 2] tu/op-set)
                            (update-in [1 :where] tu/op-set)))))
               (is (= [[{:select   #{:file-versions.file-id
-                                    [[:max :file-versions.created-at] :created-at]}
+                                    [[:max :file-versions.selected-at] :selected-at]}
                         :from     [:file-versions]
                         :group-by [:file-versions.file-id]}
                        :version]
@@ -98,7 +98,7 @@
                       [:file-versions :fv]
                       [:and
                        #{[:= #{:fv.file-id :version.file-id}]
-                         [:= #{:fv.created-at :version.created-at}]}]]
+                         [:= #{:fv.selected-at :version.selected-at}]}]]
                      (-> join
                          (update-in [0 0 :select] set)
                          (update 1 tu/op-set)
@@ -106,7 +106,7 @@
                          (update-in [3 2] tu/op-set)
                          (update 3 tu/op-set))))
               (is (= [[:files.idx :asc]
-                      [:version.created-at :desc]]
+                      [:version.selected-at :desc]]
                      order-by))))
 
           (testing "returns the result"
@@ -230,7 +230,7 @@
           repo (rfiles/->FileAccessor tx nil producer nil nil)
           [request-id user-id] (repeatedly uuids/random)]
       (testing "when the user has access"
-          (stubs/use! tx :execute! [{}])
+        (stubs/use! tx :execute! [{}])
         (testing "emits a command"
           (int/create-file! repo {:some :data} {:some       :opts
                                                 :some/other :opts
@@ -294,4 +294,37 @@
                                                                      :some/other :opts
                                                                      :user/id    user-id
                                                                      :request/id request-id})))]
+            (is (= int/NO_ACCESS (:interactor/reason (ex-data ex))))))))))
+
+(deftest set-version!-test
+  (testing "set-version"
+    (let [producer (ts/->chan)
+          tx (ts/->tx)
+          repo (rfiles/->FileAccessor tx nil producer nil nil)
+          [request-id user-id] (repeatedly uuids/random)]
+      (testing "when the user has access"
+        (stubs/use! tx :execute! [{}] [{}])
+        (testing "emits a command"
+          (int/set-version! repo {:some :data} {:some       :opts
+                                                :some/other :opts
+                                                :user/id    user-id
+                                                :request/id request-id})
+          (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
+            (is (= ::sp.ktop/create! tag))
+            (assert/is? {:workflows/ctx      {}
+                         :workflows/template :versions/activate
+                         :workflows/form     (peek (wf/load! :versions/activate))}
+                        params)
+            (assert/is? {:user/id     user-id
+                         :request/id  request-id
+                         :workflow/id uuid?}
+                        ctx))))
+
+      (testing "when the user does not have access"
+        (stubs/use! tx :execute! [])
+        (testing "throws"
+          (let [ex (is (thrown? Throwable (int/set-version! repo {:some :data} {:some       :opts
+                                                                                :some/other :opts
+                                                                                :user/id    user-id
+                                                                                :request/id request-id})))]
             (is (= int/NO_ACCESS (:interactor/reason (ex-data ex))))))))))

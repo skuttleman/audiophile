@@ -1,5 +1,6 @@
 (ns audiophile.backend.infrastructure.repositories.team-invitations.queries
   (:require
+    [audiophile.backend.infrastructure.db.common :as cdb]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.backend.infrastructure.db.models.sql :as sql]
     [audiophile.backend.infrastructure.db.models.tables :as tbl]
@@ -57,9 +58,7 @@
                                      [:= :user-teams.user-id user-id]
                                      [:not= :teams.type (sql/cast "PERSONAL" :team-type)]
                                      [:not [:exists sub-query]]]))]
-    (-> executor
-        (repos/execute! query)
-        seq)))
+    (cdb/access? executor query)))
 
 
 (defn invite-member! [executor params opts]

@@ -55,10 +55,10 @@
       (models/select-fields #{:id :idx :name :project-id})
       (models/select* clause)
       (models/join (models/model {:table  {:select   [:file-versions.file-id
-                                                      [(sql/max :file-versions.created-at) :created-at]]
+                                                      [(sql/max :file-versions.selected-at) :selected-at]]
                                            :from     [:file-versions]
                                            :group-by [:file-versions.file-id]}
-                                  :fields #{:created-at}
+                                  :fields #{:selected-at}
                                   :alias  :version})
                    [:= :version.file-id :files.id])
       (models/join (models/model {:table     :file-versions
@@ -66,7 +66,7 @@
                                   :alias     :fv})
                    [:and
                     [:= :fv.file-id :version.file-id]
-                    [:= :fv.created-at :version.created-at]])
+                    [:= :fv.selected-at :version.selected-at]])
       (update :select into [[:fv.id "version/id"]
                             [:fv.name "version/name"]
                             [:fv.artifact-id "version/artifact-id"]])))
@@ -79,7 +79,7 @@
       (has-team-clause user-id)
       select-by
       (models/order-by [:files.idx :asc]
-                       [:version.created-at :desc])))
+                       [:version.selected-at :desc])))
 
 (defn ^:private select-one-plain [file-id]
   (-> tbl/files
@@ -88,9 +88,9 @@
 
 (defn ^:private select-versions [file-id]
   (-> tbl/file-versions
-      (models/select-fields #{:id :name :artifact-id})
+      (models/select-fields #{:id :name :artifact-id :selected-at})
       (models/select* [:= :file-versions.file-id file-id])
-      (models/order-by [:file-versions.created-at :desc])))
+      (models/order-by [:file-versions.selected-at :desc])))
 
 (defn ^:private insert [file]
   (models/insert-into tbl/files
@@ -169,3 +169,20 @@
       (->> (repos/execute! executor))
       colls/only!
       :id))
+
+(defn select-version-access? [executor {file-id :file/id version-id :file-version/id} {user-id :user/id}]
+  (and (cdb/access? executor (access-file file-id user-id))
+       (cdb/access? executor (-> tbl/file-versions
+                                 models/select*
+                                 (assoc :select [1])
+                                 (models/and-where [:and
+                                                    [:= :file-versions.id version-id]
+                                                    [:= :file-versions.file-id file-id]])))))
+
+(defn select-version! [executor {version-id :file-version/id} opts]
+  (repos/execute! executor
+                  (-> tbl/file-versions
+                      models/sql-update
+                      (models/sql-set {:selected-at (sql/raw "now()")})
+                      (models/and-where [:= :file-versions.id version-id]))
+                  opts))

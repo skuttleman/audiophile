@@ -1,0 +1,2 @@
+[:workflows/setup {:file-version/id ?version-id}
+ [:file-version/activate! {:file-version/id (sp.ctx/get ?version-id)}]]

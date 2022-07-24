@@ -49,17 +49,15 @@
   (cdb/access? executor (access-team (:project/team-id project) (:user/id opts))))
 
 (defn update-project-access? [executor {project-id :project/id} {user-id :user/id}]
-  (-> executor
-      (repos/execute! (-> tbl/projects
-                          (models/select-fields #{:id})
-                          (models/select*)
-                          (models/join tbl/teams [:= :teams.id :projects.team-id])
-                          (models/join tbl/user-teams [:= :user-teams.team-id :teams.id])
-                          (models/and-where [:and
-                                             [:= :projects.id project-id]
-                                             [:= :user-teams.user-id user-id]])))
-      seq
-      boolean))
+  (cdb/access? executor
+               (-> tbl/projects
+                   (models/select-fields #{:id})
+                   (models/select*)
+                   (models/join tbl/teams [:= :teams.id :projects.team-id])
+                   (models/join tbl/user-teams [:= :user-teams.team-id :teams.id])
+                   (models/and-where [:and
+                                      [:= :projects.id project-id]
+                                      [:= :user-teams.user-id user-id]]))))
 
 (defn insert-project! [executor project _]
   (-> executor

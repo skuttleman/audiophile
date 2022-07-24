@@ -22,6 +22,8 @@
     "Create a new file with a version to the repository.")
   (create-file-version! [this data opts]
     "Create a new version of an existing file")
+  (set-version! [this data opts]
+    "Sets a file version as the current version")
   (get-artifact [this opts]
     "Get artifact data from a kv store"))
 

@@ -13,6 +13,9 @@
 (defn max [field]
   [:max field])
 
+(defn raw [expr]
+  [:raw expr])
+
 (defn format
   ([query]
    (format query nil))

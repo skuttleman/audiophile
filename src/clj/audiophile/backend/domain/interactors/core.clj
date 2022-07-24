@@ -43,5 +43,8 @@
 (defn create-file-version! [interactor data opts]
   (pint/create-file-version! interactor data opts))
 
+(defn set-version! [interactor data opts]
+  (pint/set-version! interactor data opts))
+
 (defn get-artifact [interactor opts]
   (pint/get-artifact interactor opts))

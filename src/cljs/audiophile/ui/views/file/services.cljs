@@ -41,8 +41,8 @@
 (defn files#modal:version [sys body]
   (pages/modal:open sys [:h1.subtitle "Upload a new version"] body))
 
-(defn files#nav:add-version! [{:keys [nav]} {:keys [handle] :as route} file]
-  (doto (-> file :file/versions first :file-version/id)
+(defn files#nav:add-version! [{:keys [nav]} {:keys [handle] :as route} current-version-id]
+  (doto current-version-id
     (->> (assoc-in route [:params :file-version-id]) (nav/replace! nav handle))))
 
 (defn files#res:fetch-one [sys file-id]
@@ -65,6 +65,13 @@
     (doto (form.watch/create store {:file-version-id version-id})
       (add-watch ::qp (fn [_ _ _ val]
                         (handler (:file-version-id val)))))))
+
+(defn versions#res:set-active [sys *res file-id]
+  (pages/res:modify sys
+                    {:on-success (fn [_]
+                                   (res/request! *res))}
+                    :routes.api/files:id
+                    {:params {:file/id file-id}}))
 
 (defn id [player]
   (pcom/id player))

@@ -17,9 +17,10 @@
 (defn ^:private attrs->content [{:keys [options-by-id value]}]
   (get-in options-by-id [(first value) :file-version/name]))
 
-(defn ^:private page* [sys *file file initial-version-id]
+(defn ^:private page* [sys {:keys [*file]} file current-version-id selected-version-id]
   (r/with-let [versions (map (juxt :file-version/id identity) (:file/versions file))
-               *form (serv/versions#form:selector sys initial-version-id)
+               *form (serv/versions#form:selector sys selected-version-id)
+               *select (serv/versions#res:set-active sys *file (:file/id file))
                versions-by-id (into {} versions)
                modal-attrs {:on-success (comp (serv/versions#nav:qp sys)
                                               :file-version/id)
@@ -32,7 +33,11 @@
           attrs {:artifact-id     artifact-id
                  :file-id         (:file/id file)
                  :file-version-id file-version-id}]
-      (if artifact-id
+      (cond
+        (res/requesting? *select)
+        [comp/spinner]
+
+        artifact-id
         [:div.panel
          [:div.panel-heading
           [:div.layout--align-center
@@ -49,20 +54,31 @@
                                 :options-by-id  versions-by-id}
                                (forms/with-attrs *form [:file-version-id])
                                dd/singleable)])]
-           [comp/plain-button
-            {:class    ["is-outlined" "is-info"]
-             :on-click click}
-            "New version"]]]
+           [:div.buttons
+            [comp/plain-button
+             {:class    ["is-outlined" "is-info"]
+              :on-click click}
+             "New version"]
+            (when-not (= file-version-id current-version-id)
+              [comp/plain-button
+               {:class    ["is-outlined" "is-primary"]
+                :on-click (fn [_]
+                            (res/request! *select {:file-version/id file-version-id}))}
+               "Set as current"])]]]
          ^{:key artifact-id} [audio/player sys attrs]]
+
+        :else
         [comp/alert :error "File version could not be found"]))
     (finally
-      (forms/destroy! *form))))
+      (forms/destroy! *form)
+      (res/destroy! *select))))
 
-(defn ^:private init [{:keys [nav] :as sys} {:keys [*file]} file]
+(defn ^:private init [{:keys [nav] :as sys} attrs file]
   (let [route @nav
-        version-id (or (-> route :params :file-version-id)
-                       (serv/files#nav:add-version! sys route file))]
-    [page* sys *file file version-id]))
+        current-version-id (-> file :file/versions first :file-version/id)
+        selected-version-id (or (-> route :params :file-version-id)
+                                (serv/files#nav:add-version! sys route current-version-id))]
+    [page* sys attrs file current-version-id selected-version-id]))
 
 (defn ^:private page [{:keys [nav] :as sys}]
   (r/with-let [file-id (-> @nav :params :file/id)

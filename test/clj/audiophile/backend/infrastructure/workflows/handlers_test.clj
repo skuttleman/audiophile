@@ -364,6 +364,17 @@
                                        :last-name     "Blow"}]}
                        db-calls))))))
 
+(deftest versions:activate-test
+  (testing ":versions/activate workflow"
+    (let [[version-id] (repeatedly uuids/random)
+          ctx {:file-version/id version-id}]
+      (as-test [db-calls] [:versions/activate ctx]
+        (testing "saves the file version"
+          (assert/has? {:update :file-versions
+                        :set {:selected-at [:raw "now()"]}
+                        :where [:= :file-versions.id version-id]}
+                       db-calls))))))
+
 (deftest versions:create-test
   (testing ":versions/create workflow"
     (let [[artifact-id file-id version-id] (repeatedly uuids/random)

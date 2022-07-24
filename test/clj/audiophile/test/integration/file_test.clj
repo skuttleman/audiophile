@@ -332,3 +332,77 @@
                                          artifact-handler)]
                         (testing "returns an error"
                           (is (http/client-error? response)))))))))))))))
+
+(deftest set-version-test
+  (testing "PATCH /api/files/:file-id"
+    (int/with-config [system [:api/handler]]
+      (let [handler (-> system
+                        (int/component :api/handler)
+                        (ihttp/with-serde serde/transit))]
+        (testing "when authenticated as a user with a project"
+          (let [user (int/lookup-user system "joe@example.com")
+                version (int/lookup-file-version system "File Version Seed")
+                {version-id :file-version/id :file-version/keys [selected-at]} version
+                file-id (:file/id (int/lookup-file system "File Seed"))
+                artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))]
+            (testing "and when created a new file version"
+              (-> {:version/name "version name"
+                   :artifact/id  artifact-id}
+                  ihttp/body-data
+                  (ihttp/login system user)
+                  (ihttp/post system
+                              :routes.api/files:id
+                              {:params {:file/id file-id}})
+                  (ihttp/as-async system handler))
+              (testing "and when activating an existing file version"
+                (let [response (-> {:file-version/id version-id}
+                                   ihttp/body-data
+                                   (ihttp/login system user)
+                                   (ihttp/patch system
+                                                :routes.api/files:id
+                                                {:params {:file/id file-id}})
+                                   (ihttp/as-async system handler))]
+                  (testing "activates the file version"
+                    (is (http/success? response))
+                    (assert/is? {:workflow/template :versions/activate}
+                                (get-in response [:body :data]))
+
+                    (testing "and when querying for the file"
+                      (let [response (-> {}
+                                         (ihttp/login system user)
+                                         (ihttp/get system
+                                                    :routes.api/files:id
+                                                    {:params {:file/id file-id}})
+                                         handler)
+                            version (first (get-in response [:body :data :file/versions]))]
+                        (testing "sorts the updated version to the top"
+                          (assert/is? {:file-version/id version-id}
+                                      version)
+                          (is (> (.getTime (:file-version/selected-at version))
+                                 (.getTime selected-at))))))))))))
+
+        (testing "when authenticated as a user with no file access"
+          (let [user {:user/id (uuids/random)}
+                file-id (:file/id (int/lookup-file system "File Seed"))
+                version-id (:file-version/id (int/lookup-file-version system "File Version Seed"))
+                response (-> {:file-version/id version-id}
+                             ihttp/body-data
+                             (ihttp/login system user)
+                             (ihttp/patch system
+                                          :routes.api/files:id
+                                          {:params {:file/id file-id}})
+                             (ihttp/as-async system handler))]
+            (testing "returns an error"
+              (is (http/client-error? response)))))
+
+        (testing "when not authenticated"
+          (let [file-id (:file/id (int/lookup-file system "File Seed"))
+                version-id (:file-version/id (int/lookup-file-version system "File Version Seed"))
+                response (-> {:file-version/id version-id}
+                             ihttp/body-data
+                             (ihttp/patch system
+                                          :routes.api/files:id
+                                          {:params {:file/id file-id}})
+                             handler)]
+            (testing "returns an error"
+              (is (http/client-error? response)))))))))

@@ -60,6 +60,12 @@
   ([request system handle params]
    (go request system :post handle params)))
 
+(defn patch
+  ([request system handle]
+   (patch request system handle nil))
+  ([request system handle params]
+   (go request system :patch handle params)))
+
 (defn as-async [request system handler]
   (with-ws [ch (-> request
                    (get system :routes.ws/connection)

@@ -42,6 +42,10 @@
     (when-not (repos/transact! repo qfiles/insert-version-access? data opts)
       (int/no-access!))
     (crepos/start-workflow! producer :versions/create (merge opts data) opts))
+  (set-version! [_ data opts]
+    (when-not (repos/transact! repo qfiles/select-version-access? data opts)
+      (int/no-access!))
+    (crepos/start-workflow! producer :versions/activate (merge opts data) opts))
   (get-artifact [_ opts]
     (repos/transact! repo get-artifact* store (:artifact/id opts) opts)))
 

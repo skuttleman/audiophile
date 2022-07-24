@@ -105,7 +105,8 @@
                    :where  [:= :name filename]}))
 
 (defn lookup-file-version [system version-name]
-  (lookup* system {:select [[:id "file-version/id"]]
+  (lookup* system {:select [[:id "file-version/id"]
+                            [:selected-at "file-version/selected-at"]]
                    :from   [:file-versions]
                    :where  [:= :name version-name]}))
 

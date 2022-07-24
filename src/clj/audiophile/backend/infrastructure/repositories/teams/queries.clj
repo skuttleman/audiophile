@@ -1,5 +1,6 @@
 (ns audiophile.backend.infrastructure.repositories.teams.queries
   (:require
+    [audiophile.backend.infrastructure.db.common :as cdb]
     [audiophile.backend.infrastructure.db.models.core :as models]
     [audiophile.backend.infrastructure.db.models.tables :as tbl]
     [audiophile.backend.infrastructure.repositories.common :as crepos]
@@ -56,16 +57,14 @@
   true)
 
 (defn update-team-access? [executor {team-id :team/id} {user-id :user/id}]
-  (-> executor
-      (repos/execute! (-> tbl/teams
-                          (models/select-fields #{:id})
-                          (models/select*)
-                          (models/join tbl/user-teams [:= :user-teams.team-id :teams.id])
-                          (models/and-where [:and
-                                             [:= :teams.id team-id]
-                                             [:= :user-teams.user-id user-id]])))
-      seq
-      boolean))
+  (cdb/access? executor
+               (-> tbl/teams
+                   (models/select-fields #{:id})
+                   (models/select*)
+                   (models/join tbl/user-teams [:= :user-teams.team-id :teams.id])
+                   (models/and-where [:and
+                                      [:= :teams.id team-id]
+                                      [:= :user-teams.user-id user-id]]))))
 
 (defn insert-team! [executor team _]
   (let [team-id (-> executor

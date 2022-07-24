@@ -1,7 +1,7 @@
 (ns audiophile.common.core.utils.colls
   (:require
-    [clojure.walk :as walk]
-    [audiophile.common.core.utils.strings :as strings]))
+    [audiophile.common.core.utils.strings :as strings]
+    [clojure.walk :as walk]))
 
 (defn cons?
   "Tests if collection is sequential and not a vector (list, cons, lazy seq, etc)"

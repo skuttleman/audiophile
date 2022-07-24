@@ -91,3 +91,19 @@
   {:user/id     (get-in request [:auth/user :user/id])
    :token/aud   (get-in request [:auth/user :jwt/aud])
    :artifact/id (get-in request [:nav/route :params :artifact/id])})
+
+(defn set-version
+  "Handles a request to set the active file version"
+  [{:keys [interactor]}]
+  (fn [data]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
+      (int/set-version! interactor data opts))))
+
+(defmethod selectors/select [:patch :routes.api/files:id]
+  [_ request]
+  (-> request
+      (get-in [:body :data])
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud])
+             :file/id (get-in request [:nav/route :params :file/id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

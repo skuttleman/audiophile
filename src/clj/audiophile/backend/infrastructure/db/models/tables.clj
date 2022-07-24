@@ -53,7 +53,7 @@
    :namespace :event})
 
 (def file-versions
-  {:fields    #{:file-id :artifact-id :name :id :created-at}
+  {:fields    #{:file-id :artifact-id :name :id :created-at :selected-at}
    :spec      [:map
                [:file-version/id uuid?]
                [:file-version/artifact-id uuid?]
