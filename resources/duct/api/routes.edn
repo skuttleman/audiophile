@@ -1,29 +1,30 @@
 {[:duct/const :routes/table#api]
- {[:get :routes.api/artifacts:id]       #ig/ref :res.handler/file-version#get
-  [:get :routes.api/events]             #ig/ref :api.handler/events#get
-  [:get :routes.api/files:id.comments]  #ig/ref :api.handler/comments#get
-  [:get :routes.api/files:id]           #ig/ref :api.handler/file#get
-  [:get :routes.api/projects:id.files]  #ig/ref :api.handler/project.files#get
-  [:get :routes.api/projects:id]        #ig/ref :api.handler/project#get
-  [:get :routes.api/projects]           #ig/ref :api.handler/projects#get
-  [:get :routes.api/team-invitations]   #ig/ref :api.handler/team-invitations#get
-  [:get :routes.api/teams:id]           #ig/ref :api.handler/team#get
-  [:get :routes.api/teams]              #ig/ref :api.handler/teams#get
-  [:get :routes.api/users.profile]      #ig/ref :api.handler/user#get
-  [:get :routes.resources/health]       #ig/ref :res.handler/health
-  [:get :routes.ws/connection]          #ig/ref :api.handler/ws#connect
-  [:patch :routes.api/files:id]         #ig/ref :api.handler/file#patch
-  [:patch :routes.api/projects:id]      #ig/ref :api.handler/project#patch
-  [:patch :routes.api/team-invitations] #ig/ref :api.handler/team-invitations#patch
-  [:patch :routes.api/teams:id]         #ig/ref :api.handler/team#patch
-  [:post :routes.api/artifact]          #ig/ref :api.handler/artifacts#post
-  [:post :routes.api/comments]          #ig/ref :api.handler/comments#post
-  [:post :routes.api/files:id]          #ig/ref :api.handler/file#post
-  [:post :routes.api/projects:id.files] #ig/ref :api.handler/project.files#post
-  [:post :routes.api/projects]          #ig/ref :api.handler/projects#post
-  [:post :routes.api/team-invitations]  #ig/ref :api.handler/team-invitations#post
-  [:post :routes.api/teams]             #ig/ref :api.handler/teams#post
-  [:post :routes.api/users]             #ig/ref :api.handler/users#post}
+ {[:get :routes.api/artifacts:id]           #ig/ref :res.handler/file-version#get
+  [:get :routes.api/events]                 #ig/ref :api.handler/events#get
+  [:get :routes.api/files:id.comments]      #ig/ref :api.handler/comments#get
+  [:get :routes.api/files:id]               #ig/ref :api.handler/file#get
+  [:get :routes.api/projects:id.files]      #ig/ref :api.handler/project.files#get
+  [:get :routes.api/projects:id]            #ig/ref :api.handler/project#get
+  [:get :routes.api/projects]               #ig/ref :api.handler/projects#get
+  [:get :routes.api/team-invitations]       #ig/ref :api.handler/team-invitations#get
+  [:get :routes.api/teams:id]               #ig/ref :api.handler/team#get
+  [:get :routes.api/teams]                  #ig/ref :api.handler/teams#get
+  [:get :routes.api/users.profile]          #ig/ref :api.handler/user#get
+  [:get :routes.resources/health]           #ig/ref :res.handler/health
+  [:get :routes.ws/connection]              #ig/ref :api.handler/ws#connect
+  [:patch :routes.api/files:id.versions:id] #ig/ref :api.handler/file.version#patch
+  [:patch :routes.api/files:id]             #ig/ref :api.handler/file#patch
+  [:patch :routes.api/projects:id]          #ig/ref :api.handler/project#patch
+  [:patch :routes.api/team-invitations]     #ig/ref :api.handler/team-invitations#patch
+  [:patch :routes.api/teams:id]             #ig/ref :api.handler/team#patch
+  [:post :routes.api/artifact]              #ig/ref :api.handler/artifacts#post
+  [:post :routes.api/comments]              #ig/ref :api.handler/comments#post
+  [:post :routes.api/files:id.versions]     #ig/ref :api.handler/file.version#post
+  [:post :routes.api/projects:id.files]     #ig/ref :api.handler/project.files#post
+  [:post :routes.api/projects]              #ig/ref :api.handler/projects#post
+  [:post :routes.api/team-invitations]      #ig/ref :api.handler/team-invitations#post
+  [:post :routes.api/teams]                 #ig/ref :api.handler/teams#post
+  [:post :routes.api/users]                 #ig/ref :api.handler/users#post}
 
  [:duct/const :routes/daemon#api]
  #{#ig/ref :workflows/consumer#ws}
@@ -103,6 +104,11 @@
   :handler    #ig/ref :audiophile.services.ws/handler
   :spec       :api.ws/connect}
 
+ [:audiophile.spec/with-spec :api.handler/file.version#patch]
+ {:->response #ig/ref :audiophile.spec/no-content
+  :handler    #ig/ref :audiophile.handlers.files/update
+  :spec       :api.file/update}
+
  [:audiophile.spec/with-spec :api.handler/file#patch]
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.files/set-version
@@ -118,7 +124,7 @@
   :handler    #ig/ref :audiophile.handlers.comments/create
   :spec       :api.comment/create}
 
- [:audiophile.spec/with-spec :api.handler/file#post]
+ [:audiophile.spec/with-spec :api.handler/file.version#post]
  {:->response #ig/ref :audiophile.spec/no-content
   :handler    #ig/ref :audiophile.handlers.files/create-version
   :spec       :api.version/create}
@@ -286,6 +292,9 @@
  {:interactor #ig/ref :interactors/files}
 
  :audiophile.handlers.files/download
+ {:interactor #ig/ref :interactors/files}
+
+ :audiophile.handlers.files/update
  {:interactor #ig/ref :interactors/files}
 
  :audiophile.handlers.files/set-version

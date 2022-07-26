@@ -4,9 +4,12 @@
     [audiophile.common.core.utils.maps :as maps]
     [audiophile.common.infrastructure.resources.core :as res]
     [audiophile.ui.components.core :as comp]
+    [audiophile.ui.components.input-fields :as in]
     [audiophile.ui.components.input-fields.dropdown :as dd]
+    [audiophile.ui.components.modals :as modals]
     [audiophile.ui.forms.core :as forms]
     [audiophile.ui.views.common.core :as views]
+    [audiophile.ui.views.common.services :as cserv]
     [audiophile.ui.views.file.audio :as audio]
     [audiophile.ui.views.file.services :as serv]
     [reagent.core :as r]))
@@ -17,16 +20,44 @@
 (defn ^:private attrs->content [{:keys [options-by-id value]}]
   (get-in options-by-id [(first value) :file-version/name]))
 
+(defn ^:private rename* [sys attrs]
+  (r/with-let [*form (serv/files#form:modify sys attrs)]
+    [comp/form {:*form *form}
+     [in/input (forms/with-attrs {:label "File name"}
+                                 *form
+                                 [:file/name])]
+     [in/input (forms/with-attrs {:label "Version name"}
+                                 *form
+                                 [:version/name])]]
+    (finally
+      (forms/destroy! *form))))
+
+(defmethod modals/body ::rename
+  [_ sys {:keys [*version-form file versions-by-id] :as attrs}]
+  (let [version-id (:file-version-id @*version-form)
+        attrs (-> attrs
+                  cserv/modals#with-on-success
+                  (assoc :file-id (:file/id file)
+                         :file-name (:file/name file)
+                         :version-id version-id
+                         :version-name (get-in versions-by-id [version-id :file-version/name])))]
+    [rename* sys attrs]))
+
 (defn ^:private page* [sys {:keys [*file]} file current-version-id selected-version-id]
   (r/with-let [versions (map (juxt :file-version/id identity) (:file/versions file))
                *form (serv/versions#form:selector sys selected-version-id)
                *select (serv/versions#res:set-active sys *file (:file/id file))
                versions-by-id (into {} versions)
-               modal-attrs {:on-success (comp (serv/versions#nav:qp sys)
-                                              :file-version/id)
-                            :*res       *file
-                            :file       file}
-               click (serv/files#modal:version sys [::views/version modal-attrs])]
+               upload-attrs {:on-success (comp (serv/versions#nav:qp sys)
+                                               :file-version/id)
+                             :*res       *file
+                             :file       file}
+               upload (serv/files#modal:version sys [::views/version upload-attrs])
+               edit-attrs {:*res           *file
+                           :*version-form  *form
+                           :file           file
+                           :versions-by-id versions-by-id}
+               edit (serv/files#modal:edit sys [::rename edit-attrs])]
     (let [{:keys [file-version-id]} @*form
           version (get versions-by-id file-version-id)
           artifact-id (:file-version/artifact-id version)
@@ -52,8 +83,13 @@
                                dd/singleable)])]
            [:div.buttons
             [comp/plain-button
+             {:class    ["is-text" "layout--space-between"]
+              :on-click edit}
+             [comp/icon :edit]
+             [:span "edit"]]
+            [comp/plain-button
              {:class    ["is-outlined" "is-info"]
-              :on-click click}
+              :on-click upload}
              "New version"]
             (when-not (= file-version-id current-version-id)
               [comp/plain-button

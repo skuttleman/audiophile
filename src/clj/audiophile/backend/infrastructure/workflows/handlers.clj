@@ -33,6 +33,10 @@
   [{:keys [repo]} ctx task]
   (repos/transact! repo create* qfiles/insert-file! ctx task))
 
+(defmethod task-handler :file/update!
+  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  (repos/transact! repo qfiles/update-file! params ctx))
+
 (defmethod task-handler :file-version/activate!
   [{:keys [repo]} ctx {:spigot/keys [params]}]
   (repos/transact! repo qfiles/select-version! params ctx))
@@ -40,6 +44,10 @@
 (defmethod task-handler :file-version/create!
   [{:keys [repo]} ctx task]
   (repos/transact! repo create* qfiles/insert-version! ctx task))
+
+(defmethod task-handler :file-version/update!
+  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  (repos/transact! repo qfiles/update-version! params ctx))
 
 (defmethod task-handler :project/create!
   [{:keys [repo]} ctx task]

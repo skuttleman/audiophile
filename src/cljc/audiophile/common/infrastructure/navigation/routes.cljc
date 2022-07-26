@@ -22,7 +22,10 @@
     ["/files"
      [[["/" [uuids/regex :file/id]]
        [["" :routes.api/files:id]
-        ["/comments" :routes.api/files:id.comments]]]]]
+        ["/comments" :routes.api/files:id.comments]
+        ["/versions"
+         [["" :routes.api/files:id.versions]
+          [["/" [uuids/regex :version/id]] :routes.api/files:id.versions:id]]]]]]]
     ["/projects"
      [["" :routes.api/projects]
       [["/" [uuids/regex :project/id]]

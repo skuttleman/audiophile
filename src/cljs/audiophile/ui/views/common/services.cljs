@@ -42,7 +42,7 @@
 (defn files#form:version [{:keys [store] :as sys} attrs file-id]
   (let [*form (form.std/create store nil files#validator:version)
         attrs (assoc attrs :local->remote files#local->remote)]
-    (pages/form:new sys attrs *form :routes.api/files:id {:params {:file/id file-id}})))
+    (pages/form:new sys attrs *form :routes.api/files:id.versions {:params {:file/id file-id}})))
 
 (defn modals#with-on-success [{:keys [*res close!] :as attrs}]
   (update attrs :on-success (fn [on-success]

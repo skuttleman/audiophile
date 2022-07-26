@@ -49,13 +49,15 @@
  [:audiophile.workflows.kafka/controller :component/health :controller/tasks]
  {:cfg      {:application.id     #ig/ref :env.kafka.app-id/tasks
              :bootstrap.servers  #ig/ref :env.kafka/brokers
-             :commit.interval.ms 1000}
+             :commit.interval.ms 1000
+             :state.dir          "/tmp/kafka-streams"}
   :topology #ig/ref :audiophile.workflows.kafka.topology/tasks}
 
  [:audiophile.workflows.kafka/controller :component/health :controller/wf]
  {:cfg      {:application.id     #ig/ref :env.kafka.app-id/wf
              :bootstrap.servers  #ig/ref :env.kafka/brokers
-             :commit.interval.ms 1000}
+             :commit.interval.ms 1000
+             :state.dir          "/tmp/kafka-streams"}
   :topology #ig/ref :audiophile.workflows.kafka.topology/wf}
 
  :audiophile.workflows.kafka.topology/tasks

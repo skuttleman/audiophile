@@ -112,12 +112,13 @@
                    (sp.kafka/with-task-topology opts)
                    .build
                    (TopologyTestDriver. (sp.kcom/->props {:application.id    (str (uuids/random))
-                                                          :bootstrap.servers "fake"})))]
-    {:driver driver
-     :events (.createOutputTopic driver
-                                 (:name event-topic-cfg)
-                                 (.deserializer (:key-serde workflow-topic-cfg))
-                                 (.deserializer (:val-serde workflow-topic-cfg)))
+                                                          :bootstrap.servers "fake"
+                                                          :state.dir         "/tmp/test/kafka-streams"})))]
+    {:driver    driver
+     :events    (.createOutputTopic driver
+                                    (:name event-topic-cfg)
+                                    (.deserializer (:key-serde workflow-topic-cfg))
+                                    (.deserializer (:val-serde workflow-topic-cfg)))
      :workflows (.createInputTopic driver
                                    (:name workflow-topic-cfg)
                                    (.serializer (:key-serde workflow-topic-cfg))

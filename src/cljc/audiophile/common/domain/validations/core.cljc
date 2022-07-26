@@ -33,6 +33,7 @@
    :api.events/fetch-all       specs/api-event:fetch-all
    :api.file/create            specs/api-file:create
    :api.file/select-version    specs/api-file:select-version
+   :api.file/update            specs/api-file:update
    :api.profile/fetch          specs/profile
    :api.project/create         specs/api-project:create
    :api.project/update         specs/api-project:update

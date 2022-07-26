@@ -133,3 +133,56 @@
                              handler)]
             (testing "returns an error"
               (is (http/client-error? response)))))))))
+
+(deftest update-projects-test
+  (testing "PATCH /api/projects/:project-id"
+    (int/with-config [system [:api/handler]]
+      (let [handler (-> system
+                        (int/component :api/handler)
+                        (ihttp/with-serde serde/transit))
+            project-id (:project/id (int/lookup-project system "Project Seed"))]
+        (testing "when authenticated"
+          (let [user (int/lookup-user system "joe@example.com")
+                response (-> {:project/name "new project name"}
+                             ihttp/body-data
+                             (ihttp/login system user)
+                             (ihttp/patch system
+                                          :routes.api/projects:id
+                                          {:params {:project/id project-id}})
+                             (ihttp/as-async system handler))]
+            (testing "updates the project"
+              (is (http/success? response)))
+
+            (testing "and when querying for projects"
+              (let [response (-> {}
+                                 (ihttp/login system user)
+                                 (ihttp/get system
+                                            :routes.api/projects:id
+                                            {:params {:project/id project-id}})
+                                 handler)]
+                (testing "includes the new project"
+                  (assert/is? {:project/id   project-id
+                               :project/name "new project name"}
+                              (get-in response [:body :data])))))))
+
+        (testing "when authenticated as a user without team access"
+          (let [user {:user/id (uuids/random)}
+                response (-> {:project/name "new project name"}
+                             ihttp/body-data
+                             (ihttp/login system user)
+                             (ihttp/patch system
+                                          :routes.api/projects:id
+                                          {:params {:project/id project-id}})
+                             (ihttp/as-async system handler))]
+            (testing "fails"
+              (is (http/client-error? response)))))
+
+        (testing "when not authenticated"
+          (let [response (-> {:project/name "new project name"}
+                             ihttp/body-data
+                             (ihttp/patch system
+                                          :routes.api/projects:id
+                                          {:params {:project/id project-id}})
+                             (ihttp/as-async system handler))]
+            (testing "returns an error"
+              (is (http/client-error? response)))))))))

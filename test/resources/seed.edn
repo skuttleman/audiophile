@@ -3,13 +3,29 @@
                  :last-name     "Example"
                  :handle        "handly"
                  :email         "joe@example.com"
-                 :mobile-number "1234567890"}]}
+                 :mobile-number "1234567890"}
+                {:first-name    "Collin"
+                 :last-name     "Blueprint"
+                 :handle        "printzo"
+                 :email         "collin@blueprint.com"
+                 :mobile-number "1234567891"}]}
  {:insert-into :teams
   :values      [{:name "Team Seed"
-                 :type [:cast "PERSONAL" :team_type]}]}
+                 :type [:cast "PERSONAL" :team_type]}
+                {:name "Collaborative Team Seed"
+                 :type [:cast "COLLABORATIVE" :team_type]}]}
  {:insert-into :user-teams
   :values      [{:user-id #audiophile/fk [:users :email "joe@example.com"]
-                 :team-id #audiophile/fk [:teams :name "Team Seed"]}]}
+                 :team-id #audiophile/fk [:teams :name "Team Seed"]}
+                {:user-id #audiophile/fk [:users :email "joe@example.com"]
+                 :team-id #audiophile/fk [:teams :name "Collaborative Team Seed"]}]}
+ {:insert-into :team-invitations
+  :values      [{:team-id    #audiophile/fk [:teams :name "Collaborative Team Seed"]
+                 :email      "collin@blueprint.com"
+                 :invited-by #audiophile/fk [:users :email "joe@example.com"]}
+                {:team-id    #audiophile/fk [:teams :name "Collaborative Team Seed"]
+                 :email      "unknown@user.com"
+                 :invited-by #audiophile/fk [:users :email "joe@example.com"]}]}
  {:insert-into :projects
   :values      [{:name    "Project Seed"
                  :team-id #audiophile/fk [:teams :name "Team Seed"]}]}

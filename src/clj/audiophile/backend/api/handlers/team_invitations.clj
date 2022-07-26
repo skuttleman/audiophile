@@ -33,7 +33,7 @@
       (maps/assoc-maybe :request/id (-> request :headers :x-request-id uuids/->uuid))))
 
 (defn modify
-  "Handles a request to invite a new team member"
+  "Handles a request to update the status of an invitation"
   [{:keys [interactor]}]
   (fn [data]
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]

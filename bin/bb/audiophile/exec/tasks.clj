@@ -146,5 +146,6 @@
     (shared/process! "docker-compose stop kafka zookeeper")
     (shared/process! "docker-compose rm -fv")
     (shared/silent! (shared/process! "docker volume rm audiophile_kafka_data"))
-    (shared/silent! (shared/process! "docker volume rm audiophile_zookeeper_data")))
+    (shared/silent! (shared/process! "docker volume rm audiophile_zookeeper_data"))
+    (shared/process! "rm -r /tmp/kafka-streams"))
   (shared/install* :kafka nil))

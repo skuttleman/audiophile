@@ -28,6 +28,10 @@
     (repos/transact! repo qfiles/select-for-project (:project/id opts) opts))
   (query-one [_ opts]
     (repos/transact! repo qfiles/find-by-file-id (:file/id opts) (assoc opts :includes/versions? true)))
+  (update! [_ data opts]
+    (when-not (repos/transact! repo qfiles/update-file-access? data opts)
+      (int/no-access!))
+    (crepos/start-workflow! producer :files/update (merge opts data) opts))
 
   pint/IFileAccessor
   (create-artifact! [_ data opts]

@@ -36,6 +36,10 @@
    [:user/email {:optional true} email?]
    [:token/aud [:fn (partial some #{:token/auth :token/signup})]]])
 
+(def request-id
+  [:map
+   [:request/id {:optional true} uuid?]])
+
 (def file-id
   (mu/merge auth [:map [:file/id uuid?]]))
 
@@ -44,6 +48,9 @@
 
 (def team-id
   (mu/merge auth [:map [:team/id uuid?]]))
+
+(def version-id
+  (mu/merge auth [:map [:version/id uuid?]]))
 
 (def artifact:create
   [:map
@@ -76,6 +83,11 @@
 (def file:select-version
   [:map
    [:file-version/id uuid?]])
+
+(def file:update
+  [:map
+   [:file/name trimmed-string?]
+   [:version/name trimmed-string?]])
 
 (def version:create
   [:map
@@ -125,13 +137,11 @@
 
 (def api-comment:create
   (-> auth
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge request-id)
       (mu/merge comment:create)))
 
 (def api-comment:fetch-all
-  (-> file-id
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
-      (mu/merge comment:fetch-all)))
+  (mu/merge file-id comment:fetch-all))
 
 (def api-ws:connect
   (mu/merge auth
@@ -146,22 +156,28 @@
 
 (def api-file:create
   (-> project-id
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge request-id)
       (mu/merge file:create)))
 
 (def api-file:select-version
   (-> file-id
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge request-id)
       (mu/merge file:select-version)))
+
+(def api-file:update
+  (-> file-id
+      (mu/merge version-id)
+      (mu/merge request-id)
+      (mu/merge file:update)))
 
 (def api-version:create
   (-> file-id
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge request-id)
       (mu/merge version:create)))
 
 (def api-project:create
   (-> auth
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge request-id)
       (mu/merge project:create)))
 
 (def api-project:update
@@ -186,7 +202,7 @@
 
 (def api-team:create
   (-> auth
-      (mu/merge [:map [:request/id {:optional true} uuid?]])
+      (mu/merge request-id)
       (mu/merge team:create)))
 
 (def api-team:update

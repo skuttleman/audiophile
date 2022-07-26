@@ -186,3 +186,22 @@
                       (models/sql-set {:selected-at (sql/raw "now()")})
                       (models/and-where [:= :file-versions.id version-id]))
                   opts))
+
+(defn update-file-access? [executor {file-id :file/id} {user-id :user/id}]
+  (cdb/access? executor (access-file file-id user-id)))
+
+(defn update-file! [executor {file-id :file/id :file/keys [name]} opts]
+  (repos/execute! executor
+                  (-> tbl/files
+                      models/sql-update
+                      (models/sql-set {:name name})
+                      (models/and-where [:= :files.id file-id]))
+                  opts))
+
+(defn update-version! [executor {version-id :version/id :version/keys [name]} opts]
+  (repos/execute! executor
+                  (-> tbl/file-versions
+                      models/sql-update
+                      (models/sql-set {:name name})
+                      (models/and-where [:= :file-versions.id version-id]))
+                  opts))

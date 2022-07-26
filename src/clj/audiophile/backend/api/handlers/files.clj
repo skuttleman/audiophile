@@ -71,7 +71,7 @@
     (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
       (int/create-file-version! interactor data opts))))
 
-(defmethod selectors/select [:post :routes.api/files:id]
+(defmethod selectors/select [:post :routes.api/files:id.versions]
   [_ request]
   (-> request
       (get-in [:body :data])
@@ -106,4 +106,21 @@
       (assoc :user/id (get-in request [:auth/user :user/id])
              :token/aud (get-in request [:auth/user :jwt/aud])
              :file/id (get-in request [:nav/route :params :file/id]))
+      (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
+
+(defn modify
+  "Handles a request to update the file/version"
+  [{:keys [interactor]}]
+  (fn [data]
+    (let [[opts data] (maps/extract-keys data #{:user/id :request/id})]
+      (int/update! interactor data opts))))
+
+(defmethod selectors/select [:patch :routes.api/files:id.versions:id]
+  [_ request]
+  (-> request
+      (get-in [:body :data])
+      (assoc :user/id (get-in request [:auth/user :user/id])
+             :token/aud (get-in request [:auth/user :jwt/aud])
+             :file/id (get-in request [:nav/route :params :file/id])
+             :version/id (get-in request [:nav/route :params :version/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))
