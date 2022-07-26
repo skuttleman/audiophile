@@ -20,7 +20,7 @@
 (defn ^:private update-invite* [executor {email :team-invitation/email :as data} {user-id :user/id :as opts}]
   (let [team-id (:team-invitation/team-id data)
         invitation (if email
-                     (qinvitations/find-for-email executor team-id email)
+                     (qinvitations/find-for-email executor team-id email user-id)
                      (qinvitations/find-for-user executor team-id user-id))]
     (when-not invitation
       (int/no-access!))

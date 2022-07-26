@@ -8,7 +8,12 @@
                  :last-name     "Blueprint"
                  :handle        "printzo"
                  :email         "collin@blueprint.com"
-                 :mobile-number "1234567891"}]}
+                 :mobile-number "1234567891"}
+                {:first-name    "Another"
+                 :last-name     "User"
+                 :handle        "me2"
+                 :email         "another@user.com"
+                 :mobile-number "1234567892"}]}
  {:insert-into :teams
   :values      [{:name "Team Seed"
                  :type [:cast "PERSONAL" :team_type]}

@@ -18,13 +18,14 @@
 (def ^:private ^:const REVOKED
   (->status :REVOKED))
 
-(defn find-for-email [executor team-id email]
+(defn find-for-email [executor team-id email invited-by]
   (-> executor
       (repos/execute! (-> tbl/team-invitations
                           models/select*
                           (models/and-where [:and
                                              [:= :team-invitations.team-id team-id]
-                                             [:= :team-invitations.email email]])))
+                                             [:= :team-invitations.email email]
+                                             [:= :team-invitations.invited-by invited-by]])))
       colls/only!))
 
 (defn find-for-user [executor team-id user-id]
