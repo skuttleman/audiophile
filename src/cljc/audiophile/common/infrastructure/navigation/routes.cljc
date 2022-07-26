@@ -25,7 +25,7 @@
         ["/comments" :routes.api/files:id.comments]
         ["/versions"
          [["" :routes.api/files:id.versions]
-          [["/" [uuids/regex :version/id]] :routes.api/files:id.versions:id]]]]]]]
+          [["/" [uuids/regex :file-version/id]] :routes.api/files:id.versions:id]]]]]]]
     ["/projects"
      [["" :routes.api/projects]
       [["/" [uuids/regex :project/id]]

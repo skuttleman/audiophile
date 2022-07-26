@@ -21,18 +21,18 @@
   (update params :params (fns/=>
                            (maps/update-maybe :artifact/id uuids/->uuid)
                            (maps/update-maybe :file/id uuids/->uuid)
+                           (maps/update-maybe :file-version/id uuids/->uuid)
                            (maps/update-maybe :project/id uuids/->uuid)
                            (maps/update-maybe :team/id uuids/->uuid)
-                           (maps/update-maybe :version/id uuids/->uuid)
                            (maps/update-maybe :file-version-id uuids/->uuid))))
 
 (defn ^:private internal->params [params]
   (update params :params (fns/=>
                            (maps/update-maybe :artifact/id str)
                            (maps/update-maybe :file/id str)
+                           (maps/update-maybe :file-version/id str)
                            (maps/update-maybe :project/id str)
                            (maps/update-maybe :team/id str)
-                           (maps/update-maybe :version/id str)
                            (maps/update-maybe :file-version-id str))))
 
 (defn ^:private serialize* [base-urls routes handle {:keys [params] :as opts}]

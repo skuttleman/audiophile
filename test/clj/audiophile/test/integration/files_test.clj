@@ -54,9 +54,9 @@
                              handler)]
             (testing "returns files for the project"
               (is (http/success? response))
-              (assert/is? {:file/name       "File Seed"
-                           :file/project-id project-id
-                           :version/name    "File Version Seed"}
+              (assert/is? {:file/name         "File Seed"
+                           :file/project-id   project-id
+                           :file-version/name "File Version Seed"}
                           (-> response
                               (get-in [:body :data])
                               colls/only!))))
@@ -106,9 +106,9 @@
           (let [user (int/lookup-user system "joe@example.com")
                 project-id (:project/id (int/lookup-project system "Project Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))
-                response (-> {:file/name    "file name"
-                              :version/name "version name"
-                              :artifact/id  artifact-id}
+                response (-> {:file/name         "file name"
+                              :file-version/name "version name"
+                              :artifact/id       artifact-id}
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system
@@ -129,18 +129,18 @@
                                             {:params {:project/id project-id}})
                                  handler)]
                 (testing "includes the new file"
-                  (assert/has? {:file/name       "file name"
-                                :file/project-id project-id
-                                :version/name    "version name"}
+                  (assert/has? {:file/name         "file name"
+                                :file/project-id   project-id
+                                :file-version/name "version name"}
                                (get-in response [:body :data])))))))
 
         (testing "when authenticated as a user with no projects"
           (let [user {:user/id (uuids/random)}
                 project-id (:project/id (int/lookup-project system "Project Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))
-                response (-> {:file/name    "file name"
-                              :version/name "version name"
-                              :artifact/id  artifact-id}
+                response (-> {:file/name         "file name"
+                              :file-version/name "version name"
+                              :artifact/id       artifact-id}
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system
@@ -153,9 +153,9 @@
         (testing "when not authenticated"
           (let [project-id (:project/id (int/lookup-project system "Project Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))
-                response (-> {:file/name    "file name"
-                              :version/name "version name"
-                              :artifact/id  artifact-id}
+                response (-> {:file/name         "file name"
+                              :file-version/name "version name"
+                              :artifact/id       artifact-id}
                              ihttp/body-data
                              (ihttp/post system
                                          :routes.api/projects:id.files
@@ -175,8 +175,8 @@
                 project-id (:project/id (int/lookup-project system "Project Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))
                 file-id (:file/id (int/lookup-file system "File Seed"))
-                response (-> {:version/name "version name"
-                              :artifact/id  artifact-id}
+                response (-> {:file-version/name "version name"
+                              :artifact/id       artifact-id}
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system
@@ -215,17 +215,17 @@
                                             {:params {:project/id project-id}})
                                  handler)]
                 (testing "includes the new file"
-                  (assert/has? {:file/name       "File Seed"
-                                :file/project-id project-id
-                                :version/name    "version name"}
+                  (assert/has? {:file/name         "File Seed"
+                                :file/project-id   project-id
+                                :file-version/name "version name"}
                                (get-in response [:body :data])))))))
 
         (testing "when authenticated as a user with no projects"
           (let [user {:user/id (uuids/random)}
                 file-id (:file/id (int/lookup-file system "File Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "empty.mp3"))
-                response (-> {:version/name "version name"
-                              :artifact/id  artifact-id}
+                response (-> {:file-version/name "version name"
+                              :artifact/id       artifact-id}
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/post system
@@ -238,8 +238,8 @@
         (testing "when not authenticated"
           (let [file-id (:file/id (int/lookup-file system "File Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))
-                response (-> {:version/name "version name"
-                              :artifact/id  artifact-id}
+                response (-> {:file-version/name "version name"
+                              :artifact/id       artifact-id}
                              ihttp/body-data
                              (ihttp/post system
                                          :routes.api/files:id.versions
@@ -258,14 +258,14 @@
             version-id (:file-version/id (int/lookup-file-version system "File Version Seed"))]
         (testing "when authenticated as a user with a file"
           (let [user (int/lookup-user system "joe@example.com")
-                response (-> {:file/name    "new file name"
-                              :version/name "new version name"}
+                response (-> {:file/name         "new file name"
+                              :file-version/name "new version name"}
                              ihttp/body-data
                              (ihttp/login system user)
                              (ihttp/patch system
                                           :routes.api/files:id.versions:id
-                                          {:params {:file/id    file-id
-                                                    :version/id version-id}})
+                                          {:params {:file/id         file-id
+                                                    :file-version/id version-id}})
                              (ihttp/as-async system handler))]
             (testing "updates the file"
               (is (http/success? response)))
@@ -286,30 +286,30 @@
                                (get-in response [:body :data :file/versions])))))))
 
         (testing "when authenticated as a user with no file access"
-            (let [user {:user/id (uuids/random)}
-                  response (-> {:file/name    "new file name"
-                                :version/name "new version name"}
-                               ihttp/body-data
-                               (ihttp/login system user)
-                               (ihttp/patch system
-                                            :routes.api/files:id.versions:id
-                                            {:params {:file/id    file-id
-                                                      :version/id version-id}})
-                               (ihttp/as-async system handler))]
-              (testing "returns an error"
-                (is (http/client-error? response)))))
+          (let [user {:user/id (uuids/random)}
+                response (-> {:file/name         "new file name"
+                              :file-version/name "new version name"}
+                             ihttp/body-data
+                             (ihttp/login system user)
+                             (ihttp/patch system
+                                          :routes.api/files:id.versions:id
+                                          {:params {:file/id         file-id
+                                                    :file-version/id version-id}})
+                             (ihttp/as-async system handler))]
+            (testing "returns an error"
+              (is (http/client-error? response)))))
 
         (testing "when not authenticated"
-            (let [response (-> {:file/name    "new file name"
-                                :version/name "new version name"}
-                               ihttp/body-data
-                               (ihttp/patch system
-                                            :routes.api/files:id.versions:id
-                                            {:params {:file/id    file-id
-                                                      :version/id version-id}})
-                               (ihttp/as-async system handler))]
-              (testing "returns an error"
-                (is (http/client-error? response)))))))))
+          (let [response (-> {:file/name         "new file name"
+                              :file-version/name "new version name"}
+                             ihttp/body-data
+                             (ihttp/patch system
+                                          :routes.api/files:id.versions:id
+                                          {:params {:file/id         file-id
+                                                    :file-version/id version-id}})
+                             (ihttp/as-async system handler))]
+            (testing "returns an error"
+              (is (http/client-error? response)))))))))
 
 (deftest artifact-test
   (testing "POST /api/artifacts"
@@ -355,9 +355,9 @@
 
                     (testing "and when creating a file"
                       (let [project-id (:project/id (int/lookup-project system "Project Seed"))
-                            response (-> {:file/name    "file name"
-                                          :version/name "version name"
-                                          :artifact/id  artifact-id}
+                            response (-> {:file/name         "file name"
+                                          :file-version/name "version name"
+                                          :artifact/id       artifact-id}
                                          ihttp/body-data
                                          (ihttp/login system user)
                                          (ihttp/post system
@@ -410,8 +410,8 @@
                 file-id (:file/id (int/lookup-file system "File Seed"))
                 artifact-id (:artifact/id (int/lookup-artifact system "example.mp3"))]
             (testing "and when created a new file version"
-              (-> {:version/name "version name"
-                   :artifact/id  artifact-id}
+              (-> {:file-version/name "version name"
+                   :artifact/id       artifact-id}
                   ihttp/body-data
                   (ihttp/login system user)
                   (ihttp/post system
@@ -428,7 +428,7 @@
                                    (ihttp/as-async system handler))]
                   (testing "activates the file version"
                     (is (http/success? response))
-                    (assert/is? {:workflow/template :versions/activate}
+                    (assert/is? {:workflow/template :file-versions/activate}
                                 (get-in response [:body :data]))
 
                     (testing "and when querying for the file"

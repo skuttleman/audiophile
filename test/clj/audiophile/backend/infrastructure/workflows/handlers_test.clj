@@ -94,10 +94,10 @@
 (deftest files:create-test
   (testing ":files/create workflow"
     (let [[artifact-id file-id project-id version-id] (repeatedly uuids/random)
-          ctx {:artifact/id  artifact-id
-               :project/id   project-id
-               :file/name    "file"
-               :version/name "version"}
+          ctx {:artifact/id       artifact-id
+               :project/id        project-id
+               :file/name         "file"
+               :file-version/name "version"}
           query-fn (->query-fn {{:insert-into :files}         [{:id file-id}]
                                 {:insert-into :file-versions} [{:id version-id}]})]
       (as-test [db-calls result] [:files/create ctx query-fn]
@@ -244,23 +244,23 @@
                          db-calls))
 
           (let [[call-1 call-2] (colls/only! 2 pubsub-calls)]
-              (testing "publishes an event to teams topic"
-                (let [[topic [_ event]] call-1]
-                  (is (= [:teams team-id] topic))
-                  (assert/is? {:event/type :team-invitation/updated
-                               :event/data {:team-invitation/team-id team-id
-                                            :team-invitation/email   "user@example.com"
-                                            :team-invitation/status :ACCEPTED}}
-                              event)))
+            (testing "publishes an event to teams topic"
+              (let [[topic [_ event]] call-1]
+                (is (= [:teams team-id] topic))
+                (assert/is? {:event/type :team-invitation/updated
+                             :event/data {:team-invitation/team-id team-id
+                                          :team-invitation/email   "user@example.com"
+                                          :team-invitation/status  :ACCEPTED}}
+                            event)))
 
-              (testing "publishes an event to user topic"
-                (let [[topic [_ event]] call-2]
-                  (is (= [::ps/user invite-id] topic))
-                  (assert/is? {:event/type :team-invitation/updated
-                               :event/data {:team-invitation/team-id team-id
-                                            :team-invitation/email   "user@example.com"
-                                            :team-invitation/status :ACCEPTED}}
-                              event)))))))
+            (testing "publishes an event to user topic"
+              (let [[topic [_ event]] call-2]
+                (is (= [::ps/user invite-id] topic))
+                (assert/is? {:event/type :team-invitation/updated
+                             :event/data {:team-invitation/team-id team-id
+                                          :team-invitation/email   "user@example.com"
+                                          :team-invitation/status  :ACCEPTED}}
+                            event)))))))
 
     (testing "when accepting the invitation"
       (let [[invite-id user-id team-id] (repeatedly uuids/random)
@@ -288,7 +288,7 @@
                 (assert/is? {:event/type :team-invitation/updated
                              :event/data {:team-invitation/team-id team-id
                                           :team-invitation/email   "user@example.com"
-                                          :team-invitation/status :REJECTED}}
+                                          :team-invitation/status  :REJECTED}}
                             event)))
 
             (testing "publishes an event to user topic"
@@ -297,7 +297,7 @@
                 (assert/is? {:event/type :team-invitation/updated
                              :event/data {:team-invitation/team-id team-id
                                           :team-invitation/email   "user@example.com"
-                                          :team-invitation/status :REJECTED}}
+                                          :team-invitation/status  :REJECTED}}
                             event)))))))))
 
 (deftest teams:update-test
@@ -365,24 +365,24 @@
                        db-calls))))))
 
 (deftest versions:activate-test
-  (testing ":versions/activate workflow"
+  (testing ":file-versions/activate workflow"
     (let [[version-id] (repeatedly uuids/random)
           ctx {:file-version/id version-id}]
-      (as-test [db-calls] [:versions/activate ctx]
+      (as-test [db-calls] [:file-versions/activate ctx]
         (testing "saves the file version"
           (assert/has? {:update :file-versions
-                        :set {:selected-at [:raw "now()"]}
-                        :where [:= :file-versions.id version-id]}
+                        :set    {:selected-at [:raw "now()"]}
+                        :where  [:= :file-versions.id version-id]}
                        db-calls))))))
 
 (deftest versions:create-test
   (testing ":versions/create workflow"
     (let [[artifact-id file-id version-id] (repeatedly uuids/random)
-          ctx {:artifact/id  artifact-id
-               :file/id      file-id
-               :version/name "version"}
+          ctx {:artifact/id       artifact-id
+               :file/id           file-id
+               :file-version/name "version"}
           query-fn (->query-fn {{:insert-into :file-versions} [{:id version-id}]})]
-      (as-test [db-calls result] [:versions/create ctx query-fn]
+      (as-test [db-calls result] [:file-versions/create ctx query-fn]
         (testing "produces a final context"
           (assert/is? {'?version-id version-id}
                       (:ctx result)))

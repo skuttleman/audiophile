@@ -30,7 +30,7 @@
                                    [:file/name])]
        [in/input (forms/with-attrs {:label "Version name"}
                                    *form
-                                   [:version/name])]])
+                                   [:file-version/name])]])
     (finally
       (forms/destroy! *form)
       (forms/destroy! *artifacts))))
@@ -60,7 +60,7 @@
       [:em (strings/format "%02d" (inc idx))]]
      [:td {:style {:width "99%"}}
       [:a.link {:href (serv/files#nav:one sys (:file/id file))}
-       [:span [:strong (:file/name file)] " - " (:version/name file)]]]
+       [:span [:strong (:file/name file)] " - " (:file-version/name file)]]]
      [:td
       [comp/plain-button
        {:class    ["is-outlined" "is-info"]

@@ -50,7 +50,7 @@
   (mu/merge auth [:map [:team/id uuid?]]))
 
 (def version-id
-  (mu/merge auth [:map [:version/id uuid?]]))
+  (mu/merge auth [:map [:file-version/id uuid?]]))
 
 (def artifact:create
   [:map
@@ -78,7 +78,7 @@
   [:map
    [:artifact/id uuid?]
    [:file/name trimmed-string?]
-   [:version/name trimmed-string?]])
+   [:file-version/name trimmed-string?]])
 
 (def file:select-version
   [:map
@@ -87,12 +87,12 @@
 (def file:update
   [:map
    [:file/name trimmed-string?]
-   [:version/name trimmed-string?]])
+   [:file-version/name trimmed-string?]])
 
 (def version:create
   [:map
    [:artifact/id uuid?]
-   [:version/name trimmed-string?]])
+   [:file-version/name trimmed-string?]])
 
 (def project:create
   [:map

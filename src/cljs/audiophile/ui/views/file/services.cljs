@@ -40,15 +40,15 @@
 
 (defn files#form:modify [{:keys [store] :as sys} attrs]
   (let [{:keys [file-id file-name version-id version-name]} attrs
-        init-val {:file/name    file-name
-                  :version/name version-name}
-        *form (form.std/create store init-val #_VALIDATOR)] ;; HERE!!
+        init-val {:file/name         file-name
+                  :file-version/name version-name}
+        *form (form.std/create store init-val #_VALIDATOR)] ;; TODO
     (pages/form:modify sys
                        attrs
                        *form
                        :routes.api/files:id.versions:id
-                       {:params {:file/id    file-id
-                                 :version/id version-id}})))
+                       {:params {:file/id         file-id
+                                 :file-version/id version-id}})))
 
 (defn files#modal:version [sys body]
   (pages/modal:open sys [:h1.subtitle "Upload a new version"] body))

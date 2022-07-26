@@ -28,7 +28,7 @@
                                  [:file/name])]
      [in/input (forms/with-attrs {:label "Version name"}
                                  *form
-                                 [:version/name])]]
+                                 [:file-version/name])]]
     (finally
       (forms/destroy! *form))))
 

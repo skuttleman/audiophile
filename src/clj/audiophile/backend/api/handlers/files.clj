@@ -122,5 +122,5 @@
       (assoc :user/id (get-in request [:auth/user :user/id])
              :token/aud (get-in request [:auth/user :jwt/aud])
              :file/id (get-in request [:nav/route :params :file/id])
-             :version/id (get-in request [:nav/route :params :version/id]))
+             :file-version/id (get-in request [:nav/route :params :file-version/id]))
       (maps/assoc-maybe :request/id (uuids/->uuid (get-in request [:headers :x-request-id])))))

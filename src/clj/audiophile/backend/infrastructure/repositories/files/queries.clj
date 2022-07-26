@@ -59,17 +59,17 @@
                                            :from     [:file-versions]
                                            :group-by [:file-versions.file-id]}
                                   :fields #{:selected-at}
-                                  :alias  :version})
-                   [:= :version.file-id :files.id])
+                                  :alias  :file-version})
+                   [:= :file-version.file-id :files.id])
       (models/join (models/model {:table     :file-versions
-                                  :namespace :version
+                                  :namespace :file-version
                                   :alias     :fv})
                    [:and
-                    [:= :fv.file-id :version.file-id]
-                    [:= :fv.selected-at :version.selected-at]])
-      (update :select into [[:fv.id "version/id"]
-                            [:fv.name "version/name"]
-                            [:fv.artifact-id "version/artifact-id"]])))
+                    [:= :fv.file-id :file-version.file-id]
+                    [:= :fv.selected-at :file-version.selected-at]])
+      (update :select into [[:fv.id "file-version/id"]
+                            [:fv.name "file-version/name"]
+                            [:fv.artifact-id "file-version/artifact-id"]])))
 
 (defn ^:private select-one [file-id]
   (select-by [:= :files.id file-id]))
@@ -79,7 +79,7 @@
       (has-team-clause user-id)
       select-by
       (models/order-by [:files.idx :asc]
-                       [:version.selected-at :desc])))
+                       [:file-version.selected-at :desc])))
 
 (defn ^:private select-one-plain [file-id]
   (-> tbl/files
@@ -109,7 +109,7 @@
   (models/insert-into tbl/file-versions
                       {:artifact-id (:artifact/id version)
                        :file-id     (:file/id version)
-                       :name        (:version/name version)}))
+                       :name        (:file-version/name version)}))
 
 (defn insert-artifact-access? [_ _ _]
   true)
@@ -198,7 +198,7 @@
                       (models/and-where [:= :files.id file-id]))
                   opts))
 
-(defn update-version! [executor {version-id :version/id :version/keys [name]} opts]
+(defn update-version! [executor {version-id :file-version/id :file-version/keys [name]} opts]
   (repos/execute! executor
                   (-> tbl/file-versions
                       models/sql-update

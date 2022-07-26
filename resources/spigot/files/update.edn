@@ -1,16 +1,16 @@
-[:workflows/setup {:file/id      ?file-id
-                   :version/id   ?version-id
-                   :file/name    ?file-name
-                   :version/name ?version-name}
+[:workflows/setup {:file/id           ?file-id
+                   :file-version/id   ?version-id
+                   :file/name         ?file-name
+                   :file-version/name ?version-name}
  [:spigot/serial
   [:spigot/parallel
    [:file/update! {:file/name (sp.ctx/get ?file-name)
                    :file/id   (sp.ctx/get ?file-id)}]
-   [:file-version/update! {:version/id   (sp.ctx/get ?version-id)
-                           :version/name (sp.ctx/get ?version-name)}]]
+   [:file-version/update! {:file-version/id   (sp.ctx/get ?version-id)
+                           :file-version/name (sp.ctx/get ?version-name)}]]
   [:pubsub/publish! {:events [{:topic   [:files (sp.ctx/get ?file-id)]
                                :payload {:event/type :file/updated
-                                         :event/data {:file/id      (sp.ctx/get ?file-id)
-                                                      :file/name    (sp.ctx/get ?file-name)
-                                                      :version/id   (sp.ctx/get ?version-id)
-                                                      :version/name (sp.ctx/get ?version-name)}}}]}]]]
+                                         :event/data {:file/id           (sp.ctx/get ?file-id)
+                                                      :file/name         (sp.ctx/get ?file-name)
+                                                      :file-version/id   (sp.ctx/get ?version-id)
+                                                      :file-version/name (sp.ctx/get ?version-name)}}}]}]]]

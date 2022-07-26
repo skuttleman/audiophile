@@ -4,10 +4,15 @@
     [audiophile.common.core.serdes.impl :as serde]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
+    [camel-snake-kebab.core :as csk]
     [clojure.java.io :as io]))
 
 (defn load! [template]
-  (let [filename (str "spigot/" (namespace template) "/" (name template) ".edn")]
+  (let [filename (str "spigot/"
+                      (csk/->snake_case_string (namespace template))
+                      "/"
+                      (csk/->snake_case_string (name template))
+                      ".edn")]
     (serdes/deserialize serde/edn (io/input-stream (io/resource filename)))))
 
 (defn setup [[tag & more :as form]]

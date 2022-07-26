@@ -64,10 +64,10 @@
                        [:files.id "file/id"]
                        [:files.idx "file/idx"]
                        [:files.project-id "file/project-id"]
-                       [:version.selected-at "version/selected-at"]
-                       [:fv.id "version/id"]
-                       [:fv.name "version/name"]
-                       [:fv.artifact-id "version/artifact-id"]}
+                       [:file-version.selected-at "file-version/selected-at"]
+                       [:fv.id "file-version/id"]
+                       [:fv.name "file-version/name"]
+                       [:fv.artifact-id "file-version/artifact-id"]}
                      (set select)))
               (is (= [:files] from))
               (let [[clause & clauses] where
@@ -92,13 +92,13 @@
                                     [[:max :file-versions.selected-at] :selected-at]}
                         :from     [:file-versions]
                         :group-by [:file-versions.file-id]}
-                       :version]
-                      [:= #{:version.file-id :files.id}]
+                       :file-version]
+                      [:= #{:file-version.file-id :files.id}]
 
                       [:file-versions :fv]
                       [:and
-                       #{[:= #{:fv.file-id :version.file-id}]
-                         [:= #{:fv.selected-at :version.selected-at}]}]]
+                       #{[:= #{:fv.file-id :file-version.file-id}]
+                         [:= #{:fv.selected-at :file-version.selected-at}]}]]
                      (-> join
                          (update-in [0 0 :select] set)
                          (update 1 tu/op-set)
@@ -106,7 +106,7 @@
                          (update-in [3 2] tu/op-set)
                          (update 3 tu/op-set))))
               (is (= [[:files.idx :asc]
-                      [:version.selected-at :desc]]
+                      [:file-version.selected-at :desc]]
                      order-by))))
 
           (testing "returns the result"
@@ -276,8 +276,8 @@
           (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
             (is (= ::sp.ktop/create! tag))
             (assert/is? {:workflows/ctx      {}
-                         :workflows/template :versions/create
-                         :workflows/form     (peek (wf/load! :versions/create))
+                         :workflows/template :file-versions/create
+                         :workflows/form     (peek (wf/load! :file-versions/create))
                          :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
                         params)
             (assert/is? {:user/id     user-id
@@ -312,8 +312,8 @@
           (let [[{[tag params ctx] :value}] (colls/only! (stubs/calls producer :send!))]
             (is (= ::sp.ktop/create! tag))
             (assert/is? {:workflows/ctx      {}
-                         :workflows/template :versions/activate
-                         :workflows/form     (peek (wf/load! :versions/activate))}
+                         :workflows/template :file-versions/activate
+                         :workflows/form     (peek (wf/load! :file-versions/activate))}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id

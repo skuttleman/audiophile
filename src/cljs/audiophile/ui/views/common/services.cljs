@@ -15,7 +15,7 @@
    [:artifact/details
     [:fn (fn [{:artifact/keys [id]}]
            (uuid? id))]]
-   [:version/name specs/trimmed-string?]])
+   [:file-version/name specs/trimmed-string?]])
 
 (def ^:private files#validator:version
   (val/validator {:spec ui-version-spec}))
@@ -36,7 +36,7 @@
 
 (defn files#local->remote [data]
   (-> data
-      (select-keys #{:file/name :version/name})
+      (select-keys #{:file/name :file-version/name})
       (assoc :artifact/id (-> data :artifact/details :artifact/id))))
 
 (defn files#form:version [{:keys [store] :as sys} attrs file-id]
