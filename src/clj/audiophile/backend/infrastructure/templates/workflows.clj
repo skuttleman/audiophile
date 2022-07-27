@@ -7,6 +7,20 @@
     [camel-snake-kebab.core :as csk]
     [clojure.java.io :as io]))
 
+(defmulti setup (fn [[tag]]
+                  tag))
+
+(defmethod setup :default
+  [form]
+  [nil form])
+
+(defmethod setup :workflows/setup
+  [[_ & more]]
+  (let [[opts & children] (cond->> more
+                            (not (map? (first more))) (cons {}))]
+    (assert (= 1 (count children)) ":workflows/setup supports exactly 1 child")
+    [opts (first children)]))
+
 (defn load! [template]
   (let [filename (str "spigot/"
                       (csk/->snake_case_string (namespace template))
@@ -15,18 +29,11 @@
                       ".edn")]
     (serdes/deserialize serde/edn (io/input-stream (io/resource filename)))))
 
-(defn setup [[tag & more :as form]]
-  (let [[opts & children] (cond->> more
-                            (not (map? (first more))) (cons {}))]
-    (if (= tag :workflows/setup)
-      (do (assert (= 1 (count children)) "workflows/setup supports exactly 1 child")
-          [opts (first children)])
-      [nil form])))
-
 (defn workflow-spec [template ctx]
   (let [[setup form] (setup (load! template))
-        [spec context] (maps/extract-keys setup #{:workflows/->result})]
+        [spec params] (maps/extract-keys setup #{:workflows/->result})]
     (assoc spec
            :workflows/template template
            :workflows/form form
-           :workflows/ctx (maps/select-rename-keys ctx context))))
+           :workflows/params params
+           :workflows/ctx (maps/select-rename-keys ctx params))))

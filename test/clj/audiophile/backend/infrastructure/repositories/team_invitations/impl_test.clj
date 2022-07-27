@@ -33,8 +33,8 @@
             (assert/is? {:workflows/ctx      {'?user-id    user-id
                                               '?inviter-id inviter-id
                                               '?team-id    team-id}
-                         :workflows/template :invitations/create
-                         :workflows/form     (peek (wf/load! :invitations/create))}
+                         :workflows/template :team-invitations/create
+                         :workflows/form     (peek (wf/load! :team-invitations/create))}
                         params)
             (assert/is? {:user/id     inviter-id
                          :request/id  request-id
@@ -73,8 +73,8 @@
             (assert/is? {:workflows/ctx      {'?user-id    user-id
                                               '?inviter-id inviter-id
                                               '?team-id    team-id}
-                         :workflows/template :invitations/update
-                         :workflows/form     (peek (wf/load! :invitations/update))}
+                         :workflows/template :team-invitations/update
+                         :workflows/form     (peek (wf/load! :team-invitations/update))}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id

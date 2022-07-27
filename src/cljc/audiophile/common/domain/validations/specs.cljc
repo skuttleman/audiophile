@@ -21,6 +21,15 @@
 (def email?
   [:re #"^[a-z\-\+_0-9\.]+@[a-z\-\+_0-9]+\.[a-z\-\+_0-9\.]+$"])
 
+(def phone?
+  [:re #"^\d{10}$"])
+
+(def team-type
+  [:enum :PERSONAL :COLLABORATIVE])
+
+(def team-invitation-status
+  [:enum :ACCEPTED :REJECTED :REVOKED])
+
 (def auth
   [:map
    [:user/id uuid?]
@@ -111,12 +120,12 @@
   [:map
    [:team-invitation/team-id uuid?]
    [:team-invitation/email {:optional true} email?]
-   [:team-invitation/status [:fn #{:ACCEPTED :REJECTED :REVOKED}]]])
+   [:team-invitation/status team-invitation-status]])
 
 (def team:create
   [:map
    [:team/name trimmed-string?]
-   [:team/type [:fn #{:PERSONAL :COLLABORATIVE}]]])
+   [:team/type team-type]])
 
 (def team:update
   [:map
@@ -127,7 +136,7 @@
    [:user/first-name trimmed-string?]
    [:user/last-name trimmed-string?]
    [:user/handle trimmed-string?]
-   [:user/mobile-number [:re #"^\d{10}$"]]])
+   [:user/mobile-number phone?]])
 
 (def api-artifact:create
   (-> auth
@@ -149,7 +158,7 @@
              [:token/aud [:fn (partial some #{:token/auth :token/signup})]]
              [:accept trimmed-string?]
              [:content-type trimmed-string?]
-             [:websocket? [:fn #{true}]]]))
+             [:websocket? [:enum true]]]))
 
 (def api-event:fetch-all
   (mu/merge auth event:fetch-all))

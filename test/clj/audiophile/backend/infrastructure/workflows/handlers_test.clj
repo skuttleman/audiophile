@@ -181,15 +181,15 @@
                                        :user-id user-id}]}
                        db-calls))))))
 
-(deftest invitations:create-test
-  (testing ":invitations/create workflow"
+(deftest team-invitations:create-test
+  (testing ":team-invitations/create workflow"
     (let [[invite-id user-id team-id] (repeatedly uuids/random)
           ctx {:team/id    team-id
                :user/email "user@example.com"
                :user/id    user-id
                :inviter/id invite-id}
           query-fn (->query-fn {})]
-      (as-test [db-calls pubsub-calls] [:invitations/create ctx query-fn]
+      (as-test [db-calls pubsub-calls] [:team-invitations/create ctx query-fn]
         (testing "saves the invitation"
           (assert/has? {:insert-into   :team-invitations
                         :values        [{:email      "user@example.com"
@@ -216,8 +216,8 @@
                                         :team-invitation/email   "user@example.com"}}
                           event))))))))
 
-(deftest invitations:update-test
-  (testing ":invitations/update workflow"
+(deftest team-invitations:update-test
+  (testing ":team-invitations/update workflow"
     (testing "when accepting the invitation"
       (let [[invite-id user-id team-id] (repeatedly uuids/random)
             ctx {:team/id                    team-id
@@ -226,7 +226,7 @@
                  :team-invitation/invited-by invite-id
                  :team-invitation/status     :ACCEPTED}
             query-fn (->query-fn {})]
-        (as-test [db-calls pubsub-calls] [:invitations/update ctx query-fn]
+        (as-test [db-calls pubsub-calls] [:team-invitations/update ctx query-fn]
           (testing "saves the invitation"
             (assert/has? {:insert-into :user-teams
                           :values      [{:user-id user-id
@@ -270,7 +270,7 @@
                  :team-invitation/invited-by invite-id
                  :team-invitation/status     :REJECTED}
             query-fn (->query-fn {})]
-        (as-test [db-calls pubsub-calls] [:invitations/update ctx query-fn]
+        (as-test [db-calls pubsub-calls] [:team-invitations/update ctx query-fn]
           (testing "saves the invitation"
             (assert/has? {:update :team-invitations
                           :set    {:status [:cast "REJECTED" :team-invitation-status]}

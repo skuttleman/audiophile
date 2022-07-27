@@ -31,10 +31,10 @@
   pint/IAccessor
   (create! [_ data opts]
     (let [data (repos/transact! repo team-invite* data opts)]
-      (crepos/start-workflow! producer :invitations/create data opts)))
+      (crepos/start-workflow! producer :team-invitations/create data opts)))
   (update! [_ data opts]
     (let [data (repos/transact! repo update-invite* data opts)]
-      (crepos/start-workflow! producer :invitations/update data opts)))
+      (crepos/start-workflow! producer :team-invitations/update data opts)))
   (query-many [_ opts]
     (repos/transact! repo qinvitations/select-for-user (:user/id opts) opts)))
 
