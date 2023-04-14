@@ -1,6 +1,6 @@
 [:workflows/setup {:project/team-id    ?team-id
                    :project/name       ?name
-                   :workflows/->result {:project/id (sp.ctx/get ?project-id)}}
- [:project/create! {:project/team-id (sp.ctx/get ?team-id)
-                    :project/name    (sp.ctx/get ?name)
-                    :spigot/->ctx    {?project-id :project/id}}]]
+                   :workflows/->result {:project/id (spigot/get ?project-id)}}
+ [:project/create! {:spigot/in  {:project/team-id (spigot/get ?team-id)
+                                 :project/name    (spigot/get ?name)}
+                    :spigot/out {?project-id (spigot/get :project/id)}}]]

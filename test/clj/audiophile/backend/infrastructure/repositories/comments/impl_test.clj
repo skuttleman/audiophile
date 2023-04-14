@@ -86,7 +86,7 @@
             (assert/is? {:workflows/ctx      {'?user-id user-id}
                          :workflows/template :comments/create
                          :workflows/form     (peek (wf/load! :comments/create))
-                         :workflows/->result '{:comment/id (sp.ctx/get ?comment-id)}}
+                         :workflows/->result '{:comment/id (spigot/get ?comment-id)}}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id

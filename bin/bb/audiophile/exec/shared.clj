@@ -58,7 +58,8 @@
 
 (defn with-opts [cmd opts]
   (reduce (fn [cmd [k v]]
-            (str cmd " --" (name k) (when (and (some? v) (not (boolean? v))) (str " " v))))
+            (str cmd " --" (name k) (when (and (some? v) (not (boolean? v)))
+                                      (str " " v))))
           cmd
           opts))
 

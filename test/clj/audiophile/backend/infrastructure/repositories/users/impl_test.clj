@@ -96,8 +96,8 @@
                                              ?mobile-number "mobile"}
                        :workflows/template :users/signup
                        :workflows/form     (peek (wf/load! :users/signup))
-                       :workflows/->result '{:user/id     (sp.ctx/get ?user-id)
-                                             :login/token (sp.ctx/get ?token)}}
+                       :workflows/->result '{:user/id     (spigot/get ?user-id)
+                                             :login/token (spigot/get ?token)}}
                       params)
           (assert/is? {:user/id     user-id
                        :workflow/id uuid?}

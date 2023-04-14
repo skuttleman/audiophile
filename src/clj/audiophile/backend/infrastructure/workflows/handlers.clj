@@ -12,13 +12,13 @@
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]))
 
-(defn ^:private create* [executor insert! ctx {:spigot/keys [tag params]}]
+(defn ^:private create* [executor insert! ctx [tag params]]
   (let [ns* (namespace tag)]
     (log/with-ctx :TASK
       (log/info (format "saving %s to db" ns*) ctx)
       {(keyword ns* "id") (insert! executor params ctx)})))
 
-(defmulti task-handler (fn [_ _ {:spigot/keys [tag]}]
+(defmulti task-handler (fn [_ _ [tag]]
                           tag))
 
 (defmethod task-handler :artifact/create!
@@ -34,11 +34,11 @@
   (repos/transact! repo create* qfiles/insert-file! ctx task))
 
 (defmethod task-handler :file/update!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qfiles/update-file! params ctx))
 
 (defmethod task-handler :file-version/activate!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qfiles/select-version! params ctx))
 
 (defmethod task-handler :file-version/create!
@@ -46,7 +46,7 @@
   (repos/transact! repo create* qfiles/insert-version! ctx task))
 
 (defmethod task-handler :file-version/update!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qfiles/update-version! params ctx))
 
 (defmethod task-handler :project/create!
@@ -54,21 +54,21 @@
   (repos/transact! repo create* qprojects/insert-project! ctx task))
 
 (defmethod task-handler :project/update!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qprojects/update-project! params ctx))
 
 (defmethod task-handler :pubsub/publish!
-  [{:keys [pubsub]} ctx {{:keys [events]} :spigot/params}]
+  [{:keys [pubsub]} ctx [_ {:keys [events]}]]
   (doseq [{:keys [topic payload]} events
           :let [event-id (uuids/random)]]
     (ps/publish! pubsub topic event-id payload ctx)))
 
 (defmethod task-handler :team-invitation/create!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qinvitations/invite-member! params ctx))
 
 (defmethod task-handler :team-invitation/update!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qinvitations/update-invitation! params ctx))
 
 (defmethod task-handler :team/create!
@@ -76,7 +76,7 @@
   (repos/transact! repo create* qteams/insert-team! ctx task))
 
 (defmethod task-handler :team/update!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (repos/transact! repo qteams/update-team! params ctx))
 
 (defn ^:private query-signup-conflicts [executor params ctx]
@@ -95,11 +95,11 @@
   (qusers/insert-user! executor params ctx))
 
 (defmethod task-handler :user/create!
-  [{:keys [repo]} ctx {:spigot/keys [params]}]
+  [{:keys [repo]} ctx [_ params]]
   (log/info "saving user to db" ctx)
   {:user/id (repos/transact! repo create-user* params ctx)})
 
 (defmethod task-handler :user/generate-token!
-  [{:keys [jwt-serde]} ctx {:spigot/keys [params]}]
+  [{:keys [jwt-serde]} ctx [_ params]]
   (log/info "generating login token" ctx)
   {:login/token (jwt/login-token jwt-serde params)})

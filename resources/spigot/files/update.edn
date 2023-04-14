@@ -4,13 +4,13 @@
                    :file-version/name ?version-name}
  [:spigot/serial
   [:spigot/parallel
-   [:file/update! {:file/name (sp.ctx/get ?file-name)
-                   :file/id   (sp.ctx/get ?file-id)}]
-   [:file-version/update! {:file-version/id   (sp.ctx/get ?version-id)
-                           :file-version/name (sp.ctx/get ?version-name)}]]
-  [:pubsub/publish! {:events [{:topic   [:files (sp.ctx/get ?file-id)]
-                               :payload {:event/type :file/updated
-                                         :event/data {:file/id           (sp.ctx/get ?file-id)
-                                                      :file/name         (sp.ctx/get ?file-name)
-                                                      :file-version/id   (sp.ctx/get ?version-id)
-                                                      :file-version/name (sp.ctx/get ?version-name)}}}]}]]]
+   [:file/update! {:spigot/in {:file/name (spigot/get ?file-name)
+                               :file/id   (spigot/get ?file-id)}}]
+   [:file-version/update! {:spigot/in {:file-version/id   (spigot/get ?version-id)
+                                       :file-version/name (spigot/get ?version-name)}}]]
+  [:pubsub/publish! {:spigot/in {:events [{:topic   [:files (spigot/get ?file-id)]
+                                           :payload {:event/type :file/updated
+                                                     :event/data {:file/id           (spigot/get ?file-id)
+                                                                  :file-version/id   (spigot/get ?version-id)
+                                                                  :file/name         (spigot/get ?file-name)
+                                                                  :file-version/name (spigot/get ?version-name)}}}]}}]]]

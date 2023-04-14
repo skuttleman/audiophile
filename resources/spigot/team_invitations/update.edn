@@ -4,17 +4,17 @@
                    :team-invitation/email      ?email
                    :team-invitation/status     ?status}
  [:spigot/serial
-  [:team-invitation/update! {:team-invitation/team-id (sp.ctx/get ?team-id)
-                             :team-invitation/user-id (sp.ctx/get ?user-id)
-                             :team-invitation/email   (sp.ctx/get ?email)
-                             :team-invitation/status  (sp.ctx/get ?status)}]
-  [:pubsub/publish! {:events [{:topic   [:teams (sp.ctx/get ?team-id)]
-                               :payload {:event/type :team-invitation/updated
-                                         :event/data {:team-invitation/team-id (sp.ctx/get ?team-id)
-                                                      :team-invitation/email   (sp.ctx/get ?email)
-                                                      :team-invitation/status  (sp.ctx/get ?status)}}}
-                              {:topic   [:audiophile.backend.api.pubsub.core/user (sp.ctx/get ?inviter-id)]
-                               :payload {:event/type :team-invitation/updated
-                                         :event/data {:team-invitation/team-id (sp.ctx/get ?team-id)
-                                                      :team-invitation/email   (sp.ctx/get ?email)
-                                                      :team-invitation/status  (sp.ctx/get ?status)}}}]}]]]
+  [:team-invitation/update! {:spigot/in {:team-invitation/team-id (spigot/get ?team-id)
+                                         :team-invitation/user-id (spigot/get ?user-id)
+                                         :team-invitation/email   (spigot/get ?email)
+                                         :team-invitation/status  (spigot/get ?status)}}]
+  [:pubsub/publish! {:spigot/in {:events [{:topic   [:teams (spigot/get ?team-id)]
+                                           :payload {:event/type :team-invitation/updated
+                                                     :event/data {:team-invitation/team-id (spigot/get ?team-id)
+                                                                  :team-invitation/email   (spigot/get ?email)
+                                                                  :team-invitation/status  (spigot/get ?status)}}}
+                                          {:topic   [:audiophile.backend.api.pubsub.core/user (spigot/get ?inviter-id)]
+                                           :payload {:event/type :team-invitation/updated
+                                                     :event/data {:team-invitation/team-id (spigot/get ?team-id)
+                                                                  :team-invitation/email   (spigot/get ?email)
+                                                                  :team-invitation/status  (spigot/get ?status)}}}]}}]]]

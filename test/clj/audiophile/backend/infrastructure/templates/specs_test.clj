@@ -6,9 +6,10 @@
     [clojure.test :refer [are deftest is testing]]
     [malli.core :as m]
     [malli.generator :as mg]
-    [spigot.context :as sp.ctx]
     [spigot.core :as sp]
-    [spigot.core.utils :as spu]))
+    [spigot.impl.api :as spapi]
+    [spigot.impl.context :as spc]
+    [spigot.runner :as spr]))
 
 (defn ^:private spec-check!
   "Given a workflow spec, generates all inputs and outputs per defined specs to verify the output"
@@ -16,15 +17,15 @@
   (let [ret-spec (wfs/ret-spec template)
         wf (wf/workflow-spec template input)
         result (-> (:workflows/form wf)
-                   (sp/plan {:ctx (:workflows/ctx wf)})
-                   (spu/run-sync (fn [{:spigot/keys [tag params] :as task}]
+                   (sp/create (:workflows/ctx wf))
+                   (spr/run-all (fn [[tag params]]
                                    (let [param-spec (wfs/param-spec tag)
                                          ret-spec (wfs/ret-spec tag)]
                                      (when (and param-spec (not (m/validate param-spec params)))
-                                       (throw (ex-info "invalid task input" {:task        task
+                                       (throw (ex-info "invalid task input" {:task        [tag params]
                                                                              :explanation (m/explain param-spec params)})))
                                      (some-> ret-spec mg/generate)))))
-        output (sp.ctx/resolve-params (:workflows/->result wf) (:ctx result))]
+        output (spc/resolve-into (:workflows/->result wf) (spapi/scope result))]
     (when (and ret-spec (not (m/validate ret-spec output)))
       (throw (ex-info "invalid workflow output" {:output      output
                                                  :explanation (m/explain ret-spec output)})))))

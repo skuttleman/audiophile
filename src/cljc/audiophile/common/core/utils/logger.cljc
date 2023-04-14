@@ -20,7 +20,8 @@
 (defn spy* [form level expr f separator]
   (let [pr (gensym "pr")]
     `(let [val# ~expr
-           ~pr (~f val#)]
+           ~pr (~f val#)
+           ~pr (cond-> ~pr (seq? ~pr) vec)]
        ~(log* form level (list (str ANSI_YELLOW expr ANSI_RESET) separator pr))
        val#)))
 
@@ -71,7 +72,8 @@
    (spy* &form level expr `identity "=>"))
   ([level msg expr]
    (let [pr (gensym "pr")]
-     `(let [~pr ~expr]
+     `(let [~pr ~expr
+            ~pr (cond-> ~pr (seq? ~pr) vec)]
         ~(log* &form level (list `(str ~ANSI_GREEN ~msg ~ANSI_RESET) "=>" pr))
         ~pr))))
 

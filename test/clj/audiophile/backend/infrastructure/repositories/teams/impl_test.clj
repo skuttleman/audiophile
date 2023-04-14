@@ -164,7 +164,7 @@
             (assert/is? {:workflows/ctx      {'?user-id user-id}
                          :workflows/template :teams/create
                          :workflows/form     (peek (wf/load! :teams/create))
-                         :workflows/->result {:team/id '(sp.ctx/get ?team-id)}}
+                         :workflows/->result {:team/id '(spigot/get ?team-id)}}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id

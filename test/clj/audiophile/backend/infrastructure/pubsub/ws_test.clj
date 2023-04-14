@@ -168,8 +168,8 @@
       (stubs/init! pubsub)
       (handler {:value {:event/id   event-id
                         :event/type :workflow/completed
-                        :event/data {:ctx                {'?foo some-id}
-                                     :workflows/->result '{:foo/id (sp.ctx/get ?foo)}
+                        :event/data {:scope              {'?foo some-id}
+                                     :workflows/->result '{:foo/id (spigot/get ?foo)}
                                      :workflows/template :foo/bar}
                         :event/ctx  {:user/id     user-id
                                      :request/id  request-id

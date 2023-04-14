@@ -5,13 +5,15 @@
     [audiophile.backend.infrastructure.workflows.handlers :as wfh]
     [audiophile.common.core.serdes.protocols :as pserdes]
     [audiophile.common.core.utils.colls :as colls]
+    [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.uuids :as uuids]
     [audiophile.test.utils.assertions :as assert]
     [audiophile.test.utils.services :as ts]
     [audiophile.test.utils.stubs :as stubs]
     [clojure.test :refer [are deftest is testing]]
     [spigot.core :as sp]
-    [spigot.core.utils :as spu]))
+    [spigot.impl.api :as spapi]
+    [spigot.runner :as spr]))
 
 (defn ^:private ->query-fn [spec]
   (fn [query _]
@@ -30,10 +32,10 @@
            pubsub# (ts/->pubsub)
            spec# (wf/workflow-spec ~template ~ctx)
            ~sys-sym (assoc ~sys :repo tx# :pubsub pubsub#)
-           ~wf-sym (sp/plan (:workflows/form spec#) {:ctx (:workflows/ctx spec#)})]
+           ~wf-sym (sp/create (:workflows/form spec#) (:workflows/ctx spec#))]
        (testing "when the workflow succeeds"
          (stubs/set-stub! tx# :execute! ~query-fn)
-         (let [result# (spu/run-sync ~wf-sym (partial wfh/task-handler ~sys-sym {}))
+         (let [result# (spr/run-all ~wf-sym (partial wfh/task-handler ~sys-sym {}))
                {:keys ~(or bindings [])} {:db-calls     (map first (stubs/calls tx# :execute!))
                                           :pubsub-calls (stubs/calls pubsub# :publish!)
                                           :result       result#}]
@@ -42,7 +44,7 @@
        (testing "when the workflow fails"
          (stubs/set-stub! tx# :execute! (fn [_# _#]
                                           (throw (ex-info "barf" {}))))
-         (is ~(list 'thrown? 'Throwable `(spu/run-sync ~wf-sym (partial wfh/task-handler ~sys-sym {}))))))))
+         (is ~(list 'thrown? 'Throwable `(spr/run-all ~wf-sym (partial wfh/task-handler ~sys-sym {}))))))))
 
 (deftest artifacts:create-test
   (testing ":artifacts/create workflow"
@@ -57,7 +59,7 @@
         (testing "produces a final context"
           (assert/is? {'?artifact-id artifact-id
                        '?filename    "filename"}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the artifact"
           (assert/has? {:insert-into :artifacts
@@ -80,7 +82,7 @@
       (as-test [db-calls result] [:comments/create ctx query-fn]
         (testing "produces a final context"
           (assert/is? {'?comment-id comment-id}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the comment"
           (assert/has? {:insert-into :comments
@@ -104,7 +106,7 @@
         (testing "produces a final context"
           (assert/is? {'?file-id    file-id
                        '?version-id version-id}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the file"
           (assert/has? {:insert-into :files
@@ -129,7 +131,7 @@
       (as-test [db-calls result] [:projects/create ctx query-fn]
         (testing "produces a final context"
           (assert/is? {'?project-id project-id}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the project"
           (assert/has? {:insert-into :projects
@@ -169,7 +171,7 @@
       (as-test [db-calls result] [:teams/create ctx query-fn]
         (testing "produces a final context"
           (assert/is? {'?team-id team-id}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the team"
           (assert/has? {:insert-into :teams
@@ -341,7 +343,7 @@
         (testing "produces a final context"
           (assert/is? {'?user-id user-id
                        '?token   "jwt-token"}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the user"
           (assert/has? {:select any?
@@ -385,7 +387,7 @@
       (as-test [db-calls result] [:file-versions/create ctx query-fn]
         (testing "produces a final context"
           (assert/is? {'?version-id version-id}
-                      (:ctx result)))
+                      (spapi/scope result)))
 
         (testing "saves the file version"
           (assert/has? {:insert-into :file-versions

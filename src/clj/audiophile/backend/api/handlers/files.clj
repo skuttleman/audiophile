@@ -1,6 +1,5 @@
 (ns audiophile.backend.api.handlers.files
   (:require
-    [clojure.set :as set]
     [audiophile.backend.api.validations.selectors :as selectors]
     [audiophile.backend.domain.interactors.core :as int]
     [audiophile.common.core.utils.logger :as log]

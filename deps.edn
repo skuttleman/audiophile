@@ -8,6 +8,9 @@
                   cljs-http/cljs-http                 {:mvn/version "0.1.46"}
                   com.ben-allred/collaj               {:mvn/version "0.8.0"}
                   com.ben-allred/vow                  {:mvn/version "0.6.1"}
+                  com.ben-allred/spigot               {:git/url   "https://github.com/skuttleman/spigot"
+                                                       :git/sha   "7227232c9231991e254d901aca6e3ff730aab5e1"
+                                                       :deps/root "core"}
                   com.ben-allred/ws-client-cljc       {:mvn/version "0.3.1"
                                                        :exclusions  [nrepl/nrepl
                                                                      org.clojure/core.async]}
@@ -31,7 +34,7 @@
                   migratus/migratus                   {:mvn/version "1.3.5"}
                   org.apache.kafka/kafka-clients      {:mvn/version "3.2.0"}
                   org.apache.kafka/kafka-streams      {:mvn/version "3.2.0"}
-                  org.clojure/clojure                 {:mvn/version "1.10.1"}
+                  org.clojure/clojure                 {:mvn/version "1.11.1"}
                   org.clojure/clojurescript           {:mvn/version "1.10.844"}
                   org.clojure/core.async              {:mvn/version "0.4.490"}
                   org.clojure/core.match              {:mvn/version "0.3.0-alpha5"}

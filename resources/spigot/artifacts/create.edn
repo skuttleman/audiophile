@@ -3,11 +3,11 @@
                    :artifact/size         ?size
                    :artifact/uri          ?uri
                    :artifact/key          ?key
-                   :workflows/->result    {:artifact/id       (sp.ctx/get ?artifact-id)
-                                           :artifact/filename (sp.ctx/get ?filename)}}
- [:artifact/create! {:artifact/filename     (sp.ctx/get ?filename)
-                     :artifact/content-type (sp.ctx/get ?content-type)
-                     :artifact/size         (sp.ctx/get ?size)
-                     :artifact/uri          (sp.ctx/get ?uri)
-                     :artifact/key          (sp.ctx/get ?key)
-                     :spigot/->ctx          {?artifact-id :artifact/id}}]]
+                   :workflows/->result    {:artifact/id       (spigot/get ?artifact-id)
+                                           :artifact/filename (spigot/get ?filename)}}
+ [:artifact/create! {:spigot/in  {:artifact/filename     (spigot/get ?filename)
+                                  :artifact/content-type (spigot/get ?content-type)
+                                  :artifact/size         (spigot/get ?size)
+                                  :artifact/uri          (spigot/get ?uri)
+                                  :artifact/key          (spigot/get ?key)}
+                     :spigot/out {?artifact-id (spigot/get :artifact/id)}}]]

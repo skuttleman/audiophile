@@ -40,8 +40,8 @@
                                              ?uri "some://uri"}
                        :workflows/template :artifacts/create
                        :workflows/form     (peek (wf/load! :artifacts/create))
-                       :workflows/->result '{:artifact/id       (sp.ctx/get ?artifact-id)
-                                             :artifact/filename (sp.ctx/get ?filename)}}
+                       :workflows/->result '{:artifact/id       (spigot/get ?artifact-id)
+                                             :artifact/filename (spigot/get ?filename)}}
                       params)
           (assert/is? {:user/id     user-id
                        :request/id  request-id
@@ -241,8 +241,8 @@
             (assert/is? {:workflows/ctx      {}
                          :workflows/template :files/create
                          :workflows/form     (peek (wf/load! :files/create))
-                         :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)
-                                               :file/id         (sp.ctx/get ?file-id)}}
+                         :workflows/->result '{:file-version/id (spigot/get ?version-id)
+                                               :file/id         (spigot/get ?file-id)}}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id
@@ -278,7 +278,7 @@
             (assert/is? {:workflows/ctx      {}
                          :workflows/template :file-versions/create
                          :workflows/form     (peek (wf/load! :file-versions/create))
-                         :workflows/->result '{:file-version/id (sp.ctx/get ?version-id)}}
+                         :workflows/->result '{:file-version/id (spigot/get ?version-id)}}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id

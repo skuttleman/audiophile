@@ -2,13 +2,13 @@
                    :project/id         ?project-id
                    :file/name          ?file-name
                    :file-version/name  ?version-name
-                   :workflows/->result {:file/id         (sp.ctx/get ?file-id)
-                                        :file-version/id (sp.ctx/get ?version-id)}}
+                   :workflows/->result {:file/id         (spigot/get ?file-id)
+                                        :file-version/id (spigot/get ?version-id)}}
  [:spigot/serial
-  [:file/create! {:file/name    (sp.ctx/get ?file-name)
-                  :project/id   (sp.ctx/get ?project-id)
-                  :spigot/->ctx {?file-id :file/id}}]
-  [:file-version/create! {:artifact/id       (sp.ctx/get ?artifact-id)
-                          :file-version/name (sp.ctx/get ?version-name)
-                          :file/id           (sp.ctx/get ?file-id)
-                          :spigot/->ctx      {?version-id :file-version/id}}]]]
+  [:file/create! {:spigot/in  {:file/name  (spigot/get ?file-name)
+                               :project/id (spigot/get ?project-id)}
+                  :spigot/out {?file-id (spigot/get :file/id)}}]
+  [:file-version/create! {:spigot/in  {:artifact/id       (spigot/get ?artifact-id)
+                                       :file-version/name (spigot/get ?version-name)
+                                       :file/id           (spigot/get ?file-id)}
+                          :spigot/out {?version-id (spigot/get :file-version/id)}}]]]

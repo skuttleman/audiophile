@@ -2,6 +2,8 @@
   (:require
     [audiophile.common.core.serdes.core :as serdes]
     [audiophile.common.core.serdes.impl :as serde]
+    [audiophile.common.core.utils.colls :as colls]
+    [audiophile.common.core.utils.fns :as fns]
     [audiophile.common.core.utils.logger :as log]
     [audiophile.common.core.utils.maps :as maps]
     [camel-snake-kebab.core :as csk]
@@ -18,8 +20,7 @@
   [[_ & more]]
   (let [[opts & children] (cond->> more
                             (not (map? (first more))) (cons {}))]
-    (assert (= 1 (count children)) ":workflows/setup supports exactly 1 child")
-    [opts (first children)]))
+    [opts (colls/only! children)]))
 
 (defn load! [template]
   (let [filename (str "spigot/"

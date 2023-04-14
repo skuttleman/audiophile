@@ -3,23 +3,23 @@
                    :user/first-name    ?first-name
                    :user/last-name     ?last-name
                    :user/mobile-number ?mobile-number
-                   :workflows/->result {:user/id     (sp.ctx/get ?user-id)
-                                        :login/token (sp.ctx/get ?token)}}
+                   :workflows/->result {:user/id     (spigot/get ?user-id)
+                                        :login/token (spigot/get ?token)}}
  [:spigot/serial
-  [:user/create! {:user/handle        (sp.ctx/get ?handle)
-                  :user/email         (sp.ctx/get ?email)
-                  :user/first-name    (sp.ctx/get ?first-name)
-                  :user/last-name     (sp.ctx/get ?last-name)
-                  :user/mobile-number (sp.ctx/get ?mobile-number)
-                  :spigot/->ctx       {?user-id :user/id}}]
+  [:user/create! {:spigot/in  {:user/handle        (spigot/get ?handle)
+                               :user/email         (spigot/get ?email)
+                               :user/first-name    (spigot/get ?first-name)
+                               :user/last-name     (spigot/get ?last-name)
+                               :user/mobile-number (spigot/get ?mobile-number)}
+                  :spigot/out {?user-id (spigot/get :user/id)}}]
   [:spigot/parallel
-   [:team/create! {:team/name "My Personal Projects"
-                   :team/type :PERSONAL
-                   :user/id   (sp.ctx/get ?user-id)}]
-   [:user/generate-token! {:user/id            (sp.ctx/get ?user-id)
-                           :user/handle        (sp.ctx/get ?handle)
-                           :user/email         (sp.ctx/get ?email)
-                           :user/first-name    (sp.ctx/get ?first-name)
-                           :user/last-name     (sp.ctx/get ?last-name)
-                           :user/mobile-number (sp.ctx/get ?mobile-number)
-                           :spigot/->ctx       {?token :login/token}}]]]]
+   [:team/create! {:spigot/in {:team/name "My Personal Projects"
+                               :team/type :PERSONAL
+                               :user/id   (spigot/get ?user-id)}}]
+   [:user/generate-token! {:spigot/in  {:user/id            (spigot/get ?user-id)
+                                        :user/handle        (spigot/get ?handle)
+                                        :user/email         (spigot/get ?email)
+                                        :user/first-name    (spigot/get ?first-name)
+                                        :user/last-name     (spigot/get ?last-name)
+                                        :user/mobile-number (spigot/get ?mobile-number)}
+                           :spigot/out {?token (spigot/get :login/token)}}]]]]

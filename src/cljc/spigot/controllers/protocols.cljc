@@ -6,5 +6,7 @@
 (defprotocol IWorkflowHandler
   (on-create [this ctx workflow])
   (on-update [this ctx workflow])
-  (on-error [this ctx ex workflow])
   (on-complete [this ctx workflow]))
+
+(defprotocol IErrorHandler
+  (on-error [this ctx ex workflow]))

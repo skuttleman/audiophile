@@ -1,9 +1,9 @@
 [:workflows/setup {:team/name ?team-name
                    :team/id   ?team-id}
  [:spigot/serial
-  [:team/update! {:team/id   (sp.ctx/get ?team-id)
-                  :team/name (sp.ctx/get ?team-name)}]
-  [:pubsub/publish! {:events [{:topic   [:teams (sp.ctx/get ?team-id)]
-                               :payload {:event/type :team/updated
-                                         :event/data {:team/id   (sp.ctx/get ?team-id)
-                                                      :team/name (sp.ctx/get ?team-name)}}}]}]]]
+  [:team/update! {:spigot/in {:team/id   (spigot/get ?team-id)
+                              :team/name (spigot/get ?team-name)}}]
+  [:pubsub/publish! {:spigot/in {:events [{:topic   [:teams (spigot/get ?team-id)]
+                                           :payload {:event/type :team/updated
+                                                     :event/data {:team/id   (spigot/get ?team-id)
+                                                                  :team/name (spigot/get ?team-name)}}}]}}]]]

@@ -15,7 +15,8 @@
     [clojure.core.async :as async]
     [clojure.core.match :as match]
     [immutant.web.async :as web.async]
-    [spigot.context :as sp.ctx])
+    [spigot.impl.api :as spapi]
+    [spigot.impl.context :as spc])
   (:import
     (org.projectodd.wunderboss.web.async Channel)))
 
@@ -117,7 +118,7 @@
 (defn ^:private extract-result [data workflow-id]
   (-> data
       :workflows/->result
-      (sp.ctx/resolve-params (:ctx data))
+      (spc/resolve-into (spapi/scope data))
       (assoc :workflow/id workflow-id
              :workflow/template (:workflows/template data))))
 

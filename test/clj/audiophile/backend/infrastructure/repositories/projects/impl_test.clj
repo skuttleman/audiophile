@@ -104,7 +104,7 @@
             (assert/is? {:workflows/ctx      {}
                          :workflows/template :projects/create
                          :workflows/form     (peek (wf/load! :projects/create))
-                         :workflows/->result '{:project/id (sp.ctx/get ?project-id)}}
+                         :workflows/->result '{:project/id (spigot/get ?project-id)}}
                         params)
             (assert/is? {:user/id     user-id
                          :request/id  request-id

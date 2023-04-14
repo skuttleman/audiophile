@@ -34,17 +34,19 @@
     (log/with-ctx [this :WF]
       (log/debug "workflow updated" ctx)
       (generate-event workflow-id :workflow/updated workflow ctx)))
+  (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
+    (log/with-ctx [this :WF]
+      (log/info "workflow succeeded" ctx)
+      (generate-event workflow-id :workflow/completed workflow ctx)))
+
+  sp.pcon/IErrorHandler
   (on-error [this {workflow-id :workflow/id :as ctx} ex workflow]
     (log/with-ctx [this :WF]
       (log/error ex "workflow failed" ctx)
       (let [data (maps/assoc-maybe {:workflow/template (:workflows/template workflow)
                                     :error/reason      (ex-message ex)}
                                    :error/details (ex-data ex))]
-        (generate-event workflow-id :workflow/failed data ctx))))
-  (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
-    (log/with-ctx [this :WF]
-      (log/info "workflow succeeded" ctx)
-      (generate-event workflow-id :workflow/completed workflow ctx))))
+        (generate-event workflow-id :workflow/failed data ctx)))))
 
 (deftype SpigotHandler [sys status-handler]
   sp.pcon/IWorkflowHandler
@@ -52,10 +54,12 @@
     (sp.pcon/on-create status-handler ctx workflow))
   (on-update [_ ctx workflow]
     (sp.pcon/on-update status-handler ctx workflow))
-  (on-error [_ ctx ex workflow]
-    (sp.pcon/on-error status-handler ctx ex workflow))
   (on-complete [_ ctx workflow]
     (sp.pcon/on-complete status-handler ctx workflow))
+
+  sp.pcon/IErrorHandler
+  (on-error [_ ctx ex workflow]
+    (sp.pcon/on-error status-handler ctx ex workflow))
 
   sp.pcon/ITaskProcessor
   (process-task [this ctx task]
