@@ -1,10 +1,11 @@
 (ns spigot.controllers.kafka.topologies
   (:require
+    [audiophile.common.core.utils.core :as u]
+    [audiophile.common.core.utils.logger :as log]
     [spigot.controllers.protocols :as sp.pcon]
     [spigot.controllers.kafka.streams :as sp.ks]
     [spigot.core :as sp]
-    [spigot.impl.api :as spapi]
-    [taoensso.timbre :as log])
+    [spigot.impl.api :as spapi])
   (:import
     (org.apache.kafka.streams StreamsBuilder)))
 
@@ -24,9 +25,10 @@
      :init  init}))
 
 (defmethod workflow-aggregator ::result
-  [{:keys [ctx wf]} [_ [_ {:spigot/keys [id result]}]]]
+  [{:keys [ctx wf]} [_ [_ {:spigot/keys [id result status]}]]]
   (let [[wf' tasks] (-> wf
-                        (sp/succeed! id result)
+                        (cond-> (= ::success status) (sp/succeed! id result)
+                                (= ::failure status) (sp/fail! id result))
                         sp/next)]
     {:wf    wf'
      :ctx   ctx
@@ -34,66 +36,39 @@
 
 (defn ^:private workflow-flat-mapper [handler [workflow-id {:keys [wf ctx tasks init]}]]
   (log/debug "processing workflow" ctx (spapi/scope wf))
-  (if (= :success (sp/status wf))
-    (when-let [[complete-event err-event] (sp.pcon/on-complete handler ctx wf)]
-      [[workflow-id [::event (or complete-event err-event)]]])
-    (let [[create-event err-event] (some->> init (sp.pcon/on-create handler ctx))
-          [update-event err-event] (if init
-                                     [nil err-event]
-                                     (sp.pcon/on-update handler ctx wf))]
-      (if err-event
-        [[workflow-id [::event err-event]]]
-        (cond->> (map (fn [[_ {:spigot/keys [id]} :as task]]
-                        [id [::task {:ctx         ctx
-                                     :task        task
-                                     :workflow    wf
-                                     :workflow-id workflow-id}]])
-                      tasks)
-          update-event (cons [workflow-id [::event update-event]])
-          create-event (cons [workflow-id [::event create-event]]))))))
+  (cond
+    (= :success (sp/status wf))
+    (when-let [complete-event (u/silent! (sp.pcon/on-complete handler ctx wf))]
+      [[workflow-id [::event complete-event]]])
 
-(defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task workflow workflow-id]}]]
-  (log/debug "processing task" ctx spigot-id task)
-  (let [[result ex] (sp.pcon/process-task handler ctx task)
+    (= :failure (sp/status wf))
+    (when-let [err-event (u/silent! (sp.pcon/on-error handler ctx wf))]
+      [[workflow-id [::event err-event]]])
+
+    :else
+    (let [event (if init
+                  (u/silent! (sp.pcon/on-create handler ctx init))
+                  (u/silent! (sp.pcon/on-update handler ctx wf)))]
+      (cond->> (map (fn [[_ {:spigot/keys [id]} :as task]]
+                      [id [::task {:ctx         ctx
+                                   :task        task
+                                   :workflow-id workflow-id}]])
+                    tasks)
+        event (cons [workflow-id [::event event]])))))
+
+(defn ^:private task-flat-mapper [handler [spigot-id {:keys [ctx task workflow-id]}]]
+  (let [[result ex] (try [(sp.pcon/process-task handler ctx task)]
+                         (catch Throwable ex
+                           (log/error ex "error while processing workflow task")
+                           [nil ex]))
         result {:spigot/id     spigot-id
-                :spigot/result result}]
-    (if ex
-      (when-let [event (sp.pcon/on-error handler ctx ex workflow)]
-        [[workflow-id [::event event]]])
-      [[workflow-id [::workflow [::result result]]]])))
-
-(defn ^:private ->safe-handler [handler]
-  (reify
-    sp.pcon/IWorkflowHandler
-    (on-create [this ctx workflow]
-      (try [(sp.pcon/on-create handler ctx workflow)]
-           (catch Throwable ex
-             [nil (sp.pcon/on-error this ctx ex workflow)])))
-    (on-update [this ctx workflow]
-      (try [(sp.pcon/on-update handler ctx workflow)]
-           (catch Throwable ex
-             [nil (sp.pcon/on-error this ctx ex workflow)])))
-    (on-complete [this ctx workflow]
-      (try [(sp.pcon/on-complete handler ctx workflow)]
-           (catch Throwable ex
-             [nil (sp.pcon/on-error this ctx ex workflow)])))
-
-    sp.pcon/ITaskProcessor
-    (process-task [_ ctx task]
-      (try [(sp.pcon/process-task handler ctx task)]
-           (catch Throwable ex
-             [nil ex])))
-
-    sp.pcon/IErrorHandler
-    (on-error [_ ctx ex workflow]
-      (try (sp.pcon/on-error handler ctx ex workflow)
-           (catch Throwable _
-             nil)))))
+                :spigot/status (if ex ::failure ::success)
+                :spigot/result (if ex (ex-data ex) result)}]
+    [[workflow-id [::workflow [::result result]]]]))
 
 (defn workflow-manager-topology
   [^StreamsBuilder builder {:keys [handler event-topic-cfg task-topic-cfg workflow-topic-cfg]}]
-  (let [handler (->safe-handler handler)
-        stream (-> builder
+  (let [stream (-> builder
                    (sp.ks/stream workflow-topic-cfg)
                    (sp.ks/group-by-key workflow-topic-cfg)
                    (sp.ks/aggregate (constantly nil) workflow-aggregator workflow-topic-cfg)
@@ -111,8 +86,7 @@
 
 (defn task-processor-topology
   [^StreamsBuilder builder {:keys [handler event-topic-cfg task-topic-cfg workflow-topic-cfg]}]
-  (let [handler (->safe-handler handler)
-        stream (-> builder
+  (let [stream (-> builder
                    (sp.ks/stream task-topic-cfg)
                    (sp.ks/flat-map (partial task-flat-mapper handler)))]
     (-> stream

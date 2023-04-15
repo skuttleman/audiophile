@@ -12,7 +12,8 @@
     [kinsky.client :as client*]
     [spigot.controllers.kafka.common :as sp.kcom]
     [spigot.controllers.kafka.core :as sp.kafka]
-    [spigot.controllers.protocols :as sp.pcon])
+    [spigot.controllers.protocols :as sp.pcon]
+    [spigot.impl.api :as spapi])
   (:import
     (java.io Closeable)))
 
@@ -27,26 +28,26 @@
 (deftype SpigotStatusHandler []
   sp.pcon/IWorkflowHandler
   (on-create [this {workflow-id :workflow/id :as ctx} workflow]
-    (log/with-ctx [this :WF]
+    (log/with-ctx (merge ctx {:logger/id :WF :logger/class this})
       (log/debug "workflow created" ctx)
       (generate-event workflow-id :workflow/created workflow ctx)))
   (on-update [this {workflow-id :workflow/id :as ctx} workflow]
-    (log/with-ctx [this :WF]
+    (log/with-ctx (merge ctx {:logger/id :WF :logger/class this})
       (log/debug "workflow updated" ctx)
       (generate-event workflow-id :workflow/updated workflow ctx)))
   (on-complete [this {workflow-id :workflow/id :as ctx} workflow]
-    (log/with-ctx [this :WF]
+    (log/with-ctx (merge ctx {:logger/id :WF :logger/class this})
       (log/info "workflow succeeded" ctx)
       (generate-event workflow-id :workflow/completed workflow ctx)))
 
   sp.pcon/IErrorHandler
-  (on-error [this {workflow-id :workflow/id :as ctx} ex workflow]
-    (log/with-ctx [this :WF]
-      (log/error ex "workflow failed" ctx)
-      (let [data (maps/assoc-maybe {:workflow/template (:workflows/template workflow)
-                                    :error/reason      (ex-message ex)}
-                                   :error/details (ex-data ex))]
-        (generate-event workflow-id :workflow/failed data ctx)))))
+  (on-error [this {workflow-id :workflow/id :as ctx} workflow]
+    (log/with-ctx (merge ctx {:logger/id :WF :logger/class this})
+      (let [error (spapi/error workflow)]
+        (log/error "workflow failed" error ctx)
+        (let [data {:workflow/template (:workflows/template workflow)
+                    :error/details     error}]
+          (generate-event workflow-id :workflow/failed data ctx))))))
 
 (deftype SpigotHandler [sys status-handler]
   sp.pcon/IWorkflowHandler
@@ -58,12 +59,12 @@
     (sp.pcon/on-complete status-handler ctx workflow))
 
   sp.pcon/IErrorHandler
-  (on-error [_ ctx ex workflow]
-    (sp.pcon/on-error status-handler ctx ex workflow))
+  (on-error [_ ctx workflow]
+    (sp.pcon/on-error status-handler ctx workflow))
 
   sp.pcon/ITaskProcessor
   (process-task [this ctx task]
-    (log/with-ctx [this :WF]
+    (log/with-ctx (merge ctx {:logger/id :WF :logger/class this})
       (log/info "processing task" (select-keys task #{:spigot/id :spigot/tag}))
       (wfh/task-handler sys ctx task))))
 

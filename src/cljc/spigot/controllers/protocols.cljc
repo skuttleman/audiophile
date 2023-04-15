@@ -9,4 +9,4 @@
   (on-complete [this ctx workflow]))
 
 (defprotocol IErrorHandler
-  (on-error [this ctx ex workflow]))
+  (on-error [this ctx workflow]))

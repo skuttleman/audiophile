@@ -50,9 +50,9 @@
       [::complete ctx wf]))
 
   sp.pcon/IErrorHandler
-  (on-error [_ ctx ex wf]
+  (on-error [_ ctx wf]
     (if-let [f (get fns :error)]
-      (f ctx ex wf)
+      (f ctx wf)
       [::error ctx wf]))
 
   sp.pcon/ITaskProcessor
@@ -137,75 +137,6 @@
             (is (= wf-id id))
             (is (= ::complete type))
             (is (= {:some :ctx} ctx))))))))
-
-(deftest topology-create-fails-test
-  (let [handler (->test-handler {:create thrower})
-        wf-id (UUID/randomUUID)
-        wf (sp/create [:spigot/parallel
-                       [:task-1]
-                       [:spigot/serial
-                        [:task-2]
-                        [:task-3]]])]
-    (with-driver [^TestInputTopic workflows ^TestOutputTopic events] handler
-      (.pipeInput workflows wf-id (sp.kafka/create-wf-msg wf {:some :ctx}))
-      (let [[error :as events] (map sp.kcom/->kv-pair (.readKeyValuesToList events))]
-        (testing "produces an error event"
-          (let [[id [type ctx]] error]
-            (is (= wf-id id))
-            (is (= ::error type))
-            (is (= {:some :ctx} ctx))))
-
-        (testing "produces no more events"
-          (is (= 1 (count events))))))))
-
-(deftest topology-update-fails-test
-  (let [handler (->test-handler {:update thrower})
-        wf-id (UUID/randomUUID)
-        wf (sp/create [:spigot/serial
-                       [:task-1]
-                       [:task-2]
-                       [:task-3]])]
-    (with-driver [^TestInputTopic workflows ^TestOutputTopic events] handler
-      (.pipeInput workflows wf-id (sp.kafka/create-wf-msg wf {:some :ctx}))
-      (let [[create error :as events] (map sp.kcom/->kv-pair (.readKeyValuesToList events))]
-        (testing "produces a create event"
-          (let [[id [type ctx]] create]
-            (is (= wf-id id))
-            (is (= ::create type))
-            (is (= {:some :ctx} ctx))))
-
-        (testing "produces an error event"
-          (let [[id [type ctx]] error]
-            (is (= wf-id id))
-            (is (= ::error type))
-            (is (= {:some :ctx} ctx))))
-
-        (testing "produces no more events"
-          (is (= 2 (count events))))))))
-
-(deftest topology-complete-fails-test
-  (let [handler (->test-handler {:complete thrower})
-        wf-id (UUID/randomUUID)
-        wf (sp/create [:spigot/serial
-                       [:task-1]
-                       [:task-2]])]
-    (with-driver [^TestInputTopic workflows ^TestOutputTopic events] handler
-      (.pipeInput workflows wf-id (sp.kafka/create-wf-msg wf {:some :ctx}))
-      (let [[create _ error :as events] (map sp.kcom/->kv-pair (.readKeyValuesToList events))]
-        (testing "produces a create event"
-          (let [[id [type ctx]] create]
-            (is (= wf-id id))
-            (is (= ::create type))
-            (is (= {:some :ctx} ctx))))
-
-        (testing "produces an error event"
-          (let [[id [type ctx]] error]
-            (is (= wf-id id))
-            (is (= ::error type))
-            (is (= {:some :ctx} ctx))))
-
-        (testing "produces no more events"
-          (is (= 3 (count events))))))))
 
 (deftest topology-task-fails-test
   (let [handler (->test-handler {:task thrower})

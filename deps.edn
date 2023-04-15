@@ -9,7 +9,7 @@
                   com.ben-allred/collaj               {:mvn/version "0.8.0"}
                   com.ben-allred/vow                  {:mvn/version "0.6.1"}
                   com.ben-allred/spigot               {:git/url   "https://github.com/skuttleman/spigot"
-                                                       :git/sha   "7227232c9231991e254d901aca6e3ff730aab5e1"
+                                                       :git/sha   "8908c96ba23c07ea5c5ea1bec5d1936b93683b40"
                                                        :deps/root "core"}
                   com.ben-allred/ws-client-cljc       {:mvn/version "0.3.1"
                                                        :exclusions  [nrepl/nrepl
